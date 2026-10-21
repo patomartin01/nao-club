@@ -54,13 +54,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               // NAVANA EXPEDITIONS
             </span>
           </div>
-
-          {currentCrew && (
-            <div className="hidden md:flex items-center gap-2 pl-3 border-l border-white/10 font-mono text-[10px]">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              <span className="text-chalk uppercase font-bold">{currentCrew.name}</span>
-            </div>
-          )}
         </div>
 
         {/* Right: Quick Action Controls & Pilot Profile */}
