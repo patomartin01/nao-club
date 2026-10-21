@@ -18,9 +18,14 @@ import {
 interface CrewViewProps {
   onOpenCreateCrew: () => void;
   onOpenJoinCrew: () => void;
+  onOpenCreateRodada: () => void;
 }
 
-export const CrewView: React.FC<CrewViewProps> = ({ onOpenCreateCrew, onOpenJoinCrew }) => {
+export const CrewView: React.FC<CrewViewProps> = ({ 
+  onOpenCreateCrew, 
+  onOpenJoinCrew,
+  onOpenCreateRodada 
+}) => {
   const { 
     currentCrew, 
     users, 
@@ -108,27 +113,39 @@ export const CrewView: React.FC<CrewViewProps> = ({ onOpenCreateCrew, onOpenJoin
             <span className="text-[10px] text-ash uppercase tracking-wider block">
               Clave Única de Invitación
             </span>
-            <div className="flex items-center justify-between gap-3 bg-white/[0.03] p-3 border border-white/15">
+            <div className="flex items-center justify-between gap-2 bg-white/[0.03] p-3 border border-white/15">
               <code className="text-earth font-bold text-base tracking-widest">
                 {currentCrew.inviteCode}
               </code>
-              <button 
-                onClick={handleCopy}
-                title="Copiar clave para WhatsApp"
-                className="px-2.5 py-1.5 border border-white/15 hover:border-earth text-ash hover:text-white transition flex items-center gap-1.5 text-[10px] uppercase font-bold"
-              >
-                {copiedCode ? (
-                  <>
-                    <Check className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Copiado</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3.5 h-3.5" />
-                    <span>Copiar</span>
-                  </>
-                )}
-              </button>
+              <div className="flex items-center gap-1.5">
+                <button 
+                  onClick={handleCopy}
+                  title="Copiar clave"
+                  className="px-2.5 py-1.5 border border-white/15 hover:border-earth text-ash hover:text-white transition flex items-center gap-1 text-[10px] uppercase font-bold"
+                >
+                  {copiedCode ? (
+                    <>
+                      <Check className="w-3 h-3 text-emerald-400" />
+                      <span>Listo</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3 h-3" />
+                      <span>Copiar</span>
+                    </>
+                  )}
+                </button>
+                <a
+                  href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
+                    `¡Hola! Únete a nuestro moto club "${currentCrew.name}" en NAO para organizar las rodadas off-road. Usa la clave única: ${currentCrew.inviteCode} (entra en http://localhost:4000)`
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-[10px] uppercase font-bold transition flex items-center gap-1"
+                >
+                  WhatsApp
+                </a>
+              </div>
             </div>
             <p className="text-[10px] text-ash font-light">
               Comparte esta clave con tus amigos para que se unan al club.
@@ -168,6 +185,14 @@ export const CrewView: React.FC<CrewViewProps> = ({ onOpenCreateCrew, onOpenJoin
               Expediciones & Votaciones ({crewRodadas.length})
             </h2>
           </div>
+
+          <button
+            onClick={onOpenCreateRodada}
+            className="px-4 py-2 bg-white hover:bg-earth text-obsidian hover:text-white font-mono text-xs uppercase font-bold tracking-wider transition flex items-center gap-2 shrink-0"
+          >
+            <Plus className="w-4 h-4" />
+            + Convocar Nueva Rodada
+          </button>
         </div>
 
         <div className="space-y-4">

@@ -7,17 +7,15 @@ import {
   CheckSquare, 
   Square,
   ThumbsUp,
-  MessageSquare,
-  Send,
   Lock,
   Unlock,
-  Shield,
-  Layers,
-  Thermometer,
-  Flame,
-  Compass,
-  ArrowUpRight,
-  ArrowLeft
+  Navigation,
+  ExternalLink,
+  Download,
+  Plus,
+  ArrowLeft,
+  Check,
+  Bike
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -37,16 +35,28 @@ export const RodadaDetailView: React.FC<RodadaDetailViewProps> = ({ onOpenPropos
     lockWinningRoute,
     unlockWinningRoute,
     togglePackingItem,
+    addPackingItem,
+    rsvpRodada,
+    userBikes,
+    users,
+    motorcycles,
     currentUser,
     setActiveNavTab,
   } = useApp();
 
   const [commentText, setCommentText] = useState('');
+  const [newPackingText, setNewPackingText] = useState('');
 
   if (!currentRodada) {
     return (
-      <div className="py-24 text-center font-mono text-xs text-ash">
-        NO SE ENCONTRARON EXPEDICIONES ACTIVAS.
+      <div className="py-24 text-center font-mono text-xs text-ash space-y-4">
+        <p>NO SE ENCONTRARON EXPEDICIONES ACTIVAS.</p>
+        <button 
+          onClick={() => setActiveNavTab('home')}
+          className="px-6 py-3 bg-white text-obsidian uppercase font-bold text-xs"
+        >
+          Volver al Inicio
+        </button>
       </div>
     );
   }
@@ -54,12 +64,27 @@ export const RodadaDetailView: React.FC<RodadaDetailViewProps> = ({ onOpenPropos
   const activeRoute = selectedRoute || currentRodadaRoutes[0];
   const isWinningRouteLocked = Boolean(currentRodada.winningRouteId);
   const userHasVoted = activeRoute?.votes.includes(currentUser.id);
+  const userAttendee = currentRodada.attendees.find(a => a.userId === currentUser.id);
+  const isUserConfirmed = userAttendee?.status === 'confirmado';
+  const primaryBike = userBikes[0];
 
   const handleVote = (e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     if (!activeRoute) return;
     voteRoute(activeRoute.id);
-    confetti({ particleCount: 35, spread: 70, origin: { y: 0.8 } });
+    confetti({ particleCount: 40, spread: 70, origin: { y: 0.8 } });
+  };
+
+  const handleToggleRsvp = () => {
+    const nextStatus = isUserConfirmed ? 'interesado' : 'confirmado';
+    rsvpRodada(
+      currentRodada.id, 
+      primaryBike?.id || 'bike-bmw-1250', 
+      nextStatus
+    );
+    if (!isUserConfirmed) {
+      confetti({ particleCount: 60, spread: 80 });
+    }
   };
 
   const handleSendComment = (e: React.FormEvent) => {
@@ -67,6 +92,49 @@ export const RodadaDetailView: React.FC<RodadaDetailViewProps> = ({ onOpenPropos
     if (!commentText.trim() || !activeRoute) return;
     addRouteComment(activeRoute.id, commentText);
     setCommentText('');
+  };
+
+  const handleAddPackingItem = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPackingText.trim()) return;
+    addPackingItem(currentRodada.id, newPackingText.trim(), 'general');
+    setNewPackingText('');
+  };
+
+  const handleDownloadGpx = () => {
+    if (!activeRoute) return;
+    const gpxPoints = activeRoute.waypoints
+      .map(wp => `      <trkpt lat="${wp.lat}" lon="${wp.lng}"><name>${wp.name}</name><desc>${wp.notes || ''}</desc></trkpt>`)
+      .join('\n');
+
+    const gpxContent = `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="NAO Club - Navana Expeditions" xmlns="http://www.topografix.com/GPX/1/1">
+  <metadata>
+    <name>${activeRoute.title}</name>
+    <desc>${activeRoute.description}</desc>
+  </metadata>
+  <trk>
+    <name>${activeRoute.title}</name>
+    <trkseg>
+${gpxPoints}
+    </trkseg>
+  </trk>
+</gpx>`;
+
+    const blob = new Blob([gpxContent], { type: 'application/gpx+xml' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${activeRoute.title.toLowerCase().replace(/[^a-z0-9]/g, '-')}.gpx`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleOpenGoogleMaps = () => {
+    if (!activeRoute) return;
+    const origin = encodeURIComponent(activeRoute.originPoint || 'Interlomas, Huixquilucan, Edomex');
+    const destination = encodeURIComponent(activeRoute.destinationPoint || `${activeRoute.destination}, ${activeRoute.state}`);
+    window.open(`https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`, '_blank');
   };
 
   return (
@@ -92,7 +160,7 @@ export const RodadaDetailView: React.FC<RodadaDetailViewProps> = ({ onOpenPropos
         </div>
 
         <span className="text-[10px] uppercase text-earth tracking-widest font-bold hidden sm:inline">
-          ESTADO: {currentRodada.status === 'votacion' ? '⚡ VOTACIÓN DE RUTAS' : '✓ CONFIRMADA'}
+          ESTADO: {currentRodada.status === 'votacion' ? '⚡ VOTACIÓN DE RUTAS' : '✓ RUTA GANADORA FIJADA'}
         </span>
       </div>
 
@@ -117,23 +185,28 @@ export const RodadaDetailView: React.FC<RodadaDetailViewProps> = ({ onOpenPropos
             <div className="space-y-2 font-mono text-xs">
               <div className="flex justify-between text-ash border-b border-white/[0.06] pb-2">
                 <span>ESTADO:</span>
-                <span className="text-emerald-400 font-bold uppercase">Consenso Abierto</span>
+                <span className={`font-bold uppercase ${isWinningRouteLocked ? 'text-earth' : 'text-emerald-400'}`}>
+                  {isWinningRouteLocked ? 'Ruta Fijada Oficial' : 'Consenso Abierto'}
+                </span>
               </div>
               <div className="flex justify-between text-ash border-b border-white/[0.06] pb-2">
                 <span>VENTANA:</span>
-                <span className="text-white">31 OCT — 02 NOV</span>
+                <span className="text-white">{currentRodada.startDate} al {currentRodada.endDate}</span>
               </div>
               <div className="flex justify-between text-ash border-b border-white/[0.06] pb-2">
                 <span>BASECAMP:</span>
-                <span className="text-white">NAVANA CABINS</span>
+                <span className="text-white">Corral de Piedra / Navana</span>
               </div>
               <div className="flex justify-between text-ash">
                 <span>FLOTILLA:</span>
-                <span className="text-earth font-bold">4 PILOTOS CONFIRMADOS</span>
+                <span className="text-earth font-bold">
+                  {currentRodada.attendees.filter(a => a.status === 'confirmado').length} PILOTOS CONFIRMADOS
+                </span>
               </div>
             </div>
 
-            <div className="pt-6">
+            {/* Voting & Lock Actions */}
+            <div className="pt-6 space-y-2">
               <button
                 onClick={handleVote}
                 className={`w-full py-3.5 px-4 font-mono text-xs uppercase font-bold tracking-widest border transition flex items-center justify-center gap-2 ${
@@ -145,12 +218,31 @@ export const RodadaDetailView: React.FC<RodadaDetailViewProps> = ({ onOpenPropos
                 <ThumbsUp className="w-4 h-4" />
                 <span>{userHasVoted ? 'Voto Registrado // Quitar Voto' : 'Votar por esta Variante'}</span>
               </button>
+
+              {/* Consensus Lock for Captain */}
+              {isWinningRouteLocked ? (
+                <button
+                  onClick={() => unlockWinningRoute(currentRodada.id)}
+                  className="w-full py-2.5 px-3 border border-white/20 hover:border-white text-ash hover:text-white font-mono text-[10px] uppercase font-bold tracking-wider flex items-center justify-center gap-1.5 transition"
+                >
+                  <Unlock className="w-3.5 h-3.5 text-earth" />
+                  <span>Reabrir Consenso de Rutas</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => lockWinningRoute(currentRodada.id, activeRoute.id)}
+                  className="w-full py-2.5 px-3 border border-earth/40 hover:border-earth text-earth hover:bg-earth/10 font-mono text-[10px] uppercase font-bold tracking-wider flex items-center justify-center gap-1.5 transition"
+                >
+                  <Lock className="w-3.5 h-3.5" />
+                  <span>Fijar como Ruta Ganadora</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Hero Atmospheric Image with Cut Lines */}
-        <div className="relative h-72 sm:h-[420px] w-full overflow-hidden border-b border-white/10">
+        {/* Hero Atmospheric Image */}
+        <div className="relative h-72 sm:h-[400px] w-full overflow-hidden border-b border-white/10">
           <img 
             src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=1800" 
             alt="Corral de Piedra Amanalco" 
@@ -168,7 +260,7 @@ export const RodadaDetailView: React.FC<RodadaDetailViewProps> = ({ onOpenPropos
           <div className="p-6">
             <span className="text-[10px] text-ash uppercase tracking-wider block">01. Distancia Total</span>
             <p className="font-display font-extrabold text-3xl text-white mt-1">{activeRoute.totalKm} KM</p>
-            <p className="text-[11px] text-ash mt-1">2h 30m asfalto + 4h brecha</p>
+            <p className="text-[11px] text-ash mt-1">2h 30m asfalto + brecha libre</p>
           </div>
 
           <div className="p-6">
@@ -200,7 +292,7 @@ export const RodadaDetailView: React.FC<RodadaDetailViewProps> = ({ onOpenPropos
               [ 02 // EVALUACIÓN DE TRAZOS ]
             </span>
             <h2 className="font-display font-bold text-2xl sm:text-3xl text-white uppercase tracking-tight">
-              Variantes Propuestas por la Flotilla
+              Variantes Propuestas por la Flotilla ({currentRodadaRoutes.length})
             </h2>
             <p className="text-xs text-ash font-light mt-0.5">
               Haz clic en cada propuesta para actualizar el mapa, la altimetría y registrar tu voto por consenso.
@@ -209,9 +301,10 @@ export const RodadaDetailView: React.FC<RodadaDetailViewProps> = ({ onOpenPropos
 
           <button
             onClick={onOpenProposeRoute}
-            className="px-4 py-2 border border-white/20 hover:border-earth bg-white/[0.02] text-white font-mono text-xs uppercase tracking-wider transition"
+            className="px-4 py-2 border border-white/20 hover:border-earth bg-white/[0.02] text-white font-mono text-xs uppercase tracking-wider transition flex items-center gap-2"
           >
-            + Proponer Nueva Opción
+            <Plus className="w-4 h-4 text-earth" />
+            + Proponer Trazado Alternativo
           </button>
         </div>
 
@@ -271,6 +364,7 @@ export const RodadaDetailView: React.FC<RodadaDetailViewProps> = ({ onOpenPropos
                       e.stopPropagation();
                       setSelectedRoute(route);
                       voteRoute(route.id);
+                      confetti({ particleCount: 30, spread: 60 });
                     }}
                     className={`px-2.5 py-1 text-[10px] uppercase font-bold tracking-wider transition ${
                       hasVotedThis 
@@ -289,7 +383,7 @@ export const RodadaDetailView: React.FC<RodadaDetailViewProps> = ({ onOpenPropos
 
       {/* 03. CARTOGRAFÍA TÁCTICA & WAYPOINTS (Leaflet Edge-to-Edge) */}
       <section className="border border-white/10 bg-[#0B0A09]">
-        <div className="p-4 sm:p-6 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 font-mono text-xs">
+        <div className="p-4 sm:p-6 border-b border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4 font-mono text-xs">
           <div className="flex items-center gap-3">
             <span className="w-2.5 h-2.5 rounded-full bg-earth animate-pulse" />
             <span className="text-white font-bold uppercase tracking-wider">
@@ -297,12 +391,21 @@ export const RodadaDetailView: React.FC<RodadaDetailViewProps> = ({ onOpenPropos
             </span>
           </div>
 
-          <div className="flex items-center gap-4 text-ash">
-            <span>DIFICULTAD: <strong className="text-white">{activeRoute.difficulty}</strong></span>
-            <span>/</span>
-            <span>SALIDA: INTERLOMAS (0 KM)</span>
-            <span>/</span>
-            <span>LLEGADA: NAVANA (120 KM)</span>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={handleOpenGoogleMaps}
+              className="px-3 py-1.5 border border-white/20 hover:border-earth bg-white/[0.03] text-white uppercase text-[10px] font-bold tracking-wider flex items-center gap-1.5 transition"
+            >
+              <ExternalLink className="w-3.5 h-3.5 text-earth" />
+              <span>Abrir Google Maps</span>
+            </button>
+            <button
+              onClick={handleDownloadGpx}
+              className="px-3 py-1.5 bg-white hover:bg-earth text-obsidian hover:text-white uppercase text-[10px] font-bold tracking-wider flex items-center gap-1.5 transition"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Exportar GPX</span>
+            </button>
           </div>
         </div>
 
@@ -349,143 +452,143 @@ export const RodadaDetailView: React.FC<RodadaDetailViewProps> = ({ onOpenPropos
           </div>
 
           <div className="p-5 border border-white/10 bg-white/[0.02] space-y-2">
-            <span className="text-earth font-bold text-sm block">02 // RECUPERACIÓN & WELLNESS</span>
+            <span className="text-earth font-bold text-sm block">02 // RECUPERACIÓN TÉRMICA & WELLNESS</span>
             <p className="text-ash leading-relaxed">
-              Tras 5 horas de terracería y polvo a 4°C, desempacar una tienda congelada a medianoche drena la energía del grupo. Navana Cabins ofrece sauna nórdico encendido a 78°C, regaderas de agua caliente y pozo de fuego con leña seca lista.
+              En noviembre la temperatura cae a 3°C a 3,000 msnm. Empacar lonas mojadas con escarcha a las 7:00 AM destruye la moral del grupo. Con basecamp fijo, desayunamos con calma y cerramos la tarde en el sauna a 78°C de Navana.
             </p>
           </div>
 
           <div className="p-5 border border-white/10 bg-white/[0.02] space-y-2">
-            <span className="text-earth font-bold text-sm block">03 // TALLER CENTRALIZADO</span>
+            <span className="text-earth font-bold text-sm block">03 // RUTAS CIRCULARES EN TRÉBOL</span>
             <p className="text-ash leading-relaxed">
-              Si una moto pincha o necesita calibración de presiones (bajar 4 PSI para pinocha húmeda), la herramienta pesada (compresor 12V, dinamométrica, mechas tubeless) permanece segura y resguardada en el campamento base.
+              La base nos permite hacer bucles: Día 1 subida por brechas hacia Amanalco, Día 2 bucle hacia Valle de Bravo y faldas del Nevado, Día 3 retorno técnico sin cargar bultos pesados.
             </p>
           </div>
         </div>
       </section>
 
-      {/* 05. FLOTILLA & GEAR CHECKLIST DUAL GRID */}
+      {/* 05. CONFIRMED RIDERS ROSTER & LIVE PACKING CHECKLIST */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
-        {/* Left: Confirmed Flotilla */}
+        {/* Left: Dynamic Attendees List */}
         <section className="lg:col-span-7 border border-white/10 bg-[#0B0A09] p-6 sm:p-8 space-y-6">
-          <div className="flex items-center justify-between border-b border-white/10 pb-4">
+          <div className="border-b border-white/10 pb-4 flex items-center justify-between">
             <div>
               <span className="font-mono text-[10px] text-earth uppercase tracking-widest font-bold">
-                [ FLOTILLA REGISTRADA ]
+                [ FLOTILLA ACTIVA ]
               </span>
               <h3 className="font-display font-bold text-xl text-white uppercase">
-                4 Pilotos & Máquinas
+                Pilotos Confirmados ({currentRodada.attendees.length})
               </h3>
             </div>
-            <span className="font-mono text-xs text-ash">4 CONFIRMADOS</span>
+
+            {/* Interactive RSVP Action */}
+            <button
+              onClick={handleToggleRsvp}
+              className={`px-4 py-2 font-mono text-xs uppercase font-bold tracking-wider transition border ${
+                isUserConfirmed
+                  ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500'
+                  : 'bg-earth text-white border-earth hover:bg-earth-bright'
+              }`}
+            >
+              {isUserConfirmed ? '✓ Asistencia Confirmada' : '+ Confirmar Asistencia'}
+            </button>
           </div>
 
           <div className="space-y-3 font-mono text-xs">
-            <div className="p-4 border border-white/10 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <img 
-                  src={currentUser.avatar} 
-                  alt="Patricio" 
-                  className="w-10 h-10 object-cover border border-white/20"
-                />
-                <div>
-                  <p className="font-bold text-white uppercase">Patricio Martin (Líder)</p>
-                  <p className="text-ash text-[11px]">BMW R 1250 GS Adventure · Metzeler Karoo 4</p>
-                </div>
-              </div>
-              <span className="px-2 py-1 bg-white/[0.05] border border-white/10 text-earth text-[10px] uppercase font-bold">
-                Confirmado
-              </span>
-            </div>
+            {currentRodada.attendees.map((attendee) => {
+              const user = users.find(u => u.id === attendee.userId) || (attendee.userId === currentUser.id ? currentUser : null);
+              const bike = motorcycles.find(m => m.id === attendee.motorcycleId) || (attendee.userId === currentUser.id ? primaryBike : null);
+              const isLead = attendee.userId === currentUser.id;
 
-            <div className="p-4 border border-white/10 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <img 
-                  src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200" 
-                  alt="Diego" 
-                  className="w-10 h-10 object-cover border border-white/20"
-                />
-                <div>
-                  <p className="font-bold text-white uppercase">Diego &quot;Capi&quot; R.</p>
-                  <p className="text-ash text-[11px]">KTM 890 Adventure R · Continental TKC80</p>
+              return (
+                <div key={attendee.userId} className="p-4 border border-white/10 bg-white/[0.01] flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <img 
+                      src={user?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200'} 
+                      alt={user?.name || 'Piloto'} 
+                      className="w-10 h-10 object-cover border border-white/20"
+                    />
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="font-bold text-white uppercase">{user?.name || 'Piloto'}</p>
+                        {isLead && (
+                          <span className="px-1.5 py-0.2 bg-earth/20 border border-earth text-earth text-[9px] uppercase font-bold">
+                            Tú
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-ash text-[11px]">
+                        {bike ? `${bike.brand} ${bike.model}` : 'Doble Propósito'} · {bike?.tires || 'Llantas 50/50'}
+                      </p>
+                    </div>
+                  </div>
+                  <span className={`px-2 py-1 text-[10px] uppercase font-bold border ${
+                    attendee.status === 'confirmado' 
+                      ? 'bg-emerald-400/10 text-emerald-400 border-emerald-400/30' 
+                      : 'bg-white/[0.05] text-ash border-white/10'
+                  }`}>
+                    {attendee.status}
+                  </span>
                 </div>
-              </div>
-              <span className="px-2 py-1 bg-white/[0.05] border border-white/10 text-earth text-[10px] uppercase font-bold">
-                Confirmado
-              </span>
-            </div>
-
-            <div className="p-4 border border-white/10 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <img 
-                  src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200" 
-                  alt="Sofía" 
-                  className="w-10 h-10 object-cover border border-white/20"
-                />
-                <div>
-                  <p className="font-bold text-white uppercase">Sofía Montiel</p>
-                  <p className="text-ash text-[11px]">Husqvarna Norden 901 · Pirelli Scorpion Rally STR</p>
-                </div>
-              </div>
-              <span className="px-2 py-1 bg-white/[0.05] border border-white/10 text-earth text-[10px] uppercase font-bold">
-                Confirmado
-              </span>
-            </div>
-
-            <div className="p-4 border border-white/10 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <img 
-                  src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=200" 
-                  alt="Rigo" 
-                  className="w-10 h-10 object-cover border border-white/20"
-                />
-                <div>
-                  <p className="font-bold text-white uppercase">Rigo Méndez</p>
-                  <p className="text-ash text-[11px]">Yamaha Ténéré 700 · Motoz Tractionator RallZ</p>
-                </div>
-              </div>
-              <span className="px-2 py-1 bg-white/[0.05] border border-white/10 text-earth text-[10px] uppercase font-bold">
-                Confirmado
-              </span>
-            </div>
+              );
+            })}
           </div>
         </section>
 
-        {/* Right: Interactive Packing Checklist */}
-        <section className="lg:col-span-5 border border-white/10 bg-[#0B0A09] p-6 sm:p-8 space-y-6">
-          <div className="border-b border-white/10 pb-4">
-            <span className="font-mono text-[10px] text-earth uppercase tracking-widest font-bold">
-              [ EQUIPO OBLIGATORIO // CLIMA 4°C ]
-            </span>
-            <h3 className="font-display font-bold text-xl text-white uppercase">
-              Checklist de Basecamp
-            </h3>
+        {/* Right: Interactive Packing Checklist with Real Add Item */}
+        <section className="lg:col-span-5 border border-white/10 bg-[#0B0A09] p-6 sm:p-8 space-y-6 flex flex-col justify-between">
+          <div>
+            <div className="border-b border-white/10 pb-4">
+              <span className="font-mono text-[10px] text-earth uppercase tracking-widest font-bold">
+                [ EQUIPO OBLIGATORIO // CLIMA 4°C ]
+              </span>
+              <h3 className="font-display font-bold text-xl text-white uppercase">
+                Checklist de Basecamp
+              </h3>
+            </div>
+
+            <div className="space-y-2.5 font-mono text-xs pt-4">
+              {(currentRodada.packingList || []).map((item) => (
+                <div
+                  key={item.id}
+                  onClick={() => togglePackingItem(currentRodada.id, item.id)}
+                  className="flex items-center gap-3 p-3 border border-white/[0.06] hover:border-white/20 cursor-pointer transition select-none bg-white/[0.01]"
+                >
+                  {item.isDone ? (
+                    <CheckSquare className="w-4 h-4 text-emerald-400 shrink-0" />
+                  ) : (
+                    <Square className="w-4 h-4 text-ash shrink-0" />
+                  )}
+                  <span className={item.isDone ? 'line-through text-ash' : 'text-chalk'}>
+                    {item.item}
+                  </span>
+                  {item.assignedToName && (
+                    <span className="ml-auto text-[10px] text-earth font-bold">
+                      [{item.assignedToName.split(' ')[0]}]
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
 
-          <div className="space-y-2.5 font-mono text-xs">
-            {(currentRodada.packingList || []).map((item) => (
-              <div
-                key={item.id}
-                onClick={() => togglePackingItem(currentRodada.id, item.id)}
-                className="flex items-center gap-3 p-3 border border-white/[0.06] hover:border-white/20 cursor-pointer transition select-none"
-              >
-                {item.isDone ? (
-                  <CheckSquare className="w-4 h-4 text-emerald-400 shrink-0" />
-                ) : (
-                  <Square className="w-4 h-4 text-ash shrink-0" />
-                )}
-                <span className={item.isDone ? 'line-through text-ash' : 'text-chalk'}>
-                  {item.item}
-                </span>
-                {item.assignedToName && (
-                  <span className="ml-auto text-[10px] text-earth font-bold">
-                    [{item.assignedToName.split(' ')[0]}]
-                  </span>
-                )}
-              </div>
-            ))}
-          </div>
+          {/* Quick Add Gear Input */}
+          <form onSubmit={handleAddPackingItem} className="pt-4 border-t border-white/10 flex gap-2">
+            <input 
+              type="text"
+              value={newPackingText}
+              onChange={(e) => setNewPackingText(e.target.value)}
+              placeholder="+ Añadir equipo (ej. Compresor, botiquín)..."
+              className="flex-1 bg-white/[0.03] border border-white/15 px-3 py-2.5 font-mono text-xs text-white placeholder-ash focus:outline-none focus:border-earth"
+            />
+            <button 
+              type="submit"
+              className="px-4 py-2.5 bg-white hover:bg-earth text-obsidian hover:text-white font-mono text-xs uppercase font-bold tracking-wider transition"
+            >
+              + Agregar
+            </button>
+          </form>
         </section>
 
       </div>

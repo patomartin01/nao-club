@@ -168,6 +168,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
     setCrews(prev => [newCrew, ...prev]);
     setCurrentCrew(newCrew);
+    setActiveNavTab('crew');
     return newCrew;
   };
 
@@ -180,6 +181,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const alreadyMember = found.members.some(m => m.userId === currentUser.id);
     if (alreadyMember) {
       setCurrentCrew(found);
+      setActiveNavTab('crew');
       return { success: true, message: `Ya eres miembro de ${found.name}`, crew: found };
     }
     const updated: Crew = {
@@ -188,6 +190,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
     setCrews(prev => prev.map(c => c.id === found.id ? updated : c));
     setCurrentCrew(updated);
+    setActiveNavTab('crew');
     return { success: true, message: `¡Te uniste a ${found.name}! Bienvenido a bordo.`, crew: updated };
   };
 
@@ -238,6 +241,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
     setRodadas(prev => [newRodada, ...prev]);
     setCurrentRodada(newRodada);
+    setActiveNavTab('rodada');
     return newRodada;
   };
 
@@ -252,6 +256,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
     setRouteProposals(prev => [newRoute, ...prev]);
     setSelectedRoute(newRoute);
+    setActiveNavTab('rodada');
   };
 
   const voteRoute = (routeId: string) => {
@@ -322,6 +327,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const rsvpRodada = (rodadaId: string, motorcycleId: string, status: 'confirmado' | 'interesado') => {
+    let updatedAttendeesList: any[] = [];
     setRodadas(prev => prev.map(rd => {
       if (rd.id === rodadaId) {
         const existingIndex = rd.attendees.findIndex(a => a.userId === currentUser.id);
@@ -342,10 +348,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             gearCheck: { sleepingBag0C: true, tireRepairKit: true, portableCompressor: false, firstAidKit: false, tools: true }
           });
         }
+        updatedAttendeesList = updatedAttendees;
         return { ...rd, attendees: updatedAttendees };
       }
       return rd;
     }));
+    if (currentRodada && currentRodada.id === rodadaId) {
+      setCurrentRodada({ ...currentRodada, attendees: updatedAttendeesList });
+    }
   };
 
   const togglePackingItem = (rodadaId: string, itemId: string) => {

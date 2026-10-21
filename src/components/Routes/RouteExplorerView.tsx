@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { RouteMap } from '../Map/RouteMap';
-import { Search, ThumbsUp, Plus, ArrowUpRight } from 'lucide-react';
+import { Search, ThumbsUp, Plus, ArrowUpRight, ExternalLink, Download } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 interface RouteExplorerViewProps {
@@ -11,7 +11,15 @@ interface RouteExplorerViewProps {
 }
 
 export const RouteExplorerView: React.FC<RouteExplorerViewProps> = ({ onOpenProposeRoute }) => {
-  const { routeProposals, selectedRoute, setSelectedRoute, voteRoute, currentUser, setActiveNavTab } = useApp();
+  const { 
+    routeProposals, 
+    selectedRoute, 
+    setSelectedRoute, 
+    voteRoute, 
+    currentUser, 
+    setActiveNavTab,
+    enterRodada 
+  } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all');
 
@@ -190,22 +198,36 @@ export const RouteExplorerView: React.FC<RouteExplorerViewProps> = ({ onOpenProp
                     </div>
                   </div>
 
-                  {/* Footer & Voting */}
-                  <div className="flex items-center justify-between font-mono text-xs pt-1">
+                  {/* Footer & Voting & Enter Expedition */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-mono text-xs pt-2 border-t border-white/[0.06]">
                     <span className="text-[11px] text-ash">
                       Propuesto por <strong className="text-white">{route.proposedByName}</strong>
                     </span>
 
-                    <button
-                      onClick={(e) => handleVote(e, route.id)}
-                      className={`px-3 py-1.5 uppercase font-bold text-[10px] tracking-wider border transition ${
-                        hasVoted 
-                          ? 'bg-earth text-white border-earth' 
-                          : 'border-white/20 text-white hover:bg-white hover:text-black'
-                      }`}
-                    >
-                      {hasVoted ? 'Votado ✓' : 'Votar'}
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={(e) => handleVote(e, route.id)}
+                        className={`px-3 py-1.5 uppercase font-bold text-[10px] tracking-wider border transition ${
+                          hasVoted 
+                            ? 'bg-earth text-white border-earth' 
+                            : 'border-white/20 text-white hover:bg-white hover:text-black'
+                        }`}
+                      >
+                        {hasVoted ? 'Votado ✓' : 'Votar'}
+                      </button>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedRoute(route);
+                          enterRodada(route.rodadaId);
+                        }}
+                        className="px-3 py-1.5 uppercase font-bold text-[10px] tracking-wider bg-white/[0.04] hover:bg-earth text-white hover:text-white border border-white/15 transition flex items-center gap-1"
+                      >
+                        <span>Ver en Rodada</span>
+                        <ArrowUpRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
 

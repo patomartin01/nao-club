@@ -61,6 +61,7 @@ export default function Home() {
           <CrewView 
             onOpenCreateCrew={() => setCreateCrewOpen(true)}
             onOpenJoinCrew={() => setJoinCrewOpen(true)}
+            onOpenCreateRodada={() => setCreateRodadaOpen(true)}
           />
         )}
 
