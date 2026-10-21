@@ -693,12 +693,12 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
 
           </div>
 
-          {/* MASTER ACTION CONTROLS */}
-          <div className="space-y-3 pt-6 border-t border-white/10">
+          {/* MASTER ACTION CONTROLS (Sticky on mobile for rider convenience) */}
+          <div className="sticky bottom-0 bg-[#0B0A09] pt-3 pb-[env(safe-area-inset-bottom,8px)] border-t border-white/10 z-10">
             {!isRecording ? (
               <button
                 onClick={handleStart}
-                className="w-full py-4 bg-earth hover:bg-earth-bright text-white uppercase font-bold text-sm tracking-wider flex items-center justify-center gap-2 transition shadow-[0_0_24px_rgba(200,125,85,0.4)]"
+                className="w-full py-4 bg-earth hover:bg-earth-bright text-white uppercase font-bold text-sm tracking-wider flex items-center justify-center gap-2 transition shadow-[0_0_24px_rgba(200,125,85,0.4)] touch-manipulation active:scale-[0.98]"
               >
                 <Play className="w-5 h-5 fill-current" />
                 Iniciar Grabación GPS
@@ -708,7 +708,7 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
                 {isPaused ? (
                   <button
                     onClick={handleResume}
-                    className="py-3.5 bg-emerald-500 hover:bg-emerald-400 text-obsidian uppercase font-bold text-xs tracking-wider flex items-center justify-center gap-2 transition"
+                    className="py-3.5 bg-emerald-500 hover:bg-emerald-400 text-obsidian uppercase font-bold text-xs tracking-wider flex items-center justify-center gap-2 transition touch-manipulation active:scale-95"
                   >
                     <Play className="w-4 h-4 fill-current" />
                     Reanudar
@@ -716,7 +716,7 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
                 ) : (
                   <button
                     onClick={handlePause}
-                    className="py-3.5 bg-white/10 hover:bg-white/20 text-white border border-white/20 uppercase font-bold text-xs tracking-wider flex items-center justify-center gap-2 transition"
+                    className="py-3.5 bg-white/10 hover:bg-white/20 text-white border border-white/20 uppercase font-bold text-xs tracking-wider flex items-center justify-center gap-2 transition touch-manipulation active:scale-95"
                   >
                     <Pause className="w-4 h-4" />
                     Pausar
@@ -725,7 +725,7 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
 
                 <button
                   onClick={handleOpenSaveDialog}
-                  className="py-3.5 bg-white hover:bg-earth text-obsidian hover:text-white uppercase font-bold text-xs tracking-wider flex items-center justify-center gap-2 transition"
+                  className="py-3.5 bg-white hover:bg-earth text-obsidian hover:text-white uppercase font-bold text-xs tracking-wider flex items-center justify-center gap-2 transition touch-manipulation active:scale-95"
                 >
                   <Square className="w-4 h-4 fill-current" />
                   Finalizar & Guardar

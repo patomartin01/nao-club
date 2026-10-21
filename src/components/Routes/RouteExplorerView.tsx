@@ -196,8 +196,8 @@ export const RouteExplorerView: React.FC<RouteExplorerViewProps> = ({
         </div>
 
         {/* 02. STRAVA / WIKILOC SUB-TABS */}
-        <div className="bg-[#080706] border-b border-white/10 flex flex-wrap items-center justify-between px-4 sm:px-6">
-          <div className="flex items-center">
+        <div className="bg-[#080706] border-b border-white/10 flex flex-wrap sm:flex-nowrap items-center justify-between px-3 sm:px-6">
+          <div className="flex items-center overflow-x-auto no-scrollbar whitespace-nowrap w-full sm:w-auto">
             <button
               onClick={() => setCurrentTab('all')}
               className={`py-4 px-4 sm:px-6 text-xs uppercase font-bold tracking-wider border-b-2 transition ${

@@ -19,7 +19,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const { setActiveNavTab, currentUser, currentRodada } = useApp();
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-[#0B0A09] border-b border-white/[0.08] select-none">
+    <header className="sticky top-0 z-50 w-full bg-[#0B0A09] border-b border-white/[0.08] select-none pt-[env(safe-area-inset-top,0px)]">
       
       {/* 1. TOP TICK-MARK RULER (Superficial.design signature element) */}
       <div className="w-full h-2.5 border-b border-white/[0.06] bg-black/40 overflow-hidden flex items-center">

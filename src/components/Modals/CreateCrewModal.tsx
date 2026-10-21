@@ -37,8 +37,8 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-      <div className="border border-white/20 bg-[#0E0C0A] max-w-lg w-full p-6 sm:p-8 space-y-6">
+    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+      <div className="border border-white/20 bg-[#0E0C0A] max-w-lg w-full p-5 sm:p-8 space-y-5 my-auto max-h-[92vh] overflow-y-auto">
         <div className="flex items-center justify-between border-b border-white/10 pb-4">
           <div>
             <span className="font-mono text-[10px] text-earth uppercase tracking-widest font-bold">

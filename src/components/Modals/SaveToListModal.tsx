@@ -50,9 +50,9 @@ export const SaveToListModal: React.FC<SaveToListModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-fadeIn overflow-y-auto">
       <div 
-        className="bg-[#0D0B0A] border border-white/15 w-full max-w-md text-chalk p-6 sm:p-8 shadow-2xl relative font-mono space-y-6"
+        className="bg-[#0D0B0A] border border-white/15 w-full max-w-md text-chalk p-5 sm:p-8 shadow-2xl relative font-mono space-y-5 my-auto max-h-[94vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-white/10 pb-4">

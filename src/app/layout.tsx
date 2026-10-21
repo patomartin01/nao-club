@@ -1,12 +1,29 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { AppProvider } from '../context/AppContext';
+
+export const viewport: Viewport = {
+  themeColor: '#0B0A09',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+};
 
 export const metadata: Metadata = {
   title: 'NAO — Moto Expeditions | Plataforma de Rodadas Off-Road & Dual-Sport',
   description: 'Plataforma de exploración comunitaria para rodadas en motos doble propósito, consenso de rutas por votación, navegación GPX y organización de clubs.',
   keywords: ['NAO', 'motos trail', 'off-road', 'doble proposito', 'expediciones', 'rutas gpx', 'moto clubs'],
   authors: [{ name: 'Patricio Martin' }],
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'NAO Club'
+  },
+  formatDetection: {
+    telephone: false
+  }
 };
 
 export default function RootLayout({

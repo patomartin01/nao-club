@@ -25,7 +25,7 @@ export const BottomBar: React.FC<BottomBarProps> = () => {
   return (
     <aside 
       aria-label="Navegación de aplicación"
-      className="fixed bottom-0 left-0 right-0 z-50 bg-[#0B0A09]/95 backdrop-blur-xl border-t border-white/[0.08] shadow-[0_-12px_36px_rgba(0,0,0,0.85)] select-none"
+      className="fixed bottom-0 left-0 right-0 z-50 bg-[#0B0A09]/95 backdrop-blur-xl border-t border-white/[0.08] shadow-[0_-12px_36px_rgba(0,0,0,0.85)] select-none pb-[env(safe-area-inset-bottom,6px)]"
     >
       {/* Top subtle micro-ruler (Superficial.design signature) */}
       <div className="w-full h-1 bg-black/60 overflow-hidden flex items-center border-b border-white/[0.04]">
@@ -42,12 +42,12 @@ export const BottomBar: React.FC<BottomBarProps> = () => {
       </div>
 
       {/* Balanced 3-column minimalist cockpit dock */}
-      <div className="max-w-md mx-auto px-6 py-2.5 flex items-center justify-around">
+      <div className="max-w-md mx-auto px-4 py-1.5 flex items-center justify-around">
         
         {/* 01. GRUPOS & RODADAS */}
         <button
           onClick={() => setActiveNavTab('home')}
-          className={`flex-1 flex flex-col items-center justify-center py-1 transition-all active:scale-95 group ${
+          className={`flex-1 min-h-[50px] flex flex-col items-center justify-center py-1 transition-all active:scale-95 group touch-manipulation ${
             isGroupTab ? 'text-white' : 'text-ash hover:text-white'
           }`}
         >
@@ -65,7 +65,7 @@ export const BottomBar: React.FC<BottomBarProps> = () => {
         {/* 02. EXPLORADOR DE RUTAS OFF-ROAD */}
         <button
           onClick={() => setActiveNavTab('rutas')}
-          className={`flex-1 flex flex-col items-center justify-center py-1 transition-all active:scale-95 group ${
+          className={`flex-1 min-h-[50px] flex flex-col items-center justify-center py-1 transition-all active:scale-95 group touch-manipulation ${
             activeNavTab === 'rutas' ? 'text-white' : 'text-ash hover:text-white'
           }`}
         >
@@ -83,7 +83,7 @@ export const BottomBar: React.FC<BottomBarProps> = () => {
         {/* 03. HANGAR & GARAJE */}
         <button
           onClick={() => setActiveNavTab('garaje')}
-          className={`flex-1 flex flex-col items-center justify-center py-1 transition-all active:scale-95 group ${
+          className={`flex-1 min-h-[50px] flex flex-col items-center justify-center py-1 transition-all active:scale-95 group touch-manipulation ${
             activeNavTab === 'garaje' ? 'text-white' : 'text-ash hover:text-white'
           }`}
         >
@@ -101,7 +101,7 @@ export const BottomBar: React.FC<BottomBarProps> = () => {
       </div>
 
       {/* iOS Home Indicator Spacer */}
-      <div className="h-[env(safe-area-inset-bottom,4px)] w-full" />
+      <div className="h-[env(safe-area-inset-bottom,2px)] w-full" />
     </aside>
   );
 };

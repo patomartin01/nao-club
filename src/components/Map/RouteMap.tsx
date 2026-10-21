@@ -284,48 +284,51 @@ export const RouteMap: React.FC<RouteMapProps> = ({
       <div ref={mapContainerRef} className="w-full h-full min-h-[420px] z-0" />
 
       {/* Layer Switcher & Google Maps Bar (Top Left) */}
-      <div className="absolute top-4 left-4 z-10 flex flex-wrap items-center gap-2">
-        <div className="bg-black/90 backdrop-blur-md border border-white/20 p-1 flex items-center gap-1 font-mono text-[10px] shadow-xl">
+      <div className="absolute top-3 left-3 z-10 flex flex-wrap items-center gap-2 max-w-[calc(100%-55px)]">
+        <div className="bg-black/90 backdrop-blur-md border border-white/20 p-1 flex items-center gap-1 font-mono text-[9px] sm:text-[10px] shadow-xl">
           <button
             onClick={() => handleLayerChange('satellite')}
-            className={`px-2.5 py-1 uppercase font-bold tracking-wider transition ${
+            className={`px-2 sm:px-2.5 py-1 uppercase font-bold tracking-wider transition touch-manipulation ${
               currentLayer === 'satellite'
                 ? 'bg-earth text-white'
                 : 'text-ash hover:text-white'
             }`}
           >
-            🛰️ Satélite HD
+            <span className="hidden sm:inline">🛰️ Satélite HD</span>
+            <span className="sm:hidden">🛰️ Sat</span>
           </button>
           <button
             onClick={() => handleLayerChange('topo')}
-            className={`px-2.5 py-1 uppercase font-bold tracking-wider transition ${
+            className={`px-2 sm:px-2.5 py-1 uppercase font-bold tracking-wider transition touch-manipulation ${
               currentLayer === 'topo'
                 ? 'bg-earth text-white'
                 : 'text-ash hover:text-white'
             }`}
           >
-            ⛰️ Topo / Relieve
+            <span className="hidden sm:inline">⛰️ Topo / Relieve</span>
+            <span className="sm:hidden">⛰️ Topo</span>
           </button>
           <button
             onClick={() => handleLayerChange('roads')}
-            className={`px-2.5 py-1 uppercase font-bold tracking-wider transition ${
+            className={`px-2 sm:px-2.5 py-1 uppercase font-bold tracking-wider transition touch-manipulation ${
               currentLayer === 'roads'
                 ? 'bg-earth text-white'
                 : 'text-ash hover:text-white'
             }`}
           >
-            🗺️ Calles & Brechas
+            <span className="hidden sm:inline">🗺️ Calles & Brechas</span>
+            <span className="sm:hidden">🗺️ Calles</span>
           </button>
         </div>
 
         {route && (
           <button
             onClick={handleOpenGoogleMaps}
-            className="bg-black/90 hover:bg-earth text-white border border-white/20 px-3 py-1.5 font-mono text-[10px] uppercase font-bold tracking-wider transition flex items-center gap-1.5 shadow-xl backdrop-blur-md"
+            className="bg-black/90 hover:bg-earth text-white border border-white/20 px-2.5 sm:px-3 py-1 sm:py-1.5 font-mono text-[9px] sm:text-[10px] uppercase font-bold tracking-wider transition flex items-center gap-1.5 shadow-xl backdrop-blur-md touch-manipulation"
             title="Abrir trayecto con todas las paradas en orden en Google Maps"
           >
             <Navigation className="w-3.5 h-3.5 text-earth group-hover:text-white" />
-            <span>Ver en Google Maps</span>
+            <span>Google Maps</span>
             <ExternalLink className="w-3 h-3 text-ash" />
           </button>
         )}
@@ -333,7 +336,7 @@ export const RouteMap: React.FC<RouteMapProps> = ({
 
       {/* Top Right: Active Route Quick HUD */}
       {route && (
-        <div className="absolute bottom-4 right-4 sm:top-4 sm:bottom-auto z-10 bg-black/90 backdrop-blur-md border border-white/20 p-3.5 max-w-xs text-white shadow-2xl">
+        <div className="absolute bottom-3 left-3 right-3 sm:left-auto sm:right-4 sm:top-4 sm:bottom-auto z-10 bg-black/90 backdrop-blur-md border border-white/20 p-3 sm:p-3.5 sm:max-w-xs text-white shadow-2xl">
           <div className="flex items-center gap-2 mb-1.5">
             <span className="inline-block w-2 h-2 rounded-full bg-earth animate-pulse" />
             <h4 className="font-display font-bold text-xs text-white uppercase tracking-wider line-clamp-1">
