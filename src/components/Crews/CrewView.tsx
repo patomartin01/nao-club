@@ -22,22 +22,26 @@ import {
   Square,
   MapPin,
   MessageSquare,
-  Send
+  Send,
+  Radio
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { buildOrderedGoogleMapsUrl } from '../../utils/googleMaps';
 
 interface CrewViewProps {
   onOpenCreateCrew: () => void;
   onOpenJoinCrew: () => void;
   onOpenCreateRodada: () => void;
   onOpenProposeRoute: () => void;
+  onOpenRecordRoute?: () => void;
 }
 
 export const CrewView: React.FC<CrewViewProps> = ({ 
   onOpenCreateCrew, 
   onOpenJoinCrew,
   onOpenCreateRodada,
-  onOpenProposeRoute
+  onOpenProposeRoute,
+  onOpenRecordRoute
 }) => {
   const { 
     currentCrew, 
@@ -171,9 +175,8 @@ ${gpxPoints}
 
   const handleOpenGoogleMaps = () => {
     if (!activeRoute) return;
-    const origin = encodeURIComponent(activeRodada?.originPoint || 'Interlomas, Huixquilucan, Edomex');
-    const destination = encodeURIComponent(`${activeRoute.destination}, ${activeRoute.state}`);
-    window.open(`https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`, '_blank');
+    const url = buildOrderedGoogleMapsUrl(activeRoute, activeRodada?.originPoint);
+    window.open(url, '_blank');
   };
 
   const isWinningRouteLocked = Boolean(activeRodada?.winningRouteId);
@@ -383,12 +386,24 @@ ${gpxPoints}
                       Vota la Opción que Prefieras ({crewRoutes.length})
                     </h3>
                   </div>
-                  <button
-                    onClick={onOpenProposeRoute}
-                    className="px-3 py-1.5 bg-white hover:bg-earth text-obsidian hover:text-white font-mono text-[10px] uppercase font-bold tracking-wider transition"
-                  >
-                    + Proponer Otra Ruta
-                  </button>
+                  <div className="flex items-center gap-2">
+                    {onOpenRecordRoute && (
+                      <button
+                        onClick={onOpenRecordRoute}
+                        className="px-3 py-1.5 bg-red-600/20 hover:bg-red-600 text-red-300 hover:text-white border border-red-500/40 font-mono text-[10px] uppercase font-bold tracking-wider transition flex items-center gap-1.5"
+                        title="Grabar una ruta mientras conduces con GPS y guardarla en este club"
+                      >
+                        <Radio className="w-3.5 h-3.5 text-red-400 animate-pulse" />
+                        <span>🔴 Grabar en Vivo</span>
+                      </button>
+                    )}
+                    <button
+                      onClick={onOpenProposeRoute}
+                      className="px-3 py-1.5 bg-white hover:bg-earth text-obsidian hover:text-white font-mono text-[10px] uppercase font-bold tracking-wider transition"
+                    >
+                      + Proponer Otra Ruta
+                    </button>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

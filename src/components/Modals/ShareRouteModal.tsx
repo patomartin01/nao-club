@@ -5,6 +5,8 @@ import { RouteProposal } from '../../types';
 import { X, Copy, Check, Download, Navigation, Share2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
+import { buildOrderedGoogleMapsUrl } from '../../utils/googleMaps';
+
 interface ShareRouteModalProps {
   route: RouteProposal | null;
   isOpen: boolean;
@@ -64,9 +66,8 @@ ${gpxPoints}
   };
 
   const handleOpenGoogleMaps = () => {
-    const origin = encodeURIComponent('Interlomas, Huixquilucan, Edomex');
-    const destination = encodeURIComponent(`${route.destination}, ${route.state}`);
-    window.open(`https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`, '_blank');
+    const url = buildOrderedGoogleMapsUrl(route);
+    window.open(url, '_blank');
   };
 
   return (

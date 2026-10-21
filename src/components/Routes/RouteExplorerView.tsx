@@ -20,17 +20,22 @@ import {
   Layers,
   MapPin,
   TrendingUp,
-  FolderPlus
+  FolderPlus,
+  Radio
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 interface RouteExplorerViewProps {
   onOpenProposeRoute: () => void;
+  onOpenRecordRoute?: () => void;
 }
 
 type ExplorerTab = 'all' | 'completed' | 'saved';
 
-export const RouteExplorerView: React.FC<RouteExplorerViewProps> = ({ onOpenProposeRoute }) => {
+export const RouteExplorerView: React.FC<RouteExplorerViewProps> = ({ 
+  onOpenProposeRoute,
+  onOpenRecordRoute
+}) => {
   const { 
     routeProposals, 
     selectedRoute, 
@@ -167,10 +172,20 @@ export const RouteExplorerView: React.FC<RouteExplorerViewProps> = ({ onOpenProp
               </div>
             </div>
 
-            <div className="pt-6">
+            <div className="pt-6 space-y-2">
+              {onOpenRecordRoute && (
+                <button
+                  onClick={onOpenRecordRoute}
+                  className="w-full py-3 bg-red-600/20 hover:bg-red-600 text-red-300 hover:text-white border border-red-500/40 text-xs uppercase font-bold tracking-widest transition flex items-center justify-center gap-2 shadow-xl"
+                  title="Grabar una ruta con telemetría GPS y paradas en vivo"
+                >
+                  <Radio className="w-4 h-4 text-red-400 animate-pulse" />
+                  <span>🔴 Grabar Recorrido GPS</span>
+                </button>
+              )}
               <button
                 onClick={onOpenProposeRoute}
-                className="w-full py-3.5 bg-earth hover:bg-earth/80 text-white text-xs uppercase font-bold tracking-widest transition flex items-center justify-center gap-2 shadow-xl"
+                className="w-full py-3 bg-earth hover:bg-earth/80 text-white text-xs uppercase font-bold tracking-widest transition flex items-center justify-center gap-2 shadow-xl"
               >
                 <Plus className="w-4 h-4" />
                 <span>+ Proponer / Subir Track</span>

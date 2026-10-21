@@ -12,6 +12,7 @@ import { JoinCrewModal } from '../components/Modals/JoinCrewModal';
 import { CreateCrewModal } from '../components/Modals/CreateCrewModal';
 import { CreateRodadaModal } from '../components/Modals/CreateRodadaModal';
 import { PilotProfileModal } from '../components/Modals/PilotProfileModal';
+import { LiveRouteRecorderModal } from '../components/Modals/LiveRouteRecorderModal';
 import { BottomBar } from '../components/Navigation/BottomBar';
 
 export default function Home() {
@@ -22,6 +23,7 @@ export default function Home() {
   const [joinCrewOpen, setJoinCrewOpen] = useState(false);
   const [createCrewOpen, setCreateCrewOpen] = useState(false);
   const [createRodadaOpen, setCreateRodadaOpen] = useState(false);
+  const [recordRouteOpen, setRecordRouteOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-[#0B0A09] text-chalk flex flex-col antialiased selection:bg-earth selection:text-white">
@@ -32,6 +34,7 @@ export default function Home() {
         onOpenProposeRoute={() => setProposeRouteOpen(true)}
         onOpenJoinCrew={() => setJoinCrewOpen(true)}
         onOpenCreateCrew={() => setCreateCrewOpen(true)}
+        onOpenRecordRoute={() => setRecordRouteOpen(true)}
       />
 
       {/* 2. Main Architectural Container */}
@@ -50,12 +53,14 @@ export default function Home() {
             onOpenJoinCrew={() => setJoinCrewOpen(true)}
             onOpenCreateRodada={() => setCreateRodadaOpen(true)}
             onOpenProposeRoute={() => setProposeRouteOpen(true)}
+            onOpenRecordRoute={() => setRecordRouteOpen(true)}
           />
         )}
 
         {activeNavTab === 'rutas' && (
           <RouteExplorerView 
             onOpenProposeRoute={() => setProposeRouteOpen(true)} 
+            onOpenRecordRoute={() => setRecordRouteOpen(true)}
           />
         )}
 
@@ -103,6 +108,7 @@ export default function Home() {
         onOpenProposeRoute={() => setProposeRouteOpen(true)}
         onOpenJoinCrew={() => setJoinCrewOpen(true)}
         onOpenCreateRodada={() => setCreateRodadaOpen(true)}
+        onOpenRecordRoute={() => setRecordRouteOpen(true)}
       />
 
       {/* Modals */}
@@ -127,6 +133,11 @@ export default function Home() {
       />
 
       <PilotProfileModal />
+
+      <LiveRouteRecorderModal 
+        isOpen={recordRouteOpen} 
+        onClose={() => setRecordRouteOpen(false)} 
+      />
 
     </div>
   );

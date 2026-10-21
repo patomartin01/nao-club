@@ -2,17 +2,19 @@
 
 import React from 'react';
 import { useApp } from '../../context/AppContext';
-import { Users, Map, Plus, Wrench } from 'lucide-react';
+import { Users, Map, Plus, Wrench, Radio } from 'lucide-react';
 
 interface BottomBarProps {
   onOpenProposeRoute: () => void;
   onOpenJoinCrew: () => void;
   onOpenCreateRodada?: () => void;
+  onOpenRecordRoute?: () => void;
 }
 
 export const BottomBar: React.FC<BottomBarProps> = ({ 
   onOpenProposeRoute,
-  onOpenCreateRodada
+  onOpenCreateRodada,
+  onOpenRecordRoute
 }) => {
   const { 
     activeNavTab, 
@@ -64,23 +66,25 @@ export const BottomBar: React.FC<BottomBarProps> = ({
           </span>
         </button>
 
-        {/* 02. CENTER FAB: CONVOCAR / PROPONER RUTA */}
+        {/* 02. CENTER FAB: GRABAR RUTA EN VIVO */}
         <div className="flex-shrink-0 px-3 -mt-4 sm:-mt-5">
           <button
             onClick={() => {
-              if (onOpenCreateRodada) {
+              if (onOpenRecordRoute) {
+                onOpenRecordRoute();
+              } else if (onOpenCreateRodada) {
                 onOpenCreateRodada();
               } else {
                 onOpenProposeRoute();
               }
             }}
-            title="Convocar rodada o proponer ruta"
-            className="w-12 h-12 sm:w-13 sm:h-13 rounded-full bg-earth hover:bg-earth-bright text-white flex flex-col items-center justify-center shadow-[0_0_20px_rgba(200,125,85,0.4)] border-2 border-[#0B0A09] active:scale-90 transition-transform duration-150 group"
+            title="Grabar nueva ruta GPS en vivo con telemetría"
+            className="w-12 h-12 sm:w-13 sm:h-13 rounded-full bg-red-600 hover:bg-earth text-white flex flex-col items-center justify-center shadow-[0_0_24px_rgba(220,38,38,0.5)] border-2 border-[#0B0A09] active:scale-90 transition-transform duration-150 group"
           >
-            <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
+            <Radio className="w-5 h-5 animate-pulse" />
           </button>
-          <span className="block text-center font-mono text-[7px] sm:text-[8px] uppercase tracking-wider text-earth font-bold mt-0.5">
-            + Convocar
+          <span className="block text-center font-mono text-[7px] sm:text-[8px] uppercase tracking-wider text-red-400 font-bold mt-0.5">
+            🔴 Grabar
           </span>
         </div>
 

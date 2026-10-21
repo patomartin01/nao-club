@@ -9,11 +9,13 @@ interface NavbarProps {
   onOpenProposeRoute: () => void;
   onOpenJoinCrew: () => void;
   onOpenCreateCrew: () => void;
+  onOpenRecordRoute?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   onOpenProposeRoute,
   onOpenJoinCrew,
+  onOpenRecordRoute
 }) => {
   const { setActiveNavTab, currentUser, currentRodada } = useApp();
 
@@ -67,6 +69,17 @@ export const Navbar: React.FC<NavbarProps> = ({
             <Key className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Unirse #</span>
           </button>
+
+          {onOpenRecordRoute && (
+            <button
+              onClick={onOpenRecordRoute}
+              title="Grabar nueva ruta GPS con telemetría en vivo"
+              className="px-3 py-1.5 bg-red-600/20 hover:bg-red-600 border border-red-500/40 text-red-300 hover:text-white font-mono text-[10px] font-bold uppercase tracking-wider transition flex items-center gap-1.5 shrink-0"
+            >
+              <Radio className="w-3.5 h-3.5 text-red-400 group-hover:text-white animate-pulse" />
+              <span>Grabar GPS</span>
+            </button>
+          )}
 
           <button
             onClick={onOpenProposeRoute}

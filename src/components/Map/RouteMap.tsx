@@ -15,6 +15,8 @@ import {
   Maximize2
 } from 'lucide-react';
 
+import { buildOrderedGoogleMapsUrl } from '../../utils/googleMaps';
+
 interface RouteMapProps {
   route: RouteProposal | null;
   allRoutes?: RouteProposal[];
@@ -23,7 +25,7 @@ interface RouteMapProps {
   onAddWaypoint?: (lat: number, lng: number) => void;
 }
 
-type MapLayerType = 'satellite' | 'topo' | 'dark';
+type MapLayerType = 'satellite' | 'topo' | 'roads';
 
 export const RouteMap: React.FC<RouteMapProps> = ({
   route,
@@ -70,13 +72,12 @@ export const RouteMap: React.FC<RouteMapProps> = ({
       });
       tileLayerGroupRef.current.addLayer(topoLayer);
     } else {
-      // Tactical Dark Matter (Carto)
-      const darkLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      // Standard Road / Street & Trail network (Google Maps style)
+      const roadLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
-        subdomains: 'abcd',
-        attribution: 'CartoDB Dark Matter'
+        attribution: 'OpenStreetMap'
       });
-      tileLayerGroupRef.current.addLayer(darkLayer);
+      tileLayerGroupRef.current.addLayer(roadLayer);
     }
   };
 
@@ -273,9 +274,8 @@ export const RouteMap: React.FC<RouteMapProps> = ({
 
   const handleOpenGoogleMaps = () => {
     if (!route) return;
-    const origin = encodeURIComponent('Interlomas, Huixquilucan, Edomex');
-    const destination = encodeURIComponent(`${route.destination}, ${route.state}`);
-    window.open(`https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`, '_blank');
+    const url = buildOrderedGoogleMapsUrl(route);
+    window.open(url, '_blank');
   };
 
   return (
@@ -307,14 +307,14 @@ export const RouteMap: React.FC<RouteMapProps> = ({
             ⛰️ Topo / Relieve
           </button>
           <button
-            onClick={() => handleLayerChange('dark')}
+            onClick={() => handleLayerChange('roads')}
             className={`px-2.5 py-1 uppercase font-bold tracking-wider transition ${
-              currentLayer === 'dark'
+              currentLayer === 'roads'
                 ? 'bg-earth text-white'
                 : 'text-ash hover:text-white'
             }`}
           >
-            🌑 Táctico
+            🗺️ Calles & Brechas
           </button>
         </div>
 
@@ -322,7 +322,7 @@ export const RouteMap: React.FC<RouteMapProps> = ({
           <button
             onClick={handleOpenGoogleMaps}
             className="bg-black/90 hover:bg-earth text-white border border-white/20 px-3 py-1.5 font-mono text-[10px] uppercase font-bold tracking-wider transition flex items-center gap-1.5 shadow-xl backdrop-blur-md"
-            title="Abrir trayecto en Google Maps oficial"
+            title="Abrir trayecto con todas las paradas en orden en Google Maps"
           >
             <Navigation className="w-3.5 h-3.5 text-earth group-hover:text-white" />
             <span>Ver en Google Maps</span>
