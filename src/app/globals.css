@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #06090d;
+  --foreground: #f8fafc;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0f15;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e2c3d;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #f59e0b;
+}
+
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Leaflet dark theme tweaks */
+.leaflet-container {
+  background-color: #06090d !important;
+  font-family: inherit !important;
+}
+
+.leaflet-bar a {
+  background-color: #0f1620 !important;
+  border-bottom: 1px solid #1e2c3d !important;
+  color: #f59e0b !important;
+}
+
+.leaflet-bar a:hover {
+  background-color: #1e2c3d !important;
+  color: #fbbf24 !important;
+}
+
+.custom-leaflet-marker {
+  background: transparent;
+  border: none;
+}
