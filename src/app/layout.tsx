@@ -16,9 +16,9 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: 'MotoMami ADV Club | Plataforma de Rodadas & Terracería',
-  description: 'Organiza rodadas en motos doble propósito, propone rutas con mapas interactivos, vota en comunidad, registra tus motos y coordina campamentos base.',
-  keywords: ['motos', 'doble proposito', 'off-road', 'rodadas', 'campamento base', 'motomami', 'mexico'],
+  title: 'NAO — Navana Expeditions | Navegación Terrestre & Refugios de Diseño',
+  description: 'Plataforma brutalista de exploración off-road en motos doble propósito, consenso de rutas efímeras y refugios arquitectónicos (Navana Cabins).',
+  keywords: ['NAO', 'Navana Cabins', 'off-road', 'doble proposito', 'expediciones', 'rutas', 'valle de bravo'],
   authors: [{ name: 'Patricio Martin' }],
 };
 
@@ -37,7 +37,7 @@ export default function RootLayout({
           crossOrigin=""
         />
       </head>
-      <body className="min-h-screen bg-[#06090D] text-slate-100 selection:bg-amber-500 selection:text-slate-950">
+      <body className="min-h-screen bg-[#060709] text-white selection:bg-[#C87D55] selection:text-white">
         <AppProvider>
           {children}
         </AppProvider>

@@ -62,14 +62,14 @@ export default function Home() {
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-900 bg-slate-950/80 py-6 text-center text-xs text-slate-500">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="font-mono">
-            🏍️ <strong className="text-slate-300">MotoMami ADV Club</strong> — Rodadas, Basecamp & Terracería
+      {/* Minimal Footer */}
+      <footer className="border-t border-white/[0.06] bg-[#060709] py-8 text-center text-xs text-white/40">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-[11px]">
+          <p>
+            <strong className="text-white tracking-widest">N A O</strong> — Navana Expeditions // Hospitalidad & Brechas Off-Road
           </p>
-          <p className="text-slate-600">
-            Diseñado para pilotos doble propósito • Salidas desde Interlomas, Edomex
+          <p className="text-white/30">
+            Amanalco · Valle de Bravo · Interlomas
           </p>
         </div>
       </footer>

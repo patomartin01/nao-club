@@ -50,20 +50,20 @@ export const GarageView: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8 pb-20">
+    <div className="space-y-8 pb-24 text-white">
       
       {/* Rider Profile Card */}
-      <div className="rounded-3xl border border-slate-800 bg-gradient-to-r from-slate-900 to-slate-950 p-6 sm:p-8 shadow-2xl">
+      <div className="rounded-3xl border border-white/[0.08] bg-[#0A0C0F] p-6 sm:p-8 shadow-2xl">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div className="flex items-center gap-5">
             <div className="relative">
               <img 
                 src={currentUser.avatar} 
                 alt={currentUser.name} 
-                className="w-20 h-20 rounded-2xl object-cover ring-4 ring-amber-500/50 shadow-glow" 
+                className="w-20 h-20 rounded-2xl object-cover border border-white/20" 
               />
-              <span className="absolute -bottom-1 -right-1 px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-amber-400 text-slate-950">
-                PRO
+              <span className="absolute -bottom-1 -right-1 px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-[#C87D55] text-white uppercase tracking-wider">
+                PILOTO
               </span>
             </div>
 
@@ -72,24 +72,24 @@ export const GarageView: React.FC = () => {
                 <h1 className="font-display font-black text-2xl text-white">
                   {currentUser.name}
                 </h1>
-                <span className="text-xs font-mono text-amber-400">{currentUser.handle}</span>
+                <span className="text-xs font-mono text-[#C87D55]">{currentUser.handle}</span>
               </div>
               
-              <p className="text-xs text-slate-300 max-w-md">
+              <p className="text-xs text-white/60 max-w-md font-light">
                 {currentUser.bio}
               </p>
 
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-400 pt-1">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-white/50 pt-1 font-mono">
                 <span className="flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5 text-amber-400" />
+                  <MapPin className="w-3.5 h-3.5 text-[#C87D55]" />
                   {currentUser.location}
                 </span>
                 <span className="flex items-center gap-1">
-                  <Mail className="w-3.5 h-3.5 text-amber-400" />
+                  <Mail className="w-3.5 h-3.5 text-[#C87D55]" />
                   {currentUser.email}
                 </span>
-                <span className="flex items-center gap-1 font-bold text-emerald-400">
-                  <Award className="w-3.5 h-3.5" />
+                <span className="flex items-center gap-1 font-bold text-white">
+                  <Award className="w-3.5 h-3.5 text-[#C87D55]" />
                   Nivel: {currentUser.ridingLevel}
                 </span>
               </div>
@@ -97,18 +97,18 @@ export const GarageView: React.FC = () => {
           </div>
 
           {/* Quick Rider Stats */}
-          <div className="grid grid-cols-3 gap-3 bg-slate-950/70 p-3 rounded-2xl border border-slate-800 text-center shrink-0 w-full sm:w-auto">
+          <div className="grid grid-cols-3 gap-3 bg-white/[0.02] p-3 rounded-2xl border border-white/[0.06] text-center shrink-0 w-full sm:w-auto font-mono">
             <div>
-              <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Motos</p>
-              <p className="text-lg font-black text-amber-400 font-mono">{userBikes.length}</p>
+              <p className="text-[10px] uppercase tracking-wider text-white/40">Motos</p>
+              <p className="text-lg font-black text-white">{userBikes.length}</p>
             </div>
             <div>
-              <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Km Brechas</p>
-              <p className="text-lg font-black text-emerald-400 font-mono">1,840</p>
+              <p className="text-[10px] uppercase tracking-wider text-white/40">Km Brechas</p>
+              <p className="text-lg font-black text-[#C87D55]">1,840</p>
             </div>
             <div>
-              <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Expediciones</p>
-              <p className="text-lg font-black text-cyan-400 font-mono">6</p>
+              <p className="text-[10px] uppercase tracking-wider text-white/40">Refugios</p>
+              <p className="text-lg font-black text-white">6</p>
             </div>
           </div>
         </div>

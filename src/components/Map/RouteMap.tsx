@@ -120,21 +120,21 @@ export const RouteMap: React.FC<RouteMapProps> = ({
         }
       });
 
-      // Render active route polyline with glowing border
+      // Render active route polyline with sleek copper & chalk lines
       if (route.coordinates && route.coordinates.length > 0) {
-        // Outer glow
+        // Outer glow / halo
         L.polyline(route.coordinates, {
-          color: '#F59E0B',
-          weight: 7,
+          color: '#C87D55',
+          weight: 6,
           opacity: 0.35,
           lineCap: 'round',
           lineJoin: 'round'
         }).addTo(polyLayer);
 
-        // Core line
+        // Core sharp line
         const mainPolyline = L.polyline(route.coordinates, {
-          color: '#FBBF24',
-          weight: 4,
+          color: '#FFFFFF',
+          weight: 3,
           opacity: 0.95,
           lineCap: 'round',
           lineJoin: 'round'
@@ -149,28 +149,25 @@ export const RouteMap: React.FC<RouteMapProps> = ({
 
       // Helper for custom SVG icons
       const createCustomIcon = (type: Waypoint['type'], label: string) => {
-        let bg = 'bg-amber-500';
-        let iconSvg = '🏁';
-        if (type === 'start') { bg = 'bg-emerald-500'; iconSvg = '🏁'; }
-        else if (type === 'camp') { bg = 'bg-amber-500'; iconSvg = '⛺'; }
-        else if (type === 'scenic') { bg = 'bg-cyan-500'; iconSvg = '🏔️'; }
-        else if (type === 'fuel') { bg = 'bg-orange-500'; iconSvg = '⛽'; }
-        else if (type === 'food') { bg = 'bg-rose-500'; iconSvg = '🌮'; }
+        let border = 'border-[#C87D55]';
+        let fill = 'bg-[#C87D55]';
+        if (type === 'start') { fill = 'bg-white text-black'; border = 'border-white'; }
+        else if (type === 'camp') { fill = 'bg-[#C87D55] text-white'; border = 'border-[#C87D55]'; }
+        else if (type === 'fuel') { fill = 'bg-amber-500 text-black'; border = 'border-amber-500'; }
 
         return L.divIcon({
           className: 'custom-leaflet-marker',
           html: `
-            <div class="relative group cursor-pointer">
-              <div class="w-9 h-9 rounded-full ${bg} border-2 border-slate-900 shadow-xl flex items-center justify-center text-sm transform transition hover:scale-125">
-                ${iconSvg}
+            <div class="flex items-center gap-1.5 transform -translate-x-1/2 -translate-y-1/2 group cursor-pointer">
+              <div class="w-3.5 h-3.5 rounded-full ${fill} border-2 ${border} shadow-lg flex items-center justify-center">
               </div>
-              <div class="absolute bottom-10 left-1/2 -translate-x-1/2 bg-slate-950/95 border border-slate-700 text-white text-[10px] font-bold py-1 px-2.5 rounded shadow-lg whitespace-nowrap pointer-events-none opacity-0 group-hover:opacity-100 transition duration-200">
+              <span class="px-2 py-0.5 rounded bg-black/90 text-white font-mono text-[9px] uppercase tracking-wider border border-white/20 whitespace-nowrap shadow-md">
                 ${label}
-              </div>
+              </span>
             </div>
           `,
-          iconSize: [36, 36],
-          iconAnchor: [18, 18],
+          iconSize: [20, 20],
+          iconAnchor: [10, 10]
         });
       };
 
@@ -193,36 +190,36 @@ export const RouteMap: React.FC<RouteMapProps> = ({
   }, [route, mapLoaded, allRoutes]);
 
   return (
-    <div className="relative w-full h-full min-h-[420px] rounded-2xl overflow-hidden border border-slate-800 bg-slate-950 shadow-2xl">
+    <div className="relative w-full h-full min-h-[420px] rounded-2xl overflow-hidden border border-white/[0.08] bg-[#060709] shadow-2xl">
       {/* Map container */}
       <div ref={mapContainerRef} className="w-full h-full min-h-[420px] z-0" />
 
       {/* Top Left: Route Quick HUD */}
       {route && (
-        <div className="absolute top-4 left-4 z-10 bg-slate-950/90 backdrop-blur-md border border-slate-800/80 rounded-xl p-3.5 shadow-2xl max-w-xs text-white">
+        <div className="absolute top-4 left-4 z-10 bg-black/80 backdrop-blur-md border border-white/15 p-3.5 max-w-xs text-white">
           <div className="flex items-center gap-2 mb-1.5">
-            <span className="inline-block w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" />
-            <h4 className="font-display font-bold text-sm text-slate-100 line-clamp-1">
+            <span className="inline-block w-2 h-2 rounded-full bg-[#C87D55] animate-pulse" />
+            <h4 className="font-display font-bold text-xs text-white uppercase tracking-wider line-clamp-1">
               {route.title}
             </h4>
           </div>
-          <p className="text-xs text-slate-400 flex items-center gap-1.5">
-            <MapPin className="w-3.5 h-3.5 text-amber-400" />
+          <p className="text-[11px] font-mono text-white/50 flex items-center gap-1.5">
+            <MapPin className="w-3 h-3 text-[#C87D55]" />
             {route.destination}, {route.state}
           </p>
 
-          <div className="grid grid-cols-3 gap-2 mt-3 pt-2.5 border-t border-slate-800/80 text-center">
+          <div className="grid grid-cols-3 gap-2 mt-2 pt-2 border-t border-white/10 text-center font-mono">
             <div>
-              <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Distancia</p>
-              <p className="text-xs font-bold text-amber-400 font-mono">{route.totalKm} km</p>
+              <p className="text-[9px] uppercase tracking-wider text-white/40">Distancia</p>
+              <p className="text-xs font-bold text-white">{route.totalKm} km</p>
             </div>
             <div>
-              <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Off-Road</p>
-              <p className="text-xs font-bold text-emerald-400 font-mono">{route.offroadPercentage}%</p>
+              <p className="text-[9px] uppercase tracking-wider text-white/40">Off-Road</p>
+              <p className="text-xs font-bold text-[#C87D55]">{route.offroadPercentage}%</p>
             </div>
             <div>
-              <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Altitud</p>
-              <p className="text-xs font-bold text-cyan-400 font-mono">{route.campsite.elevationMeters}m</p>
+              <p className="text-[9px] uppercase tracking-wider text-white/40">Altitud</p>
+              <p className="text-xs font-bold text-white">{route.campsite.elevationMeters}m</p>
             </div>
           </div>
         </div>
@@ -230,10 +227,10 @@ export const RouteMap: React.FC<RouteMapProps> = ({
 
       {/* Interactive Waypoint Popup Card */}
       {activeWaypoint && (
-        <div className="absolute bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-80 z-10 bg-slate-900/95 backdrop-blur-lg border border-amber-500/40 rounded-xl p-4 shadow-2xl text-white animate-in fade-in slide-in-from-bottom-2">
+        <div className="absolute bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-80 z-10 bg-black/95 backdrop-blur-lg border border-[#C87D55] p-4 shadow-2xl text-white">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-2">
-              <span className="p-1.5 rounded-lg bg-amber-500/20 text-amber-400">
+              <span className="p-1 rounded bg-[#C87D55]/20 text-[#C87D55]">
                 {activeWaypoint.type === 'camp' && <Tent className="w-4 h-4" />}
                 {activeWaypoint.type === 'fuel' && <Fuel className="w-4 h-4" />}
                 {activeWaypoint.type === 'food' && <Utensils className="w-4 h-4" />}
@@ -241,45 +238,39 @@ export const RouteMap: React.FC<RouteMapProps> = ({
                 {activeWaypoint.type === 'start' && <Navigation className="w-4 h-4" />}
               </span>
               <div>
-                <h5 className="font-bold text-sm text-slate-100">{activeWaypoint.name}</h5>
-                <p className="text-[11px] text-amber-400 capitalize">{activeWaypoint.type}</p>
+                <h5 className="font-bold text-xs text-white uppercase tracking-wider">{activeWaypoint.name}</h5>
+                <p className="text-[10px] font-mono text-[#C87D55] uppercase">{activeWaypoint.type}</p>
               </div>
             </div>
             <button 
               onClick={() => setActiveWaypoint(null)}
-              className="text-slate-400 hover:text-white text-xs px-1.5 py-0.5 rounded hover:bg-slate-800"
+              className="text-white/40 hover:text-white text-xs px-1 hover:bg-white/10"
             >
               ✕
             </button>
           </div>
           {activeWaypoint.notes && (
-            <p className="text-xs text-slate-300 mt-2 bg-slate-950/60 p-2 rounded-lg border border-slate-800">
+            <p className="text-xs text-white/70 mt-2 bg-white/[0.04] p-2 border border-white/10 font-light">
               {activeWaypoint.notes}
             </p>
           )}
-          <div className="mt-2 text-[10px] text-slate-500 font-mono flex items-center justify-between">
-            <span>Lat: {activeWaypoint.lat.toFixed(4)}</span>
-            <span>Lng: {activeWaypoint.lng.toFixed(4)}</span>
+          <div className="mt-2 text-[9px] text-white/40 font-mono flex items-center justify-between">
+            <span>LAT: {activeWaypoint.lat.toFixed(4)}</span>
+            <span>LNG: {activeWaypoint.lng.toFixed(4)}</span>
           </div>
         </div>
       )}
 
       {/* Bottom Map Legend */}
-      <div className="absolute bottom-4 left-4 hidden md:flex items-center gap-3 bg-slate-950/80 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-800 text-[11px] text-slate-300 z-10">
+      <div className="absolute bottom-4 left-4 hidden md:flex items-center gap-3 bg-black/85 backdrop-blur-md px-3 py-1.5 border border-white/10 text-[10px] font-mono text-white/60 z-10">
         <span className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" /> Salida
+          <span className="w-2 h-2 rounded-full bg-white" /> Salida
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-amber-500" /> Basecamp
+          <span className="w-2 h-2 rounded-full bg-[#C87D55]" /> Navana / Base
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-cyan-500" /> Mirador
-        </span>
-        <span className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-orange-500" /> Gasolinera
-        </span>
-        <span className="flex items-center gap-1.5">
-          <span className="w-3 h-0.5 bg-amber-400" /> Ruta Seleccionada
+          <span className="w-2 h-2 rounded-full bg-amber-400" /> Gasolinera
         </span>
       </div>
 

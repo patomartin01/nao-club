@@ -74,7 +74,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [currentRodada, setCurrentRodada] = useState<Rodada | null>(INITIAL_RODADA);
   const [routeProposals, setRouteProposals] = useState<RouteProposal[]>(INITIAL_ROUTE_PROPOSALS);
   const [selectedRoute, setSelectedRoute] = useState<RouteProposal | null>(INITIAL_ROUTE_PROPOSALS[0]);
-  const [activeNavTab, setActiveNavTab] = useState<'rodada' | 'rutas' | 'crew' | 'garaje' | 'brand'>('brand');
+  const [activeNavTab, setActiveNavTab] = useState<'rodada' | 'rutas' | 'crew' | 'garaje' | 'brand'>('rodada');
 
   // Load from LocalStorage if available
   useEffect(() => {

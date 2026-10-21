@@ -32,25 +32,28 @@ export const RouteExplorerView: React.FC<RouteExplorerViewProps> = ({ onOpenProp
   };
 
   return (
-    <div className="space-y-6 pb-20">
+    <div className="space-y-6 pb-24 text-white">
       
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-white/[0.08] pb-4">
         <div>
-          <h1 className="font-display font-black text-2xl sm:text-3xl text-white flex items-center gap-2.5">
-            <Compass className="w-8 h-8 text-amber-400" />
-            Explorador de Rutas & Brechas Off-Road
+          <div className="flex items-center gap-2 font-mono text-xs text-[#C87D55] uppercase tracking-widest font-bold">
+            <span>[ 02 ]</span>
+            <span>Cartografía & Votos</span>
+          </div>
+          <h1 className="font-display font-black text-2xl sm:text-4xl text-white tracking-tight mt-1">
+            Travesías & Brechas Off-Road
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400">
-            Compara trazos, altimetría, porcentaje de terracería y opiniones de la comunidad.
+          <p className="text-xs text-white/50 font-light">
+            Altimetría, porcentaje de terracería y telemetría de ruta hacia los refugios.
           </p>
         </div>
 
         <button
           onClick={onOpenProposeRoute}
-          className="px-4 py-2.5 bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-bold rounded-xl flex items-center gap-2 shadow-glow shrink-0 transition"
+          className="px-4 py-2.5 bg-white hover:bg-[#C87D55] text-black hover:text-white text-xs font-mono font-bold uppercase tracking-wider shrink-0 transition"
         >
-          <Plus className="w-4 h-4" /> Proponer Nueva Ruta
+          + Proponer Variante
         </button>
       </div>
 
