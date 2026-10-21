@@ -54,11 +54,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               // NAVANA EXPEDITIONS
             </span>
           </div>
-
-          <span className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-wider text-earth">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-            <span className="text-white/60">GPS FIX</span>
-          </span>
         </div>
 
         {/* Cell 2: Editorial Navigation Numbers */}
