@@ -34,7 +34,6 @@ export default function Home() {
         onOpenProposeRoute={() => setProposeRouteOpen(true)}
         onOpenJoinCrew={() => setJoinCrewOpen(true)}
         onOpenCreateCrew={() => setCreateCrewOpen(true)}
-        onOpenRecordRoute={() => setRecordRouteOpen(true)}
       />
 
       {/* 2. Main Architectural Container */}
@@ -115,6 +114,7 @@ export default function Home() {
       <ProposeRouteModal 
         isOpen={proposeRouteOpen} 
         onClose={() => setProposeRouteOpen(false)} 
+        onOpenRecordRoute={() => setRecordRouteOpen(true)}
       />
 
       <JoinCrewModal 

@@ -22,8 +22,7 @@ import {
   Square,
   MapPin,
   MessageSquare,
-  Send,
-  Radio
+  Send
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { buildOrderedGoogleMapsUrl } from '../../utils/googleMaps';
@@ -386,24 +385,12 @@ ${gpxPoints}
                       Vota la Opción que Prefieras ({crewRoutes.length})
                     </h3>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {onOpenRecordRoute && (
-                      <button
-                        onClick={onOpenRecordRoute}
-                        className="px-3 py-1.5 bg-red-600/20 hover:bg-red-600 text-red-300 hover:text-white border border-red-500/40 font-mono text-[10px] uppercase font-bold tracking-wider transition flex items-center gap-1.5"
-                        title="Grabar una ruta mientras conduces con GPS y guardarla en este club"
-                      >
-                        <Radio className="w-3.5 h-3.5 text-red-400 animate-pulse" />
-                        <span>🔴 Grabar en Vivo</span>
-                      </button>
-                    )}
-                    <button
-                      onClick={onOpenProposeRoute}
-                      className="px-3 py-1.5 bg-white hover:bg-earth text-obsidian hover:text-white font-mono text-[10px] uppercase font-bold tracking-wider transition"
-                    >
-                      + Proponer Otra Ruta
-                    </button>
-                  </div>
+                  <button
+                    onClick={onOpenProposeRoute}
+                    className="px-3 py-1.5 bg-white hover:bg-earth text-obsidian hover:text-white font-mono text-[10px] uppercase font-bold tracking-wider transition"
+                  >
+                    + Proponer Otra Ruta
+                  </button>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

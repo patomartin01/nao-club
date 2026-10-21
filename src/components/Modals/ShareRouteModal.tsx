@@ -19,17 +19,27 @@ export const ShareRouteModal: React.FC<ShareRouteModalProps> = ({
   onClose
 }) => {
   const [copied, setCopied] = useState(false);
+  const [copiedLinkOnly, setCopiedLinkOnly] = useState(false);
 
   if (!isOpen || !route) return null;
 
-  const currentUrl = typeof window !== 'undefined' ? window.location.href : 'https://nao-club.vercel.app';
-  const shareText = `🏍️ *NAO // MOTO EXPEDITIONS*\n\nTe comparto este track de off-road:\n*${route.title}*\n📍 Destino: ${route.destination}, ${route.state}\n📏 Distancia: ${route.totalKm} km (${route.offroadPercentage}% Terracería & Brechas)\n⛰️ Altitud Base: ${route.campsite.elevationMeters}m\n\nVer mapa satelital interactivo y descargar GPX aquí:\n${currentUrl}`;
+  const gmapsUrl = buildOrderedGoogleMapsUrl(route);
+  const shortRouteUrl = `https://nao.club/r/${route.id}`;
+  
+  const shareText = `🏍️ *NAO // MOTO EXPEDITIONS*\n*${route.title}*\n📍 ${route.destination}, ${route.state}\n📏 ${route.totalKm} km (${route.offroadPercentage}% Terracería)\n\n📍 Abrir en Google Maps:\n${gmapsUrl}\n\n🧭 Track GPX en NAO:\n${shortRouteUrl}`;
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(`${shareText}`);
+    navigator.clipboard.writeText(shareText);
     setCopied(true);
     confetti({ particleCount: 25, spread: 50 });
     setTimeout(() => setCopied(false), 2500);
+  };
+
+  const handleCopyLinkOnly = () => {
+    navigator.clipboard.writeText(gmapsUrl);
+    setCopiedLinkOnly(true);
+    confetti({ particleCount: 20, spread: 40 });
+    setTimeout(() => setCopiedLinkOnly(false), 2500);
   };
 
   const handleShareWhatsApp = () => {
@@ -122,17 +132,29 @@ ${gpxPoints}
             <span>Compartir por WhatsApp</span>
           </button>
 
-          {/* Copy Link / Summary */}
+          {/* Clean Short Link Box */}
+          <div className="flex items-center gap-2 p-2.5 bg-black/60 border border-white/10 font-mono text-[11px]">
+            <span className="text-ash select-none pl-1 text-[10px] uppercase">Enlace:</span>
+            <span className="flex-1 text-white font-bold truncate text-[11px]">{shortRouteUrl}</span>
+            <button
+              onClick={handleCopyLinkOnly}
+              className="px-2.5 py-1 bg-white/[0.08] hover:bg-earth text-white text-[10px] uppercase font-bold tracking-wider transition"
+            >
+              {copiedLinkOnly ? '✓ Copiado' : 'Copiar'}
+            </button>
+          </div>
+
+          {/* Copy Full Summary */}
           <button
             onClick={handleCopy}
-            className={`w-full py-3 border font-bold text-xs uppercase tracking-wider transition flex items-center justify-center gap-2.5 ${
+            className={`w-full py-2.5 border font-bold text-xs uppercase tracking-wider transition flex items-center justify-center gap-2 ${
               copied 
                 ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50' 
-                : 'bg-white/5 hover:bg-white/10 text-white border-white/15'
+                : 'bg-white/5 hover:bg-white/10 text-ash hover:text-white border-white/10'
             }`}
           >
             {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4 text-ash" />}
-            <span>{copied ? '¡Copiado al Portapapeles!' : 'Copiar Resumen y Enlace'}</span>
+            <span>{copied ? '¡Resumen Copiado!' : 'Copiar Resumen Completo'}</span>
           </button>
 
           {/* Download GPX & Open Google Maps */}

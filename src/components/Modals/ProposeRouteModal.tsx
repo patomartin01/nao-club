@@ -8,9 +8,14 @@ import confetti from 'canvas-confetti';
 interface ProposeRouteModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onOpenRecordRoute?: () => void;
 }
 
-export const ProposeRouteModal: React.FC<ProposeRouteModalProps> = ({ isOpen, onClose }) => {
+export const ProposeRouteModal: React.FC<ProposeRouteModalProps> = ({ 
+  isOpen, 
+  onClose,
+  onOpenRecordRoute
+}) => {
   const { currentUser, currentRodada, rodadas, proposeRoute } = useApp();
 
   const [title, setTitle] = useState('');
@@ -116,6 +121,22 @@ export const ProposeRouteModal: React.FC<ProposeRouteModalProps> = ({ isOpen, on
           </div>
           <button onClick={onClose} className="font-mono text-ash hover:text-white">✕</button>
         </div>
+
+        {onOpenRecordRoute && (
+          <div className="p-3 bg-white/[0.02] border border-white/10 flex items-center justify-between text-xs">
+            <span className="text-ash text-[11px]">¿Prefieres registrar las curvas conduciendo en moto?</span>
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                onOpenRecordRoute();
+              }}
+              className="text-earth hover:text-white font-bold text-[10px] uppercase tracking-wider underline transition"
+            >
+              Instrumento GPS en Vivo →
+            </button>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4 font-mono text-xs">
           <div>

@@ -498,39 +498,38 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
     <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex flex-col font-mono text-chalk">
       
       {/* 1. TOP COCKPIT BAR */}
-      <header className="border-b border-white/10 bg-[#0B0A09] px-4 sm:px-8 py-3.5 flex items-center justify-between">
+      <header className="border-b border-white/[0.08] bg-[#0E0D0C] px-4 sm:px-8 py-3.5 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <span className={`w-3 h-3 rounded-full ${isRecording && !isPaused ? 'bg-red-500 animate-ping' : 'bg-ash'}`} />
-            <span className="font-display font-extrabold text-lg sm:text-xl text-white uppercase tracking-wider">
-              {isRecording && !isPaused ? 'GRABANDO EN VIVO' : isPaused ? 'GRABACIÓN EN PAUSA' : 'GRABADOR DE RUTA GPS'}
+          <div className="flex items-center gap-2.5">
+            <span className={`w-2 h-2 rounded-full ${isRecording && !isPaused ? 'bg-earth animate-pulse' : 'bg-white/20'}`} />
+            <span className="font-display font-extrabold text-base sm:text-lg text-white uppercase tracking-wider">
+              {isRecording && !isPaused ? 'Telemetría GPS en Vivo' : isPaused ? 'Grabación en Pausa' : 'Instrumento GPS de Expedición'}
             </span>
           </div>
-          <span className="text-[10px] text-earth uppercase border border-earth/30 px-2 py-0.5 hidden md:inline">
-            // TELEMETRÍA DE GRUPO
+          <span className="text-[9px] text-ash uppercase font-mono tracking-widest hidden md:inline">
+            // MOTO TELEMETRY
           </span>
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Demo toggle */}
+          {/* Subtle simulation toggle for desk testing */}
           <button
             onClick={() => setIsSimulating(!isSimulating)}
-            className={`px-3 py-1 text-[10px] uppercase font-bold tracking-wider border transition flex items-center gap-1.5 ${
+            className={`px-2.5 py-1 text-[10px] uppercase font-bold tracking-wider border transition ${
               isSimulating 
-                ? 'bg-earth/20 border-earth text-earth' 
-                : 'border-white/20 text-ash hover:text-white'
+                ? 'bg-earth/15 border-earth text-earth' 
+                : 'border-white/10 text-ash hover:text-white'
             }`}
-            title="Simula que vas rodando en moto con curvas y paradas para probarlo de inmediato"
+            title="Simula un trayecto real con curvas y altitud"
           >
-            <Radio className="w-3 h-3" />
-            <span>{isSimulating ? '✓ Modo Simulación Activo' : '🧪 Probar Simulación'}</span>
+            {isSimulating ? '✓ Demo Activo' : 'Simular Track'}
           </button>
 
           <button
             onClick={onClose}
             className="p-1.5 border border-white/10 hover:border-white text-ash hover:text-white transition"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
       </header>
@@ -544,58 +543,58 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
 
           {/* Map Layer Switcher (Top Left) */}
           <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
-            <div className="bg-black/90 backdrop-blur-md border border-white/20 p-1 flex items-center gap-1 text-[10px]">
+            <div className="bg-[#0E0D0C]/90 backdrop-blur-md border border-white/15 p-1 flex items-center gap-1 text-[10px]">
               <button
                 onClick={() => handleLayerChange('satellite')}
-                className={`px-2.5 py-1 uppercase font-bold tracking-wider transition ${
+                className={`px-2 py-0.5 uppercase font-bold tracking-wider transition ${
                   currentLayer === 'satellite' ? 'bg-earth text-white' : 'text-ash hover:text-white'
                 }`}
               >
-                🛰️ Satélite HD
+                Satélite
               </button>
               <button
                 onClick={() => handleLayerChange('topo')}
-                className={`px-2.5 py-1 uppercase font-bold tracking-wider transition ${
+                className={`px-2 py-0.5 uppercase font-bold tracking-wider transition ${
                   currentLayer === 'topo' ? 'bg-earth text-white' : 'text-ash hover:text-white'
                 }`}
               >
-                ⛰️ Topo / Relieve
+                Topográfico
               </button>
             </div>
           </div>
 
           {/* Real-time Waypoint / POI Floating Quick-Buttons (Bottom Over Map) */}
           {isRecording && !isPaused && (
-            <div className="absolute bottom-6 left-4 right-4 sm:left-6 sm:right-auto z-10 flex flex-wrap items-center gap-2 bg-black/90 backdrop-blur-md border border-white/20 p-2 shadow-2xl">
-              <span className="text-[9px] text-ash uppercase font-bold block sm:inline pr-2 border-r border-white/10">
-                + Marcar Parada:
+            <div className="absolute bottom-6 left-4 right-4 sm:left-6 sm:right-auto z-10 flex flex-wrap items-center gap-2 bg-[#0E0D0C]/95 backdrop-blur-md border border-white/15 p-2 shadow-2xl">
+              <span className="text-[9px] text-ash uppercase font-bold pr-2 border-r border-white/10">
+                Punto:
               </span>
               <button
-                onClick={() => handleAddManualWaypoint('fuel', 'Gasolinera / Carga', '⛽')}
-                className="px-2.5 py-1 bg-white/[0.04] hover:bg-earth text-white border border-white/10 text-[10px] uppercase font-bold flex items-center gap-1 transition"
+                onClick={() => handleAddManualWaypoint('fuel', 'Gasolinera', '⛽')}
+                className="px-2.5 py-1 bg-white/[0.04] hover:bg-earth text-white border border-white/10 text-[10px] uppercase font-bold flex items-center gap-1.5 transition"
               >
-                <Fuel className="w-3 h-3 text-amber-400" />
-                <span>Gasolina</span>
+                <Fuel className="w-3 h-3 text-earth" />
+                <span>Gas</span>
               </button>
               <button
-                onClick={() => handleAddManualWaypoint('scenic', 'Mirador Panorámico', '🏞️')}
-                className="px-2.5 py-1 bg-white/[0.04] hover:bg-earth text-white border border-white/10 text-[10px] uppercase font-bold flex items-center gap-1 transition"
+                onClick={() => handleAddManualWaypoint('scenic', 'Mirador', '🏞️')}
+                className="px-2.5 py-1 bg-white/[0.04] hover:bg-earth text-white border border-white/10 text-[10px] uppercase font-bold flex items-center gap-1.5 transition"
               >
-                <Camera className="w-3 h-3 text-cyan-400" />
+                <Camera className="w-3 h-3 text-earth" />
                 <span>Mirador</span>
               </button>
               <button
-                onClick={() => handleAddManualWaypoint('dirt', 'Paso Técnico / Brecha', '🪨')}
-                className="px-2.5 py-1 bg-white/[0.04] hover:bg-earth text-white border border-white/10 text-[10px] uppercase font-bold flex items-center gap-1 transition"
+                onClick={() => handleAddManualWaypoint('dirt', 'Paso Técnico', '🪨')}
+                className="px-2.5 py-1 bg-white/[0.04] hover:bg-earth text-white border border-white/10 text-[10px] uppercase font-bold flex items-center gap-1.5 transition"
               >
-                <AlertTriangle className="w-3 h-3 text-orange-400" />
-                <span>Obstáculo</span>
+                <AlertTriangle className="w-3 h-3 text-earth" />
+                <span>Paso Técnico</span>
               </button>
               <button
-                onClick={() => handleAddManualWaypoint('camp', 'Descanso / Comida', '🌮')}
-                className="px-2.5 py-1 bg-white/[0.04] hover:bg-earth text-white border border-white/10 text-[10px] uppercase font-bold flex items-center gap-1 transition"
+                onClick={() => handleAddManualWaypoint('camp', 'Descanso', '☕')}
+                className="px-2.5 py-1 bg-white/[0.04] hover:bg-earth text-white border border-white/10 text-[10px] uppercase font-bold flex items-center gap-1.5 transition"
               >
-                <Coffee className="w-3 h-3 text-emerald-400" />
+                <Coffee className="w-3 h-3 text-earth" />
                 <span>Descanso</span>
               </button>
             </div>

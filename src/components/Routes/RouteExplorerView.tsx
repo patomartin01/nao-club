@@ -172,24 +172,25 @@ export const RouteExplorerView: React.FC<RouteExplorerViewProps> = ({
               </div>
             </div>
 
-            <div className="pt-6 space-y-2">
-              {onOpenRecordRoute && (
-                <button
-                  onClick={onOpenRecordRoute}
-                  className="w-full py-3 bg-red-600/20 hover:bg-red-600 text-red-300 hover:text-white border border-red-500/40 text-xs uppercase font-bold tracking-widest transition flex items-center justify-center gap-2 shadow-xl"
-                  title="Grabar una ruta con telemetría GPS y paradas en vivo"
-                >
-                  <Radio className="w-4 h-4 text-red-400 animate-pulse" />
-                  <span>🔴 Grabar Recorrido GPS</span>
-                </button>
-              )}
+            <div className="pt-6 space-y-2.5">
               <button
                 onClick={onOpenProposeRoute}
-                className="w-full py-3 bg-earth hover:bg-earth/80 text-white text-xs uppercase font-bold tracking-widest transition flex items-center justify-center gap-2 shadow-xl"
+                className="w-full py-3.5 bg-earth hover:bg-earth-bright text-white text-xs uppercase font-bold tracking-widest transition flex items-center justify-center gap-2 shadow-xl"
               >
                 <Plus className="w-4 h-4" />
                 <span>+ Proponer / Subir Track</span>
               </button>
+
+              {onOpenRecordRoute && (
+                <button
+                  onClick={onOpenRecordRoute}
+                  className="w-full py-2.5 border border-white/10 hover:border-white/30 hover:bg-white/[0.03] text-ash hover:text-white text-[10px] uppercase font-bold tracking-wider transition flex items-center justify-center gap-1.5"
+                  title="Grabar una ruta con telemetría GPS y paradas en vivo"
+                >
+                  <Radio className="w-3.5 h-3.5 text-earth" />
+                  <span>Instrumento GPS en Vivo</span>
+                </button>
+              )}
             </div>
           </div>
         </div>

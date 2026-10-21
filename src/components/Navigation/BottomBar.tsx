@@ -2,20 +2,16 @@
 
 import React from 'react';
 import { useApp } from '../../context/AppContext';
-import { Users, Map, Plus, Wrench, Radio } from 'lucide-react';
+import { Users, Compass, Wrench } from 'lucide-react';
 
 interface BottomBarProps {
-  onOpenProposeRoute: () => void;
-  onOpenJoinCrew: () => void;
+  onOpenProposeRoute?: () => void;
+  onOpenJoinCrew?: () => void;
   onOpenCreateRodada?: () => void;
   onOpenRecordRoute?: () => void;
 }
 
-export const BottomBar: React.FC<BottomBarProps> = ({ 
-  onOpenProposeRoute,
-  onOpenCreateRodada,
-  onOpenRecordRoute
-}) => {
+export const BottomBar: React.FC<BottomBarProps> = () => {
   const { 
     activeNavTab, 
     setActiveNavTab, 
@@ -28,8 +24,8 @@ export const BottomBar: React.FC<BottomBarProps> = ({
 
   return (
     <aside 
-      aria-label="Navegación de aplicación móvil"
-      className="fixed bottom-0 left-0 right-0 z-50 bg-[#0B0A09]/95 backdrop-blur-xl border-t border-white/10 shadow-[0_-12px_36px_rgba(0,0,0,0.85)] select-none"
+      aria-label="Navegación de aplicación"
+      className="fixed bottom-0 left-0 right-0 z-50 bg-[#0B0A09]/95 backdrop-blur-xl border-t border-white/[0.08] shadow-[0_-12px_36px_rgba(0,0,0,0.85)] select-none"
     >
       {/* Top subtle micro-ruler (Superficial.design signature) */}
       <div className="w-full h-1 bg-black/60 overflow-hidden flex items-center border-b border-white/[0.04]">
@@ -45,81 +41,59 @@ export const BottomBar: React.FC<BottomBarProps> = ({
         </div>
       </div>
 
-      {/* Main App Bottom Bar Container - 3 Primary Tabs + 1 Center Action */}
-      <div className="max-w-md mx-auto px-6 py-2 sm:py-2.5 flex items-center justify-between">
+      {/* Balanced 3-column minimalist cockpit dock */}
+      <div className="max-w-md mx-auto px-6 py-2.5 flex items-center justify-around">
         
-        {/* 01. MIS GRUPOS & RODADAS */}
+        {/* 01. GRUPOS & RODADAS */}
         <button
           onClick={() => setActiveNavTab('home')}
-          className={`flex-1 flex flex-col items-center justify-center py-1 transition-all active:scale-95 ${
+          className={`flex-1 flex flex-col items-center justify-center py-1 transition-all active:scale-95 group ${
             isGroupTab ? 'text-white' : 'text-ash hover:text-white'
           }`}
         >
           <div className="relative">
-            <Users className={`w-5 h-5 transition-transform ${isGroupTab ? 'scale-110 text-earth' : ''}`} />
-            <span className="absolute -top-1 -right-2 text-[8px] font-mono px-1 bg-white/10 border border-white/20 text-white rounded-none">
+            <Users className={`w-5 h-5 transition-transform ${isGroupTab ? 'scale-105 text-earth' : 'group-hover:text-white'}`} />
+            <span className="absolute -top-1 -right-2 text-[8px] font-mono px-1 bg-white/10 border border-white/20 text-white">
               {crews.length}
             </span>
           </div>
-          <span className={`font-mono text-[9px] uppercase tracking-wider mt-1 ${isGroupTab ? 'text-earth font-bold' : ''}`}>
+          <span className={`font-mono text-[9px] uppercase tracking-wider mt-1.5 ${isGroupTab ? 'text-earth font-bold' : ''}`}>
             Grupos
           </span>
         </button>
 
-        {/* 02. CENTER FAB: GRABAR RUTA EN VIVO */}
-        <div className="flex-shrink-0 px-3 -mt-4 sm:-mt-5">
-          <button
-            onClick={() => {
-              if (onOpenRecordRoute) {
-                onOpenRecordRoute();
-              } else if (onOpenCreateRodada) {
-                onOpenCreateRodada();
-              } else {
-                onOpenProposeRoute();
-              }
-            }}
-            title="Grabar nueva ruta GPS en vivo con telemetría"
-            className="w-12 h-12 sm:w-13 sm:h-13 rounded-full bg-red-600 hover:bg-earth text-white flex flex-col items-center justify-center shadow-[0_0_24px_rgba(220,38,38,0.5)] border-2 border-[#0B0A09] active:scale-90 transition-transform duration-150 group"
-          >
-            <Radio className="w-5 h-5 animate-pulse" />
-          </button>
-          <span className="block text-center font-mono text-[7px] sm:text-[8px] uppercase tracking-wider text-red-400 font-bold mt-0.5">
-            🔴 Grabar
-          </span>
-        </div>
-
-        {/* 03. EXPLORADOR DE RUTAS OFF-ROAD */}
+        {/* 02. EXPLORADOR DE RUTAS OFF-ROAD */}
         <button
           onClick={() => setActiveNavTab('rutas')}
-          className={`flex-1 flex flex-col items-center justify-center py-1 transition-all active:scale-95 ${
+          className={`flex-1 flex flex-col items-center justify-center py-1 transition-all active:scale-95 group ${
             activeNavTab === 'rutas' ? 'text-white' : 'text-ash hover:text-white'
           }`}
         >
           <div className="relative">
-            <Map className={`w-5 h-5 transition-transform ${activeNavTab === 'rutas' ? 'scale-110 text-earth' : ''}`} />
-            <span className="absolute -top-1 -right-2 text-[8px] font-mono px-1 bg-white/10 border border-white/20 text-white rounded-none">
+            <Compass className={`w-5 h-5 transition-transform ${activeNavTab === 'rutas' ? 'scale-105 text-earth' : 'group-hover:text-white'}`} />
+            <span className="absolute -top-1 -right-2 text-[8px] font-mono px-1 bg-white/10 border border-white/20 text-white">
               {routeProposals.length}
             </span>
           </div>
-          <span className={`font-mono text-[9px] uppercase tracking-wider mt-1 ${activeNavTab === 'rutas' ? 'text-earth font-bold' : ''}`}>
+          <span className={`font-mono text-[9px] uppercase tracking-wider mt-1.5 ${activeNavTab === 'rutas' ? 'text-earth font-bold' : ''}`}>
             Rutas
           </span>
         </button>
 
-        {/* 04. HANGAR & PILOTO */}
+        {/* 03. HANGAR & GARAJE */}
         <button
           onClick={() => setActiveNavTab('garaje')}
-          className={`flex-1 flex flex-col items-center justify-center py-1 transition-all active:scale-95 ${
+          className={`flex-1 flex flex-col items-center justify-center py-1 transition-all active:scale-95 group ${
             activeNavTab === 'garaje' ? 'text-white' : 'text-ash hover:text-white'
           }`}
         >
           <div className="relative">
-            <Wrench className={`w-5 h-5 transition-transform ${activeNavTab === 'garaje' ? 'scale-110 text-earth' : ''}`} />
-            <span className="absolute -top-1 -right-2 text-[8px] font-mono px-1 bg-white/10 border border-white/20 text-white rounded-none">
+            <Wrench className={`w-5 h-5 transition-transform ${activeNavTab === 'garaje' ? 'scale-105 text-earth' : 'group-hover:text-white'}`} />
+            <span className="absolute -top-1 -right-2 text-[8px] font-mono px-1 bg-white/10 border border-white/20 text-white">
               {userBikes.length}
             </span>
           </div>
-          <span className={`font-mono text-[9px] uppercase tracking-wider mt-1 ${activeNavTab === 'garaje' ? 'text-earth font-bold' : ''}`}>
+          <span className={`font-mono text-[9px] uppercase tracking-wider mt-1.5 ${activeNavTab === 'garaje' ? 'text-earth font-bold' : ''}`}>
             Hangar
           </span>
         </button>
