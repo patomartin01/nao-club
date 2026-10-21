@@ -16,7 +16,8 @@ import {
   Thermometer,
   Flame,
   Compass,
-  ArrowUpRight
+  ArrowUpRight,
+  ArrowLeft
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -27,6 +28,7 @@ interface RodadaDetailViewProps {
 export const RodadaDetailView: React.FC<RodadaDetailViewProps> = ({ onOpenProposeRoute }) => {
   const {
     currentRodada,
+    currentCrew,
     currentRodadaRoutes,
     selectedRoute,
     setSelectedRoute,
@@ -36,6 +38,7 @@ export const RodadaDetailView: React.FC<RodadaDetailViewProps> = ({ onOpenPropos
     unlockWinningRoute,
     togglePackingItem,
     currentUser,
+    setActiveNavTab,
   } = useApp();
 
   const [commentText, setCommentText] = useState('');
@@ -69,6 +72,30 @@ export const RodadaDetailView: React.FC<RodadaDetailViewProps> = ({ onOpenPropos
   return (
     <div className="space-y-12 pb-32 text-chalk">
       
+      {/* 00. CONTEXTUAL BREADCRUMB NAVIGATION */}
+      <div className="flex items-center justify-between border-b border-white/10 pb-4 font-mono text-xs">
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => setActiveNavTab('crew')}
+            className="flex items-center gap-2 text-ash hover:text-white uppercase font-bold transition group"
+          >
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+            <span>Volver a {currentCrew?.name || 'Grupo'}</span>
+          </button>
+          <span className="text-white/20">/</span>
+          <button 
+            onClick={() => setActiveNavTab('home')}
+            className="text-ash hover:text-white uppercase transition"
+          >
+            Mis Grupos
+          </button>
+        </div>
+
+        <span className="text-[10px] uppercase text-earth tracking-widest font-bold hidden sm:inline">
+          ESTADO: {currentRodada.status === 'votacion' ? '⚡ VOTACIÓN DE RUTAS' : '✓ CONFIRMADA'}
+        </span>
+      </div>
+
       {/* 01. EXPEDITION EDITORIAL HERO & SPEC SHEET */}
       <section className="border border-white/10 bg-[#0B0A09]">
         
@@ -76,13 +103,13 @@ export const RodadaDetailView: React.FC<RodadaDetailViewProps> = ({ onOpenPropos
         <div className="grid grid-cols-12 border-b border-white/10">
           <div className="col-span-12 md:col-span-8 p-6 sm:p-10 border-b md:border-b-0 md:border-r border-white/10">
             <span className="font-mono text-[10px] text-earth uppercase tracking-widest font-bold block mb-2">
-              [ EXPEDICIÓN 01 // DÍA DE MUERTOS 2026 ]
+              [ {currentCrew?.name.toUpperCase() || 'MOTO CLUB'} // {currentRodada.category.toUpperCase()} ]
             </span>
             <h1 className="font-display font-extrabold text-3xl sm:text-5xl lg:text-6xl text-white tracking-tight uppercase leading-[0.95]">
-              Travesía de los Bosques & Fuego
+              {currentRodada.title}
             </h1>
             <p className="font-mono text-xs text-ash uppercase tracking-wider mt-4">
-              CORRAL DE PIEDRA // AMANALCO_3,000 MSNM_BOSQUE DE OYAMEL_SAUNA A 78°C LISTO_
+              {currentRodada.subtitle}
             </p>
           </div>
 

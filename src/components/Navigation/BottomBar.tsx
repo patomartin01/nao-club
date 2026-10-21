@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useApp } from '../../context/AppContext';
-import { Compass, Map, Flame, Plus, Wrench, Shield, Check } from 'lucide-react';
+import { Users, Compass, Map, Flame, Plus, Wrench } from 'lucide-react';
 
 interface BottomBarProps {
   onOpenProposeRoute: () => void;
@@ -10,7 +10,15 @@ interface BottomBarProps {
 }
 
 export const BottomBar: React.FC<BottomBarProps> = ({ onOpenProposeRoute }) => {
-  const { activeNavTab, setActiveNavTab, currentRodadaRoutes, userBikes } = useApp();
+  const { 
+    activeNavTab, 
+    setActiveNavTab, 
+    crews, 
+    currentRodadaRoutes, 
+    userBikes 
+  } = useApp();
+
+  const isHomeOrCrew = activeNavTab === 'home' || activeNavTab === 'crew';
 
   return (
     <aside 
@@ -32,15 +40,31 @@ export const BottomBar: React.FC<BottomBarProps> = ({ onOpenProposeRoute }) => {
       </div>
 
       {/* Main App Bottom Bar Container */}
-      <div className="max-w-md md:max-w-xl mx-auto px-3 sm:px-6 py-2 sm:py-2.5 flex items-center justify-between">
+      <div className="max-w-md md:max-w-xl mx-auto px-2 sm:px-4 py-2 sm:py-2.5 flex items-center justify-between">
         
-        {/* 01. EXPEDICIÓN (BASECAMP) */}
+        {/* 01. GRUPOS (HOME) */}
+        <button
+          onClick={() => setActiveNavTab('home')}
+          className={`flex-1 flex flex-col items-center justify-center py-1 transition-all active:scale-95 ${
+            isHomeOrCrew ? 'text-white' : 'text-ash hover:text-white'
+          }`}
+        >
+          <div className="relative">
+            <Users className={`w-5 h-5 transition-transform ${isHomeOrCrew ? 'scale-110 text-earth' : ''}`} />
+            <span className="absolute -top-1 -right-2 text-[8px] font-mono px-1 bg-white/10 border border-white/20 text-white rounded-none">
+              {crews.length}
+            </span>
+          </div>
+          <span className="font-mono text-[9px] uppercase tracking-wider mt-1 font-bold">
+            Grupos
+          </span>
+        </button>
+
+        {/* 02. EXPEDICIÓN (BASECAMP & VOTACIÓN) */}
         <button
           onClick={() => setActiveNavTab('rodada')}
           className={`flex-1 flex flex-col items-center justify-center py-1 transition-all active:scale-95 ${
-            activeNavTab === 'rodada'
-              ? 'text-white'
-              : 'text-ash hover:text-white'
+            activeNavTab === 'rodada' ? 'text-white' : 'text-ash hover:text-white'
           }`}
         >
           <div className="relative">
@@ -50,17 +74,29 @@ export const BottomBar: React.FC<BottomBarProps> = ({ onOpenProposeRoute }) => {
             )}
           </div>
           <span className="font-mono text-[9px] uppercase tracking-wider mt-1 font-bold">
-            01. Basecamp
+            Expedición
           </span>
         </button>
 
-        {/* 02. RUTAS & VOTO */}
+        {/* 03. CENTER FAB: PROPONER RUTA (Prominent Tactile Action) */}
+        <div className="flex-shrink-0 px-1 sm:px-2 -mt-4 sm:-mt-5">
+          <button
+            onClick={onOpenProposeRoute}
+            title="Proponer nueva variante al grupo"
+            className="w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-earth hover:bg-earth-bright text-white flex flex-col items-center justify-center shadow-[0_0_20px_rgba(200,125,85,0.4)] border-2 border-[#0B0A09] active:scale-90 transition-transform duration-150 group"
+          >
+            <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
+          </button>
+          <span className="block text-center font-mono text-[7px] sm:text-[8px] uppercase tracking-wider text-earth font-bold mt-0.5">
+            + Ruta
+          </span>
+        </div>
+
+        {/* 04. RUTAS GLOBALES */}
         <button
           onClick={() => setActiveNavTab('rutas')}
           className={`flex-1 flex flex-col items-center justify-center py-1 transition-all active:scale-95 ${
-            activeNavTab === 'rutas'
-              ? 'text-white'
-              : 'text-ash hover:text-white'
+            activeNavTab === 'rutas' ? 'text-white' : 'text-ash hover:text-white'
           }`}
         >
           <div className="relative">
@@ -70,51 +106,33 @@ export const BottomBar: React.FC<BottomBarProps> = ({ onOpenProposeRoute }) => {
             </span>
           </div>
           <span className="font-mono text-[9px] uppercase tracking-wider mt-1 font-bold">
-            02. Rutas
+            Rutas
           </span>
         </button>
 
-        {/* 03. CENTER FAB: PROPONER RUTA (Prominent Tactile Action) */}
-        <div className="flex-shrink-0 px-2 -mt-4 sm:-mt-5">
-          <button
-            onClick={onOpenProposeRoute}
-            title="Proponer nueva variante al grupo"
-            className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-earth hover:bg-earth-bright text-white flex flex-col items-center justify-center shadow-[0_0_20px_rgba(200,125,85,0.4)] border-2 border-[#0B0A09] active:scale-90 transition-transform duration-150 group"
-          >
-            <Plus className="w-6 h-6 group-hover:rotate-90 transition-transform duration-300" />
-          </button>
-          <span className="block text-center font-mono text-[8px] uppercase tracking-wider text-earth font-bold mt-0.5">
-            Proponer
-          </span>
-        </div>
-
-        {/* 04. SANTUARIO NAVANA */}
+        {/* 05. SANTUARIO NAVANA */}
         <button
           onClick={() => setActiveNavTab('brand')}
           className={`flex-1 flex flex-col items-center justify-center py-1 transition-all active:scale-95 ${
-            activeNavTab === 'brand'
-              ? 'text-white'
-              : 'text-ash hover:text-white'
+            activeNavTab === 'brand' ? 'text-white' : 'text-ash hover:text-white'
           }`}
         >
           <div className="relative">
             <Flame className={`w-5 h-5 transition-transform ${activeNavTab === 'brand' ? 'scale-110 text-earth' : ''}`} />
-            <span className="absolute -top-1 -right-2.5 text-[7px] font-mono text-emerald-400 font-bold">
+            <span className="absolute -top-1 -right-2 text-[7px] font-mono text-emerald-400 font-bold">
               78°C
             </span>
           </div>
           <span className="font-mono text-[9px] uppercase tracking-wider mt-1 font-bold">
-            03. Navana
+            Navana
           </span>
         </button>
 
-        {/* 05. HANGAR / GARAJE */}
+        {/* 06. HANGAR */}
         <button
           onClick={() => setActiveNavTab('garaje')}
           className={`flex-1 flex flex-col items-center justify-center py-1 transition-all active:scale-95 ${
-            activeNavTab === 'garaje'
-              ? 'text-white'
-              : 'text-ash hover:text-white'
+            activeNavTab === 'garaje' ? 'text-white' : 'text-ash hover:text-white'
           }`}
         >
           <div className="relative">
@@ -124,7 +142,7 @@ export const BottomBar: React.FC<BottomBarProps> = ({ onOpenProposeRoute }) => {
             </span>
           </div>
           <span className="font-mono text-[9px] uppercase tracking-wider mt-1 font-bold">
-            04. Hangar
+            Hangar
           </span>
         </button>
 

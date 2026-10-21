@@ -43,7 +43,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         
         {/* Cell 1: Brand Logotype */}
         <div 
-          onClick={() => setActiveNavTab('rodada')}
+          onClick={() => setActiveNavTab('home')}
           className="col-span-12 sm:col-span-4 lg:col-span-3 border-b sm:border-b-0 sm:border-r border-white/[0.08] px-6 py-4 flex items-center justify-between cursor-pointer group hover:bg-white/[0.02] transition"
         >
           <div className="flex items-baseline gap-3">
@@ -59,6 +59,18 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Cell 2: Editorial Navigation Numbers */}
         <nav className="col-span-12 sm:col-span-8 lg:col-span-6 border-b lg:border-b-0 lg:border-r border-white/[0.08] flex items-center justify-start sm:justify-center overflow-x-auto no-scrollbar px-2">
           <button
+            onClick={() => setActiveNavTab('home')}
+            className={`px-4 py-4 font-mono text-xs uppercase tracking-wider transition-colors border-b-2 flex items-center gap-2 whitespace-nowrap ${
+              activeNavTab === 'home' || activeNavTab === 'crew'
+                ? 'border-earth text-white font-bold bg-white/[0.02]'
+                : 'border-transparent text-ash hover:text-white'
+            }`}
+          >
+            <span className="text-earth font-bold">01.</span>
+            <span>Mis Grupos</span>
+          </button>
+
+          <button
             onClick={() => setActiveNavTab('rodada')}
             className={`px-4 py-4 font-mono text-xs uppercase tracking-wider transition-colors border-b-2 flex items-center gap-2 whitespace-nowrap ${
               activeNavTab === 'rodada'
@@ -66,8 +78,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                 : 'border-transparent text-ash hover:text-white'
             }`}
           >
-            <span className="text-earth font-bold">01.</span>
-            <span>Expediciones</span>
+            <span className="text-earth font-bold">02.</span>
+            <span>Expedición</span>
           </button>
 
           <button
@@ -78,8 +90,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                 : 'border-transparent text-ash hover:text-white'
             }`}
           >
-            <span className="text-earth font-bold">02.</span>
-            <span>Cartografía & Votos</span>
+            <span className="text-earth font-bold">03.</span>
+            <span>Rutas</span>
           </button>
 
           <button
@@ -90,8 +102,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                 : 'border-transparent text-ash hover:text-white'
             }`}
           >
-            <span className="text-earth font-bold">03.</span>
-            <span>Santuario Navana</span>
+            <span className="text-earth font-bold">04.</span>
+            <span>Navana</span>
           </button>
 
           <button
@@ -102,7 +114,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 : 'border-transparent text-ash hover:text-white'
             }`}
           >
-            <span className="text-earth font-bold">04.</span>
+            <span className="text-earth font-bold">05.</span>
             <span>Hangar</span>
           </button>
         </nav>

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { Navbar } from '../components/Navbar';
+import { HomeView } from '../components/Home/HomeView';
 import { RodadaDetailView } from '../components/Rodadas/RodadaDetailView';
 import { RouteExplorerView } from '../components/Routes/RouteExplorerView';
 import { CrewView } from '../components/Crews/CrewView';
@@ -36,6 +37,14 @@ export default function Home() {
 
       {/* 2. Main Architectural Container */}
       <main className="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-8 lg:px-12 pt-8 sm:pt-12">
+        {activeNavTab === 'home' && (
+          <HomeView
+            onOpenCreateCrew={() => setCreateCrewOpen(true)}
+            onOpenJoinCrew={() => setJoinCrewOpen(true)}
+            onOpenCreateRodada={() => setCreateRodadaOpen(true)}
+          />
+        )}
+
         {activeNavTab === 'rodada' && (
           <RodadaDetailView 
             onOpenProposeRoute={() => setProposeRouteOpen(true)} 

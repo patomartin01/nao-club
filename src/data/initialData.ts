@@ -133,6 +133,23 @@ export const INITIAL_CREWS: Crew[] = [
       { userId: 'user-sofia', role: 'Rider', joinedAt: '2024-03-18' },
       { userId: 'user-rigo', role: 'Barrendero', joinedAt: '2024-03-20' },
     ]
+  },
+  {
+    id: 'crew-navana',
+    name: 'Navana Wild Cabins Club',
+    slug: 'navana-wild-club',
+    tagline: 'Comunidad de motos trail, arquitectura, sauna nórdico y naturaleza.',
+    description: 'El club oficial de exploradores de Navana Cabins. Organizamos salidas periódicas de fin de semana combinando rutas de terracería técnica fluida y descanso reparador en cabañas de diseño.',
+    inviteCode: 'NAVANA-78',
+    coverImage: 'https://images.unsplash.com/photo-1542718610-a1d656d1884c?auto=format&fit=crop&q=80&w=1200',
+    baseCity: 'Amanalco de Becerra / Valle de Bravo',
+    creatorId: 'user-patricio',
+    createdAt: '2024-06-01',
+    members: [
+      { userId: 'user-patricio', role: 'Capitán de Ruta', joinedAt: '2024-06-01' },
+      { userId: 'user-diego', role: 'Rider', joinedAt: '2024-06-02' },
+      { userId: 'user-sofia', role: 'Rider', joinedAt: '2024-06-05' }
+    ]
   }
 ];
 
@@ -567,3 +584,41 @@ export const INITIAL_RODADA: Rodada = {
   ],
   createdAt: '2026-10-15'
 };
+
+export const SECOND_RODADA: Rodada = {
+  id: 'rodada-navana-retreat',
+  crewId: 'crew-navana',
+  title: 'Retiro Off-Road & Santuario Amanalco',
+  subtitle: 'Brechas forestales, sauna de cedro a 78°C y noche de asador',
+  description: 'Expedición de fin de semana con destino a Navana Cabins. Rodaremos desde Interlomas por brechas de montaña y disfrutaremos de cabañas térmicas, fogata y descanso reparador.',
+  category: 'Fin de Semana',
+  status: 'fijada',
+  startDate: '2026-11-20',
+  endDate: '2026-11-22',
+  originPoint: 'Interlomas, Huixquilucan, Edomex',
+  attendees: [
+    {
+      userId: 'user-patricio',
+      motorcycleId: 'moto-1',
+      status: 'confirmado',
+      confirmedAt: '2026-10-18',
+      gearCheck: { sleepingBag0C: true, tireRepairKit: true, portableCompressor: true, firstAidKit: true, tools: true }
+    },
+    {
+      userId: 'user-diego',
+      motorcycleId: 'moto-diego',
+      status: 'confirmado',
+      confirmedAt: '2026-10-18',
+      gearCheck: { sleepingBag0C: true, tireRepairKit: true, portableCompressor: false, firstAidKit: false, tools: true }
+    }
+  ],
+  packingList: [
+    { id: 'pn-1', item: 'Traje de baño para sauna y toalla de microfibra', category: 'Campamento', assignedToUserId: 'user-patricio', assignedToName: 'Patricio Martin', isDone: true },
+    { id: 'pn-2', item: 'Kit de hidratación Camelbak 2L', category: 'Seguridad & Salud', assignedToUserId: 'user-diego', assignedToName: 'Diego "Capi"', isDone: true }
+  ],
+  gallery: [],
+  createdAt: '2026-10-18'
+};
+
+export const INITIAL_RODADAS: Rodada[] = [INITIAL_RODADA, SECOND_RODADA];
+

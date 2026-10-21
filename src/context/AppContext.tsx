@@ -16,6 +16,7 @@ import {
   INITIAL_MOTORCYCLES, 
   INITIAL_CREWS, 
   INITIAL_RODADA, 
+  INITIAL_RODADAS,
   INITIAL_ROUTE_PROPOSALS 
 } from '../data/initialData';
 
@@ -30,11 +31,13 @@ interface AppContextType {
   crews: Crew[];
   currentCrew: Crew | null;
   setCurrentCrew: (crew: Crew | null) => void;
+  enterCrew: (crewId: string) => void;
   createCrew: (data: { name: string; tagline: string; description: string; baseCity: string; coverImage: string }) => Crew;
   joinCrewByCode: (code: string) => { success: boolean; message: string; crew?: Crew };
   rodadas: Rodada[];
   currentRodada: Rodada | null;
   setCurrentRodada: (rodada: Rodada | null) => void;
+  enterRodada: (rodadaId: string) => void;
   createRodada: (data: { title: string; subtitle: string; description: string; category: Rodada['category']; startDate: string; endDate: string; originPoint: string }) => Rodada;
   routeProposals: RouteProposal[];
   currentRodadaRoutes: RouteProposal[];
@@ -50,8 +53,8 @@ interface AppContextType {
   assignPackingItem: (rodadaId: string, itemId: string, userId: string, userName: string) => void;
   addPackingItem: (rodadaId: string, item: string, category: PackingItem['category']) => void;
   addGalleryPhoto: (rodadaId: string, url: string, caption: string) => void;
-  activeNavTab: 'rodada' | 'rutas' | 'crew' | 'garaje' | 'brand';
-  setActiveNavTab: (tab: 'rodada' | 'rutas' | 'crew' | 'garaje' | 'brand') => void;
+  activeNavTab: 'home' | 'crew' | 'rodada' | 'rutas' | 'garaje' | 'brand';
+  setActiveNavTab: (tab: 'home' | 'crew' | 'rodada' | 'rutas' | 'garaje' | 'brand') => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -70,11 +73,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [motorcycles, setMotorcycles] = useState<Motorcycle[]>(INITIAL_MOTORCYCLES);
   const [crews, setCrews] = useState<Crew[]>(INITIAL_CREWS);
   const [currentCrew, setCurrentCrew] = useState<Crew | null>(INITIAL_CREWS[0]);
-  const [rodadas, setRodadas] = useState<Rodada[]>([INITIAL_RODADA]);
-  const [currentRodada, setCurrentRodada] = useState<Rodada | null>(INITIAL_RODADA);
+  const [rodadas, setRodadas] = useState<Rodada[]>(INITIAL_RODADAS);
+  const [currentRodada, setCurrentRodada] = useState<Rodada | null>(INITIAL_RODADAS[0]);
   const [routeProposals, setRouteProposals] = useState<RouteProposal[]>(INITIAL_ROUTE_PROPOSALS);
   const [selectedRoute, setSelectedRoute] = useState<RouteProposal | null>(INITIAL_ROUTE_PROPOSALS[0]);
-  const [activeNavTab, setActiveNavTab] = useState<'rodada' | 'rutas' | 'crew' | 'garaje' | 'brand'>('rodada');
+  const [activeNavTab, setActiveNavTab] = useState<'home' | 'crew' | 'rodada' | 'rutas' | 'garaje' | 'brand'>('home');
 
   // Load from LocalStorage if available
   useEffect(() => {
@@ -186,6 +189,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCrews(prev => prev.map(c => c.id === found.id ? updated : c));
     setCurrentCrew(updated);
     return { success: true, message: `¡Te uniste a ${found.name}! Bienvenido a bordo.`, crew: updated };
+  };
+
+  const enterCrew = (crewId: string) => {
+    const found = crews.find(c => c.id === crewId);
+    if (found) {
+      setCurrentCrew(found);
+      setActiveNavTab('crew');
+    }
+  };
+
+  const enterRodada = (rodadaId: string) => {
+    const found = rodadas.find(rd => rd.id === rodadaId);
+    if (found) {
+      setCurrentRodada(found);
+      const routesForRodada = routeProposals.filter(r => r.rodadaId === rodadaId);
+      if (routesForRodada.length > 0) {
+        setSelectedRoute(routesForRodada[0]);
+      }
+      setActiveNavTab('rodada');
+    }
   };
 
   const createRodada = (data: { title: string; subtitle: string; description: string; category: Rodada['category']; startDate: string; endDate: string; originPoint: string }) => {
@@ -419,11 +442,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         crews,
         currentCrew,
         setCurrentCrew,
+        enterCrew,
         createCrew,
         joinCrewByCode,
         rodadas,
         currentRodada,
         setCurrentRodada,
+        enterRodada,
         createRodada,
         routeProposals,
         currentRodadaRoutes,
