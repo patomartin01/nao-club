@@ -53,7 +53,7 @@ export const GruposView: React.FC<GruposViewProps> = ({
   };
 
   return (
-    <div className="space-y-6 pb-28 max-w-2xl mx-auto font-mono">
+    <div className="space-y-6 pb-28 max-w-[1440px] w-full mx-auto font-mono">
       
       {/* 01. SUB-TABS (STRAVA GRUPOS ARCHITECTURE) */}
       <div className="flex border-b border-white/10 bg-[#0D0B0A] p-1">
@@ -112,7 +112,7 @@ export const GruposView: React.FC<GruposViewProps> = ({
             </button>
           </div>
 
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {rodadas.map(rodada => (
               <div 
                 key={rodada.id}
@@ -214,39 +214,41 @@ export const GruposView: React.FC<GruposViewProps> = ({
               Tus Clubes Activos
             </h4>
 
-            {crews.map(crew => (
-              <div 
-                key={crew.id}
-                onClick={() => enterCrew(crew.id)}
-                className="bg-[#0F0D0C] border border-white/10 hover:border-earth/50 transition cursor-pointer p-4 flex items-center justify-between group"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-black border border-white/15 flex items-center justify-center font-bold text-earth text-sm">
-                    {crew.name.substring(0, 3).toUpperCase()}
-                  </div>
-                  <div>
-                    <h5 className="text-sm font-bold text-white uppercase group-hover:text-earth transition">
-                      {crew.name}
-                    </h5>
-                    <p className="text-[11px] text-ash">{crew.tagline}</p>
-                    <div className="flex items-center gap-2 text-[10px] text-ash mt-1">
-                      <span>📍 {crew.baseCity}</span>
-                      <span>•</span>
-                      <span className="text-chalk">{crew.members.length} pilotos</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {crews.map(crew => (
+                <div 
+                  key={crew.id}
+                  onClick={() => enterCrew(crew.id)}
+                  className="bg-[#0F0D0C] border border-white/10 hover:border-earth/50 transition cursor-pointer p-4 flex items-center justify-between group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-black border border-white/15 flex items-center justify-center font-bold text-earth text-sm">
+                      {crew.name.substring(0, 3).toUpperCase()}
+                    </div>
+                    <div>
+                      <h5 className="text-sm font-bold text-white uppercase group-hover:text-earth transition">
+                        {crew.name}
+                      </h5>
+                      <p className="text-[11px] text-ash">{crew.tagline}</p>
+                      <div className="flex items-center gap-2 text-[10px] text-ash mt-1">
+                        <span>📍 {crew.baseCity}</span>
+                        <span>•</span>
+                        <span className="text-chalk">{crew.members.length} pilotos</span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="text-right">
-                  <span className="text-[10px] text-ash bg-white/[0.04] px-2 py-1 border border-white/10 uppercase block font-mono">
-                    Código: {crew.inviteCode}
-                  </span>
-                  <span className="text-xs text-earth group-hover:translate-x-1 transition inline-flex items-center gap-0.5 mt-2 font-bold uppercase">
-                    Entrar <ChevronRight className="w-3.5 h-3.5" />
-                  </span>
+                  <div className="text-right">
+                    <span className="text-[10px] text-ash bg-white/[0.04] px-2 py-1 border border-white/10 uppercase block font-mono">
+                      Código: {crew.inviteCode}
+                    </span>
+                    <span className="text-xs text-earth group-hover:translate-x-1 transition inline-flex items-center gap-0.5 mt-2 font-bold uppercase">
+                      Entrar <ChevronRight className="w-3.5 h-3.5" />
+                    </span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       )}
@@ -265,7 +267,7 @@ export const GruposView: React.FC<GruposViewProps> = ({
             </p>
           </div>
 
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {challenges.map(ch => {
               const progressPct = Math.min(100, Math.round((ch.currentKm / ch.targetKm) * 100));
 

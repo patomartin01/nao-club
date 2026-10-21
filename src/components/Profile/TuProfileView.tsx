@@ -94,7 +94,7 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
   const maxKmWeek = Math.max(...WEEKLY_DATA.map(d => d.km));
 
   return (
-    <div className="space-y-6 pb-28 max-w-2xl mx-auto font-mono">
+    <div className="space-y-6 pb-28 max-w-[1440px] w-full mx-auto font-mono">
       
       {/* 01. PROFILE HEADER (STRAVA TÚ EXACT REPLICA) */}
       <div className="bg-[#0D0B0A] border border-white/10 p-5 space-y-4">
@@ -305,7 +305,7 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
             />
           </div>
 
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredHistory.map(act => (
               <div 
                 key={act.id}
@@ -345,7 +345,7 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
       )}
 
       {/* ========================================================= */}
-      {/* 05. SUB-TAB: GALERÍA (3X3 PHOTO GRID FROM TRAILS)        */}
+      {/* 05. SUB-TAB: GALERÍA (PHOTO GRID FROM TRAILS)             */}
       {/* ========================================================= */}
       {activeSubTab === 'galeria' && (
         <div className="space-y-4">
@@ -356,7 +356,7 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
             <span className="text-[10px] text-ash">Tomadas en ruta con GPS</span>
           </div>
 
-          <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
             {GALLERY_PHOTOS.map((photo, idx) => (
               <div 
                 key={idx}

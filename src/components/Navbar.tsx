@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useApp } from '../context/AppContext';
-import { Plus, Key } from 'lucide-react';
+import { Plus, Key, Flame, Compass, Radio, Users, User } from 'lucide-react';
 
 interface NavbarProps {
   onOpenCreateRodada: () => void;
@@ -14,9 +14,21 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({
   onOpenProposeRoute,
-  onOpenJoinCrew
+  onOpenJoinCrew,
+  onOpenRecordRoute
 }) => {
-  const { setActiveNavTab, currentUser, currentRodada } = useApp();
+  const { activeNavTab, setActiveNavTab, currentUser, currentRodada } = useApp();
+
+  const isInicio = activeNavTab === 'inicio' || activeNavTab === 'home';
+  const isMapas = activeNavTab === 'mapas' || activeNavTab === 'rutas';
+  const isRegistrar = activeNavTab === 'registrar';
+  const isGrupos = activeNavTab === 'grupos' || activeNavTab === 'crew' || activeNavTab === 'rodada';
+  const isTu = activeNavTab === 'tu' || activeNavTab === 'garaje';
+
+  const handleRecordClick = () => {
+    setActiveNavTab('registrar');
+    if (onOpenRecordRoute) onOpenRecordRoute();
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full bg-[#0B0A09] border-b border-white/[0.08] select-none pt-[env(safe-area-inset-top,0px)]">
@@ -56,6 +68,69 @@ export const Navbar: React.FC<NavbarProps> = ({
             </span>
           </div>
         </div>
+
+        {/* Center: Desktop Navigation Bar (Only on md+ screens) */}
+        <nav className="hidden md:flex items-center gap-1 lg:gap-2 font-mono text-xs">
+          <button
+            onClick={() => setActiveNavTab('inicio')}
+            className={`px-3.5 py-1.5 flex items-center gap-2 uppercase tracking-wider text-[11px] font-bold transition border-b-2 ${
+              isInicio 
+                ? 'text-white border-earth bg-white/[0.04]' 
+                : 'text-ash border-transparent hover:text-white hover:bg-white/[0.02]'
+            }`}
+          >
+            <Flame className={`w-3.5 h-3.5 ${isInicio ? 'text-earth' : 'text-ash'}`} />
+            <span>Inicio</span>
+          </button>
+
+          <button
+            onClick={() => setActiveNavTab('mapas')}
+            className={`px-3.5 py-1.5 flex items-center gap-2 uppercase tracking-wider text-[11px] font-bold transition border-b-2 ${
+              isMapas 
+                ? 'text-white border-earth bg-white/[0.04]' 
+                : 'text-ash border-transparent hover:text-white hover:bg-white/[0.02]'
+            }`}
+          >
+            <Compass className={`w-3.5 h-3.5 ${isMapas ? 'text-earth' : 'text-ash'}`} />
+            <span>Mapas</span>
+          </button>
+
+          <button
+            onClick={handleRecordClick}
+            className={`px-3.5 py-1.5 flex items-center gap-2 uppercase tracking-wider text-[11px] font-bold transition border-b-2 ${
+              isRegistrar 
+                ? 'text-white border-earth bg-earth/20' 
+                : 'text-earth border-transparent hover:bg-earth/10'
+            }`}
+          >
+            <Radio className="w-3.5 h-3.5 text-earth animate-pulse" />
+            <span>Registrar</span>
+          </button>
+
+          <button
+            onClick={() => setActiveNavTab('grupos')}
+            className={`px-3.5 py-1.5 flex items-center gap-2 uppercase tracking-wider text-[11px] font-bold transition border-b-2 ${
+              isGrupos 
+                ? 'text-white border-earth bg-white/[0.04]' 
+                : 'text-ash border-transparent hover:text-white hover:bg-white/[0.02]'
+            }`}
+          >
+            <Users className={`w-3.5 h-3.5 ${isGrupos ? 'text-earth' : 'text-ash'}`} />
+            <span>Grupos</span>
+          </button>
+
+          <button
+            onClick={() => setActiveNavTab('tu')}
+            className={`px-3.5 py-1.5 flex items-center gap-2 uppercase tracking-wider text-[11px] font-bold transition border-b-2 ${
+              isTu 
+                ? 'text-white border-earth bg-white/[0.04]' 
+                : 'text-ash border-transparent hover:text-white hover:bg-white/[0.02]'
+            }`}
+          >
+            <User className={`w-3.5 h-3.5 ${isTu ? 'text-earth' : 'text-ash'}`} />
+            <span>Tú</span>
+          </button>
+        </nav>
 
         {/* Right: Quick Action Controls & Pilot Profile */}
         <div className="flex items-center gap-2.5 sm:gap-4 font-mono text-xs">

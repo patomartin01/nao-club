@@ -37,6 +37,7 @@ export default function Home() {
         onOpenProposeRoute={() => setProposeRouteOpen(true)}
         onOpenJoinCrew={() => setJoinCrewOpen(true)}
         onOpenCreateCrew={() => setCreateCrewOpen(true)}
+        onOpenRecordRoute={() => setRecordRouteOpen(true)}
       />
 
       {/* 2. Main Architectural Container */}

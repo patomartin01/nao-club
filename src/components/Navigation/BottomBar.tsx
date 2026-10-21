@@ -30,8 +30,8 @@ export const BottomBar: React.FC<BottomBarProps> = ({ onOpenRecordRoute }) => {
 
   return (
     <aside 
-      aria-label="Navegación de aplicación"
-      className="fixed bottom-0 left-0 right-0 z-50 bg-[#0B0A09]/95 backdrop-blur-xl border-t border-white/[0.08] shadow-[0_-12px_36px_rgba(0,0,0,0.85)] select-none pb-[env(safe-area-inset-bottom,6px)]"
+      aria-label="Navegación de aplicación móvil"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#0B0A09]/95 backdrop-blur-xl border-t border-white/[0.08] shadow-[0_-12px_36px_rgba(0,0,0,0.85)] select-none pb-[env(safe-area-inset-bottom,6px)]"
     >
       {/* Top subtle micro-ruler */}
       <div className="w-full h-1 bg-black/60 overflow-hidden flex items-center border-b border-white/[0.04]">
