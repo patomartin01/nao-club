@@ -11,7 +11,7 @@ interface ProposeRouteModalProps {
 }
 
 export const ProposeRouteModal: React.FC<ProposeRouteModalProps> = ({ isOpen, onClose }) => {
-  const { currentUser, currentRodada, proposeRoute } = useApp();
+  const { currentUser, currentRodada, rodadas, proposeRoute } = useApp();
 
   const [title, setTitle] = useState('');
   const [destination, setDestination] = useState('');
@@ -31,7 +31,8 @@ export const ProposeRouteModal: React.FC<ProposeRouteModalProps> = ({ isOpen, on
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !destination.trim() || !currentRodada) return;
+    const targetRodada = currentRodada || rodadas[0];
+    if (!title.trim() || !destination.trim() || !targetRodada) return;
 
     let coords: [number, number][] = [
       [19.4005, -99.2816], // Interlomas
@@ -41,7 +42,7 @@ export const ProposeRouteModal: React.FC<ProposeRouteModalProps> = ({ isOpen, on
     ];
 
     proposeRoute({
-      rodadaId: currentRodada.id,
+      rodadaId: targetRodada.id,
       title: title.trim(),
       destination: destination.trim(),
       state: state.trim(),
