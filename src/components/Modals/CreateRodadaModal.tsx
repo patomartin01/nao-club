@@ -75,7 +75,7 @@ export const CreateRodadaModal: React.FC<CreateRodadaModalProps> = ({ isOpen, on
               type="text"
               value={subtitle}
               onChange={(e) => setSubtitle(e.target.value)}
-              placeholder="Ej. Basecamp en Navana y brechas técnicas de altura."
+              placeholder="Ej. Campamento base y brechas técnicas de altura."
               className="w-full bg-white/[0.03] border border-white/15 px-3 py-2 text-white focus:outline-none focus:border-earth"
             />
           </div>

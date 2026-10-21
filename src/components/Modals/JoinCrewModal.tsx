@@ -61,10 +61,10 @@ export const JoinCrewModal: React.FC<JoinCrewModalProps> = ({ isOpen, onClose })
               required
               value={code}
               onChange={(e) => setCode(e.target.value.toUpperCase())}
-              placeholder="Ej. NAVANA-2026"
+              placeholder="Ej. BRAVA-44"
               className="w-full bg-white/[0.03] border border-white/15 px-3 py-3 font-mono text-base tracking-widest text-white uppercase focus:outline-none focus:border-earth text-center"
             />
-            <p className="text-[10px] text-ash mt-1 text-center">Clave por defecto: NAVANA-2026</p>
+            <p className="text-[10px] text-ash mt-1 text-center">Claves demo: MAMI-2026 o BRAVA-44</p>
           </div>
 
           {error && (

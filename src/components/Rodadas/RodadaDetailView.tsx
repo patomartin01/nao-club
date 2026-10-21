@@ -97,7 +97,7 @@ export const RodadaDetailView: React.FC<RodadaDetailViewProps> = ({ onOpenPropos
   const handleAddPackingItem = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPackingText.trim()) return;
-    addPackingItem(currentRodada.id, newPackingText.trim(), 'general');
+    addPackingItem(currentRodada.id, newPackingText.trim(), 'Campamento');
     setNewPackingText('');
   };
 
@@ -108,7 +108,7 @@ export const RodadaDetailView: React.FC<RodadaDetailViewProps> = ({ onOpenPropos
       .join('\n');
 
     const gpxContent = `<?xml version="1.0" encoding="UTF-8"?>
-<gpx version="1.1" creator="NAO Club - Navana Expeditions" xmlns="http://www.topografix.com/GPX/1/1">
+<gpx version="1.1" creator="NAO Moto Expeditions" xmlns="http://www.topografix.com/GPX/1/1">
   <metadata>
     <name>${activeRoute.title}</name>
     <desc>${activeRoute.description}</desc>
@@ -132,8 +132,8 @@ ${gpxPoints}
 
   const handleOpenGoogleMaps = () => {
     if (!activeRoute) return;
-    const origin = encodeURIComponent(activeRoute.originPoint || 'Interlomas, Huixquilucan, Edomex');
-    const destination = encodeURIComponent(activeRoute.destinationPoint || `${activeRoute.destination}, ${activeRoute.state}`);
+    const origin = encodeURIComponent(currentRodada.originPoint || 'Interlomas, Huixquilucan, Edomex');
+    const destination = encodeURIComponent(`${activeRoute.destination}, ${activeRoute.state}`);
     window.open(`https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`, '_blank');
   };
 
@@ -277,8 +277,8 @@ ${gpxPoints}
 
           <div className="p-6">
             <span className="text-[10px] text-ash uppercase tracking-wider block">04. Clima Nocturno</span>
-            <p className="font-display font-extrabold text-3xl text-cyan-300 mt-1">{activeRoute.campsite.nightTemperature}</p>
-            <p className="text-[11px] text-ash mt-1">Sleeping 0°C + Sauna en base</p>
+            <p className="font-display font-extrabold text-3xl text-cyan-300 mt-1">{activeRoute.campsite.minTempNight}</p>
+            <p className="text-[11px] text-ash mt-1">Sleeping 0°C recomendado</p>
           </div>
         </div>
 
@@ -447,14 +447,14 @@ ${gpxPoints}
           <div className="p-5 border border-white/10 bg-white/[0.02] space-y-2">
             <span className="text-earth font-bold text-sm block">01 // SEGURIDAD & AGILIDAD OFF-ROAD</span>
             <p className="text-ash leading-relaxed">
-              Rodar en terracería con 25 kg de equipaje alto y bolsas inestables multiplica el riesgo de caída en curvas con grava. Al montar base en Corral de Piedra / Navana, las motos salen completamente ligeras para curvear con libertad.
+              Rodar en terracería con 25 kg de equipaje alto y bolsas inestables multiplica el riesgo de caída en curvas con grava. Al montar basecamp en Corral de Piedra, las motos salen completamente ligeras para curvear con libertad.
             </p>
           </div>
 
           <div className="p-5 border border-white/10 bg-white/[0.02] space-y-2">
-            <span className="text-earth font-bold text-sm block">02 // RECUPERACIÓN TÉRMICA & WELLNESS</span>
+            <span className="text-earth font-bold text-sm block">02 // REFUGIO TÉRMICO & DESCANSO</span>
             <p className="text-ash leading-relaxed">
-              En noviembre la temperatura cae a 3°C a 3,000 msnm. Empacar lonas mojadas con escarcha a las 7:00 AM destruye la moral del grupo. Con basecamp fijo, desayunamos con calma y cerramos la tarde en el sauna a 78°C de Navana.
+              En noviembre la temperatura cae a 3°C a 3,000 msnm. Empacar lonas mojadas con escarcha a las 7:00 AM destruye la moral del grupo. Con basecamp fijo, desayunamos con calma y cerramos la tarde alrededor de la fogata con buena comida.
             </p>
           </div>
 

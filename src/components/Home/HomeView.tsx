@@ -117,8 +117,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
             <p className="font-bold text-white text-base mt-0.5">{currentUser.ridingLevel}</p>
           </div>
           <div className="p-4 sm:p-5">
-            <span className="text-[10px] text-ash uppercase tracking-wider block">Santuario Base</span>
-            <p className="font-bold text-white text-base mt-0.5">Navana Cabins (Amanalco)</p>
+            <span className="text-[10px] text-ash uppercase tracking-wider block">Zona Predilecta</span>
+            <p className="font-bold text-white text-base mt-0.5">Sierra & Bosque (Edomex)</p>
           </div>
         </div>
       </section>

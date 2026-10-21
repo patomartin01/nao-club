@@ -53,8 +53,8 @@ interface AppContextType {
   assignPackingItem: (rodadaId: string, itemId: string, userId: string, userName: string) => void;
   addPackingItem: (rodadaId: string, item: string, category: PackingItem['category']) => void;
   addGalleryPhoto: (rodadaId: string, url: string, caption: string) => void;
-  activeNavTab: 'home' | 'crew' | 'rodada' | 'rutas' | 'garaje' | 'brand';
-  setActiveNavTab: (tab: 'home' | 'crew' | 'rodada' | 'rutas' | 'garaje' | 'brand') => void;
+  activeNavTab: 'home' | 'crew' | 'rodada' | 'rutas' | 'garaje';
+  setActiveNavTab: (tab: 'home' | 'crew' | 'rodada' | 'rutas' | 'garaje') => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -77,7 +77,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [currentRodada, setCurrentRodada] = useState<Rodada | null>(INITIAL_RODADAS[0]);
   const [routeProposals, setRouteProposals] = useState<RouteProposal[]>(INITIAL_ROUTE_PROPOSALS);
   const [selectedRoute, setSelectedRoute] = useState<RouteProposal | null>(INITIAL_ROUTE_PROPOSALS[0]);
-  const [activeNavTab, setActiveNavTab] = useState<'home' | 'crew' | 'rodada' | 'rutas' | 'garaje' | 'brand'>('home');
+  const [activeNavTab, setActiveNavTab] = useState<'home' | 'crew' | 'rodada' | 'rutas' | 'garaje'>('home');
 
   // Load from LocalStorage if available
   useEffect(() => {
@@ -206,11 +206,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const found = rodadas.find(rd => rd.id === rodadaId);
     if (found) {
       setCurrentRodada(found);
+      const associatedCrew = crews.find(c => c.id === found.crewId);
+      if (associatedCrew) {
+        setCurrentCrew(associatedCrew);
+      }
       const routesForRodada = routeProposals.filter(r => r.rodadaId === rodadaId);
       if (routesForRodada.length > 0) {
         setSelectedRoute(routesForRodada[0]);
       }
-      setActiveNavTab('rodada');
+      setActiveNavTab('crew');
     }
   };
 
@@ -241,7 +245,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
     setRodadas(prev => [newRodada, ...prev]);
     setCurrentRodada(newRodada);
-    setActiveNavTab('rodada');
+    setActiveNavTab('crew');
     return newRodada;
   };
 
@@ -256,7 +260,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
     setRouteProposals(prev => [newRoute, ...prev]);
     setSelectedRoute(newRoute);
-    setActiveNavTab('rodada');
+    setActiveNavTab('crew');
   };
 
   const voteRoute = (routeId: string) => {

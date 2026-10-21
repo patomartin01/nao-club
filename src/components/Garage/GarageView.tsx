@@ -116,8 +116,8 @@ export const GarageView: React.FC = () => {
             <p className="font-bold text-white text-base mt-1">Interlomas, Huixquilucan</p>
           </div>
           <div className="p-6">
-            <span className="text-[10px] text-ash uppercase tracking-wider block">Membresía</span>
-            <p className="font-bold text-emerald-400 text-base mt-1">Navana Club Founder</p>
+            <span className="text-[10px] text-ash uppercase tracking-wider block">Rango</span>
+            <p className="font-bold text-emerald-400 text-base mt-1">Capitán de Ruta NAO</p>
           </div>
         </div>
       </section>

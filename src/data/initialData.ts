@@ -135,14 +135,14 @@ export const INITIAL_CREWS: Crew[] = [
     ]
   },
   {
-    id: 'crew-navana',
-    name: 'Navana Wild Cabins Club',
-    slug: 'navana-wild-club',
-    tagline: 'Comunidad de motos trail, arquitectura, sauna nórdico y naturaleza.',
-    description: 'El club oficial de exploradores de Navana Cabins. Organizamos salidas periódicas de fin de semana combinando rutas de terracería técnica fluida y descanso reparador en cabañas de diseño.',
-    inviteCode: 'NAVANA-78',
+    id: 'crew-sierrabrava',
+    name: 'Sierra Brava Dual-Sport Club',
+    slug: 'sierra-brava-club',
+    tagline: 'Terracerías de altura, pasos de montaña y campamentos remotos.',
+    description: 'Comunidad especializada en navegación por GPS, brechas técnicas y expediciones en zonas montañosas de México.',
+    inviteCode: 'BRAVA-44',
     coverImage: 'https://images.unsplash.com/photo-1542718610-a1d656d1884c?auto=format&fit=crop&q=80&w=1200',
-    baseCity: 'Amanalco de Becerra / Valle de Bravo',
+    baseCity: 'Valle de Bravo & Toluca',
     creatorId: 'user-patricio',
     createdAt: '2024-06-01',
     members: [
@@ -586,16 +586,16 @@ export const INITIAL_RODADA: Rodada = {
 };
 
 export const SECOND_RODADA: Rodada = {
-  id: 'rodada-navana-retreat',
-  crewId: 'crew-navana',
-  title: 'Retiro Off-Road & Santuario Amanalco',
-  subtitle: 'Brechas forestales, sauna de cedro a 78°C y noche de asador',
-  description: 'Expedición de fin de semana con destino a Navana Cabins. Rodaremos desde Interlomas por brechas de montaña y disfrutaremos de cabañas térmicas, fogata y descanso reparador.',
+  id: 'rodada-sierra-gorda',
+  crewId: 'crew-sierrabrava',
+  title: 'Travesía Cañón del Plátano & Sierra Gorda',
+  subtitle: 'Brechas de grava, ríos secos y noche de vivac bajo las estrellas',
+  description: 'Expedición de fin de semana explorando los pasos de montaña entre Querétaro y San Luis Potosí.',
   category: 'Fin de Semana',
   status: 'fijada',
   startDate: '2026-11-20',
   endDate: '2026-11-22',
-  originPoint: 'Interlomas, Huixquilucan, Edomex',
+  originPoint: 'San Juan del Río, Qro.',
   attendees: [
     {
       userId: 'user-patricio',
@@ -613,8 +613,8 @@ export const SECOND_RODADA: Rodada = {
     }
   ],
   packingList: [
-    { id: 'pn-1', item: 'Traje de baño para sauna y toalla de microfibra', category: 'Campamento', assignedToUserId: 'user-patricio', assignedToName: 'Patricio Martin', isDone: true },
-    { id: 'pn-2', item: 'Kit de hidratación Camelbak 2L', category: 'Seguridad & Salud', assignedToUserId: 'user-diego', assignedToName: 'Diego "Capi"', isDone: true }
+    { id: 'pn-1', item: 'Lámpara frontal recargable y pilas de repuesto', category: 'Campamento', assignedToUserId: 'user-patricio', assignedToName: 'Patricio Martin', isDone: true },
+    { id: 'pn-2', item: 'Kit de hidratación Camelbak 3L', category: 'Seguridad & Salud', assignedToUserId: 'user-diego', assignedToName: 'Diego "Capi"', isDone: true }
   ],
   gallery: [],
   createdAt: '2026-10-18'

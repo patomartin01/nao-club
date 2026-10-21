@@ -3,9 +3,9 @@ import './globals.css';
 import { AppProvider } from '../context/AppContext';
 
 export const metadata: Metadata = {
-  title: 'NAO — Navana Expeditions | Navegación Terrestre & Refugios de Diseño',
-  description: 'Plataforma brutalista de exploración off-road en motos doble propósito, consenso de rutas efímeras y refugios arquitectónicos (Navana Cabins).',
-  keywords: ['NAO', 'Navana Cabins', 'off-road', 'doble proposito', 'expediciones', 'rutas', 'valle de bravo'],
+  title: 'NAO — Moto Expeditions | Plataforma de Rodadas Off-Road & Dual-Sport',
+  description: 'Plataforma de exploración comunitaria para rodadas en motos doble propósito, consenso de rutas por votación, navegación GPX y organización de clubs.',
+  keywords: ['NAO', 'motos trail', 'off-road', 'doble proposito', 'expediciones', 'rutas gpx', 'moto clubs'],
   authors: [{ name: 'Patricio Martin' }],
 };
 

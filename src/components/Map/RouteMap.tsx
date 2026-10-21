@@ -267,7 +267,7 @@ export const RouteMap: React.FC<RouteMapProps> = ({
           <span className="w-2 h-2 rounded-full bg-white" /> Salida
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-[#C87D55]" /> Navana / Base
+          <span className="w-2 h-2 rounded-full bg-[#C87D55]" /> Basecamp / Destino
         </span>
         <span className="flex items-center gap-1.5">
           <span className="w-2 h-2 rounded-full bg-amber-400" /> Gasolinera

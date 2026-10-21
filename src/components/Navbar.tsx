@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useApp } from '../context/AppContext';
-import { Plus, Key, Flame } from 'lucide-react';
+import { Plus, Key, Radio } from 'lucide-react';
 
 interface NavbarProps {
   onOpenCreateRodada: () => void;
@@ -15,7 +15,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenProposeRoute,
   onOpenJoinCrew,
 }) => {
-  const { setActiveNavTab, currentUser, currentCrew, currentRodada } = useApp();
+  const { setActiveNavTab, currentUser, currentRodada } = useApp();
 
   return (
     <header className="sticky top-0 z-50 w-full bg-[#0B0A09] border-b border-white/[0.08] select-none">
@@ -38,10 +38,10 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </div>
 
-      {/* 2. LEAN APP HEADER (Brand + Telemetry + Quick Actions) */}
+      {/* 2. LEAN APP HEADER */}
       <div className="w-full flex items-center justify-between px-4 sm:px-8 py-3.5 min-h-[60px]">
         
-        {/* Left: Brand Logotype & Active Group Context */}
+        {/* Left: Brand Logotype */}
         <div 
           onClick={() => setActiveNavTab('home')}
           className="flex items-center gap-4 cursor-pointer group"
@@ -51,7 +51,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               NAO
             </span>
             <span className="font-mono text-[9px] uppercase tracking-widest text-ash hidden sm:inline">
-              // NAVANA EXPEDITIONS
+              // MOTO EXPEDITIONS
             </span>
           </div>
         </div>
@@ -59,16 +59,6 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Right: Quick Action Controls & Pilot Profile */}
         <div className="flex items-center gap-2.5 sm:gap-4 font-mono text-xs">
           
-          {/* Navana Basecamp Telemetry Indicator */}
-          <div 
-            onClick={() => setActiveNavTab('brand')}
-            className="hidden lg:flex items-center gap-2 px-3 py-1.5 border border-white/10 bg-white/[0.02] hover:border-earth/40 cursor-pointer transition text-[10px]"
-          >
-            <Flame className="w-3 h-3 text-earth" />
-            <span className="text-ash uppercase">Basecamp:</span>
-            <span className="text-white font-bold">Sauna 78°C</span>
-          </div>
-
           <button
             onClick={onOpenJoinCrew}
             title="Unirse con clave de grupo"
@@ -120,7 +110,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="hidden sm:flex items-center gap-3">
           <span>SALIDA: <strong className="text-white">INTERLOMAS</strong></span>
           <span className="text-white/20">/</span>
-          <span className="text-emerald-400 font-bold">BASECAMP: NAVANA CABINS</span>
+          <span className="text-emerald-400 font-bold">DESTINO: VALLE DE BRAVO / CORRAL DE PIEDRA</span>
         </div>
       </div>
 
