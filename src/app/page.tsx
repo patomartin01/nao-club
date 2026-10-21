@@ -12,6 +12,7 @@ import { ProposeRouteModal } from '../components/Modals/ProposeRouteModal';
 import { JoinCrewModal } from '../components/Modals/JoinCrewModal';
 import { CreateCrewModal } from '../components/Modals/CreateCrewModal';
 import { CreateRodadaModal } from '../components/Modals/CreateRodadaModal';
+import { BottomBar } from '../components/Navigation/BottomBar';
 
 export default function Home() {
   const { activeNavTab } = useApp();
@@ -64,7 +65,7 @@ export default function Home() {
       </main>
 
       {/* 3. Swiss Architectural Footer */}
-      <footer className="border-t border-white/10 bg-[#080706] py-12">
+      <footer className="border-t border-white/10 bg-[#080706] pt-12 pb-28 sm:pb-24">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 grid grid-cols-1 md:grid-cols-12 gap-8 font-mono text-xs">
           
           <div className="md:col-span-5 space-y-3">
@@ -96,6 +97,12 @@ export default function Home() {
 
         </div>
       </footer>
+
+      {/* 4. Native App Bottom Action Bar (Dock) */}
+      <BottomBar 
+        onOpenProposeRoute={() => setProposeRouteOpen(true)}
+        onOpenJoinCrew={() => setJoinCrewOpen(true)}
+      />
 
       {/* Modals */}
       <ProposeRouteModal 
