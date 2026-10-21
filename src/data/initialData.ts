@@ -1,4 +1,4 @@
-import { User, Motorcycle, Crew, Rodada, RouteProposal } from '../types';
+import { User, Motorcycle, Crew, Rodada, RouteProposal, RouteList } from '../types';
 
 export const CURRENT_USER: User = {
   id: 'user-patricio',
@@ -10,7 +10,14 @@ export const CURRENT_USER: User = {
   location: 'Interlomas, Huixquilucan, Edomex',
   ridingLevel: 'Intermedio',
   emergencyContact: '+52 55 1234 5678 (Papá)',
-  phone: '+52 55 9876 5432'
+  phone: '+52 55 9876 5432',
+  completedRouteIds: ['route-1', 'route-4'],
+  savedRouteIds: ['route-2', 'route-3', 'route-5'],
+  stats: {
+    totalKm: 1850,
+    completedCount: 5,
+    elevationGain: 9800
+  }
 };
 
 export const INITIAL_USERS: User[] = [
@@ -24,6 +31,13 @@ export const INITIAL_USERS: User[] = [
     bio: 'Navegación GPX, amante de brechas técnicas y fotos al atardecer.',
     location: 'Bosques de las Lomas, CDMX',
     ridingLevel: 'Avanzado',
+    completedRouteIds: ['route-1', 'route-2', 'route-3'],
+    savedRouteIds: ['route-4'],
+    stats: {
+      totalKm: 4200,
+      completedCount: 14,
+      elevationGain: 19500
+    }
   },
   {
     id: 'user-sofia',
@@ -34,6 +48,13 @@ export const INITIAL_USERS: User[] = [
     bio: 'Maxi-trail rider. Lista para acampar bajo cero con tal de ver amanecer en la sierra.',
     location: 'Santa Fe, CDMX',
     ridingLevel: 'Intermedio',
+    completedRouteIds: ['route-1', 'route-6'],
+    savedRouteIds: ['route-3'],
+    stats: {
+      totalKm: 1100,
+      completedCount: 3,
+      elevationGain: 5200
+    }
   },
   {
     id: 'user-rigo',
@@ -44,6 +65,13 @@ export const INITIAL_USERS: User[] = [
     bio: 'Mecánica de emergencia, compresores y fogatas master. La terracería es vida.',
     location: 'La Herradura, Huixquilucan',
     ridingLevel: 'Avanzado',
+    completedRouteIds: ['route-1', 'route-3', 'route-5'],
+    savedRouteIds: ['route-2'],
+    stats: {
+      totalKm: 3400,
+      completedCount: 11,
+      elevationGain: 16800
+    }
   }
 ];
 
@@ -622,3 +650,21 @@ export const SECOND_RODADA: Rodada = {
 
 export const INITIAL_RODADAS: Rodada[] = [INITIAL_RODADA, SECOND_RODADA];
 
+export const INITIAL_ROUTE_LISTS: RouteList[] = [
+  {
+    id: 'list-wishlist',
+    userId: 'user-patricio',
+    name: 'Por Rodar // Wishlist 2026',
+    description: 'Rutas pendientes para puentes y fines de semana largos con el grupo.',
+    routeIds: ['route-2', 'route-3', 'route-5'],
+    createdAt: '2026-10-15'
+  },
+  {
+    id: 'list-tecnicas',
+    userId: 'user-patricio',
+    name: 'Retos Técnicos de Sierra',
+    description: 'Brechas rocosas, cañones y pasos de río para poner a prueba llantas 50/50.',
+    routeIds: ['route-3', 'route-5'],
+    createdAt: '2026-10-18'
+  }
+];

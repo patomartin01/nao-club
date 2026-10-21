@@ -11,6 +11,7 @@ import { ProposeRouteModal } from '../components/Modals/ProposeRouteModal';
 import { JoinCrewModal } from '../components/Modals/JoinCrewModal';
 import { CreateCrewModal } from '../components/Modals/CreateCrewModal';
 import { CreateRodadaModal } from '../components/Modals/CreateRodadaModal';
+import { PilotProfileModal } from '../components/Modals/PilotProfileModal';
 import { BottomBar } from '../components/Navigation/BottomBar';
 
 export default function Home() {
@@ -124,6 +125,8 @@ export default function Home() {
         isOpen={createRodadaOpen} 
         onClose={() => setCreateRodadaOpen(false)} 
       />
+
+      <PilotProfileModal />
 
     </div>
   );

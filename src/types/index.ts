@@ -33,6 +33,22 @@ export interface User {
   ridingLevel: RidingLevel;
   emergencyContact?: string;
   phone?: string;
+  completedRouteIds?: string[];
+  savedRouteIds?: string[];
+  stats?: {
+    totalKm: number;
+    completedCount: number;
+    elevationGain: number;
+  };
+}
+
+export interface RouteList {
+  id: string;
+  userId: string;
+  name: string;
+  description?: string;
+  routeIds: string[];
+  createdAt: string;
 }
 
 export type WaypointType = 'start' | 'camp' | 'scenic' | 'fuel' | 'food' | 'dirt' | 'end';

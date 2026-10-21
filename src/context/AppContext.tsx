@@ -8,7 +8,8 @@ import {
   Rodada, 
   RouteProposal, 
   PackingItem,
-  RodadaAttendee
+  RodadaAttendee,
+  RouteList
 } from '../types';
 import { 
   CURRENT_USER, 
@@ -17,7 +18,8 @@ import {
   INITIAL_CREWS, 
   INITIAL_RODADA, 
   INITIAL_RODADAS,
-  INITIAL_ROUTE_PROPOSALS 
+  INITIAL_ROUTE_PROPOSALS,
+  INITIAL_ROUTE_LISTS
 } from '../data/initialData';
 
 interface AppContextType {
@@ -53,6 +55,18 @@ interface AppContextType {
   assignPackingItem: (rodadaId: string, itemId: string, userId: string, userName: string) => void;
   addPackingItem: (rodadaId: string, item: string, category: PackingItem['category']) => void;
   addGalleryPhoto: (rodadaId: string, url: string, caption: string) => void;
+  // Strava & Wikiloc Extensions
+  completedRouteIds: string[];
+  savedRouteIds: string[];
+  routeLists: RouteList[];
+  toggleCompletedRoute: (routeId: string) => void;
+  toggleSavedRoute: (routeId: string) => void;
+  createRouteList: (name: string, description?: string) => void;
+  addRouteToList: (listId: string, routeId: string) => void;
+  removeRouteFromList: (listId: string, routeId: string) => void;
+  selectedPilotProfile: User | null;
+  setSelectedPilotProfile: (pilot: User | null) => void;
+  openPilotProfileById: (userId: string) => void;
   activeNavTab: 'home' | 'crew' | 'rodada' | 'rutas' | 'garaje';
   setActiveNavTab: (tab: 'home' | 'crew' | 'rodada' | 'rutas' | 'garaje') => void;
 }
@@ -78,6 +92,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [routeProposals, setRouteProposals] = useState<RouteProposal[]>(INITIAL_ROUTE_PROPOSALS);
   const [selectedRoute, setSelectedRoute] = useState<RouteProposal | null>(INITIAL_ROUTE_PROPOSALS[0]);
   const [activeNavTab, setActiveNavTab] = useState<'home' | 'crew' | 'rodada' | 'rutas' | 'garaje'>('home');
+
+  // Strava & Wikiloc extensions state
+  const [completedRouteIds, setCompletedRouteIds] = useState<string[]>(CURRENT_USER.completedRouteIds || ['route-1', 'route-4']);
+  const [savedRouteIds, setSavedRouteIds] = useState<string[]>(CURRENT_USER.savedRouteIds || ['route-2', 'route-3', 'route-5']);
+  const [routeLists, setRouteLists] = useState<RouteList[]>(INITIAL_ROUTE_LISTS);
+  const [selectedPilotProfile, setSelectedPilotProfile] = useState<User | null>(null);
 
   // Load from LocalStorage if available
   useEffect(() => {
@@ -443,6 +463,74 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const toggleCompletedRoute = (routeId: string) => {
+    setCompletedRouteIds(prev => {
+      const exists = prev.includes(routeId);
+      const updated = exists ? prev.filter(id => id !== routeId) : [...prev, routeId];
+      const targetRoute = routeProposals.find(r => r.id === routeId);
+      const kmDelta = targetRoute ? targetRoute.totalKm : 120;
+      setCurrentUser(u => ({
+        ...u,
+        completedRouteIds: updated,
+        stats: {
+          totalKm: Math.max(0, (u.stats?.totalKm || 0) + (exists ? -kmDelta : kmDelta)),
+          completedCount: Math.max(0, (u.stats?.completedCount || 0) + (exists ? -1 : 1)),
+          elevationGain: Math.max(0, (u.stats?.elevationGain || 0) + (exists ? -650 : 650))
+        }
+      }));
+      return updated;
+    });
+  };
+
+  const toggleSavedRoute = (routeId: string) => {
+    setSavedRouteIds(prev => {
+      const exists = prev.includes(routeId);
+      const updated = exists ? prev.filter(id => id !== routeId) : [...prev, routeId];
+      setCurrentUser(u => ({ ...u, savedRouteIds: updated }));
+      return updated;
+    });
+  };
+
+  const createRouteList = (name: string, description?: string) => {
+    if (!name.trim()) return;
+    const newList: RouteList = {
+      id: `list-${Date.now()}`,
+      userId: currentUser.id,
+      name: name.trim(),
+      description: description?.trim(),
+      routeIds: [],
+      createdAt: new Date().toISOString().split('T')[0]
+    };
+    setRouteLists(prev => [newList, ...prev]);
+  };
+
+  const addRouteToList = (listId: string, routeId: string) => {
+    setRouteLists(prev => prev.map(l => {
+      if (l.id === listId && !l.routeIds.includes(routeId)) {
+        return { ...l, routeIds: [...l.routeIds, routeId] };
+      }
+      return l;
+    }));
+  };
+
+  const removeRouteFromList = (listId: string, routeId: string) => {
+    setRouteLists(prev => prev.map(l => {
+      if (l.id === listId) {
+        return { ...l, routeIds: l.routeIds.filter(id => id !== routeId) };
+      }
+      return l;
+    }));
+  };
+
+  const openPilotProfileById = (userId: string) => {
+    const found = users.find(u => u.id === userId || u.handle === userId || u.name === userId);
+    if (found) {
+      setSelectedPilotProfile(found);
+    } else {
+      setSelectedPilotProfile(currentUser);
+    }
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -478,6 +566,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         assignPackingItem,
         addPackingItem,
         addGalleryPhoto,
+        completedRouteIds,
+        savedRouteIds,
+        routeLists,
+        toggleCompletedRoute,
+        toggleSavedRoute,
+        createRouteList,
+        addRouteToList,
+        removeRouteFromList,
+        selectedPilotProfile,
+        setSelectedPilotProfile,
+        openPilotProfileById,
         activeNavTab,
         setActiveNavTab
       }}

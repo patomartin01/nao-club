@@ -58,6 +58,7 @@ export const CrewView: React.FC<CrewViewProps> = ({
     rsvpRodada,
     userBikes,
     motorcycles,
+    openPilotProfileById,
     setActiveNavTab 
   } = useApp();
 
@@ -732,34 +733,44 @@ ${gpxPoints}
               const userBike = motorcycles.find(m => m.userId === user.id);
 
               return (
-                <div key={member.userId} className="border border-white/10 bg-[#0B0A09] p-5 space-y-4 font-mono text-xs flex flex-col justify-between">
+                <div 
+                  key={member.userId} 
+                  onClick={() => openPilotProfileById(user.id)}
+                  className="border border-white/10 hover:border-earth bg-[#0B0A09] p-5 space-y-4 font-mono text-xs flex flex-col justify-between cursor-pointer transition group shadow-lg"
+                  title="Ver perfil y telemetría de este piloto"
+                >
                   <div className="space-y-3">
                     <div className="flex items-center gap-3">
                       <img 
                         src={user.avatar} 
                         alt={user.name} 
-                        className="w-12 h-12 object-cover border border-white/20"
+                        className="w-12 h-12 object-cover border border-white/20 group-hover:border-earth transition"
                       />
                       <div>
-                        <p className="font-bold text-white uppercase">{user.name}</p>
+                        <p className="font-bold text-white uppercase group-hover:text-earth transition">{user.name}</p>
                         <p className="text-[10px] text-earth uppercase">{member.role}</p>
                       </div>
                     </div>
 
-                    <p className="text-[11px] text-ash font-light border-t border-white/[0.06] pt-2">
+                    <p className="text-[11px] text-ash font-light border-t border-white/[0.06] pt-2 line-clamp-2">
                       {user.bio}
                     </p>
                   </div>
 
-                  {userBike && (
-                    <div className="p-3 bg-white/[0.02] border border-white/10 space-y-1">
-                      <span className="text-[9px] text-ash uppercase block">Máquina Oficial:</span>
-                      <p className="font-bold text-white text-[11px] uppercase">
-                        {userBike.brand} {userBike.model}
-                      </p>
-                      <p className="text-[10px] text-earth">{userBike.tires}</p>
-                    </div>
-                  )}
+                  <div className="space-y-2">
+                    {userBike && (
+                      <div className="p-2.5 bg-white/[0.02] border border-white/10 space-y-0.5">
+                        <span className="text-[8px] text-ash uppercase block">Máquina:</span>
+                        <p className="font-bold text-white text-[10px] uppercase truncate">
+                          {userBike.brand} {userBike.model}
+                        </p>
+                        <p className="text-[9px] text-earth truncate">{userBike.tires}</p>
+                      </div>
+                    )}
+                    <span className="text-[9px] text-ash group-hover:text-earth uppercase tracking-wider block text-right font-bold transition">
+                      Ver Perfil Strava ↗
+                    </span>
+                  </div>
                 </div>
               );
             })}
