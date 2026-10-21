@@ -105,6 +105,18 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
 
             <button
+              onClick={() => setActiveNavTab('brand')}
+              className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg transition ${
+                activeNavTab === 'brand'
+                  ? 'bg-white text-black font-bold shadow-md'
+                  : 'text-amber-400 hover:text-white hover:bg-slate-800/60'
+              }`}
+            >
+              <Sparkles className="w-4 h-4" />
+              Brand Book: NAO vs NÓMADA
+            </button>
+
+            <button
               onClick={() => setActiveNavTab('garaje')}
               className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg transition ${
                 activeNavTab === 'garaje'

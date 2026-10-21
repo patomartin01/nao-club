@@ -7,6 +7,7 @@ import { RodadaDetailView } from '../components/Rodadas/RodadaDetailView';
 import { RouteExplorerView } from '../components/Routes/RouteExplorerView';
 import { CrewView } from '../components/Crews/CrewView';
 import { GarageView } from '../components/Garage/GarageView';
+import { BrandShowcaseView } from '../components/Brand/BrandShowcaseView';
 import { ProposeRouteModal } from '../components/Modals/ProposeRouteModal';
 import { JoinCrewModal } from '../components/Modals/JoinCrewModal';
 import { CreateCrewModal } from '../components/Modals/CreateCrewModal';
@@ -54,6 +55,10 @@ export default function Home() {
 
         {activeNavTab === 'garaje' && (
           <GarageView />
+        )}
+
+        {activeNavTab === 'brand' && (
+          <BrandShowcaseView />
         )}
       </main>
 

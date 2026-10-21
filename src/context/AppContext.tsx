@@ -50,8 +50,8 @@ interface AppContextType {
   assignPackingItem: (rodadaId: string, itemId: string, userId: string, userName: string) => void;
   addPackingItem: (rodadaId: string, item: string, category: PackingItem['category']) => void;
   addGalleryPhoto: (rodadaId: string, url: string, caption: string) => void;
-  activeNavTab: 'rodada' | 'rutas' | 'crew' | 'garaje';
-  setActiveNavTab: (tab: 'rodada' | 'rutas' | 'crew' | 'garaje') => void;
+  activeNavTab: 'rodada' | 'rutas' | 'crew' | 'garaje' | 'brand';
+  setActiveNavTab: (tab: 'rodada' | 'rutas' | 'crew' | 'garaje' | 'brand') => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -74,7 +74,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [currentRodada, setCurrentRodada] = useState<Rodada | null>(INITIAL_RODADA);
   const [routeProposals, setRouteProposals] = useState<RouteProposal[]>(INITIAL_ROUTE_PROPOSALS);
   const [selectedRoute, setSelectedRoute] = useState<RouteProposal | null>(INITIAL_ROUTE_PROPOSALS[0]);
-  const [activeNavTab, setActiveNavTab] = useState<'rodada' | 'rutas' | 'crew' | 'garaje'>('rodada');
+  const [activeNavTab, setActiveNavTab] = useState<'rodada' | 'rutas' | 'crew' | 'garaje' | 'brand'>('brand');
 
   // Load from LocalStorage if available
   useEffect(() => {
