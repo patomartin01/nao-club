@@ -23,8 +23,9 @@ export default function Home() {
   const [createRodadaOpen, setCreateRodadaOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#06090D] flex flex-col">
-      {/* Navigation Bar */}
+    <div className="min-h-screen bg-[#0B0A09] text-chalk flex flex-col antialiased selection:bg-earth selection:text-white">
+      
+      {/* 1. Superficial-Style Navbar */}
       <Navbar
         onOpenCreateRodada={() => setCreateRodadaOpen(true)}
         onOpenProposeRoute={() => setProposeRouteOpen(true)}
@@ -32,8 +33,8 @@ export default function Home() {
         onOpenCreateCrew={() => setCreateCrewOpen(true)}
       />
 
-      {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+      {/* 2. Main Architectural Container */}
+      <main className="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-8 lg:px-12 pt-8 sm:pt-12">
         {activeNavTab === 'rodada' && (
           <RodadaDetailView 
             onOpenProposeRoute={() => setProposeRouteOpen(true)} 
@@ -62,15 +63,37 @@ export default function Home() {
         )}
       </main>
 
-      {/* Minimal Footer */}
-      <footer className="border-t border-white/[0.06] bg-[#060709] py-8 text-center text-xs text-white/40">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-[11px]">
-          <p>
-            <strong className="text-white tracking-widest">N A O</strong> — Navana Expeditions // Hospitalidad & Brechas Off-Road
-          </p>
-          <p className="text-white/30">
-            Amanalco · Valle de Bravo · Interlomas
-          </p>
+      {/* 3. Swiss Architectural Footer */}
+      <footer className="border-t border-white/10 bg-[#080706] py-12">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 grid grid-cols-1 md:grid-cols-12 gap-8 font-mono text-xs">
+          
+          <div className="md:col-span-5 space-y-3">
+            <div className="flex items-baseline gap-3">
+              <span className="font-display font-extrabold text-2xl tracking-[0.25em] text-white">
+                NAO
+              </span>
+              <span className="text-[10px] uppercase tracking-widest text-ash">
+                // NAVANA EXPEDITIONS
+              </span>
+            </div>
+            <p className="text-ash text-xs max-w-sm leading-relaxed font-light">
+              Plataforma de exploración en motos doble propósito, consenso de rutas efímeras y refugios arquitectónicos. Cero clichés ruidosos; tierra, silencio y diseño.
+            </p>
+          </div>
+
+          <div className="md:col-span-3 space-y-2">
+            <span className="text-[10px] text-earth uppercase tracking-widest font-bold block">Destinos Base</span>
+            <p className="text-ash">01. Navana Cabins // Amanalco</p>
+            <p className="text-ash">02. El Mirador // Valle de Bravo</p>
+            <p className="text-ash">03. Mineral del Chico // Diego Mateo</p>
+          </div>
+
+          <div className="md:col-span-4 space-y-2 text-right md:text-right">
+            <span className="text-[10px] text-earth uppercase tracking-widest font-bold block">Hospitalidad & Comunidad</span>
+            <p className="text-white font-bold">navanacabins.com</p>
+            <p className="text-ash text-[11px]">Diseñado por y para exploradores dual-sport.</p>
+          </div>
+
         </div>
       </footer>
 
@@ -94,6 +117,7 @@ export default function Home() {
         isOpen={createRodadaOpen} 
         onClose={() => setCreateRodadaOpen(false)} 
       />
+
     </div>
   );
 }

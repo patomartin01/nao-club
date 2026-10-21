@@ -2,9 +2,8 @@
 
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { RouteProposal } from '../../types';
 import { RouteMap } from '../Map/RouteMap';
-import { Compass, Search, MapPin, Gauge, ThumbsUp, Plus, Filter, Mountain, Tent } from 'lucide-react';
+import { Search, ThumbsUp, Plus, ArrowUpRight } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 interface RouteExplorerViewProps {
@@ -26,179 +25,196 @@ export const RouteExplorerView: React.FC<RouteExplorerViewProps> = ({ onOpenProp
 
   const activeRoute = selectedRoute || filteredRoutes[0] || routeProposals[0];
 
-  const handleVote = (routeId: string) => {
+  const handleVote = (e: React.MouseEvent, routeId: string) => {
+    e.stopPropagation();
     voteRoute(routeId);
-    confetti({ particleCount: 40 });
+    confetti({ particleCount: 30, spread: 60 });
   };
 
   return (
-    <div className="space-y-6 pb-24 text-white">
+    <div className="space-y-12 pb-32 text-chalk">
       
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-white/[0.08] pb-4">
-        <div>
-          <div className="flex items-center gap-2 font-mono text-xs text-[#C87D55] uppercase tracking-widest font-bold">
-            <span>[ 02 ]</span>
-            <span>Cartografía & Votos</span>
+      {/* 01. HEADER */}
+      <section className="border border-white/10 bg-[#0B0A09]">
+        <div className="grid grid-cols-12 border-b border-white/10">
+          <div className="col-span-12 md:col-span-8 p-6 sm:p-10 border-b md:border-b-0 md:border-r border-white/10">
+            <span className="font-mono text-[10px] text-earth uppercase tracking-widest font-bold block mb-2">
+              [ 02 // CARTOGRAFÍA & VOTACIÓN DE FLOTILLA ]
+            </span>
+            <h1 className="font-display font-extrabold text-3xl sm:text-5xl text-white uppercase tracking-tight leading-[0.95]">
+              Archivo de Travesías & Brechas
+            </h1>
+            <p className="font-mono text-xs text-ash uppercase tracking-wider mt-4">
+              TELEMETRÍA COMPARADA_PORCENTAJE DE BRECHA_ALTIMETRÍA Y ESTADO DE VOTACIÓN POR CONECTIVIDAD DE GRUPO_
+            </p>
           </div>
-          <h1 className="font-display font-black text-2xl sm:text-4xl text-white tracking-tight mt-1">
-            Travesías & Brechas Off-Road
-          </h1>
-          <p className="text-xs text-white/50 font-light">
-            Altimetría, porcentaje de terracería y telemetría de ruta hacia los refugios.
-          </p>
+
+          <div className="col-span-12 md:col-span-4 p-6 sm:p-8 flex flex-col justify-between bg-[#0E0C0A] font-mono text-xs">
+            <div>
+              <span className="text-[10px] text-ash uppercase tracking-widest block">FILTRAR POR DIFICULTAD</span>
+              <div className="grid grid-cols-2 gap-2 pt-2">
+                {['all', 'Fácil (Fluida)', 'Intermedia', 'Técnica'].map((diff) => (
+                  <button
+                    key={diff}
+                    onClick={() => setSelectedDifficulty(diff)}
+                    className={`py-2 px-2 text-[10px] uppercase font-bold tracking-wider border transition ${
+                      selectedDifficulty === diff
+                        ? 'bg-white text-obsidian border-white'
+                        : 'border-white/10 text-ash hover:text-white'
+                    }`}
+                  >
+                    {diff === 'all' ? 'Todas' : diff.split(' ')[0]}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="pt-6">
+              <button
+                onClick={onOpenProposeRoute}
+                className="w-full py-3 bg-earth hover:bg-earth-bright text-white font-mono text-xs uppercase font-bold tracking-widest transition flex items-center justify-center gap-1.5"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>+ Proponer Variante</span>
+              </button>
+            </div>
+          </div>
         </div>
 
-        <button
-          onClick={onOpenProposeRoute}
-          className="px-4 py-2.5 bg-white hover:bg-[#C87D55] text-black hover:text-white text-xs font-mono font-bold uppercase tracking-wider shrink-0 transition"
-        >
-          + Proponer Variante
-        </button>
-      </div>
-
-      {/* Filter and Search Bar */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+        {/* Search Bar Input (Full Bleed) */}
+        <div className="p-4 sm:p-6 bg-[#080706] flex items-center gap-3 font-mono text-xs border-b border-white/10">
+          <Search className="w-4 h-4 text-ash" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Buscar por destino, bosque, estado (ej. Toluca, Malinche, Bucareli)..."
-            className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+            placeholder="Buscar por destino, bosque o estado (ej. Amanalco, Mineral del Chico, Tlaxcala)..."
+            className="w-full bg-transparent text-white placeholder-ash focus:outline-none"
           />
         </div>
+      </section>
 
-        <div className="flex items-center gap-2">
-          <Filter className="w-4 h-4 text-amber-400 shrink-0" />
-          <select
-            value={selectedDifficulty}
-            onChange={(e) => setSelectedDifficulty(e.target.value)}
-            className="bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none"
-          >
-            <option value="all">Todas las Dificultades</option>
-            <option value="Fácil (Fluida)">Fácil (Fluida)</option>
-            <option value="Intermedio">Intermedio</option>
-            <option value="Avanzado / Técnico">Avanzado / Técnico</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Interactive Map & Route List Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
-        {/* Left: Map Preview (7 cols) */}
-        <div className="lg:col-span-7 space-y-4">
-          <div className="h-[480px] w-full rounded-2xl overflow-hidden border border-slate-800 shadow-2xl">
-            <RouteMap 
-              route={activeRoute} 
-              allRoutes={routeProposals}
-              onSelectRoute={(r) => setSelectedRoute(r)}
-            />
+      {/* 02. SPLIT LAYOUT: MAP ON TOP + ROUTES MATRIX BELOW */}
+      <section className="border border-white/10 bg-[#0B0A09]">
+        <div className="p-4 sm:p-6 border-b border-white/10 flex items-center justify-between font-mono text-xs">
+          <div className="flex items-center gap-3">
+            <span className="w-2.5 h-2.5 rounded-full bg-earth animate-pulse" />
+            <span className="text-white font-bold uppercase">
+              VISTA ACTIVA // {activeRoute.title} ({activeRoute.totalKm} KM · {activeRoute.offroadPercentage}% OFF-ROAD)
+            </span>
           </div>
 
-          {activeRoute && (
-            <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-mono uppercase text-amber-400 font-bold">
-                  Resumen de Campamento
-                </span>
-                <span className="text-xs font-mono text-cyan-400">
-                  {activeRoute.campsite.elevationMeters} msnm
-                </span>
-              </div>
-              <h4 className="font-bold text-sm text-white flex items-center gap-1.5">
-                <Tent className="w-4 h-4 text-amber-400" />
-                {activeRoute.campsite.name}
-              </h4>
-              <p className="text-xs text-slate-300">
-                {activeRoute.campsite.security} • Noche: <strong className="text-slate-100">{activeRoute.campsite.minTempNight}</strong>
-              </p>
-            </div>
-          )}
+          <button
+            onClick={() => setActiveNavTab('rodada')}
+            className="text-earth hover:text-white font-bold uppercase tracking-wider flex items-center gap-1"
+          >
+            <span>Ver Expedición 01</span>
+            <ArrowUpRight className="w-3.5 h-3.5" />
+          </button>
         </div>
 
-        {/* Right: Route Cards List (5 cols) */}
-        <div className="lg:col-span-5 space-y-3.5 max-h-[600px] overflow-y-auto pr-1">
-          {filteredRoutes.map((route, index) => {
-            const isSelected = activeRoute?.id === route.id;
-            const userVoted = route.votes.includes(currentUser.id);
+        <div className="h-[420px] sm:h-[480px] w-full relative">
+          <RouteMap 
+            route={activeRoute} 
+            allRoutes={filteredRoutes}
+            onSelectRoute={(r) => setSelectedRoute(r)}
+          />
+        </div>
+      </section>
+
+      {/* 03. FULL ROUTES CARDS GRID */}
+      <section className="space-y-4">
+        <div className="border-b border-white/10 pb-4">
+          <span className="font-mono text-[10px] text-earth uppercase tracking-widest font-bold">
+            [ CATÁLOGO DE RUTAS REGISTRADAS ]
+          </span>
+          <h2 className="font-display font-bold text-2xl text-white uppercase mt-1">
+            {filteredRoutes.length} Trazados Disponibles
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {filteredRoutes.map((route) => {
+            const isSelected = route.id === activeRoute.id;
+            const hasVoted = route.votes.includes(currentUser.id);
 
             return (
               <div
                 key={route.id}
                 onClick={() => setSelectedRoute(route)}
-                className={`p-4 rounded-2xl border transition cursor-pointer space-y-3 group ${
+                className={`border cursor-pointer transition flex flex-col justify-between ${
                   isSelected
-                    ? 'bg-slate-900 border-amber-500 shadow-glow'
-                    : 'bg-slate-900/60 border-slate-800 hover:border-slate-700'
+                    ? 'border-earth bg-white/[0.03]'
+                    : 'border-white/10 bg-[#0B0A09] hover:border-white/30'
                 }`}
               >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 font-bold font-mono text-xs flex items-center justify-center shrink-0">
-                      #{index + 1}
+                {/* Photo & Overlay */}
+                <div className="h-52 w-full relative overflow-hidden border-b border-white/10">
+                  <img 
+                    src={route.coverImage} 
+                    alt={route.title} 
+                    className="w-full h-full object-cover filter brightness-80"
+                  />
+                  <div className="absolute top-4 left-4 bg-black/80 backdrop-blur-md px-2.5 py-1 font-mono text-[10px] text-white border border-white/20">
+                    {route.destination.toUpperCase()}, {route.state.toUpperCase()}
+                  </div>
+                  <div className="absolute top-4 right-4 bg-earth text-white px-2.5 py-1 font-mono text-[10px] font-bold uppercase">
+                    {route.votes.length} VOTOS
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="p-6 space-y-4">
+                  <div>
+                    <h3 className="font-display font-bold text-xl text-white uppercase">
+                      {route.title}
+                    </h3>
+                    <p className="text-xs text-ash mt-1 line-clamp-2 font-light">
+                      {route.description}
+                    </p>
+                  </div>
+
+                  {/* Telemetry cells */}
+                  <div className="grid grid-cols-3 gap-2 py-3 border-y border-white/10 font-mono text-xs">
+                    <div>
+                      <span className="text-[9px] text-ash uppercase block">Distancia</span>
+                      <span className="text-white font-bold">{route.totalKm} km</span>
                     </div>
                     <div>
-                      <h3 className="font-display font-black text-sm text-white group-hover:text-amber-400 transition">
-                        {route.title}
-                      </h3>
-                      <p className="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
-                        <MapPin className="w-3.5 h-3.5 text-amber-400" />
-                        {route.destination}, {route.state}
-                      </p>
+                      <span className="text-[9px] text-ash uppercase block">Brecha</span>
+                      <span className="text-earth font-bold">{route.offroadPercentage}%</span>
+                    </div>
+                    <div>
+                      <span className="text-[9px] text-ash uppercase block">Altitud Base</span>
+                      <span className="text-white font-bold">{route.campsite.elevationMeters} m</span>
                     </div>
                   </div>
 
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleVote(route.id);
-                    }}
-                    className={`px-2.5 py-1.5 rounded-lg text-xs font-mono font-bold flex items-center gap-1.5 transition ${
-                      userVoted 
-                        ? 'bg-emerald-500 text-slate-950' 
-                        : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-                    }`}
-                  >
-                    <ThumbsUp className="w-3.5 h-3.5" />
-                    {route.votes.length}
-                  </button>
+                  {/* Footer & Voting */}
+                  <div className="flex items-center justify-between font-mono text-xs pt-1">
+                    <span className="text-[11px] text-ash">
+                      Propuesto por <strong className="text-white">{route.proposedByName}</strong>
+                    </span>
+
+                    <button
+                      onClick={(e) => handleVote(e, route.id)}
+                      className={`px-3 py-1.5 uppercase font-bold text-[10px] tracking-wider border transition ${
+                        hasVoted 
+                          ? 'bg-earth text-white border-earth' 
+                          : 'border-white/20 text-white hover:bg-white hover:text-black'
+                      }`}
+                    >
+                      {hasVoted ? 'Votado ✓' : 'Votar'}
+                    </button>
+                  </div>
                 </div>
 
-                <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
-                  {route.description}
-                </p>
-
-                {/* Specs pill row */}
-                <div className="flex items-center justify-between text-[11px] font-mono text-slate-300 pt-1 border-t border-slate-800/80">
-                  <span className="text-amber-400 font-bold">🛣️ {route.totalKm} km</span>
-                  <span className="text-emerald-400 font-bold">🌲 {route.offroadPercentage}% Brecha</span>
-                  <span className="text-slate-400">{route.difficulty}</span>
-                </div>
-
-                <div className="flex items-center justify-between pt-1">
-                  <span className="text-[10px] text-slate-500">
-                    Por {route.proposedByName}
-                  </span>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedRoute(route);
-                      setActiveNavTab('rodada');
-                    }}
-                    className="text-xs font-bold text-amber-400 hover:underline flex items-center gap-1"
-                  >
-                    Ver en Plan de Rodada →
-                  </button>
-                </div>
               </div>
             );
           })}
         </div>
+      </section>
 
-      </div>
     </div>
   );
 };

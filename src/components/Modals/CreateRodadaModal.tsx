@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { Calendar, Plus, MapPin } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 interface CreateRodadaModalProps {
@@ -16,9 +15,9 @@ export const CreateRodadaModal: React.FC<CreateRodadaModalProps> = ({ isOpen, on
   const [title, setTitle] = useState('');
   const [subtitle, setSubtitle] = useState('');
   const [description, setDescription] = useState('');
-  const [category, setCategory] = useState<'Puente / Expedición Multi-días' | 'Fin de Semana' | 'Rodada Rápida 1 Día'>('Fin de Semana');
-  const [startDate, setStartDate] = useState('2026-11-14');
-  const [endDate, setEndDate] = useState('2026-11-15');
+  const [category, setCategory] = useState<'Puente / Expedición Multi-días' | 'Fin de Semana' | 'Rodada Rápida 1 Día'>('Puente / Expedición Multi-días');
+  const [startDate, setStartDate] = useState('2026-10-31');
+  const [endDate, setEndDate] = useState('2026-11-02');
   const [originPoint, setOriginPoint] = useState('Interlomas, Huixquilucan, Edomex');
 
   if (!isOpen) return null;
@@ -43,106 +42,89 @@ export const CreateRodadaModal: React.FC<CreateRodadaModalProps> = ({ isOpen, on
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-5 shadow-2xl animate-in fade-in zoom-in-95">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-amber-500/20 text-amber-400">
-              <Calendar className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="font-display font-black text-lg text-white">Crear Nueva Rodada / Evento</h3>
-              <p className="text-xs text-slate-400">Abre un espacio para que los miembros propongan y voten rutas.</p>
-            </div>
+    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+      <div className="border border-white/20 bg-[#0E0C0A] max-w-lg w-full p-6 sm:p-8 space-y-6">
+        <div className="flex items-center justify-between border-b border-white/10 pb-4">
+          <div>
+            <span className="font-mono text-[10px] text-earth uppercase tracking-widest font-bold">
+              [ NUEVA EXPEDICIÓN ]
+            </span>
+            <h3 className="font-display font-bold text-xl text-white uppercase">
+              Crear Evento de Rodada
+            </h3>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-white">✕</button>
+          <button onClick={onClose} className="font-mono text-ash hover:text-white">✕</button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 font-mono text-xs">
           <div>
-            <label className="text-xs font-semibold text-slate-400">Nombre de la Rodada</label>
+            <label className="text-ash uppercase text-[10px] block mb-1">Título de la Expedición</label>
             <input
               type="text"
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Ej. Ruta del Café & Niebla en Sierra Norte"
-              className="w-full mt-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500"
+              placeholder="Ej. Travesía Nevado & Valle de Bravo"
+              className="w-full bg-white/[0.03] border border-white/15 px-3 py-2 text-white focus:outline-none focus:border-earth"
             />
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-slate-400">Subtítulo / Objetivo</label>
+            <label className="text-ash uppercase text-[10px] block mb-1">Subtítulo / Manifiesto</label>
             <input
               type="text"
               value={subtitle}
               onChange={(e) => setSubtitle(e.target.value)}
-              placeholder="Ej. 2 días acampando ligero y terracerías húmedas"
-              className="w-full mt-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500"
+              placeholder="Ej. Basecamp en Navana y brechas técnicas de altura."
+              className="w-full bg-white/[0.03] border border-white/15 px-3 py-2 text-white focus:outline-none focus:border-earth"
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-xs font-semibold text-slate-400">Categoría</label>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value as any)}
-                className="w-full mt-1 bg-slate-950 border border-slate-800 rounded-xl px-2 py-2 text-xs text-white focus:outline-none focus:border-amber-500"
-              >
-                <option value="Fin de Semana">Fin de Semana (2 días)</option>
-                <option value="Puente / Expedición Multi-días">Puente / Multi-días (3+ días)</option>
-                <option value="Rodada Rápida 1 Día">Rodada Rápida (1 día)</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="text-xs font-semibold text-slate-400">Punto de Salida</label>
-              <input
-                type="text"
-                value={originPoint}
-                onChange={(e) => setOriginPoint(e.target.value)}
-                placeholder="Ej. Interlomas, CDMX"
-                className="w-full mt-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-semibold text-slate-400">Fecha de Inicio</label>
+              <label className="text-ash uppercase text-[10px] block mb-1">Fecha de Salida</label>
               <input
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full mt-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500"
+                className="w-full bg-white/[0.03] border border-white/15 px-3 py-2 text-white focus:outline-none focus:border-earth"
               />
             </div>
-
             <div>
-              <label className="text-xs font-semibold text-slate-400">Fecha de Retorno</label>
+              <label className="text-ash uppercase text-[10px] block mb-1">Fecha de Regreso</label>
               <input
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="w-full mt-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500"
+                className="w-full bg-white/[0.03] border border-white/15 px-3 py-2 text-white focus:outline-none focus:border-earth"
               />
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-3 border-t border-slate-800">
+          <div>
+            <label className="text-ash uppercase text-[10px] block mb-1">Punto de Partida</label>
+            <input
+              type="text"
+              value={originPoint}
+              onChange={(e) => setOriginPoint(e.target.value)}
+              placeholder="Ej. Gasolinera Interlomas"
+              className="w-full bg-white/[0.03] border border-white/15 px-3 py-2 text-white focus:outline-none focus:border-earth"
+            />
+          </div>
+
+          <div className="pt-4 border-t border-white/10 flex gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white"
+              className="w-1/2 py-3 border border-white/20 text-ash uppercase font-bold tracking-wider hover:text-white"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-amber-400 text-slate-950 text-xs font-bold rounded-xl hover:bg-amber-300 shadow-glow"
+              className="w-1/2 py-3 bg-earth hover:bg-earth-bright text-white uppercase font-bold tracking-widest transition"
             >
-              Publicar Rodada
+              Iniciar Convocatoria
             </button>
           </div>
         </form>

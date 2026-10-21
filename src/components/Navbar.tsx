@@ -2,139 +2,168 @@
 
 import React from 'react';
 import { useApp } from '../context/AppContext';
-import { Compass, Flame, MapPin, Shield, Layers, Plus } from 'lucide-react';
+import { Plus, Key, Compass, Navigation } from 'lucide-react';
 
 interface NavbarProps {
+  onOpenCreateRodada: () => void;
   onOpenProposeRoute: () => void;
   onOpenJoinCrew: () => void;
+  onOpenCreateCrew: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ onOpenProposeRoute, onOpenJoinCrew }) => {
-  const { activeNavTab, setActiveNavTab, currentUser, userBikes } = useApp();
+export const Navbar: React.FC<NavbarProps> = ({
+  onOpenProposeRoute,
+  onOpenJoinCrew,
+}) => {
+  const { activeNavTab, setActiveNavTab, currentUser } = useApp();
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-white/[0.08] bg-[#060709]/90 backdrop-blur-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 sm:h-20">
-          
-          {/* Brand Mark */}
-          <div 
-            onClick={() => setActiveNavTab('rodada')}
-            className="flex items-center gap-3 cursor-pointer group select-none"
-          >
-            <div className="flex items-center gap-2">
-              <span className="font-display font-black text-2xl tracking-[0.25em] text-white group-hover:text-[#C87D55] transition-colors">
-                NAO
-              </span>
-              <span className="text-[10px] font-mono tracking-widest text-white/40 uppercase pl-1 border-l border-white/20">
-                Navana Expeditions
-              </span>
-            </div>
-          </div>
-
-          {/* Minimalist Editorial Navigation Tabs */}
-          <nav className="hidden md:flex items-center space-x-1 lg:space-x-2">
-            <button
-              onClick={() => setActiveNavTab('rodada')}
-              className={`px-3.5 py-1.5 text-xs font-mono tracking-wider uppercase transition-all duration-200 border-b-2 ${
-                activeNavTab === 'rodada'
-                  ? 'border-[#C87D55] text-white font-bold'
-                  : 'border-transparent text-white/50 hover:text-white/90 hover:border-white/20'
-              }`}
-            >
-              01 // Expediciones
-            </button>
-
-            <button
-              onClick={() => setActiveNavTab('rutas')}
-              className={`px-3.5 py-1.5 text-xs font-mono tracking-wider uppercase transition-all duration-200 border-b-2 ${
-                activeNavTab === 'rutas'
-                  ? 'border-[#C87D55] text-white font-bold'
-                  : 'border-transparent text-white/50 hover:text-white/90 hover:border-white/20'
-              }`}
-            >
-              02 // Cartografía & Votos
-            </button>
-
-            <button
-              onClick={() => setActiveNavTab('brand')}
-              className={`px-3.5 py-1.5 text-xs font-mono tracking-wider uppercase transition-all duration-200 border-b-2 ${
-                activeNavTab === 'brand'
-                  ? 'border-[#C87D55] text-white font-bold'
-                  : 'border-transparent text-white/50 hover:text-white/90 hover:border-white/20'
-              }`}
-            >
-              03 // Santuario Navana
-            </button>
-
-            <button
-              onClick={() => setActiveNavTab('garaje')}
-              className={`px-3.5 py-1.5 text-xs font-mono tracking-wider uppercase transition-all duration-200 border-b-2 ${
-                activeNavTab === 'garaje'
-                  ? 'border-[#C87D55] text-white font-bold'
-                  : 'border-transparent text-white/50 hover:text-white/90 hover:border-white/20'
-              }`}
-            >
-              04 // Hangar ({userBikes.length})
-            </button>
-          </nav>
-
-          {/* Right Action / Telemetry */}
-          <div className="flex items-center gap-3 sm:gap-5">
-            <div className="hidden lg:flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/[0.03] text-[11px] font-mono text-white/60">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              19°24&apos;N · 2,980 M · SAUNA ACTIVO
-            </div>
-
-            <button
-              onClick={onOpenProposeRoute}
-              className="px-3.5 py-2 border border-white/20 bg-white text-black font-mono font-bold text-xs uppercase tracking-wider hover:bg-[#C87D55] hover:text-white hover:border-[#C87D55] transition-all duration-200"
-            >
-              + Proponer Ruta
-            </button>
-
-            <div 
-              onClick={() => setActiveNavTab('garaje')}
-              className="flex items-center gap-2 cursor-pointer group"
-            >
-              <img 
-                src={currentUser.avatar} 
-                alt={currentUser.name} 
-                className="w-8 h-8 rounded-full object-cover border border-white/20 group-hover:border-[#C87D55] transition"
-              />
-            </div>
-          </div>
-
+    <header className="sticky top-0 z-50 w-full bg-[#0B0A09] border-b border-white/[0.08] select-none">
+      
+      {/* 1. TOP TICK-MARK RULER (Superficial.design signature element) */}
+      <div className="w-full h-3 border-b border-white/[0.06] bg-black/40 overflow-hidden flex items-center">
+        <div className="w-full flex justify-between px-2 opacity-35 font-mono text-[8px] text-white/50 tracking-tighter">
+          {Array.from({ length: 48 }).map((_, i) => (
+            <span 
+              key={i} 
+              className={`inline-block ${
+                i % 6 === 0 
+                  ? 'h-2 w-[1px] bg-white' 
+                  : i % 2 === 0 
+                    ? 'h-1.5 w-[1px] bg-white/40' 
+                    : 'h-1 w-[1px] bg-white/20'
+              }`} 
+            />
+          ))}
         </div>
       </div>
 
-      {/* Mobile sub-bar */}
-      <div className="flex md:hidden items-center justify-around py-2 border-t border-white/[0.06] text-[11px] font-mono uppercase text-white/60">
-        <button 
+      {/* 2. MAIN SWISS GRID HEADER */}
+      <div className="w-full grid grid-cols-12 items-stretch min-h-[64px]">
+        
+        {/* Cell 1: Brand Logotype */}
+        <div 
           onClick={() => setActiveNavTab('rodada')}
-          className={activeNavTab === 'rodada' ? 'text-white font-bold' : ''}
+          className="col-span-12 sm:col-span-4 lg:col-span-3 border-b sm:border-b-0 sm:border-r border-white/[0.08] px-6 py-4 flex items-center justify-between cursor-pointer group hover:bg-white/[0.02] transition"
         >
-          Expediciones
-        </button>
-        <button 
-          onClick={() => setActiveNavTab('rutas')}
-          className={activeNavTab === 'rutas' ? 'text-white font-bold' : ''}
-        >
-          Cartografía
-        </button>
-        <button 
-          onClick={() => setActiveNavTab('brand')}
-          className={activeNavTab === 'brand' ? 'text-white font-bold' : ''}
-        >
-          Santuario
-        </button>
-        <button 
-          onClick={() => setActiveNavTab('garaje')}
-          className={activeNavTab === 'garaje' ? 'text-white font-bold' : ''}
-        >
-          Hangar
-        </button>
+          <div className="flex items-baseline gap-3">
+            <span className="font-display font-extrabold text-2xl tracking-[0.25em] text-white group-hover:text-earth transition">
+              NAO
+            </span>
+            <span className="font-mono text-[9px] uppercase tracking-widest text-ash">
+              // NAVANA EXPEDITIONS
+            </span>
+          </div>
+
+          <span className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-wider text-earth">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+            <span className="text-white/60">GPS FIX</span>
+          </span>
+        </div>
+
+        {/* Cell 2: Editorial Navigation Numbers */}
+        <nav className="col-span-12 sm:col-span-8 lg:col-span-6 border-b lg:border-b-0 lg:border-r border-white/[0.08] flex items-center justify-start sm:justify-center overflow-x-auto no-scrollbar px-2">
+          <button
+            onClick={() => setActiveNavTab('rodada')}
+            className={`px-4 py-4 font-mono text-xs uppercase tracking-wider transition-colors border-b-2 flex items-center gap-2 whitespace-nowrap ${
+              activeNavTab === 'rodada'
+                ? 'border-earth text-white font-bold bg-white/[0.02]'
+                : 'border-transparent text-ash hover:text-white'
+            }`}
+          >
+            <span className="text-earth font-bold">01.</span>
+            <span>Expediciones</span>
+          </button>
+
+          <button
+            onClick={() => setActiveNavTab('rutas')}
+            className={`px-4 py-4 font-mono text-xs uppercase tracking-wider transition-colors border-b-2 flex items-center gap-2 whitespace-nowrap ${
+              activeNavTab === 'rutas'
+                ? 'border-earth text-white font-bold bg-white/[0.02]'
+                : 'border-transparent text-ash hover:text-white'
+            }`}
+          >
+            <span className="text-earth font-bold">02.</span>
+            <span>Cartografía & Votos</span>
+          </button>
+
+          <button
+            onClick={() => setActiveNavTab('brand')}
+            className={`px-4 py-4 font-mono text-xs uppercase tracking-wider transition-colors border-b-2 flex items-center gap-2 whitespace-nowrap ${
+              activeNavTab === 'brand'
+                ? 'border-earth text-white font-bold bg-white/[0.02]'
+                : 'border-transparent text-ash hover:text-white'
+            }`}
+          >
+            <span className="text-earth font-bold">03.</span>
+            <span>Santuario Navana</span>
+          </button>
+
+          <button
+            onClick={() => setActiveNavTab('garaje')}
+            className={`px-4 py-4 font-mono text-xs uppercase tracking-wider transition-colors border-b-2 flex items-center gap-2 whitespace-nowrap ${
+              activeNavTab === 'garaje'
+                ? 'border-earth text-white font-bold bg-white/[0.02]'
+                : 'border-transparent text-ash hover:text-white'
+            }`}
+          >
+            <span className="text-earth font-bold">04.</span>
+            <span>Hangar</span>
+          </button>
+        </nav>
+
+        {/* Cell 3: Action Buttons & Pilot Spec */}
+        <div className="col-span-12 lg:col-span-3 px-6 py-3 flex items-center justify-between lg:justify-end gap-3 bg-[#0E0C0A]">
+          <button
+            onClick={onOpenJoinCrew}
+            title="Unirse a expedición con clave"
+            className="p-2.5 text-ash hover:text-white hover:bg-white/[0.04] border border-white/10 transition"
+          >
+            <Key className="w-4 h-4" />
+          </button>
+
+          <button
+            onClick={onOpenProposeRoute}
+            className="px-4 py-2 bg-chalk hover:bg-earth text-obsidian hover:text-white font-mono text-[11px] font-bold uppercase tracking-widest border border-white/20 transition flex items-center gap-1.5"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Proponer Ruta</span>
+          </button>
+
+          {/* Pilot avatar thumbnail */}
+          <div 
+            onClick={() => setActiveNavTab('garaje')}
+            className="flex items-center gap-2 pl-2 border-l border-white/10 cursor-pointer"
+          >
+            <img 
+              src={currentUser.avatar} 
+              alt={currentUser.name}
+              className="w-8 h-8 object-cover border border-white/20"
+            />
+          </div>
+        </div>
+
       </div>
+
+      {/* 3. SUB-BAR: LIVE EXPEDITION TELEMETRY */}
+      <div className="w-full bg-[#080706] border-t border-white/[0.04] px-6 py-2 flex flex-wrap items-center justify-between text-[10px] font-mono text-ash">
+        <div className="flex items-center gap-4">
+          <span className="text-white">
+            TRAZADO ACTIVO: <strong className="text-chalk font-bold">CORRAL DE PIEDRA // AMANALCO</strong>
+          </span>
+          <span className="hidden md:inline text-white/20">|</span>
+          <span className="hidden md:inline">COORD: 19°24&apos;02&quot;N 99°16&apos;54&quot;W</span>
+          <span className="hidden lg:inline text-white/20">|</span>
+          <span className="hidden lg:inline text-earth">REFUGIO: NAVANA CABINS (SAUNA 78°C)</span>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <span>SALIDA: <strong className="text-white">INTERLOMAS, EDOMEX</strong></span>
+          <span className="text-white/20">/</span>
+          <span className="text-emerald-400">FLOTILLA: 4 PILOTOS CONFIRMADOS</span>
+        </div>
+      </div>
+
     </header>
   );
 };

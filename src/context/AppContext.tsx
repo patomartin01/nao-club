@@ -242,6 +242,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
       return r;
     }));
+    setSelectedRoute(prev => {
+      if (!prev || prev.id !== routeId) return prev;
+      const hasVoted = prev.votes.includes(currentUser.id);
+      const newVotes = hasVoted
+        ? prev.votes.filter(id => id !== currentUser.id)
+        : [...prev.votes, currentUser.id];
+      return { ...prev, votes: newVotes };
+    });
   };
 
   const addRouteComment = (routeId: string, text: string) => {
@@ -260,6 +268,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
       return r;
     }));
+    setSelectedRoute(prev => {
+      if (!prev || prev.id !== routeId) return prev;
+      return { ...prev, comments: [...prev.comments, newComment] };
+    });
   };
 
   const lockWinningRoute = (rodadaId: string, routeId: string) => {

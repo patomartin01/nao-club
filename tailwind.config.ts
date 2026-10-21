@@ -9,38 +9,24 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        asphalt: {
-          950: "#06090D",
-          900: "#0A0F15",
-          850: "#0F1620",
-          800: "#151F2C",
-          700: "#1E2C3D",
-          600: "#2B3C52",
-        },
-        rally: {
-          500: "#F59E0B",
-          400: "#FBBF24",
-          600: "#D97706",
-        },
-        volt: {
-          400: "#34D399",
-          500: "#10B981",
-        },
-        brembo: {
-          500: "#EF4444",
-          600: "#DC2626",
-        }
+        obsidian: "#0B0A09",
+        navana: "#161311",
+        "stone-card": "#1E1A17",
+        earth: "#C87D55",
+        "earth-bright": "#D98253",
+        chalk: "#F3EFEA",
+        ash: "#8E8882",
       },
       fontFamily: {
-        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
-        display: ["var(--font-outfit)", "system-ui", "sans-serif"],
-        mono: ["var(--font-mono)", "monospace"],
+        display: ["'Syne'", "sans-serif"],
+        sans: ["'Space Grotesk'", "sans-serif"],
+        mono: ["'DM Mono'", "monospace"],
       },
-      boxShadow: {
-        glow: "0 0 25px -5px rgba(245, 158, 11, 0.25)",
-        "glow-green": "0 0 25px -5px rgba(16, 185, 129, 0.25)",
-        "glow-red": "0 0 25px -5px rgba(239, 68, 68, 0.25)",
-      }
+      letterSpacing: {
+        tightest: "-0.04em",
+        widestx: "0.25em",
+        superwide: "0.35em",
+      },
     },
   },
   plugins: [],

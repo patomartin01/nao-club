@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { Users, Plus } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 interface CreateCrewModalProps {
@@ -38,80 +37,68 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-5 shadow-2xl animate-in fade-in zoom-in-95">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-amber-500/20 text-amber-400">
-              <Users className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="font-display font-black text-lg text-white">Crear Nuevo Moto Club</h3>
-              <p className="text-xs text-slate-400">Se generará una clave única para invitar a tus amigos.</p>
-            </div>
+    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+      <div className="border border-white/20 bg-[#0E0C0A] max-w-lg w-full p-6 sm:p-8 space-y-6">
+        <div className="flex items-center justify-between border-b border-white/10 pb-4">
+          <div>
+            <span className="font-mono text-[10px] text-earth uppercase tracking-widest font-bold">
+              [ CREACIÓN DE FLOTILLA ]
+            </span>
+            <h3 className="font-display font-bold text-xl text-white uppercase">
+              Registrar Nuevo Club
+            </h3>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-white">✕</button>
+          <button onClick={onClose} className="font-mono text-ash hover:text-white">✕</button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 font-mono text-xs">
           <div>
-            <label className="text-xs font-semibold text-slate-400">Nombre del Club / Squad</label>
+            <label className="text-ash uppercase text-[10px] block mb-1">Nombre del Squad / Club</label>
             <input
               type="text"
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Ej. Trail Hunters Poniente"
-              className="w-full mt-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500"
+              placeholder="Ej. Nao Off-Road Squad"
+              className="w-full bg-white/[0.03] border border-white/15 px-3 py-2 text-white focus:outline-none focus:border-earth"
             />
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-slate-400">Lema / Tagline</label>
-            <input
-              type="text"
-              value={tagline}
-              onChange={(e) => setTagline(e.target.value)}
-              placeholder="Ej. Brechas, curvas y campamentos sin prisas."
-              className="w-full mt-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500"
-            />
-          </div>
-
-          <div>
-            <label className="text-xs font-semibold text-slate-400">Ciudad Base</label>
+            <label className="text-ash uppercase text-[10px] block mb-1">Ciudad / Base de Salida</label>
             <input
               type="text"
               value={baseCity}
               onChange={(e) => setBaseCity(e.target.value)}
-              placeholder="Ej. Interlomas, Naucalpan, Toluca"
-              className="w-full mt-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500"
+              placeholder="Ej. Interlomas / Valle de Bravo"
+              className="w-full bg-white/[0.03] border border-white/15 px-3 py-2 text-white focus:outline-none focus:border-earth"
             />
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-slate-400">Descripción</label>
+            <label className="text-ash uppercase text-[10px] block mb-1">Descripción de la Comunidad</label>
             <textarea
               rows={2}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="¿Qué tipo de motos o nivel de pilotos frecuentan?"
-              className="w-full mt-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500"
+              placeholder="Filosofía de manejo, nivel de terracería y tipo de motos..."
+              className="w-full bg-white/[0.03] border border-white/15 px-3 py-2 text-white focus:outline-none focus:border-earth"
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-3 border-t border-slate-800">
+          <div className="pt-4 border-t border-white/10 flex gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white"
+              className="w-1/2 py-3 border border-white/20 text-ash uppercase font-bold tracking-wider hover:text-white"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-amber-400 text-slate-950 text-xs font-bold rounded-xl hover:bg-amber-300 shadow-glow"
+              className="w-1/2 py-3 bg-earth hover:bg-earth-bright text-white uppercase font-bold tracking-widest transition"
             >
-              Crear Club & Generar Clave
+              Crear Flotilla
             </button>
           </div>
         </form>
