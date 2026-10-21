@@ -44,7 +44,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         
         {/* Left: Brand Logotype */}
         <div 
-          onClick={() => setActiveNavTab('home')}
+          onClick={() => setActiveNavTab('inicio')}
           className="flex items-center gap-4 cursor-pointer group"
         >
           <div className="flex items-baseline gap-2.5">
@@ -79,10 +79,11 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Pilot avatar thumbnail */}
           <div 
-            onClick={() => setActiveNavTab('garaje')}
-            title="Ver Hangar y Perfil de Piloto"
+            onClick={() => setActiveNavTab('tu')}
+            title="Ver Perfil de Piloto"
             className="flex items-center gap-2 pl-2 border-l border-white/10 cursor-pointer group"
           >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img 
               src={currentUser.avatar} 
               alt={currentUser.name}
@@ -90,7 +91,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             />
             <div className="hidden xl:block text-left text-[10px]">
               <p className="font-bold text-white leading-none">{currentUser.name.split(' ')[0]}</p>
-              <p className="text-ash text-[9px] leading-tight">BMW R 1250 GS</p>
+              <p className="text-ash text-[9px] leading-tight">Patricio</p>
             </div>
           </div>
         </div>

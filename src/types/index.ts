@@ -1,12 +1,68 @@
-export type RidingLevel = 'Principiante' | 'Intermedio' | 'Avanzado' | 'Hard Enduro / Pro';
+export type RidingLevel = 'Principiante' | 'Intermedio' | 'Avanzado' | 'Experto / Pro';
+
+export type MotoDiscipline = 
+  | 'Carretera / Curvas' 
+  | 'Doble Propósito / Trail' 
+  | 'Adventure / Maxi-Trail' 
+  | 'Enduro / Terracería' 
+  | 'Sport / Pista' 
+  | 'Custom / Cruiser' 
+  | 'Urbana / Commuter';
 
 export type BikeType = 
   | 'Doble Propósito' 
   | 'Adventure / Maxi-Trail' 
   | 'Enduro / Dual Sport' 
+  | 'Sport / Deportiva' 
+  | 'Naked / Roadster' 
   | 'Scrambler' 
-  | 'Trail Ligera' 
-  | 'Sport Touring';
+  | 'Custom / Cruiser' 
+  | 'Sport Touring' 
+  | 'Trail Ligera';
+
+export type NavTab = 'inicio' | 'mapas' | 'registrar' | 'grupos' | 'tu' | 'crew' | 'rodada' | 'garaje' | 'home' | 'rutas';
+
+export interface ActivityPost {
+  id: string;
+  pilotId: string;
+  pilotName: string;
+  pilotHandle: string;
+  pilotAvatar: string;
+  dateText: string;
+  device: string; // e.g. "Garmin fēnix 6X", "Garmin Forerunner 265", "NAO Cockpit GPS"
+  location: string;
+  title: string;
+  motoModel: string;
+  discipline: MotoDiscipline;
+  distanceKm: number;
+  elevationGainM: number;
+  durationText: string;
+  avgSpeedKmh: number;
+  trophiesCount?: number;
+  kudosCount: number;
+  hasKudoed: boolean;
+  kudosAvatars: string[];
+  commentsCount: number;
+  coordinates: [number, number][];
+  photos?: string[];
+  surfaceBreakdown: {
+    asphaltPercentage: number;
+    dirtPercentage: number;
+    curveDensity?: 'Alta' | 'Media' | 'Baja';
+  };
+}
+
+export interface Challenge {
+  id: string;
+  title: string;
+  subtitle: string;
+  targetKm: number;
+  currentKm: number;
+  participantsCount: number;
+  badgeHex: string;
+  endDate: string;
+  joined: boolean;
+}
 
 export interface Motorcycle {
   id: string;

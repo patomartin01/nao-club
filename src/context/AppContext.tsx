@@ -9,7 +9,10 @@ import {
   RouteProposal, 
   PackingItem,
   RodadaAttendee,
-  RouteList
+  RouteList,
+  NavTab,
+  ActivityPost,
+  Challenge
 } from '../types';
 import { 
   CURRENT_USER, 
@@ -19,7 +22,9 @@ import {
   INITIAL_RODADA, 
   INITIAL_RODADAS,
   INITIAL_ROUTE_PROPOSALS,
-  INITIAL_ROUTE_LISTS
+  INITIAL_ROUTE_LISTS,
+  INITIAL_ACTIVITIES,
+  INITIAL_CHALLENGES
 } from '../data/initialData';
 
 interface AppContextType {
@@ -55,7 +60,13 @@ interface AppContextType {
   assignPackingItem: (rodadaId: string, itemId: string, userId: string, userName: string) => void;
   addPackingItem: (rodadaId: string, item: string, category: PackingItem['category']) => void;
   addGalleryPhoto: (rodadaId: string, url: string, caption: string) => void;
-  // Strava & Wikiloc Extensions
+  // Strava & Moto Architecture Extensions
+  activities: ActivityPost[];
+  toggleKudo: (activityId: string) => void;
+  addActivityComment: (activityId: string, text: string) => void;
+  addRecordedActivity: (activity: Omit<ActivityPost, 'id' | 'kudosCount' | 'hasKudoed' | 'kudosAvatars' | 'commentsCount'>) => void;
+  challenges: Challenge[];
+  toggleJoinChallenge: (challengeId: string) => void;
   completedRouteIds: string[];
   savedRouteIds: string[];
   routeLists: RouteList[];
@@ -67,8 +78,8 @@ interface AppContextType {
   selectedPilotProfile: User | null;
   setSelectedPilotProfile: (pilot: User | null) => void;
   openPilotProfileById: (userId: string) => void;
-  activeNavTab: 'home' | 'crew' | 'rodada' | 'rutas' | 'garaje';
-  setActiveNavTab: (tab: 'home' | 'crew' | 'rodada' | 'rutas' | 'garaje') => void;
+  activeNavTab: NavTab;
+  setActiveNavTab: (tab: NavTab) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -78,7 +89,9 @@ const STORAGE_KEYS = {
   MOTORCYCLES: 'motomami_motorcycles',
   CREWS: 'motomami_crews',
   RODADAS: 'motomami_rodadas',
-  ROUTES: 'motomami_routes'
+  ROUTES: 'motomami_routes',
+  ACTIVITIES: 'nao_activities',
+  CHALLENGES: 'nao_challenges'
 };
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -91,9 +104,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [currentRodada, setCurrentRodada] = useState<Rodada | null>(INITIAL_RODADAS[0]);
   const [routeProposals, setRouteProposals] = useState<RouteProposal[]>(INITIAL_ROUTE_PROPOSALS);
   const [selectedRoute, setSelectedRoute] = useState<RouteProposal | null>(INITIAL_ROUTE_PROPOSALS[0]);
-  const [activeNavTab, setActiveNavTab] = useState<'home' | 'crew' | 'rodada' | 'rutas' | 'garaje'>('home');
+  const [activeNavTab, setActiveNavTab] = useState<NavTab>('inicio');
 
-  // Strava & Wikiloc extensions state
+  // Strava & Moto Architecture state
+  const [activities, setActivities] = useState<ActivityPost[]>(INITIAL_ACTIVITIES);
+  const [challenges, setChallenges] = useState<Challenge[]>(INITIAL_CHALLENGES);
   const [completedRouteIds, setCompletedRouteIds] = useState<string[]>(CURRENT_USER.completedRouteIds || ['route-1', 'route-4']);
   const [savedRouteIds, setSavedRouteIds] = useState<string[]>(CURRENT_USER.savedRouteIds || ['route-2', 'route-3', 'route-5']);
   const [routeLists, setRouteLists] = useState<RouteList[]>(INITIAL_ROUTE_LISTS);
@@ -522,6 +537,62 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }));
   };
 
+  const toggleKudo = (activityId: string) => {
+    setActivities(prev => prev.map(act => {
+      if (act.id === activityId) {
+        const isNowKudoed = !act.hasKudoed;
+        return {
+          ...act,
+          hasKudoed: isNowKudoed,
+          kudosCount: isNowKudoed ? act.kudosCount + 1 : Math.max(0, act.kudosCount - 1),
+          kudosAvatars: isNowKudoed 
+            ? [currentUser.avatar, ...act.kudosAvatars.filter(a => a !== currentUser.avatar)]
+            : act.kudosAvatars.filter(a => a !== currentUser.avatar)
+        };
+      }
+      return act;
+    }));
+  };
+
+  const addActivityComment = (activityId: string, text: string) => {
+    if (!text.trim()) return;
+    setActivities(prev => prev.map(act => {
+      if (act.id === activityId) {
+        return {
+          ...act,
+          commentsCount: act.commentsCount + 1
+        };
+      }
+      return act;
+    }));
+  };
+
+  const addRecordedActivity = (data: Omit<ActivityPost, 'id' | 'kudosCount' | 'hasKudoed' | 'kudosAvatars' | 'commentsCount'>) => {
+    const newAct: ActivityPost = {
+      ...data,
+      id: `act-${Date.now()}`,
+      kudosCount: 1,
+      hasKudoed: false,
+      kudosAvatars: [],
+      commentsCount: 0
+    };
+    setActivities(prev => [newAct, ...prev]);
+  };
+
+  const toggleJoinChallenge = (challengeId: string) => {
+    setChallenges(prev => prev.map(ch => {
+      if (ch.id === challengeId) {
+        const joined = !ch.joined;
+        return {
+          ...ch,
+          joined,
+          participantsCount: joined ? ch.participantsCount + 1 : Math.max(1, ch.participantsCount - 1)
+        };
+      }
+      return ch;
+    }));
+  };
+
   const openPilotProfileById = (userId: string) => {
     const found = users.find(u => u.id === userId || u.handle === userId || u.name === userId);
     if (found) {
@@ -566,6 +637,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         assignPackingItem,
         addPackingItem,
         addGalleryPhoto,
+        activities,
+        toggleKudo,
+        addActivityComment,
+        addRecordedActivity,
+        challenges,
+        toggleJoinChallenge,
         completedRouteIds,
         savedRouteIds,
         routeLists,

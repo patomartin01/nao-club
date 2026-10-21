@@ -3,10 +3,13 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { Navbar } from '../components/Navbar';
-import { HomeView } from '../components/Home/HomeView';
+import { InicioFeedView } from '../components/Feed/InicioFeedView';
 import { RouteExplorerView } from '../components/Routes/RouteExplorerView';
+import { GruposView } from '../components/Groups/GruposView';
+import { TuProfileView } from '../components/Profile/TuProfileView';
 import { CrewView } from '../components/Crews/CrewView';
 import { GarageView } from '../components/Garage/GarageView';
+import { HomeView } from '../components/Home/HomeView';
 import { ProposeRouteModal } from '../components/Modals/ProposeRouteModal';
 import { JoinCrewModal } from '../components/Modals/JoinCrewModal';
 import { CreateCrewModal } from '../components/Modals/CreateCrewModal';
@@ -16,7 +19,7 @@ import { LiveRouteRecorderModal } from '../components/Modals/LiveRouteRecorderMo
 import { BottomBar } from '../components/Navigation/BottomBar';
 
 export default function Home() {
-  const { activeNavTab } = useApp();
+  const { activeNavTab, setActiveNavTab } = useApp();
 
   // Modal states
   const [proposeRouteOpen, setProposeRouteOpen] = useState(false);
@@ -37,15 +40,32 @@ export default function Home() {
       />
 
       {/* 2. Main Architectural Container */}
-      <main className="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-8 lg:px-12 pt-8 sm:pt-12">
-        {activeNavTab === 'home' && (
-          <HomeView
+      <main className="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-8 lg:px-12 pt-6 sm:pt-10">
+        {/* TAB 01: INICIO (FEED SOCIAL DE PILOTOS TIPO STRAVA) */}
+        {(activeNavTab === 'inicio' || activeNavTab === 'home') && (
+          <InicioFeedView
+            onOpenRecordRoute={() => setRecordRouteOpen(true)}
+          />
+        )}
+
+        {/* TAB 02: MAPAS (EXPLORADOR CARTOGRÁFICO DE RUTAS) */}
+        {(activeNavTab === 'mapas' || activeNavTab === 'rutas') && (
+          <RouteExplorerView 
+            onOpenProposeRoute={() => setProposeRouteOpen(true)} 
+            onOpenRecordRoute={() => setRecordRouteOpen(true)}
+          />
+        )}
+
+        {/* TAB 03: GRUPOS (EVENTOS, CLUBES Y RETOS) */}
+        {activeNavTab === 'grupos' && (
+          <GruposView
             onOpenCreateCrew={() => setCreateCrewOpen(true)}
             onOpenJoinCrew={() => setJoinCrewOpen(true)}
             onOpenCreateRodada={() => setCreateRodadaOpen(true)}
           />
         )}
 
+        {/* SALA PRIVADA DE CLUB O RODADA */}
         {(activeNavTab === 'rodada' || activeNavTab === 'crew') && (
           <CrewView 
             onOpenCreateCrew={() => setCreateCrewOpen(true)}
@@ -56,13 +76,14 @@ export default function Home() {
           />
         )}
 
-        {activeNavTab === 'rutas' && (
-          <RouteExplorerView 
-            onOpenProposeRoute={() => setProposeRouteOpen(true)} 
-            onOpenRecordRoute={() => setRecordRouteOpen(true)}
+        {/* TAB 04: TÚ (PERFIL DE PILOTO: PROGRESO, HISTORIAL, GALERÍA, MÁS) */}
+        {activeNavTab === 'tu' && (
+          <TuProfileView
+            onOpenGarage={() => setActiveNavTab('garaje')}
           />
         )}
 
+        {/* HANGAR / GARAJE TÉCNICO */}
         {activeNavTab === 'garaje' && (
           <GarageView />
         )}
@@ -104,9 +125,6 @@ export default function Home() {
 
       {/* 4. Native App Bottom Action Bar (Dock) */}
       <BottomBar 
-        onOpenProposeRoute={() => setProposeRouteOpen(true)}
-        onOpenJoinCrew={() => setJoinCrewOpen(true)}
-        onOpenCreateRodada={() => setCreateRodadaOpen(true)}
         onOpenRecordRoute={() => setRecordRouteOpen(true)}
       />
 
@@ -135,8 +153,11 @@ export default function Home() {
       <PilotProfileModal />
 
       <LiveRouteRecorderModal 
-        isOpen={recordRouteOpen} 
-        onClose={() => setRecordRouteOpen(false)} 
+        isOpen={recordRouteOpen || activeNavTab === 'registrar'} 
+        onClose={() => {
+          setRecordRouteOpen(false);
+          if (activeNavTab === 'registrar') setActiveNavTab('inicio');
+        }} 
       />
 
     </div>
