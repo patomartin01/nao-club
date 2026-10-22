@@ -1,516 +1,557 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useApp } from '../../context/AppContext';
-import { RouteProposal } from '../../types';
+import { RouteProposal, ActivityPost } from '../../types';
 import { RouteMap } from '../Map/RouteMap';
 import { ShareRouteModal } from '../Modals/ShareRouteModal';
 import { SaveToListModal } from '../Modals/SaveToListModal';
 import { 
   Search, 
-  ThumbsUp, 
+  Bookmark, 
+  MapPin, 
+  Navigation, 
+  Layers, 
+  Crosshair, 
   Plus, 
-  ArrowUpRight, 
-  ExternalLink, 
-  Download,
+  ChevronDown, 
+  ChevronLeft, 
+  ChevronRight, 
+  X, 
+  Check, 
+  Flame, 
+  ExternalLink,
   Share2,
-  Bookmark,
-  CheckCircle,
-  Award,
-  Layers,
-  MapPin,
   TrendingUp,
-  FolderPlus,
-  Radio
+  Compass,
+  Bike,
+  Sparkles,
+  Mountain,
+  Fuel,
+  Tent,
+  Utensils
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { buildOrderedGoogleMapsUrl } from '../../utils/googleMaps';
+
+const RoadIcon: React.FC<{ className?: string }> = ({ className = "w-3.5 h-3.5" }) => (
+  <svg 
+    className={className} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+  >
+    <path d="M4 19L8 5h8l4 14" />
+    <line x1="12" y1="8" x2="12" y2="10" />
+    <line x1="12" y1="14" x2="12" y2="16" />
+  </svg>
+);
 
 interface RouteExplorerViewProps {
   onOpenProposeRoute: () => void;
   onOpenRecordRoute?: () => void;
 }
 
-type ExplorerTab = 'all' | 'completed' | 'saved';
+// Moto modalities categorized cleanly like Strava "Filtrar por deporte"
+interface MotoModality {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+}
 
-export const RouteExplorerView: React.FC<RouteExplorerViewProps> = ({ 
+const MOTO_MODALITIES: MotoModality[] = [
+  // Doble Propósito & Aventura
+  { id: 'dual-sport', name: 'Doble Propósito / Trail', category: 'Aventura & Dual-Sport', description: 'Himalayan, Scram 411, Tenere, XR' },
+  { id: 'maxi-trail', name: 'Maxi-Trail & Adventure', category: 'Aventura & Dual-Sport', description: 'BMW GS, Africa Twin, KTM Adventure' },
+  { id: 'scrambler', name: 'Scrambler & Mixta Noble', category: 'Aventura & Dual-Sport', description: 'Ducati Scrambler, Street Scrambler' },
+  
+  // Carretera & Curvas
+  { id: 'sport', name: 'Deportivas & Curvas', category: 'Carretera & Curvas', description: 'Supersport, Pista, Asfalto técnico' },
+  { id: 'naked', name: 'Naked & Screamer', category: 'Carretera & Curvas', description: 'MT-09, Duke, Monster, Z900' },
+  { id: 'touring', name: 'Turismo & Sport-Touring', category: 'Carretera & Curvas', description: 'Grandes viajes, Autopista escénica' },
+  { id: 'cruiser', name: 'Crucero & Custom', category: 'Carretera & Curvas', description: 'Harley-Davidson, Indian, Rebel' },
+
+  // Off-Road Puro
+  { id: 'enduro', name: 'Enduro & Brechas', category: 'Off-Road Puro', description: 'KTM EXC, WR, CRF, terracería pura' },
+  { id: 'rally', name: 'Rally Raid & Desierto', category: 'Off-Road Puro', description: 'Navegación abierta, arena, dunas' },
+
+  // Ciudad & Scooter
+  { id: 'scooter', name: 'Scooter & Automáticas', category: 'Ciudad & Scooter', description: 'Vespa, NMax, PCX, tramos urbanos' },
+  { id: 'classic', name: 'Clásica & Café Racer', category: 'Ciudad & Scooter', description: 'Rodadas con estilo, ruta de café' },
+];
+
+function calculateDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+export const RouteExplorerView: React.FC<RouteExplorerViewProps> = ({
   onOpenProposeRoute,
   onOpenRecordRoute
 }) => {
-  const { 
-    routeProposals, 
-    selectedRoute, 
-    setSelectedRoute, 
-    voteRoute, 
-    currentUser, 
-    enterRodada,
-    completedRouteIds,
+  const {
+    routeProposals,
+    selectedRoute,
+    setSelectedRoute,
     savedRouteIds,
-    routeLists,
-    toggleCompletedRoute,
     toggleSavedRoute,
-    openPilotProfileById
+    activities,
+    enterRodada
   } = useApp();
 
-  const [currentTab, setCurrentTab] = useState<ExplorerTab>('all');
-  const [selectedListId, setSelectedListId] = useState<string>('all');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all');
+  // Pilot Location (Defaults to Central Mexico / Interlomas)
+  const [pilotLocation, setPilotLocation] = useState<{ lat: number; lng: number; label: string }>({
+    lat: 19.4005,
+    lng: -99.2816,
+    label: 'Tu Ubicación'
+  });
 
-  // Modal states
+  // UI state inspired by Strava
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedModality, setSelectedModality] = useState<string>('all');
+  const [showModalityModal, setShowModalityModal] = useState<boolean>(false);
+  const [modalitySearch, setModalitySearch] = useState('');
+
+  // Quick horizontal filter pills
+  const [filterSavedOnly, setFilterSavedOnly] = useState<boolean>(false);
+  const [filterDistance, setFilterDistance] = useState<'all' | 'short' | 'medium' | 'long'>('all'); // short <50km, medium 50-150km, long >150km
+  const [filterDifficulty, setFilterDifficulty] = useState<string>('all'); // all, Fácil, Intermedia, Técnica
+  const [filterSurface, setFilterSurface] = useState<'all' | 'asfalto' | 'brecha' | 'mixta'>('all');
+  const [filterElevation, setFilterElevation] = useState<'all' | 'flat' | 'high'>('all');
+
+  // Map state
+  const [currentMapLayer, setCurrentMapLayer] = useState<'satellite' | 'topo' | 'roads'>('satellite');
+  const [is3DMode, setIs3DMode] = useState<boolean>(false);
+  const [showDetailModal, setShowDetailModal] = useState<boolean>(false);
+
+  // Modals
   const [shareRoute, setShareRoute] = useState<RouteProposal | null>(null);
   const [saveRouteModal, setSaveRouteModal] = useState<RouteProposal | null>(null);
 
-  // Tab Filtering
-  const getTabFilteredRoutes = () => {
-    if (currentTab === 'completed') {
-      return routeProposals.filter(r => completedRouteIds.includes(r.id));
+  // Handle GPS detect
+  const handleDetectGPS = () => {
+    if (typeof navigator !== 'undefined' && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setPilotLocation({
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+            label: 'Mi GPS en Tiempo Real'
+          });
+          confetti({ particleCount: 25, spread: 45 });
+        },
+        () => {
+          // Keep current
+        }
+      );
     }
-    if (currentTab === 'saved') {
-      if (selectedListId === 'all') {
-        return routeProposals.filter(r => savedRouteIds.includes(r.id));
+  };
+
+  // Toggle through map layers (Satellite -> Topo -> Roads)
+  const handleCycleLayers = () => {
+    if (currentMapLayer === 'satellite') setCurrentMapLayer('topo');
+    else if (currentMapLayer === 'topo') setCurrentMapLayer('roads');
+    else setCurrentMapLayer('satellite');
+  };
+
+  // Compute routes with distance from pilot
+  const routesWithDistance = useMemo(() => {
+    return routeProposals.map(r => {
+      const startCoord = r.coordinates?.[0] || [19.4005, -99.2816];
+      const dist = calculateDistanceKm(pilotLocation.lat, pilotLocation.lng, startCoord[0], startCoord[1]);
+      return {
+        ...r,
+        distanceFromPilotKm: Math.round(dist)
+      };
+    });
+  }, [routeProposals, pilotLocation]);
+
+  // Filter routes
+  const filteredRoutes = useMemo(() => {
+    let result = routesWithDistance;
+
+    // Search query
+    if (searchTerm.trim()) {
+      const q = searchTerm.toLowerCase();
+      result = result.filter(r => 
+        r.title.toLowerCase().includes(q) ||
+        r.destination.toLowerCase().includes(q) ||
+        r.state.toLowerCase().includes(q) ||
+        r.description.toLowerCase().includes(q)
+      );
+    }
+
+    // Saved only filter
+    if (filterSavedOnly) {
+      result = result.filter(r => savedRouteIds.includes(r.id));
+    }
+
+    // Modality filter
+    if (selectedModality !== 'all') {
+      if (selectedModality === 'dual-sport' || selectedModality === 'maxi-trail') {
+        result = result.filter(r => r.offroadPercentage >= 25);
+      } else if (selectedModality === 'enduro') {
+        result = result.filter(r => r.offroadPercentage >= 50);
+      } else if (selectedModality === 'sport' || selectedModality === 'naked') {
+        result = result.filter(r => r.asphaltPercentage >= 70);
+      } else if (selectedModality === 'touring' || selectedModality === 'cruiser') {
+        result = result.filter(r => r.totalKm >= 100 && r.asphaltPercentage >= 60);
       }
-      const list = routeLists.find(l => l.id === selectedListId);
-      return routeProposals.filter(r => list?.routeIds.includes(r.id));
     }
-    return routeProposals;
-  };
 
-  const tabRoutes = getTabFilteredRoutes();
+    // Distance filter
+    if (filterDistance === 'short') result = result.filter(r => r.totalKm <= 50);
+    else if (filterDistance === 'medium') result = result.filter(r => r.totalKm > 50 && r.totalKm <= 150);
+    else if (filterDistance === 'long') result = result.filter(r => r.totalKm > 150);
 
-  // Search & Difficulty filtering
-  const filteredRoutes = tabRoutes.filter(r => {
-    const matchesSearch = r.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          r.destination.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          r.state.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesDiff = selectedDifficulty === 'all' || r.difficulty === selectedDifficulty;
-    return matchesSearch && matchesDiff;
-  });
-
-  const activeRoute = selectedRoute || filteredRoutes[0] || routeProposals[0];
-
-  const handleVote = (e: React.MouseEvent, routeId: string) => {
-    e.stopPropagation();
-    voteRoute(routeId);
-    confetti({ particleCount: 30, spread: 60 });
-  };
-
-  const handleToggleCompleted = (e: React.MouseEvent, routeId: string) => {
-    e.stopPropagation();
-    const isCompleted = completedRouteIds.includes(routeId);
-    toggleCompletedRoute(routeId);
-    if (!isCompleted) {
-      confetti({ particleCount: 60, spread: 80 });
+    // Difficulty filter
+    if (filterDifficulty !== 'all') {
+      result = result.filter(r => r.difficulty.toLowerCase().includes(filterDifficulty.toLowerCase()));
     }
+
+    // Surface filter
+    if (filterSurface === 'asfalto') result = result.filter(r => r.asphaltPercentage >= 70);
+    else if (filterSurface === 'brecha') result = result.filter(r => r.offroadPercentage >= 60);
+    else if (filterSurface === 'mixta') result = result.filter(r => r.offroadPercentage >= 25 && r.asphaltPercentage >= 25);
+
+    // Elevation filter
+    if (filterElevation === 'flat') result = result.filter(r => (r.campsite?.elevationMeters || 500) < 600);
+    else if (filterElevation === 'high') result = result.filter(r => (r.campsite?.elevationMeters || 500) >= 600);
+
+    return result;
+  }, [
+    routesWithDistance, 
+    searchTerm, 
+    filterSavedOnly, 
+    selectedModality, 
+    filterDistance, 
+    filterDifficulty, 
+    filterSurface, 
+    filterElevation, 
+    savedRouteIds
+  ]);
+
+  // Keep an active route selected (default to closest or first)
+  const activeRoute = useMemo(() => {
+    if (selectedRoute) {
+      const match = filteredRoutes.find(r => r.id === selectedRoute.id);
+      if (match) return match;
+    }
+    return filteredRoutes[0] || null;
+  }, [selectedRoute, filteredRoutes]);
+
+  // Carousel ref and fluid swipe logic
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const isProgrammaticScroll = useRef<boolean>(false);
+  const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  // Mouse drag support for desktop
+  const isDragging = useRef<boolean>(false);
+  const startX = useRef<number>(0);
+  const scrollLeftStart = useRef<number>(0);
+  const hasMoved = useRef<boolean>(false);
+
+  // Synchronize carousel position when route is selected externally (e.g. clicked on map)
+  useEffect(() => {
+    if (!activeRoute || !carouselRef.current || isProgrammaticScroll.current) return;
+    const idx = filteredRoutes.findIndex(r => r.id === activeRoute.id);
+    if (idx >= 0 && carouselRef.current.children[idx]) {
+      const cardEl = carouselRef.current.children[idx] as HTMLElement;
+      isProgrammaticScroll.current = true;
+      cardEl.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      setTimeout(() => {
+        isProgrammaticScroll.current = false;
+      }, 500);
+    }
+  }, [activeRoute?.id, filteredRoutes]);
+
+  // Handle user manual scroll / swipe on carousel to select active route in real-time
+  const handleCarouselScroll = () => {
+    if (isProgrammaticScroll.current || !carouselRef.current) return;
+    if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+
+    scrollTimeout.current = setTimeout(() => {
+      if (!carouselRef.current) return;
+      const container = carouselRef.current;
+      const centerPos = container.scrollLeft + container.clientWidth / 2;
+      let closestIdx = 0;
+      let closestDist = Infinity;
+
+      Array.from(container.children).forEach((child, i) => {
+        const el = child as HTMLElement;
+        const elCenter = el.offsetLeft + el.clientWidth / 2;
+        const dist = Math.abs(centerPos - elCenter);
+        if (dist < closestDist) {
+          closestDist = dist;
+          closestIdx = i;
+        }
+      });
+
+      if (filteredRoutes[closestIdx] && filteredRoutes[closestIdx].id !== activeRoute?.id) {
+        setSelectedRoute(filteredRoutes[closestIdx]);
+      }
+    }, 100);
   };
 
-  const handleOpenShare = (e: React.MouseEvent, route: RouteProposal) => {
-    e.stopPropagation();
-    setShareRoute(route);
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!carouselRef.current) return;
+    isDragging.current = true;
+    hasMoved.current = false;
+    startX.current = e.pageX - carouselRef.current.offsetLeft;
+    scrollLeftStart.current = carouselRef.current.scrollLeft;
   };
 
-  const handleOpenSaveToList = (e: React.MouseEvent, route: RouteProposal) => {
-    e.stopPropagation();
-    setSaveRouteModal(route);
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging.current || !carouselRef.current) return;
+    const x = e.pageX - carouselRef.current.offsetLeft;
+    const walk = (x - startX.current);
+    if (Math.abs(walk) > 6) {
+      hasMoved.current = true;
+    }
+    carouselRef.current.scrollLeft = scrollLeftStart.current - walk;
   };
+
+  const handleMouseUpOrLeave = () => {
+    isDragging.current = false;
+  };
+
+  // Modality display text
+  const currentModalityObj = useMemo(() => {
+    return MOTO_MODALITIES.find(m => m.id === selectedModality);
+  }, [selectedModality]);
+
+  // Filtered modalities inside the modal
+  const filteredModalities = useMemo(() => {
+    if (!modalitySearch.trim()) return MOTO_MODALITIES;
+    const q = modalitySearch.toLowerCase();
+    return MOTO_MODALITIES.filter(m => 
+      m.name.toLowerCase().includes(q) || 
+      m.category.toLowerCase().includes(q) ||
+      m.description.toLowerCase().includes(q)
+    );
+  }, [modalitySearch]);
+
+  // Grouped modalities
+  const groupedModalities = useMemo(() => {
+    const groups: Record<string, MotoModality[]> = {};
+    filteredModalities.forEach(m => {
+      if (!groups[m.category]) groups[m.category] = [];
+      groups[m.category].push(m);
+    });
+    return groups;
+  }, [filteredModalities]);
 
   return (
-    <div className="space-y-10 pb-32 text-chalk font-mono">
+    <div className="relative w-full h-[calc(100dvh-60px)] min-h-[550px] overflow-hidden bg-[#0A0908] select-none font-sans">
       
-      {/* 01. STRAVA & WIKILOC STYLE HEADER & TELEMETRY */}
-      <section className="border border-white/10 bg-[#0B0A09]">
-        <div className="grid grid-cols-12 border-b border-white/10">
-          <div className="col-span-12 lg:col-span-8 p-6 sm:p-10 border-b lg:border-b-0 lg:border-r border-white/10">
-            <span className="text-[10px] text-earth uppercase tracking-widest font-bold block mb-2">
-              [ 02 // CARTOGRAFÍA COMUNITARIA · ESTILO STRAVA & WIKILOC ]
+      {/* FULL VIEWPORT MAP (No heavy banners or tables!) */}
+      <div className="absolute inset-0 z-0">
+        <RouteMap
+          route={activeRoute}
+          allRoutes={filteredRoutes}
+          onSelectRoute={(r) => setSelectedRoute(r)}
+          userLocation={pilotLocation}
+          onCenterUserLocation={handleDetectGPS}
+          showActivityHeatmap={true}
+          showCommunityPilots={true}
+          externalLayer={currentMapLayer}
+          showInternalControls={false}
+        />
+      </div>
+
+      {/* 1. TOP FLOATING SEARCH & MODALITY BAR (Exact Strava style) */}
+      <div className="absolute top-3 left-3 right-3 sm:left-6 sm:right-6 max-w-xl mx-auto z-20 space-y-2 pointer-events-auto">
+        
+        {/* Main Search Pill */}
+        <div className="bg-[#181716]/95 backdrop-blur-md border border-white/10 rounded-2xl p-1.5 sm:p-2 shadow-[0_12px_36px_rgba(0,0,0,0.85)] flex items-center gap-2">
+          
+          {/* Modality Selector Button (Left Pill with clean Compass icon) */}
+          <button
+            onClick={() => setShowModalityModal(true)}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white/[0.06] hover:bg-white/10 active:scale-95 text-white transition touch-manipulation border border-white/10 shrink-0"
+            title="Filtrar por modalidad"
+          >
+            <Compass className="w-4 h-4 text-white/90" />
+            <span className="text-xs font-medium text-white/90 hidden sm:inline">
+              {currentModalityObj ? currentModalityObj.name.split('/')[0] : 'Modalidad'}
             </span>
-            <h1 className="font-display font-extrabold text-3xl sm:text-5xl text-white uppercase tracking-tight leading-[0.95]">
-              Archivo de Travesías & Brechas
-            </h1>
-            <p className="text-xs text-ash uppercase tracking-wider mt-4">
-              REGISTRA TUS RUTAS CONQUISTADAS_CREA COLECCIONES PRIVADAS O COMPARTIDAS_TELEMETRÍA EN TIERRA Y PERFILES DE PILOTOS_
-            </p>
+            <ChevronDown className="w-3.5 h-3.5 text-ash" />
+          </button>
 
-            {/* Quick Stats Pill for the Logged-in Pilot */}
-            <div className="flex flex-wrap items-center gap-4 mt-6 pt-6 border-t border-white/10 text-xs">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-earth" />
-                <span className="text-ash">Tu Odómetro Off-Road:</span>
-                <strong className="text-white font-display text-sm">{currentUser.stats?.totalKm || 1850} km</strong>
-              </div>
-              <span className="text-white/20">•</span>
-              <div className="flex items-center gap-2">
-                <Award className="w-4 h-4 text-emerald-400" />
-                <span className="text-ash">Conquistadas:</span>
-                <strong className="text-white font-display text-sm">{completedRouteIds.length} rutas</strong>
-              </div>
-              <span className="text-white/20">•</span>
-              <div className="flex items-center gap-2">
-                <Bookmark className="w-4 h-4 text-cyan-400" />
-                <span className="text-ash">Guardadas en Listas:</span>
-                <strong className="text-white font-display text-sm">{savedRouteIds.length} rutas</strong>
-              </div>
-            </div>
-          </div>
-
-          <div className="col-span-12 lg:col-span-4 p-6 sm:p-8 flex flex-col justify-between bg-[#0E0C0A] text-xs">
-            <div>
-              <span className="text-[10px] text-ash uppercase tracking-widest block font-bold">FILTRAR POR DIFICULTAD</span>
-              <div className="grid grid-cols-2 gap-2 pt-2">
-                {['all', 'Fácil (Fluida)', 'Intermedia', 'Técnica'].map((diff) => (
-                  <button
-                    key={diff}
-                    onClick={() => setSelectedDifficulty(diff)}
-                    className={`py-2 px-2 text-[10px] uppercase font-bold tracking-wider border transition ${
-                      selectedDifficulty === diff
-                        ? 'bg-white text-obsidian border-white'
-                        : 'border-white/10 text-ash hover:text-white'
-                    }`}
-                  >
-                    {diff === 'all' ? 'Todas' : diff.split(' ')[0]}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="pt-6 space-y-2.5">
-              <button
-                onClick={onOpenProposeRoute}
-                className="w-full py-3.5 bg-earth hover:bg-earth-bright text-white text-xs uppercase font-bold tracking-widest transition flex items-center justify-center gap-2 shadow-xl"
+          {/* Search Input */}
+          <div className="flex-1 flex items-center gap-2 px-1 text-white min-w-0">
+            <Search className="w-3.5 h-3.5 text-ash shrink-0" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Rutas de moto cerca de ti..."
+              className="w-full bg-transparent text-xs sm:text-sm text-white placeholder-stone-400 focus:outline-none truncate font-light"
+            />
+            {searchTerm && (
+              <button 
+                onClick={() => setSearchTerm('')}
+                className="text-ash hover:text-white p-0.5 rounded-full"
               >
-                <Plus className="w-4 h-4" />
-                <span>+ Proponer / Subir Track</span>
+                <X className="w-3 h-3" />
               </button>
-
-              {onOpenRecordRoute && (
-                <button
-                  onClick={onOpenRecordRoute}
-                  className="w-full py-2.5 border border-white/10 hover:border-white/30 hover:bg-white/[0.03] text-ash hover:text-white text-[10px] uppercase font-bold tracking-wider transition flex items-center justify-center gap-1.5"
-                  title="Grabar una ruta con telemetría GPS y paradas en vivo"
-                >
-                  <Radio className="w-3.5 h-3.5 text-earth" />
-                  <span>Instrumento GPS en Vivo</span>
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* 02. STRAVA / WIKILOC SUB-TABS */}
-        <div className="bg-[#080706] border-b border-white/10 flex flex-wrap sm:flex-nowrap items-center justify-between px-3 sm:px-6">
-          <div className="flex items-center overflow-x-auto no-scrollbar whitespace-nowrap w-full sm:w-auto">
-            <button
-              onClick={() => setCurrentTab('all')}
-              className={`py-4 px-4 sm:px-6 text-xs uppercase font-bold tracking-wider border-b-2 transition ${
-                currentTab === 'all'
-                  ? 'border-earth text-white bg-white/[0.03]'
-                  : 'border-transparent text-ash hover:text-white'
-              }`}
-            >
-              🧭 Explorar Comunidad ({routeProposals.length})
-            </button>
-
-            <button
-              onClick={() => setCurrentTab('completed')}
-              className={`py-4 px-4 sm:px-6 text-xs uppercase font-bold tracking-wider border-b-2 transition flex items-center gap-2 ${
-                currentTab === 'completed'
-                  ? 'border-emerald-500 text-emerald-400 bg-white/[0.03]'
-                  : 'border-transparent text-ash hover:text-white'
-              }`}
-            >
-              <Award className="w-3.5 h-3.5" />
-              <span>Conquistadas por Mí ({completedRouteIds.length})</span>
-            </button>
-
-            <button
-              onClick={() => setCurrentTab('saved')}
-              className={`py-4 px-4 sm:px-6 text-xs uppercase font-bold tracking-wider border-b-2 transition flex items-center gap-2 ${
-                currentTab === 'saved'
-                  ? 'border-cyan-400 text-cyan-300 bg-white/[0.03]'
-                  : 'border-transparent text-ash hover:text-white'
-              }`}
-            >
-              <Bookmark className="w-3.5 h-3.5" />
-              <span>Mis Listas ({routeLists.length})</span>
-            </button>
-          </div>
-
-          {/* If on saved lists tab, show list selector pill */}
-          {currentTab === 'saved' && (
-            <div className="py-2 flex items-center gap-2">
-              <span className="text-[10px] text-ash uppercase">Lista:</span>
-              <select
-                value={selectedListId}
-                onChange={(e) => setSelectedListId(e.target.value)}
-                className="bg-black border border-white/20 text-white text-[11px] px-2.5 py-1 uppercase focus:outline-none focus:border-earth"
-              >
-                <option value="all">Todas las guardadas ({savedRouteIds.length})</option>
-                {routeLists.map(list => (
-                  <option key={list.id} value={list.id}>
-                    {list.name} ({list.routeIds.length})
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-        </div>
-
-        {/* Search Bar Input */}
-        <div className="p-4 sm:p-5 bg-[#0A0908] flex items-center gap-3 text-xs">
-          <Search className="w-4 h-4 text-ash" />
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Buscar por destino, bosque, brecha o estado (ej. Amanalco, Mineral del Chico, Querétaro)..."
-            className="w-full bg-transparent text-white placeholder-ash focus:outline-none"
-          />
-        </div>
-      </section>
-
-      {/* 03. INTERACTIVE ROUTE MAP (WITH SATÉLITE HD & GOOGLE MAPS) */}
-      <section className="border border-white/10 bg-[#0B0A09]">
-        <div className="p-4 sm:p-6 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-3">
-            <span className="w-2.5 h-2.5 rounded-full bg-earth animate-pulse" />
-            <span className="text-white font-bold uppercase">
-              MAPA // {activeRoute.title} ({activeRoute.totalKm} KM · {activeRoute.offroadPercentage}% OFF-ROAD)
-            </span>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={(e) => handleOpenShare(e, activeRoute)}
-              className="text-ash hover:text-white font-bold uppercase tracking-wider flex items-center gap-1.5 transition"
-            >
-              <Share2 className="w-3.5 h-3.5 text-earth" />
-              <span>Compartir Ruta</span>
-            </button>
-
-            <button
-              onClick={() => enterRodada(activeRoute.rodadaId)}
-              className="text-earth hover:text-white font-bold uppercase tracking-wider flex items-center gap-1 transition"
-            >
-              <span>Ver en Sala de Club</span>
-              <ArrowUpRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-
-        <div className="h-[440px] sm:h-[500px] w-full relative">
-          <RouteMap 
-            route={activeRoute} 
-            allRoutes={filteredRoutes}
-            onSelectRoute={(r) => setSelectedRoute(r)}
-          />
-        </div>
-      </section>
-
-      {/* 04. WIKILOC & STRAVA STYLE ROUTE CARDS GRID */}
-      <section className="space-y-4">
-        <div className="flex items-center justify-between border-b border-white/10 pb-4">
-          <div>
-            <span className="text-[10px] text-earth uppercase tracking-widest font-bold">
-              [ {currentTab === 'completed' ? 'TUS TRAVESÍAS CONQUISTADAS' : currentTab === 'saved' ? 'TUS RUTAS GUARDADAS' : 'CATÁLOGO DE TRAVESÍAS'} ]
-            </span>
-            <h2 className="font-display font-bold text-2xl text-white uppercase mt-1">
-              {filteredRoutes.length} Trazados Encontrados
-            </h2>
-          </div>
-
-          {currentTab === 'completed' && (
-            <div className="text-right">
-              <span className="text-[10px] text-emerald-400 font-bold uppercase block">
-                Total acumulado en estas rutas:
-              </span>
-              <span className="font-display font-extrabold text-xl text-white">
-                {filteredRoutes.reduce((acc, r) => acc + r.totalKm, 0)} KM
-              </span>
-            </div>
-          )}
-        </div>
-
-        {filteredRoutes.length === 0 ? (
-          <div className="p-12 text-center border border-dashed border-white/15 bg-white/[0.01]">
-            <p className="text-ash text-sm">No se encontraron rutas con este criterio de filtro.</p>
-            {currentTab === 'completed' && (
-              <p className="text-xs text-earth mt-2">
-                Explora el catálogo y pulsa "Marcar Realizada" en las rutas que hayas rodado para verlas aquí.
-              </p>
             )}
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {filteredRoutes.map((route) => {
-              const isSelected = route.id === activeRoute.id;
-              const hasVoted = route.votes.includes(currentUser.id);
-              const isCompleted = completedRouteIds.includes(route.id);
-              const isSaved = savedRouteIds.includes(route.id);
 
+          {/* "Guardado" Toggle Pill */}
+          <button
+            onClick={() => setFilterSavedOnly(!filterSavedOnly)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-mono text-[11px] font-bold tracking-wider transition shrink-0 touch-manipulation border ${
+              filterSavedOnly
+                ? 'bg-[#FF5500] text-white border-[#FF5500] shadow-[0_0_12px_rgba(255,85,0,0.4)]'
+                : 'bg-black/60 text-white/80 border-white/10 hover:bg-white/10'
+            }`}
+          >
+            <Bookmark className={`w-3.5 h-3.5 ${filterSavedOnly ? 'fill-current' : ''}`} />
+            <span className="hidden sm:inline">Guardado</span>
+            {savedRouteIds.length > 0 && (
+              <span className="text-[10px] opacity-75">({savedRouteIds.length})</span>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* 2. RIGHT VERTICAL FAB STACK */}
+      <div className="absolute top-28 sm:top-24 right-3 sm:right-6 z-20 flex flex-col gap-2.5 pointer-events-auto">
+        {/* Layer Switcher (Capas: Satélite / Topo / Calles) */}
+        <button
+          onClick={handleCycleLayers}
+          className="relative w-11 h-11 rounded-full bg-[#181716]/90 hover:bg-[#252422] active:scale-95 text-white border border-white/15 backdrop-blur-md flex items-center justify-center shadow-2xl transition touch-manipulation group"
+          title={`Cambiar capa de mapa (Actual: ${currentMapLayer})`}
+        >
+          <Layers className="w-5 h-5 text-white/90 group-hover:text-white" />
+          <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#FF5500] text-[9px] font-mono font-bold text-white flex items-center justify-center">
+            {currentMapLayer === 'satellite' ? '1' : currentMapLayer === 'topo' ? '2' : '3'}
+          </span>
+        </button>
+
+        {/* Center GPS My Location */}
+        <button
+          onClick={handleDetectGPS}
+          className="w-11 h-11 rounded-full bg-[#181716]/90 hover:bg-[#252422] active:scale-95 text-white border border-white/15 backdrop-blur-md flex items-center justify-center shadow-2xl transition touch-manipulation group"
+          title="Centrar en mi ubicación GPS"
+        >
+          <Crosshair className="w-5 h-5 text-cyan-400 group-hover:scale-110 transition-transform" />
+        </button>
+      </div>
+
+      {/* 3. BOTTOM FLOATING ROUTE PREVIEW CAROUSEL (Strava style smooth swipe window, NO arrows) */}
+      {filteredRoutes.length > 0 && (
+        <div className="absolute bottom-20 left-0 right-0 z-20 pointer-events-auto">
+          {/* Horizontal scroll snap track with peek on right edge */}
+          <div
+            ref={carouselRef}
+            onScroll={handleCarouselScroll}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUpOrLeave}
+            onMouseLeave={handleMouseUpOrLeave}
+            className="flex gap-3 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory px-4 sm:px-8 py-2 cursor-grab active:cursor-grabbing select-none"
+            style={{ WebkitOverflowScrolling: 'touch' }}
+          >
+            {filteredRoutes.map((r, idx) => {
+              const isActive = activeRoute?.id === r.id;
               return (
                 <div
-                  key={route.id}
-                  onClick={() => setSelectedRoute(route)}
-                  className={`border cursor-pointer transition flex flex-col justify-between ${
-                    isSelected
-                      ? 'border-earth bg-white/[0.03]'
-                      : 'border-white/10 bg-[#0B0A09] hover:border-white/30'
-                  }`}
+                  key={r.id}
+                  onClick={() => {
+                    if (hasMoved.current) return;
+                    if (!isActive) {
+                      setSelectedRoute(r);
+                    } else {
+                      setShowDetailModal(true);
+                    }
+                  }}
+                  className={`w-[86vw] sm:w-[420px] max-w-[430px] shrink-0 snap-center transition-all duration-300 transform ${
+                    isActive 
+                      ? 'scale-[1.01] border-white/30 shadow-[0_20px_45px_rgba(0,0,0,0.95)]' 
+                      : 'opacity-75 hover:opacity-100 scale-[0.98] border-white/10'
+                  } bg-[#181716]/95 hover:bg-[#201F1D] backdrop-blur-xl border rounded-2xl p-2.5 sm:p-3 flex items-center gap-3 cursor-pointer`}
                 >
-                  {/* Photo & Overlay Badges */}
-                  <div className="h-56 w-full relative overflow-hidden border-b border-white/10">
-                    <img 
-                      src={route.coverImage} 
-                      alt={route.title} 
-                      className="w-full h-full object-cover filter brightness-85"
+                  {/* Left: Route Image Thumbnail */}
+                  <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden shrink-0 border border-white/10 bg-black/60 pointer-events-none">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={r.coverImage || 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=600&q=80'}
+                      alt={r.title}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 pointer-events-none"
                     />
-                    
-                    {/* Top Left: Destination */}
-                    <div className="absolute top-4 left-4 bg-black/85 backdrop-blur-md px-2.5 py-1 text-[10px] text-white border border-white/20">
-                      {route.destination.toUpperCase()}, {route.state.toUpperCase()}
-                    </div>
-
-                    {/* Top Right: Status / Completed Badge */}
-                    <div className="absolute top-4 right-4 flex items-center gap-1.5">
-                      {isCompleted && (
-                        <span className="bg-emerald-500 text-black px-2.5 py-1 text-[10px] font-extrabold uppercase shadow-lg flex items-center gap-1">
-                          <Award className="w-3.5 h-3.5" />
-                          <span>Conquistada</span>
-                        </span>
-                      )}
-                      <span className="bg-earth text-white px-2.5 py-1 text-[10px] font-bold uppercase shadow-lg">
-                        {route.votes.length} VOTOS
-                      </span>
-                    </div>
-
-                    {/* Difficulty Pill */}
-                    <div className="absolute bottom-4 left-4 bg-black/85 backdrop-blur-md px-2.5 py-1 text-[10px] text-chalk border border-white/15">
-                      Dificultad: <strong className="text-white">{route.difficulty}</strong>
-                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
                   </div>
 
-                  {/* Body Content */}
-                  <div className="p-6 space-y-4">
-                    <div>
-                      <h3 className="font-display font-bold text-xl text-white uppercase leading-tight">
-                        {route.title}
-                      </h3>
-                      <p className="text-xs text-ash mt-1 line-clamp-2 font-light">
-                        {route.description}
-                      </p>
-                    </div>
-
-                    {/* Telemetry Metrics */}
-                    <div className="grid grid-cols-4 gap-2 text-center p-3 bg-white/[0.02] border border-white/[0.06] text-xs">
-                      <div>
-                        <span className="text-[9px] text-ash uppercase block">Distancia</span>
-                        <span className="text-white font-bold">{route.totalKm} km</span>
-                      </div>
-                      <div>
-                        <span className="text-[9px] text-ash uppercase block">Tiempo</span>
-                        <span className="text-white font-bold">{route.estimatedHours.split(' ')[0]}</span>
-                      </div>
-                      <div>
-                        <span className="text-[9px] text-ash uppercase block">Brecha</span>
-                        <span className="text-earth font-bold">{route.offroadPercentage}%</span>
-                      </div>
-                      <div>
-                        <span className="text-[9px] text-ash uppercase block">Altitud</span>
-                        <span className="text-cyan-300 font-bold">{route.campsite.elevationMeters}m</span>
-                      </div>
-                    </div>
-
-                    {/* Pilot Author (Clickable Strava Profile) */}
-                    <div className="flex items-center justify-between text-xs pt-1">
+                  {/* Right: Route Details */}
+                  <div className="flex-1 min-w-0 pr-1">
+                    
+                    {/* Title & Bookmark */}
+                    <div className="flex items-start justify-between gap-1">
+                      <h4 className={`font-sans font-bold text-xs sm:text-sm line-clamp-1 transition ${
+                        isActive ? 'text-white' : 'text-stone-300'
+                      }`}>
+                        {r.title}
+                      </h4>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          openPilotProfileById(route.proposedByUserId);
+                          toggleSavedRoute(r.id);
                         }}
-                        className="flex items-center gap-2 hover:opacity-80 transition group text-left"
-                        title="Ver perfil estilo Strava de este piloto"
+                        className="p-1 text-ash hover:text-white rounded-lg -mr-1"
+                        title="Guardar ruta"
                       >
-                        <img 
-                          src={route.proposedByAvatar} 
-                          alt={route.proposedByName}
-                          className="w-6 h-6 rounded-full border border-earth object-cover" 
-                        />
-                        <span className="text-[11px] text-ash">
-                          Trazada por <strong className="text-white group-hover:text-earth transition underline decoration-dotted">{route.proposedByName}</strong>
-                        </span>
+                        <Bookmark className={`w-4 h-4 ${savedRouteIds.includes(r.id) ? 'fill-[#FF5500] text-[#FF5500]' : 'text-ash'}`} />
                       </button>
+                    </div>
 
-                      <span className="text-[10px] text-ash">
-                        {route.comments.length} bitácoras
+                    {/* Stats line with Difficulty badge (Exact Strava style: [Fácil] 4.8 km · 6.4 m · 0 h 29 min) */}
+                    <div className="flex items-center gap-1.5 mt-1 text-[11px] font-mono text-white/80">
+                      <span className={`px-1.5 py-0.2 rounded font-bold text-[10px] ${
+                        r.difficulty.toLowerCase().includes('fácil') 
+                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
+                          : r.difficulty.toLowerCase().includes('inter')
+                            ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                            : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                      }`}>
+                        {r.difficulty.split(' ')[0]}
+                      </span>
+                      <span>•</span>
+                      <span className="font-bold text-white">{r.totalKm} km</span>
+                      <span>•</span>
+                      <span className="text-cyan-300">+{r.campsite?.elevationMeters || 680} m</span>
+                      <span>•</span>
+                      <span className="text-ash">~{Math.round(r.totalKm / 35)} h</span>
+                    </div>
+
+                    {/* Proximity line (Desde tu ubicación) */}
+                    <div className="flex items-center gap-1.5 mt-1 text-[11px] font-sans text-stone-300">
+                      <Crosshair className="w-3 h-3 text-[#FF5500] shrink-0" />
+                      <span className="truncate">
+                        Desde tu ubicación {r.distanceFromPilotKm ? `(A ${r.distanceFromPilotKm} km de ti)` : ''}
                       </span>
                     </div>
 
-                    {/* STRAVA & WIKILOC ACTION BUTTONS */}
-                    <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-white/[0.08]">
-                      <div className="flex items-center gap-1.5">
-                        {/* 1. Mark as Completed (Strava Style) */}
-                        <button
-                          onClick={(e) => handleToggleCompleted(e, route.id)}
-                          className={`px-3 py-1.5 text-[10px] uppercase font-bold tracking-wider border transition flex items-center gap-1.5 ${
-                            isCompleted
-                              ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50'
-                              : 'border-white/20 text-ash hover:text-white hover:border-white'
-                          }`}
-                          title="Marcar como ruta completada en tu odómetro"
-                        >
-                          <CheckCircle className="w-3.5 h-3.5" />
-                          <span>{isCompleted ? '✓ Conquistada' : 'Realizada'}</span>
-                        </button>
-
-                        {/* 2. Save / Add to List (Wikiloc Style) */}
-                        <button
-                          onClick={(e) => handleOpenSaveToList(e, route)}
-                          className={`px-3 py-1.5 text-[10px] uppercase font-bold tracking-wider border transition flex items-center gap-1.5 ${
-                            isSaved
-                              ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/50'
-                              : 'border-white/20 text-ash hover:text-white hover:border-white'
-                          }`}
-                          title="Guardar en tus listas o crear colección"
-                        >
-                          <Bookmark className="w-3.5 h-3.5" />
-                          <span>{isSaved ? 'Guardada' : 'Guardar'}</span>
-                        </button>
-
-                        {/* 3. Share Button */}
-                        <button
-                          onClick={(e) => handleOpenShare(e, route)}
-                          className="p-1.5 text-ash hover:text-white border border-white/20 hover:border-white transition"
-                          title="Compartir ruta por WhatsApp o enlace"
-                        >
-                          <Share2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        {/* Vote Button */}
-                        <button
-                          onClick={(e) => handleVote(e, route.id)}
-                          className={`px-3 py-1.5 uppercase font-bold text-[10px] tracking-wider border transition ${
-                            hasVoted 
-                              ? 'bg-earth text-white border-earth' 
-                              : 'border-white/20 text-white hover:bg-white hover:text-black'
-                          }`}
-                        >
-                          {hasVoted ? 'Votado ✓' : 'Votar'}
-                        </button>
-
-                        {/* Jump to Rodada */}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedRoute(route);
-                            enterRodada(route.rodadaId);
-                          }}
-                          className="px-3 py-1.5 uppercase font-bold text-[10px] tracking-wider bg-white/[0.04] hover:bg-earth text-white border border-white/15 transition flex items-center gap-1"
-                        >
-                          <span>En Rodada</span>
-                          <ArrowUpRight className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
+                    {/* Accent footer tag (Recomendada / Conteo) */}
+                    <div className="flex items-center justify-between mt-1 pt-1 border-t border-white/5">
+                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#FF5500]">
+                        Recomendada
+                      </span>
+                      <span className="text-[10px] font-mono text-stone-500">
+                        {idx + 1} de {filteredRoutes.length}
+                      </span>
                     </div>
 
                   </div>
@@ -518,22 +559,259 @@ export const RouteExplorerView: React.FC<RouteExplorerViewProps> = ({
               );
             })}
           </div>
-        )}
-      </section>
+        </div>
+      )}
 
-      {/* Share Route Modal */}
-      <ShareRouteModal
-        route={shareRoute}
-        isOpen={Boolean(shareRoute)}
-        onClose={() => setShareRoute(null)}
-      />
+      {/* 4. MODALITY BOTTOM SHEET ("Filtrar por modalidad" - Exact Strava screenshot 1) */}
+      {showModalityModal && (
+        <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/75 backdrop-blur-sm animate-fadeIn">
+          {/* Backdrop click to close */}
+          <div className="flex-1" onClick={() => setShowModalityModal(false)} />
 
-      {/* Save to List Modal */}
-      <SaveToListModal
-        route={saveRouteModal}
-        isOpen={Boolean(saveRouteModal)}
-        onClose={() => setSaveRouteModal(null)}
-      />
+          {/* Drawer Container */}
+          <div className="bg-[#141312] border-t border-white/15 rounded-t-3xl max-h-[85vh] flex flex-col shadow-2xl max-w-xl w-full mx-auto animate-slideUp">
+            
+            {/* Top Drag Handle */}
+            <div className="w-12 h-1 bg-white/20 rounded-full mx-auto my-3" />
+
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 pb-3">
+              <h3 className="text-base font-bold text-white font-sans">
+                Filtrar por modalidad
+              </h3>
+              <button
+                onClick={() => setShowModalityModal(false)}
+                className="p-1.5 rounded-full bg-white/10 text-ash hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Search Input inside modal */}
+            <div className="px-5 pb-3">
+              <div className="flex items-center gap-2 bg-[#201F1E] border border-white/10 rounded-xl px-3 py-2 text-white">
+                <Search className="w-4 h-4 text-ash" />
+                <input
+                  type="text"
+                  value={modalitySearch}
+                  onChange={(e) => setModalitySearch(e.target.value)}
+                  placeholder="Buscar..."
+                  className="w-full bg-transparent text-sm text-white placeholder-stone-500 focus:outline-none"
+                />
+                {modalitySearch && (
+                  <button onClick={() => setModalitySearch('')} className="text-ash hover:text-white">
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Modalities List */}
+            <div className="overflow-y-auto px-5 py-2 space-y-6 flex-1 divide-y divide-white/5">
+              
+              {/* Option "Todas las modalidades" */}
+              <button
+                onClick={() => {
+                  setSelectedModality('all');
+                  setShowModalityModal(false);
+                }}
+                className="w-full flex items-center justify-between py-2.5 px-3 rounded-xl hover:bg-white/[0.04] text-left group transition"
+              >
+                <div>
+                  <p className={`text-sm font-medium ${selectedModality === 'all' ? 'text-[#FF5500] font-bold' : 'text-white'}`}>
+                    Todas las modalidades
+                  </p>
+                  <p className="text-xs text-ash">Explorar cualquier estilo de ruta y moto</p>
+                </div>
+                {selectedModality === 'all' && (
+                  <Check className="w-5 h-5 text-[#FF5500]" />
+                )}
+              </button>
+
+              {/* Grouped Modalities */}
+              {Object.entries(groupedModalities).map(([category, items]) => (
+                <div key={category} className="pt-4">
+                  <p className="text-xs font-bold font-sans text-stone-400 mb-2 uppercase tracking-wider px-3">
+                    {category}
+                  </p>
+                  <div className="space-y-1">
+                    {items.map(m => {
+                      const isSelected = selectedModality === m.id;
+                      return (
+                        <button
+                          key={m.id}
+                          onClick={() => {
+                            setSelectedModality(m.id);
+                            setShowModalityModal(false);
+                          }}
+                          className="w-full flex items-center justify-between py-2.5 px-3 rounded-xl hover:bg-white/[0.04] transition group text-left"
+                        >
+                          <div className="min-w-0 pr-2">
+                            <p className={`text-sm font-medium ${isSelected ? 'text-[#FF5500] font-bold' : 'text-white'}`}>
+                              {m.name}
+                            </p>
+                            <p className="text-xs text-ash truncate">{m.description}</p>
+                          </div>
+                          {isSelected && (
+                            <Check className="w-5 h-5 text-[#FF5500] shrink-0 ml-2" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* 5. ROUTE DETAIL MODAL (Opens when clicking the bottom card) */}
+      {showDetailModal && activeRoute && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md animate-fadeIn">
+          <div className="bg-[#141312] border border-white/20 rounded-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto flex flex-col shadow-2xl animate-scaleUp">
+            
+            {/* Modal Header Image */}
+            <div className="relative h-48 sm:h-56 w-full overflow-hidden shrink-0">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img 
+                src={activeRoute.coverImage || 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=600&q=80'} 
+                alt={activeRoute.title}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#141312] via-black/40 to-transparent" />
+              
+              <button 
+                onClick={() => setShowDetailModal(false)}
+                className="absolute top-3 right-3 p-2 rounded-full bg-black/70 hover:bg-black text-white border border-white/20 transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              <div className="absolute bottom-3 left-4 right-4">
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-[#FF5500] text-white">
+                  {activeRoute.difficulty}
+                </span>
+                <h3 className="font-bold text-lg sm:text-xl text-white mt-1">
+                  {activeRoute.title}
+                </h3>
+                <p className="text-xs text-stone-300 font-mono flex items-center gap-1.5 mt-0.5">
+                  <MapPin className="w-3.5 h-3.5 text-[#FF5500]" />
+                  {activeRoute.destination}, {activeRoute.state}
+                </p>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-4 sm:p-6 space-y-4 flex-1">
+              {/* Metrics Grid */}
+              <div className="grid grid-cols-4 gap-2 bg-black/50 border border-white/10 rounded-xl p-3 text-center font-mono">
+                <div>
+                  <p className="text-[10px] text-ash uppercase">Distancia</p>
+                  <p className="text-sm font-bold text-white">{activeRoute.totalKm} km</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-ash uppercase">Terreno</p>
+                  <div className="flex items-center justify-center gap-1.5 mt-0.5">
+                    <span className="flex items-center gap-0.5 text-xs font-bold text-earth" title="Montaña / Terracería">
+                      <Mountain className="w-3 h-3 text-earth shrink-0" />
+                      <span>{activeRoute.offroadPercentage}%</span>
+                    </span>
+                    <span className="flex items-center gap-0.5 text-xs font-bold text-white" title="Carretera / Asfalto">
+                      <RoadIcon className="w-3 h-3 text-white shrink-0" />
+                      <span>{activeRoute.asphaltPercentage || (100 - activeRoute.offroadPercentage)}%</span>
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-[10px] text-ash uppercase">Desnivel</p>
+                  <p className="text-sm font-bold text-cyan-300">+{activeRoute.campsite?.elevationMeters || 680}m</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-ash uppercase">Tiempo Est.</p>
+                  <p className="text-sm font-bold text-white">~{Math.round(activeRoute.totalKm / 35)} h</p>
+                </div>
+              </div>
+
+              {/* Description */}
+              <div>
+                <p className="text-xs font-mono uppercase text-ash tracking-wider mb-1">Descripción de Ruta</p>
+                <p className="text-xs sm:text-sm text-stone-300 font-light leading-relaxed">
+                  {activeRoute.description}
+                </p>
+              </div>
+
+              {/* Waypoints if present */}
+              {activeRoute.waypoints && activeRoute.waypoints.length > 0 && (
+                <div>
+                  <p className="text-xs font-mono uppercase text-ash tracking-wider mb-2">Paradas & Waypoints en Orden</p>
+                  <div className="space-y-1.5">
+                    {activeRoute.waypoints.map((wp, i) => (
+                      <div key={i} className="flex items-center gap-2.5 bg-white/[0.03] border border-white/5 rounded-xl px-3 py-2 text-xs">
+                        <span className="w-5 h-5 rounded-full bg-[#FF5500]/20 text-[#FF5500] font-mono font-bold text-[10px] flex items-center justify-center shrink-0">
+                          {i + 1}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-bold text-white truncate">{wp.name}</p>
+                          {wp.notes && <p className="text-[11px] text-ash truncate">{wp.notes}</p>}
+                        </div>
+                        <span className="text-[10px] font-mono text-stone-400 uppercase">{wp.type}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="pt-2 flex flex-col sm:flex-row gap-2.5">
+                <button
+                  onClick={() => {
+                    const url = buildOrderedGoogleMapsUrl(activeRoute);
+                    window.open(url, '_blank');
+                  }}
+                  className="flex-1 bg-[#FF5500] hover:bg-[#e04a00] text-white font-mono text-xs uppercase font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition shadow-xl"
+                >
+                  <Navigation className="w-4 h-4" />
+                  <span>Abrir en Google Maps</span>
+                  <ExternalLink className="w-3.5 h-3.5 opacity-75" />
+                </button>
+
+                <button
+                  onClick={() => {
+                    setSaveRouteModal(activeRoute);
+                  }}
+                  className="bg-black/60 hover:bg-white/10 text-white border border-white/20 font-mono text-xs uppercase font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition"
+                >
+                  <Bookmark className="w-4 h-4 text-[#FF5500]" />
+                  <span>Guardar</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setShareRoute(activeRoute);
+                  }}
+                  className="bg-black/60 hover:bg-white/10 text-white border border-white/20 font-mono text-xs uppercase font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition"
+                >
+                  <Share2 className="w-4 h-4 text-ash" />
+                  <span>Compartir</span>
+                </button>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* Share & Save modals */}
+      {shareRoute && (
+        <ShareRouteModal isOpen={!!shareRoute} route={shareRoute} onClose={() => setShareRoute(null)} />
+      )}
+      {saveRouteModal && (
+        <SaveToListModal isOpen={!!saveRouteModal} route={saveRouteModal} onClose={() => setSaveRouteModal(null)} />
+      )}
 
     </div>
   );

@@ -5,7 +5,7 @@ import { useApp } from '../context/AppContext';
 import { Navbar } from '../components/Navbar';
 import { InicioFeedView } from '../components/Feed/InicioFeedView';
 import { RouteExplorerView } from '../components/Routes/RouteExplorerView';
-import { GruposView } from '../components/Groups/GruposView';
+import { TribusView } from '../components/Tribus/TribusView';
 import { TuProfileView } from '../components/Profile/TuProfileView';
 import { CrewView } from '../components/Crews/CrewView';
 import { GarageView } from '../components/Garage/GarageView';
@@ -41,8 +41,12 @@ export default function Home() {
       />
 
       {/* 2. Main Architectural Container */}
-      <main className="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-8 lg:px-12 pt-6 sm:pt-10">
-        {/* TAB 01: INICIO (FEED SOCIAL DE PILOTOS TIPO STRAVA) */}
+      <main className={`flex-1 w-full mx-auto ${
+        (activeNavTab === 'mapas' || activeNavTab === 'rutas')
+          ? 'p-0 max-w-none h-[calc(100dvh-60px)] overflow-hidden relative'
+          : 'max-w-[1440px] px-4 sm:px-8 lg:px-12 pt-6 sm:pt-10 pb-28 sm:pb-24'
+      }`}>
+        {/* TAB 01: INICIO (FEED SOCIAL DE PILOTOS) */}
         {(activeNavTab === 'inicio' || activeNavTab === 'home') && (
           <InicioFeedView
             onOpenRecordRoute={() => setRecordRouteOpen(true)}
@@ -57,23 +61,13 @@ export default function Home() {
           />
         )}
 
-        {/* TAB 03: GRUPOS (EVENTOS, CLUBES Y RETOS) */}
-        {activeNavTab === 'grupos' && (
-          <GruposView
-            onOpenCreateCrew={() => setCreateCrewOpen(true)}
-            onOpenJoinCrew={() => setJoinCrewOpen(true)}
-            onOpenCreateRodada={() => setCreateRodadaOpen(true)}
-          />
-        )}
-
-        {/* SALA PRIVADA DE CLUB O RODADA */}
-        {(activeNavTab === 'rodada' || activeNavTab === 'crew') && (
-          <CrewView 
+        {/* TAB 03: TRIBUS (FLOTILLAS, PRÓXIMA RODADA EN CHIQUITO Y SISTEMA DE VOTACIÓN ESTRELLA) */}
+        {(activeNavTab === 'tribus' || activeNavTab === 'grupos' || activeNavTab === 'rodada' || activeNavTab === 'crew') && (
+          <TribusView
             onOpenCreateCrew={() => setCreateCrewOpen(true)}
             onOpenJoinCrew={() => setJoinCrewOpen(true)}
             onOpenCreateRodada={() => setCreateRodadaOpen(true)}
             onOpenProposeRoute={() => setProposeRouteOpen(true)}
-            onOpenRecordRoute={() => setRecordRouteOpen(true)}
           />
         )}
 
@@ -90,41 +84,7 @@ export default function Home() {
         )}
       </main>
 
-      {/* 3. Swiss Architectural Footer */}
-      <footer className="border-t border-white/10 bg-[#080706] pt-12 pb-28 sm:pb-24">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 grid grid-cols-1 md:grid-cols-12 gap-8 font-mono text-xs">
-          
-          <div className="md:col-span-6 space-y-3">
-            <div className="flex items-baseline gap-3">
-              <span className="font-display font-extrabold text-2xl tracking-[0.25em] text-white">
-                NAO
-              </span>
-              <span className="text-[10px] uppercase tracking-widest text-ash">
-                // MOTO EXPEDITIONS NETWORK
-              </span>
-            </div>
-            <p className="text-ash text-xs max-w-md leading-relaxed font-light">
-              Plataforma de exploración comunitaria para rodadas en motos doble propósito y trail. Votación de rutas en consenso, navegación GPX y organización de grupos.
-            </p>
-          </div>
-
-          <div className="md:col-span-3 space-y-2">
-            <span className="text-[10px] text-earth uppercase tracking-widest font-bold block">Destinos de Ruta</span>
-            <p className="text-ash">01. Corral de Piedra // Amanalco</p>
-            <p className="text-ash">02. Cañón de Bucareli // Querétaro</p>
-            <p className="text-ash">03. Los Azufres // Michoacán</p>
-          </div>
-
-          <div className="md:col-span-3 space-y-2 md:text-right">
-            <span className="text-[10px] text-earth uppercase tracking-widest font-bold block">Red de Pilotos</span>
-            <p className="text-white font-bold">NAO CLUB // 2026</p>
-            <p className="text-ash text-[11px]">Diseñado para la comunidad off-road.</p>
-          </div>
-
-        </div>
-      </footer>
-
-      {/* 4. Native App Bottom Action Bar (Dock) */}
+      {/* Native App Bottom Action Bar (Dock) */}
       <BottomBar 
         onOpenRecordRoute={() => setRecordRouteOpen(true)}
       />

@@ -289,11 +289,11 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
 
     setDetectedStopsCount(c => c + 1);
     setRecordedWaypoints(wps => [...wps, newStop]);
-    addMarkerToMap(newStop, '🛑');
+    addMarkerToMap(newStop, 'STOP');
   };
 
   // Manual Waypoint / Stop Logger
-  const handleAddManualWaypoint = (type: WaypointType, label: string, emoji: string) => {
+  const handleAddManualWaypoint = (type: WaypointType, label: string, tag: string) => {
     const currentLoc = trackCoords[trackCoords.length - 1] || [19.4005, -99.2816];
     const newWp: Waypoint = {
       id: `wp-${Date.now()}`,
@@ -305,20 +305,20 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
     };
 
     setRecordedWaypoints(prev => [...prev, newWp]);
-    addMarkerToMap(newWp, emoji);
+    addMarkerToMap(newWp, tag);
     confetti({ particleCount: 20, spread: 45 });
   };
 
   // Add marker symbol to Leaflet map
-  const addMarkerToMap = async (wp: Waypoint, emoji: string) => {
+  const addMarkerToMap = async (wp: Waypoint, tag: string) => {
     if (!mapInstanceRef.current || !waypointsLayerRef.current) return;
     const L = (await import('leaflet')).default;
 
     const markerIcon = L.divIcon({
       className: 'wp-marker',
       html: `
-        <div style="background: #0B0A09; border: 2px solid #E07A5F; color: white; padding: 4px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,0.6); display: flex; align-items: center; gap: 4px;">
-          <span>${emoji}</span>
+        <div style="background: #0B0A09; border: 1.5px solid #E07A5F; color: white; padding: 3px 6px; border-radius: 2px; font-size: 10px; font-family: monospace; font-weight: bold; white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,0.6); display: flex; align-items: center; gap: 5px;">
+          <span style="background: #E07A5F; color: black; font-weight: 800; font-size: 8px; padding: 1px 3px; border-radius: 2px;">${tag}</span>
           <span>${wp.name.split('(')[0]}</span>
         </div>
       `,
@@ -349,7 +349,7 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
       };
       setRecordedWaypoints([startWp]);
       appendPoint(startCoord[0], startCoord[1], startCoord[2], 0);
-      addMarkerToMap(startWp, '🏁');
+      addMarkerToMap(startWp, 'START');
     }
 
     // Start Timer
@@ -426,7 +426,7 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
       notes: `Finalización de recorrido. Distancia: ${distanceKm} km.`
     };
     setRecordedWaypoints(prev => [...prev, endWp]);
-    addMarkerToMap(endWp, '🏁');
+    addMarkerToMap(endWp, 'END');
 
     setRouteTitle(`Expedición Grabada ${new Date().toLocaleDateString('es-MX', { day: '2-digit', month: 'short' })} (${distanceKm} km)`);
     setRouteDescription(`Ruta off-road registrada en vivo por ${currentUser.name}. Registró ${detectedStopsCount} paradas técnicas, altitud máxima de ${maxElevation}m y ${distanceKm} km de recorrido total.`);
@@ -472,7 +472,7 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
       ],
       waypoints: recordedWaypoints,
       coordinates: trackCoords.length > 0 ? trackCoords : SIMULATED_COORDS.map(c => [c[0], c[1]]),
-      dayOfDeadVibe: 'Ruta trazada en tiempo real por el club.',
+      dayOfDeadVibe: 'Ruta trazada en tiempo real por la tribu.',
       safetyTips: ['Llevar kit de parches y compresor', 'Monitorear presión de llantas en terreno rocoso']
     };
 
@@ -492,13 +492,20 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
     confetti({ particleCount: 100, spread: 90 });
   };
 
+  // Close modal safely
+  const handleCloseModal = () => {
+    handlePause();
+    setShowSaveDialog(false);
+    onClose();
+  };
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex flex-col font-mono text-chalk">
+    <div className="fixed inset-0 z-[200] bg-black/95 flex flex-col font-mono text-chalk overflow-hidden h-screen w-screen">
       
       {/* 1. TOP COCKPIT BAR */}
-      <header className="border-b border-white/[0.08] bg-[#0E0D0C] px-4 sm:px-8 py-3.5 flex items-center justify-between">
+      <header className="shrink-0 border-b border-white/[0.08] bg-[#0E0D0C] px-4 sm:px-8 py-3.5 flex items-center justify-between z-20">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2.5">
             <span className={`w-2 h-2 rounded-full ${isRecording && !isPaused ? 'bg-earth animate-pulse' : 'bg-white/20'}`} />
@@ -512,7 +519,7 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Subtle simulation toggle for desk testing */}
+          {/* Simulation toggle for desk testing */}
           <button
             onClick={() => setIsSimulating(!isSimulating)}
             className={`px-2.5 py-1 text-[10px] uppercase font-bold tracking-wider border transition ${
@@ -522,23 +529,25 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
             }`}
             title="Simula un trayecto real con curvas y altitud"
           >
-            {isSimulating ? '✓ Demo Activo' : 'Simular Track'}
+            {isSimulating ? 'Demo Activo' : 'Simular Track'}
           </button>
 
           <button
-            onClick={onClose}
-            className="p-1.5 border border-white/10 hover:border-white text-ash hover:text-white transition"
+            onClick={handleCloseModal}
+            className="px-3 py-1 border border-white/20 hover:border-white text-ash hover:text-white transition flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider"
+            title="Cerrar telemetría y volver"
           >
             <X className="w-4 h-4" />
+            <span className="hidden sm:inline">Salir</span>
           </button>
         </div>
       </header>
 
       {/* 2. MAIN COCKPIT VIEWPORT (MAP + LIVE HUD OVERLAY) */}
-      <div className="flex-1 relative flex flex-col lg:flex-row overflow-hidden">
+      <div className="flex-1 min-h-0 relative flex flex-col lg:flex-row overflow-hidden">
         
         {/* MAP CANVAS */}
-        <div className="flex-1 relative h-full w-full bg-[#060709]">
+        <div className="flex-1 min-h-0 relative h-full w-full bg-[#060709] overflow-hidden">
           <div ref={mapContainerRef} className="w-full h-full min-h-[350px]" />
 
           {/* Map Layer Switcher (Top Left) */}
@@ -570,28 +579,28 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
                 Punto:
               </span>
               <button
-                onClick={() => handleAddManualWaypoint('fuel', 'Gasolinera', '⛽')}
+                onClick={() => handleAddManualWaypoint('fuel', 'Gasolinera', 'GAS')}
                 className="px-2.5 py-1 bg-white/[0.04] hover:bg-earth text-white border border-white/10 text-[10px] uppercase font-bold flex items-center gap-1.5 transition"
               >
                 <Fuel className="w-3 h-3 text-earth" />
                 <span>Gas</span>
               </button>
               <button
-                onClick={() => handleAddManualWaypoint('scenic', 'Mirador', '🏞️')}
+                onClick={() => handleAddManualWaypoint('scenic', 'Mirador', 'VISTA')}
                 className="px-2.5 py-1 bg-white/[0.04] hover:bg-earth text-white border border-white/10 text-[10px] uppercase font-bold flex items-center gap-1.5 transition"
               >
                 <Camera className="w-3 h-3 text-earth" />
                 <span>Mirador</span>
               </button>
               <button
-                onClick={() => handleAddManualWaypoint('dirt', 'Paso Técnico', '🪨')}
+                onClick={() => handleAddManualWaypoint('dirt', 'Paso Técnico', 'TECNICO')}
                 className="px-2.5 py-1 bg-white/[0.04] hover:bg-earth text-white border border-white/10 text-[10px] uppercase font-bold flex items-center gap-1.5 transition"
               >
                 <AlertTriangle className="w-3 h-3 text-earth" />
                 <span>Paso Técnico</span>
               </button>
               <button
-                onClick={() => handleAddManualWaypoint('camp', 'Descanso', '☕')}
+                onClick={() => handleAddManualWaypoint('camp', 'Descanso', 'DESCANSO')}
                 className="px-2.5 py-1 bg-white/[0.04] hover:bg-earth text-white border border-white/10 text-[10px] uppercase font-bold flex items-center gap-1.5 transition"
               >
                 <Coffee className="w-3 h-3 text-earth" />
@@ -602,9 +611,9 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
         </div>
 
         {/* TELEMETRY HUD SIDEBAR */}
-        <aside className="w-full lg:w-96 border-t lg:border-t-0 lg:border-l border-white/10 bg-[#0B0A09] p-5 sm:p-6 flex flex-col justify-between overflow-y-auto max-h-[48vh] lg:max-h-full">
+        <aside className="w-full lg:w-96 shrink-0 border-t lg:border-t-0 lg:border-l border-white/10 bg-[#0B0A09] flex flex-col h-full overflow-hidden">
           
-          <div className="space-y-6">
+          <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-5 space-y-5">
             
             {/* Live Big Gauges */}
             <div className="grid grid-cols-2 gap-3">
@@ -732,6 +741,15 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
                 </button>
               </div>
             )}
+            
+            {isRecording && isPaused && (
+              <button
+                onClick={handleCloseModal}
+                className="w-full text-center text-[10px] text-ash hover:text-red-400 uppercase tracking-widest pt-2.5 pb-0.5 transition block"
+              >
+                Descartar Recorrido y Salir
+              </button>
+            )}
           </div>
 
         </aside>
@@ -740,8 +758,8 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
 
       {/* 3. SAVE TO GROUP & GOOGLE MAPS MODAL */}
       {showSaveDialog && (
-        <div className="fixed inset-0 z-60 bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="border border-white/20 bg-[#0E0D0C] max-w-xl w-full p-6 sm:p-8 space-y-6 shadow-2xl">
+        <div className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="border border-white/20 bg-[#0E0D0C] max-w-xl w-full p-5 sm:p-8 space-y-6 my-auto max-h-[92vh] overflow-y-auto shadow-2xl relative text-chalk">
             
             <div className="flex items-start justify-between border-b border-white/10 pb-4">
               <div>
@@ -749,12 +767,13 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
                   [ RECORRIDO CONCLUIDO ]
                 </span>
                 <h3 className="font-display font-extrabold text-2xl text-white uppercase mt-1">
-                  Guardar Ruta en el Club
+                  Guardar Ruta en la Tribu
                 </h3>
               </div>
               <button 
                 onClick={() => setShowSaveDialog(false)}
-                className="text-ash hover:text-white"
+                className="p-1 border border-white/15 hover:border-white text-ash hover:text-white transition"
+                title="Cerrar ventana"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -781,7 +800,7 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
                 
                 <div>
                   <label className="text-ash text-[10px] uppercase font-bold block mb-1">
-                    Club / Grupo Destino:
+                    Tribu / Grupo Destino:
                   </label>
                   <select
                     value={targetCrewId}
@@ -849,13 +868,23 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
                   />
                 </div>
 
-                <button
-                  onClick={handleSaveToGroup}
-                  className="w-full py-3.5 bg-earth hover:bg-earth-bright text-white uppercase font-bold text-xs tracking-wider transition flex items-center justify-center gap-2 mt-4"
-                >
-                  <CheckCircle className="w-4 h-4" />
-                  Publicar Ruta en el Grupo
-                </button>
+                <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowSaveDialog(false)}
+                    className="sm:w-1/3 py-3 border border-white/20 hover:border-white text-ash hover:text-white uppercase font-bold text-xs tracking-wider transition touch-manipulation"
+                  >
+                    Volver al Mapa
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSaveToGroup}
+                    className="sm:flex-1 py-3 bg-earth hover:bg-earth-bright text-white uppercase font-bold text-xs tracking-wider transition flex items-center justify-center gap-2 touch-manipulation shadow-lg"
+                  >
+                    <CheckCircle className="w-4 h-4" />
+                    Publicar Ruta en la Tribu
+                  </button>
+                </div>
 
               </div>
             ) : (

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import confetti from 'canvas-confetti';
+import { X } from 'lucide-react';
 
 interface CreateCrewModalProps {
   isOpen: boolean;
@@ -26,7 +27,7 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
 
     createCrew({
       name: name.trim(),
-      tagline: tagline.trim() || 'Club de motos trail y doble propósito.',
+      tagline: tagline.trim() || 'Tribu de motos trail y doble propósito.',
       description: description.trim() || 'Comunidad para organizar rodadas de fin de semana y expediciones.',
       baseCity: baseCity.trim(),
       coverImage: coverImage.trim() || 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=1200'
@@ -42,18 +43,21 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
         <div className="flex items-center justify-between border-b border-white/10 pb-4">
           <div>
             <span className="font-mono text-[10px] text-earth uppercase tracking-widest font-bold">
-              [ CREACIÓN DE FLOTILLA ]
+              [ CREACIÓN DE TRIBU ]
             </span>
             <h3 className="font-display font-bold text-xl text-white uppercase">
-              Registrar Nuevo Club
+              Crear Nueva Tribu
             </h3>
+            <p className="text-[11px] text-ash mt-1">
+              Como creador de la tribu, serás el Administrador del grupo para moderar y consagrar rodadas.
+            </p>
           </div>
-          <button onClick={onClose} className="font-mono text-ash hover:text-white">✕</button>
+          <button onClick={onClose} className="text-ash hover:text-white p-1"><X className="w-4 h-4" /></button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 font-mono text-xs">
           <div>
-            <label className="text-ash uppercase text-[10px] block mb-1">Nombre del Squad / Club</label>
+            <label className="text-ash uppercase text-[10px] block mb-1">Nombre de la Tribu</label>
             <input
               type="text"
               required
@@ -98,7 +102,7 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
               type="submit"
               className="w-1/2 py-3 bg-earth hover:bg-earth-bright text-white uppercase font-bold tracking-widest transition"
             >
-              Crear Flotilla
+              Crear Tribu (Admin)
             </button>
           </div>
         </form>

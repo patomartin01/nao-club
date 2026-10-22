@@ -15,9 +15,26 @@ import {
   Plus,
   ArrowLeft,
   Check,
-  Bike
+  Bike,
+  Mountain
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+
+const RoadIcon: React.FC<{ className?: string }> = ({ className = "w-3.5 h-3.5" }) => (
+  <svg 
+    className={className} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+  >
+    <path d="M4 19L8 5h8l4 14" />
+    <line x1="12" y1="8" x2="12" y2="10" />
+    <line x1="12" y1="14" x2="12" y2="16" />
+  </svg>
+);
 
 interface RodadaDetailViewProps {
   onOpenProposeRoute: () => void;
@@ -160,7 +177,7 @@ ${gpxPoints}
         </div>
 
         <span className="text-[10px] uppercase text-earth tracking-widest font-bold hidden sm:inline">
-          ESTADO: {currentRodada.status === 'votacion' ? '⚡ VOTACIÓN DE RUTAS' : '✓ RUTA GANADORA FIJADA'}
+          ESTADO: {currentRodada.status === 'votacion' ? 'VOTACIÓN DE RUTAS' : 'RUTA GANADORA FIJADA'}
         </span>
       </div>
 
@@ -171,7 +188,7 @@ ${gpxPoints}
         <div className="grid grid-cols-12 border-b border-white/10">
           <div className="col-span-12 md:col-span-8 p-6 sm:p-10 border-b md:border-b-0 md:border-r border-white/10">
             <span className="font-mono text-[10px] text-earth uppercase tracking-widest font-bold block mb-2">
-              [ {currentCrew?.name.toUpperCase() || 'MOTO CLUB'} // {currentRodada.category.toUpperCase()} ]
+              [ {currentCrew?.name.toUpperCase() || 'TRIBU'} // {currentRodada.category.toUpperCase()} ]
             </span>
             <h1 className="font-display font-extrabold text-3xl sm:text-5xl lg:text-6xl text-white tracking-tight uppercase leading-[0.95]">
               {currentRodada.title}
@@ -264,9 +281,18 @@ ${gpxPoints}
           </div>
 
           <div className="p-6">
-            <span className="text-[10px] text-ash uppercase tracking-wider block">02. Terreno Off-Road</span>
-            <p className="font-display font-extrabold text-3xl text-earth mt-1">{activeRoute.offroadPercentage}%</p>
-            <p className="text-[11px] text-ash mt-1">Tierra compacta, pinocha y grava</p>
+            <span className="text-[10px] text-ash uppercase tracking-wider block">02. Terreno</span>
+            <div className="flex items-center gap-3 mt-1.5">
+              <span className="flex items-center gap-1.5 font-display font-extrabold text-2xl text-earth" title="Montaña / Terracería">
+                <Mountain className="w-6 h-6 text-earth shrink-0" />
+                <span>{activeRoute.offroadPercentage}%</span>
+              </span>
+              <span className="flex items-center gap-1.5 font-display font-extrabold text-2xl text-white" title="Carretera / Asfalto">
+                <RoadIcon className="w-6 h-6 text-white shrink-0" />
+                <span>{activeRoute.asphaltPercentage || (100 - activeRoute.offroadPercentage)}%</span>
+              </span>
+            </div>
+            <p className="text-[11px] text-ash mt-1">Tierra compacta, pinocha y asfalto</p>
           </div>
 
           <div className="p-6">
@@ -351,8 +377,17 @@ ${gpxPoints}
                     <span className="text-white font-bold">{route.totalKm} km</span>
                   </div>
                   <div>
-                    <span className="text-[9px] text-ash block uppercase">Off-Road</span>
-                    <span className="text-earth font-bold">{route.offroadPercentage}%</span>
+                    <span className="text-[9px] text-ash block uppercase">Terreno</span>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <span className="flex items-center gap-0.5 text-earth font-bold" title="Montaña / Terracería">
+                        <Mountain className="w-2.5 h-2.5 text-earth shrink-0" />
+                        <span>{route.offroadPercentage}%</span>
+                      </span>
+                      <span className="flex items-center gap-0.5 text-white font-bold" title="Carretera / Asfalto">
+                        <RoadIcon className="w-2.5 h-2.5 text-white shrink-0" />
+                        <span>{route.asphaltPercentage || (100 - route.offroadPercentage)}%</span>
+                      </span>
+                    </div>
                   </div>
                 </div>
 
@@ -372,7 +407,7 @@ ${gpxPoints}
                         : 'border border-white/20 text-white hover:bg-white hover:text-black'
                     }`}
                   >
-                    {hasVotedThis ? 'Votado ✓' : 'Votar'}
+                    {hasVotedThis ? 'Votado' : 'Votar'}
                   </button>
                 </div>
               </div>
@@ -491,7 +526,7 @@ ${gpxPoints}
                   : 'bg-earth text-white border-earth hover:bg-earth-bright'
               }`}
             >
-              {isUserConfirmed ? '✓ Asistencia Confirmada' : '+ Confirmar Asistencia'}
+              {isUserConfirmed ? 'Asistencia Confirmada' : '+ Confirmar Asistencia'}
             </button>
           </div>
 

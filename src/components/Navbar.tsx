@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { Plus, Key, Flame, Compass, Radio, Users, User } from 'lucide-react';
+import { Key, Share2, Check } from 'lucide-react';
 
 interface NavbarProps {
   onOpenCreateRodada: () => void;
@@ -13,21 +13,28 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
-  onOpenProposeRoute,
-  onOpenJoinCrew,
-  onOpenRecordRoute
+  onOpenJoinCrew
 }) => {
-  const { activeNavTab, setActiveNavTab, currentUser, currentRodada } = useApp();
+  const { setActiveNavTab, currentUser } = useApp();
+  const [copied, setCopied] = useState(false);
 
-  const isInicio = activeNavTab === 'inicio' || activeNavTab === 'home';
-  const isMapas = activeNavTab === 'mapas' || activeNavTab === 'rutas';
-  const isRegistrar = activeNavTab === 'registrar';
-  const isGrupos = activeNavTab === 'grupos' || activeNavTab === 'crew' || activeNavTab === 'rodada';
-  const isTu = activeNavTab === 'tu' || activeNavTab === 'garaje';
-
-  const handleRecordClick = () => {
-    setActiveNavTab('registrar');
-    if (onOpenRecordRoute) onOpenRecordRoute();
+  const handleShare = async () => {
+    const shareData = {
+      title: 'NAO Moto Expeditions',
+      text: 'Únete a nuestra tribu de motociclismo en NAO.',
+      url: typeof window !== 'undefined' ? window.location.href : '',
+    };
+    if (typeof navigator !== 'undefined' && navigator.share && navigator.canShare?.(shareData)) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        // user cancelled share dialog
+      }
+    } else if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   return (
@@ -69,75 +76,14 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
 
-        {/* Center: Desktop Navigation Bar (Only on md+ screens) */}
-        <nav className="hidden md:flex items-center gap-1 lg:gap-2 font-mono text-xs">
-          <button
-            onClick={() => setActiveNavTab('inicio')}
-            className={`px-3.5 py-1.5 flex items-center gap-2 uppercase tracking-wider text-[11px] font-bold transition border-b-2 ${
-              isInicio 
-                ? 'text-white border-earth bg-white/[0.04]' 
-                : 'text-ash border-transparent hover:text-white hover:bg-white/[0.02]'
-            }`}
-          >
-            <Flame className={`w-3.5 h-3.5 ${isInicio ? 'text-earth' : 'text-ash'}`} />
-            <span>Inicio</span>
-          </button>
 
-          <button
-            onClick={() => setActiveNavTab('mapas')}
-            className={`px-3.5 py-1.5 flex items-center gap-2 uppercase tracking-wider text-[11px] font-bold transition border-b-2 ${
-              isMapas 
-                ? 'text-white border-earth bg-white/[0.04]' 
-                : 'text-ash border-transparent hover:text-white hover:bg-white/[0.02]'
-            }`}
-          >
-            <Compass className={`w-3.5 h-3.5 ${isMapas ? 'text-earth' : 'text-ash'}`} />
-            <span>Mapas</span>
-          </button>
-
-          <button
-            onClick={handleRecordClick}
-            className={`px-3.5 py-1.5 flex items-center gap-2 uppercase tracking-wider text-[11px] font-bold transition border-b-2 ${
-              isRegistrar 
-                ? 'text-white border-earth bg-earth/20' 
-                : 'text-earth border-transparent hover:bg-earth/10'
-            }`}
-          >
-            <Radio className="w-3.5 h-3.5 text-earth animate-pulse" />
-            <span>Registrar</span>
-          </button>
-
-          <button
-            onClick={() => setActiveNavTab('grupos')}
-            className={`px-3.5 py-1.5 flex items-center gap-2 uppercase tracking-wider text-[11px] font-bold transition border-b-2 ${
-              isGrupos 
-                ? 'text-white border-earth bg-white/[0.04]' 
-                : 'text-ash border-transparent hover:text-white hover:bg-white/[0.02]'
-            }`}
-          >
-            <Users className={`w-3.5 h-3.5 ${isGrupos ? 'text-earth' : 'text-ash'}`} />
-            <span>Grupos</span>
-          </button>
-
-          <button
-            onClick={() => setActiveNavTab('tu')}
-            className={`px-3.5 py-1.5 flex items-center gap-2 uppercase tracking-wider text-[11px] font-bold transition border-b-2 ${
-              isTu 
-                ? 'text-white border-earth bg-white/[0.04]' 
-                : 'text-ash border-transparent hover:text-white hover:bg-white/[0.02]'
-            }`}
-          >
-            <User className={`w-3.5 h-3.5 ${isTu ? 'text-earth' : 'text-ash'}`} />
-            <span>Tú</span>
-          </button>
-        </nav>
 
         {/* Right: Quick Action Controls & Pilot Profile */}
         <div className="flex items-center gap-2.5 sm:gap-4 font-mono text-xs">
           
           <button
             onClick={onOpenJoinCrew}
-            title="Unirse con clave de grupo"
+            title="Unirse con clave de tribu"
             className="px-3 py-1.5 text-ash hover:text-white hover:bg-white/[0.04] border border-white/10 transition flex items-center gap-1.5 text-[10px] uppercase font-bold"
           >
             <Key className="w-3.5 h-3.5" />
@@ -145,11 +91,21 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           <button
-            onClick={onOpenProposeRoute}
-            className="px-3.5 py-1.5 bg-white hover:bg-earth text-obsidian hover:text-white font-mono text-[10px] font-bold uppercase tracking-wider transition flex items-center gap-1.5 shrink-0"
+            onClick={handleShare}
+            title="Compartir enlace de la aplicación"
+            className="px-3.5 py-1.5 bg-earth hover:bg-earth-bright text-white font-mono text-[10px] font-bold uppercase tracking-wider transition flex items-center gap-1.5 shrink-0 shadow-sm"
           >
-            <Plus className="w-3.5 h-3.5" />
-            <span>+ Ruta</span>
+            {copied ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-white" />
+                <span>Copiado</span>
+              </>
+            ) : (
+              <>
+                <Share2 className="w-3.5 h-3.5" />
+                <span>Compartir</span>
+              </>
+            )}
           </button>
 
           {/* Pilot avatar thumbnail */}
@@ -171,24 +127,6 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
 
-      </div>
-
-      {/* 3. SUB-BAR: LIVE EXPEDITION TELEMETRY */}
-      <div className="w-full bg-[#080706] border-t border-white/[0.04] px-4 sm:px-8 py-1.5 flex flex-wrap items-center justify-between text-[10px] font-mono text-ash">
-        <div className="flex items-center gap-3">
-          <span className="w-1.5 h-1.5 rounded-full bg-earth animate-pulse" />
-          <span className="text-white">
-            TRAZADO ACTIVO: <strong className="text-chalk font-bold">{currentRodada?.title.toUpperCase() || 'CORRAL DE PIEDRA // AMANALCO'}</strong>
-          </span>
-          <span className="hidden md:inline text-white/20">|</span>
-          <span className="hidden md:inline">19°24&apos;02&quot;N 99°16&apos;54&quot;W</span>
-        </div>
-
-        <div className="hidden sm:flex items-center gap-3">
-          <span>SALIDA: <strong className="text-white">INTERLOMAS</strong></span>
-          <span className="text-white/20">/</span>
-          <span className="text-emerald-400 font-bold">DESTINO: VALLE DE BRAVO / CORRAL DE PIEDRA</span>
-        </div>
       </div>
 
     </header>

@@ -35,13 +35,13 @@ const MiniRouteMap: React.FC<MiniRouteMapProps> = ({ coordinates }) => {
 
       mapRef.current = map;
 
-      // CartoDB Dark Matter tiles (identical to Strava's sleek dark map)
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      // High-resolution satellite tiles (ArcGIS World Imagery - no watermark)
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
         maxZoom: 19
       }).addTo(map);
 
       if (coordinates.length > 1) {
-        // Orange Strava-style polyline
+        // High-contrast orange polyline
         const polyline = L.polyline(coordinates, {
           color: '#E06D38',
           weight: 4,

@@ -48,3 +48,41 @@ export const buildOrderedGoogleMapsUrl = (
   const dest = encodeURIComponent(`${route.destination}, ${route.state}`);
   return `https://www.google.com/maps/dir/${origin}/${dest}`;
 };
+
+const cleanGmapsPoint = (str: string): string => {
+  if (!str) return '';
+  return str
+    .replace(/,?\s*sugerencia\s+de\s+google\s*maps.*$/i, '')
+    .replace(/,?\s*sugerencia\s+de.*$/i, '')
+    .replace(/,?\s*punto\s+exacto\s+en\s+google\s*maps.*$/i, '')
+    .replace(/,?\s*b[uú]squeda\s+exacta.*$/i, '')
+    .trim();
+};
+
+/**
+ * Builds a dynamic multi-stop Google Maps URL from user input locations/stops.
+ * Format: https://www.google.com/maps/dir/Origin/Stop1/Stop2/Destination
+ */
+export const buildDynamicRouteGoogleMapsUrl = (
+  origin: string,
+  waypoints: { name: string; lat?: number; lng?: number }[],
+  destination: string
+): string => {
+  const parts: string[] = [];
+  const cleanOrigin = cleanGmapsPoint(origin);
+  if (cleanOrigin) parts.push(encodeURIComponent(cleanOrigin));
+
+  if (waypoints && waypoints.length > 0) {
+    waypoints.forEach(wp => {
+      const cleanWp = cleanGmapsPoint(wp.name);
+      if (cleanWp) parts.push(encodeURIComponent(cleanWp));
+    });
+  }
+
+  const cleanDest = cleanGmapsPoint(destination);
+  if (cleanDest) parts.push(encodeURIComponent(cleanDest));
+
+  if (parts.length === 0) return 'https://maps.google.com';
+  return `https://www.google.com/maps/dir/${parts.join('/')}`;
+};
+

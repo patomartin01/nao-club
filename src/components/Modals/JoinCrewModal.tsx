@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { Key } from 'lucide-react';
+import { Key, X } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 interface JoinCrewModalProps {
@@ -44,13 +44,13 @@ export const JoinCrewModal: React.FC<JoinCrewModalProps> = ({ isOpen, onClose })
         <div className="flex items-center justify-between border-b border-white/10 pb-4">
           <div>
             <span className="font-mono text-[10px] text-earth uppercase tracking-widest font-bold">
-              [ ACCESO A FLOTILLA ]
+              [ UNIRSE A TRIBU ]
             </span>
             <h3 className="font-display font-bold text-xl text-white uppercase">
-              Unirse con Clave
+              Unirse con Código
             </h3>
           </div>
-          <button onClick={onClose} className="font-mono text-ash hover:text-white">✕</button>
+          <button onClick={onClose} className="text-ash hover:text-white p-1"><X className="w-4 h-4" /></button>
         </div>
 
         <form onSubmit={handleJoin} className="space-y-4 font-mono text-xs">
@@ -91,7 +91,7 @@ export const JoinCrewModal: React.FC<JoinCrewModalProps> = ({ isOpen, onClose })
               type="submit"
               className="w-1/2 py-3 bg-earth hover:bg-earth-bright text-white uppercase font-bold tracking-widest transition"
             >
-              Validar Acceso
+              Unirse a Tribu
             </button>
           </div>
         </form>

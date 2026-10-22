@@ -25,7 +25,7 @@ interface GruposViewProps {
   onOpenCreateRodada: () => void;
 }
 
-type SubTab = 'eventos' | 'clubes' | 'retos';
+type SubTab = 'eventos' | 'tribus';
 
 export const GruposView: React.FC<GruposViewProps> = ({
   onOpenCreateCrew,
@@ -35,8 +35,6 @@ export const GruposView: React.FC<GruposViewProps> = ({
   const { 
     crews, 
     rodadas, 
-    challenges, 
-    toggleJoinChallenge, 
     enterCrew, 
     enterRodada,
     currentUser 
@@ -44,18 +42,10 @@ export const GruposView: React.FC<GruposViewProps> = ({
 
   const [activeSubTab, setActiveSubTab] = useState<SubTab>('eventos');
 
-  const handleChallengeToggle = (challengeId: string) => {
-    toggleJoinChallenge(challengeId);
-    confetti({
-      particleCount: 20,
-      spread: 45
-    });
-  };
-
   return (
     <div className="space-y-6 pb-28 max-w-[1440px] w-full mx-auto font-mono">
       
-      {/* 01. SUB-TABS (STRAVA GRUPOS ARCHITECTURE) */}
+      {/* 01. SUB-TABS (GRUPOS ARCHITECTURE) */}
       <div className="flex border-b border-white/10 bg-[#0D0B0A] p-1">
         <button
           onClick={() => setActiveSubTab('eventos')}
@@ -69,25 +59,14 @@ export const GruposView: React.FC<GruposViewProps> = ({
         </button>
 
         <button
-          onClick={() => setActiveSubTab('clubes')}
+          onClick={() => setActiveSubTab('tribus')}
           className={`flex-1 py-2.5 text-xs font-bold uppercase tracking-wider text-center transition ${
-            activeSubTab === 'clubes'
+            activeSubTab === 'tribus'
               ? 'text-earth border-b-2 border-earth bg-earth/5'
               : 'text-ash hover:text-white'
           }`}
         >
-          Clubes ({crews.length})
-        </button>
-
-        <button
-          onClick={() => setActiveSubTab('retos')}
-          className={`flex-1 py-2.5 text-xs font-bold uppercase tracking-wider text-center transition ${
-            activeSubTab === 'retos'
-              ? 'text-earth border-b-2 border-earth bg-earth/5'
-              : 'text-ash hover:text-white'
-          }`}
-        >
-          Retos ({challenges.length})
+          Tribus ({crews.length})
         </button>
       </div>
 
@@ -129,8 +108,8 @@ export const GruposView: React.FC<GruposViewProps> = ({
                     </h3>
                     <p className="text-xs text-ash mt-1">{rodada.subtitle}</p>
                   </div>
-                  <span className="text-xs px-2.5 py-1 bg-white/[0.04] border border-white/10 text-chalk uppercase">
-                    {rodada.status === 'votacion' ? '🗳️ Votando Ruta' : '🔥 Fijada'}
+                  <span className="text-[10px] px-2.5 py-1 bg-white/[0.04] border border-white/10 text-chalk uppercase font-bold tracking-wider">
+                    {rodada.status === 'votacion' ? 'Votando Ruta' : 'Confirmada'}
                   </span>
                 </div>
 
@@ -169,11 +148,11 @@ export const GruposView: React.FC<GruposViewProps> = ({
       )}
 
       {/* ========================================================= */}
-      {/* 03. SUB-TAB: CLUBES (CREAR O EXPLORAR CLUBES DE MOTO)     */}
+      {/* 03. SUB-TAB: TRIBUS (CREAR O EXPLORAR TRIBUS DE MOTO)     */}
       {/* ========================================================= */}
-      {activeSubTab === 'clubes' && (
+      {activeSubTab === 'tribus' && (
         <div className="space-y-6">
-          {/* Strava Create Club Promo Card */}
+          {/* Create Club Promo Card */}
           <div className="bg-gradient-to-br from-[#1A1410] to-[#0D0B0A] border border-earth/30 p-5 space-y-3 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-earth/10 rounded-full blur-2xl pointer-events-none" />
             
@@ -183,7 +162,7 @@ export const GruposView: React.FC<GruposViewProps> = ({
             </div>
 
             <h3 className="text-lg font-bold text-white uppercase tracking-tight">
-              Crea tu propio moto club
+              Crea tu propia tribu
             </h3>
 
             <p className="text-xs text-ash max-w-md leading-relaxed">
@@ -195,7 +174,7 @@ export const GruposView: React.FC<GruposViewProps> = ({
                 onClick={onOpenCreateCrew}
                 className="px-4 py-2 bg-earth hover:bg-earth/90 text-white text-xs font-bold uppercase tracking-wider transition active:scale-95"
               >
-                Comenzar Club
+                Comenzar Tribu
               </button>
 
               <button
@@ -211,127 +190,80 @@ export const GruposView: React.FC<GruposViewProps> = ({
           {/* List of Clubs */}
           <div className="space-y-3">
             <h4 className="text-xs font-bold text-ash uppercase tracking-wider">
-              Tus Clubes Activos
+              Tus Tribus Activas
             </h4>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {crews.map(crew => (
-                <div 
-                  key={crew.id}
-                  onClick={() => enterCrew(crew.id)}
-                  className="bg-[#0F0D0C] border border-white/10 hover:border-earth/50 transition cursor-pointer p-4 flex items-center justify-between group"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-black border border-white/15 flex items-center justify-center font-bold text-earth text-sm">
-                      {crew.name.substring(0, 3).toUpperCase()}
-                    </div>
-                    <div>
-                      <h5 className="text-sm font-bold text-white uppercase group-hover:text-earth transition">
-                        {crew.name}
-                      </h5>
-                      <p className="text-[11px] text-ash">{crew.tagline}</p>
-                      <div className="flex items-center gap-2 text-[10px] text-ash mt-1">
-                        <span>📍 {crew.baseCity}</span>
-                        <span>•</span>
-                        <span className="text-chalk">{crew.members.length} pilotos</span>
-                      </div>
-                    </div>
-                  </div>
+              {crews.map(crew => {
+                const isMember = crew.members.some(m => m.userId === currentUser.id);
 
-                  <div className="text-right">
-                    <span className="text-[10px] text-ash bg-white/[0.04] px-2 py-1 border border-white/10 uppercase block font-mono">
-                      Código: {crew.inviteCode}
-                    </span>
-                    <span className="text-xs text-earth group-hover:translate-x-1 transition inline-flex items-center gap-0.5 mt-2 font-bold uppercase">
-                      Entrar <ChevronRight className="w-3.5 h-3.5" />
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================= */}
-      {/* 04. SUB-TAB: RETOS (STRAVA CHALLENGES PARA MOTOS)        */}
-      {/* ========================================================= */}
-      {activeSubTab === 'retos' && (
-        <div className="space-y-4">
-          <div>
-            <h2 className="text-base font-bold text-white uppercase tracking-tight">
-              Retos Mensuales
-            </h2>
-            <p className="text-xs text-ash">
-              Encuentra motivación, acumula kilómetros en asfalto o tierra y gana insignias para tu vitrina.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {challenges.map(ch => {
-              const progressPct = Math.min(100, Math.round((ch.currentKm / ch.targetKm) * 100));
-
-              return (
-                <div 
-                  key={ch.id}
-                  className="bg-[#0F0D0C] border border-white/10 p-5 space-y-4"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-start gap-3">
-                      <div className="w-12 h-12 bg-earth/10 border border-earth/30 flex items-center justify-center text-earth font-bold text-base shrink-0">
-                        {ch.badgeHex}
+                return isMember ? (
+                  <div 
+                    key={crew.id}
+                    onClick={() => enterCrew(crew.id)}
+                    className="bg-[#0F0D0C] border border-white/10 hover:border-earth/50 transition cursor-pointer p-4 flex items-center justify-between group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-black border border-white/15 flex items-center justify-center font-bold text-earth text-sm">
+                        {crew.name.substring(0, 3).toUpperCase()}
                       </div>
                       <div>
-                        <h4 className="text-sm font-bold text-white uppercase">
-                          {ch.title}
-                        </h4>
-                        <p className="text-xs text-ash mt-0.5 leading-relaxed">
-                          {ch.subtitle}
-                        </p>
-                        <div className="flex items-center gap-2 text-[10px] text-ash mt-1.5">
-                          <span>Finaliza: {ch.endDate}</span>
+                        <div className="flex items-center gap-2">
+                          <h5 className="text-sm font-bold text-white uppercase group-hover:text-earth transition">
+                            {crew.name}
+                          </h5>
+                          <span className="text-[9px] uppercase font-bold text-earth bg-earth/20 border border-earth/40 px-1.5 py-0.2">
+                            Mi Tribu
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-ash">{crew.tagline}</p>
+                        <div className="flex items-center gap-2 text-[10px] text-ash mt-1">
+                          <span className="flex items-center gap-1"><MapPin className="w-3 h-3 text-earth" /> {crew.baseCity}</span>
                           <span>•</span>
-                          <span className="text-chalk">{ch.participantsCount} participantes</span>
+                          <span className="text-chalk">{crew.members.length} pilotos</span>
                         </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Progress Bar */}
-                  <div className="space-y-1.5 bg-black/40 border border-white/5 p-3">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-ash uppercase text-[10px]">Tu progreso:</span>
-                      <span className="text-white font-bold font-mono">
-                        {ch.currentKm} / {ch.targetKm} {ch.targetKm > 10 ? 'km' : 'puertos'} ({progressPct}%)
+                    <div className="text-right">
+                      <span className="text-[10px] text-ash bg-white/[0.04] px-2 py-1 border border-white/10 uppercase block font-mono">
+                        Código: {crew.inviteCode}
+                      </span>
+                      <span className="text-xs text-earth group-hover:translate-x-1 transition inline-flex items-center gap-0.5 mt-2 font-bold uppercase">
+                        Entrar <ChevronRight className="w-3.5 h-3.5" />
                       </span>
                     </div>
-                    <div className="w-full h-2 bg-white/10 overflow-hidden">
-                      <div 
-                        className="h-full bg-earth transition-all duration-500"
-                        style={{ width: `${progressPct}%` }}
-                      />
+                  </div>
+                ) : (
+                  /* Tribu que no es tuya: solo su nombre */
+                  <div 
+                    key={crew.id}
+                    className="bg-[#0A0908] border border-white/5 p-4 flex items-center justify-between opacity-80 cursor-default select-none"
+                    title="Tribu privada • Solo miembros autorizados"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-12 h-12 bg-black/60 border border-white/10 flex items-center justify-center font-bold text-ash/60 text-sm shrink-0">
+                        {crew.name.substring(0, 3).toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <h5 className="text-sm font-bold text-chalk uppercase truncate">
+                          {crew.name}
+                        </h5>
+                        <p className="text-[10px] text-ash/60 uppercase font-mono mt-0.5">
+                          Tribu Privada
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="text-right shrink-0">
+                      <span className="text-[9px] text-ash/60 bg-white/[0.02] px-2 py-1 border border-white/10 uppercase font-mono">
+                        Privada
+                      </span>
                     </div>
                   </div>
-
-                  {/* Button */}
-                  <div className="flex items-center justify-between pt-1">
-                    <span className="text-[10px] text-ash uppercase">
-                      Insignia digital para tu perfil al completar
-                    </span>
-                    <button
-                      onClick={() => handleChallengeToggle(ch.id)}
-                      className={`px-4 py-2 text-xs font-bold uppercase tracking-wider transition active:scale-95 ${
-                        ch.joined
-                          ? 'bg-white/[0.05] border border-white/20 text-chalk'
-                          : 'bg-earth hover:bg-earth/90 text-white'
-                      }`}
-                    >
-                      {ch.joined ? 'Inscrito ✓' : 'Unirme al reto'}
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </div>
       )}

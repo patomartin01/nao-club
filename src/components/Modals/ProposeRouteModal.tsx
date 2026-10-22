@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { RouteProposal } from '../../types';
 import confetti from 'canvas-confetti';
+import { X } from 'lucide-react';
 
 interface ProposeRouteModalProps {
   isOpen: boolean;
@@ -119,7 +120,7 @@ export const ProposeRouteModal: React.FC<ProposeRouteModalProps> = ({
               Proponer Variante al Grupo
             </h3>
           </div>
-          <button onClick={onClose} className="font-mono text-ash hover:text-white">✕</button>
+          <button onClick={onClose} className="text-ash hover:text-white p-1"><X className="w-4 h-4" /></button>
         </div>
 
         {onOpenRecordRoute && (

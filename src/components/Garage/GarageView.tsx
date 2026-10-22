@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Motorcycle, BikeType, RidingLevel } from '../../types';
-import { Plus, Trash2, Shield, Gauge, Check } from 'lucide-react';
+import { Plus, Trash2, Shield, Gauge, Check, X } from 'lucide-react';
 
 export const GarageView: React.FC = () => {
   const { currentUser, userBikes, addMotorcycle, deleteMotorcycle } = useApp();
@@ -116,8 +116,8 @@ export const GarageView: React.FC = () => {
             <p className="font-bold text-white text-base mt-1">Interlomas, Huixquilucan</p>
           </div>
           <div className="p-6">
-            <span className="text-[10px] text-ash uppercase tracking-wider block">Rango</span>
-            <p className="font-bold text-emerald-400 text-base mt-1">Capitán de Ruta NAO</p>
+            <span className="text-[10px] text-ash uppercase tracking-wider block">Estatus</span>
+            <p className="font-bold text-earth text-base mt-1">Piloto Oficial</p>
           </div>
         </div>
       </section>
@@ -224,9 +224,9 @@ export const GarageView: React.FC = () => {
               </div>
               <button 
                 onClick={() => setShowAddBikeModal(false)}
-                className="font-mono text-ash hover:text-white"
+                className="text-ash hover:text-white p-1"
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
 

@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useApp } from '../../context/AppContext';
 import confetti from 'canvas-confetti';
+import { StepByStepRodadaModal } from '../Tribus/StepByStepRodadaModal';
 
 interface CreateRodadaModalProps {
   isOpen: boolean;
@@ -10,125 +11,57 @@ interface CreateRodadaModalProps {
 }
 
 export const CreateRodadaModal: React.FC<CreateRodadaModalProps> = ({ isOpen, onClose }) => {
-  const { createRodada, setActiveNavTab } = useApp();
+  const { createRodada, proposeRoute, setActiveNavTab, currentUser, rodadas } = useApp();
+  const activeRodada = rodadas[0] || null;
 
-  const [title, setTitle] = useState('');
-  const [subtitle, setSubtitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [category, setCategory] = useState<'Puente / Expedición Multi-días' | 'Fin de Semana' | 'Rodada Rápida 1 Día'>('Puente / Expedición Multi-días');
-  const [startDate, setStartDate] = useState('2026-10-31');
-  const [endDate, setEndDate] = useState('2026-11-02');
-  const [originPoint, setOriginPoint] = useState('Interlomas, Huixquilucan, Edomex');
+  const formatHumanDate = (start: string, end?: string, includeYear?: boolean) => {
+    if (!start) return 'Fecha por definir';
+    const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    const pStart = start.split('-');
+    if (pStart.length < 3) return start;
+    const mIdx = parseInt(pStart[1], 10) - 1;
+    const startDay = parseInt(pStart[2], 10);
+    const yr = includeYear ? ` ${pStart[0]}` : '';
 
-  if (!isOpen) return null;
+    if (end && end !== start) {
+      const pEnd = end.split('-');
+      if (pEnd.length === 3) {
+        const endDay = parseInt(pEnd[2], 10);
+        return `${startDay} - ${endDay} ${months[mIdx]}${yr}`;
+      }
+    }
+    return `${startDay} ${months[mIdx]}${yr}`;
+  };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!title.trim()) return;
-
-    createRodada({
-      title: title.trim(),
-      subtitle: subtitle.trim() || 'Rodada propuesta por el grupo.',
-      description: description.trim() || 'Plan de aventura en moto.',
-      category,
-      startDate,
-      endDate,
-      originPoint: originPoint.trim()
+  const handleConvokeSubmit = (data: any) => {
+    const newRodada = createRodada({
+      title: data.title,
+      subtitle: data.subtitle,
+      description: data.description,
+      category: data.category,
+      startDate: data.startDate,
+      endDate: data.endDate,
+      originPoint: data.originPoint
     });
 
+    if (data.proposal && newRodada) {
+      proposeRoute({ ...data.proposal, rodadaId: newRodada.id });
+    }
+
     confetti({ particleCount: 70 });
-    setActiveNavTab('rodada');
+    setActiveNavTab('tribus');
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-      <div className="border border-white/20 bg-[#0E0C0A] max-w-lg w-full p-5 sm:p-8 space-y-5 my-auto max-h-[92vh] overflow-y-auto">
-        <div className="flex items-center justify-between border-b border-white/10 pb-4">
-          <div>
-            <span className="font-mono text-[10px] text-earth uppercase tracking-widest font-bold">
-              [ NUEVA EXPEDICIÓN ]
-            </span>
-            <h3 className="font-display font-bold text-xl text-white uppercase">
-              Crear Evento de Rodada
-            </h3>
-          </div>
-          <button onClick={onClose} className="font-mono text-ash hover:text-white">✕</button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4 font-mono text-xs">
-          <div>
-            <label className="text-ash uppercase text-[10px] block mb-1">Título de la Expedición</label>
-            <input
-              type="text"
-              required
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Ej. Travesía Nevado & Valle de Bravo"
-              className="w-full bg-white/[0.03] border border-white/15 px-3 py-2 text-white focus:outline-none focus:border-earth"
-            />
-          </div>
-
-          <div>
-            <label className="text-ash uppercase text-[10px] block mb-1">Subtítulo / Manifiesto</label>
-            <input
-              type="text"
-              value={subtitle}
-              onChange={(e) => setSubtitle(e.target.value)}
-              placeholder="Ej. Campamento base y brechas técnicas de altura."
-              className="w-full bg-white/[0.03] border border-white/15 px-3 py-2 text-white focus:outline-none focus:border-earth"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-ash uppercase text-[10px] block mb-1">Fecha de Salida</label>
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="w-full bg-white/[0.03] border border-white/15 px-3 py-2 text-white focus:outline-none focus:border-earth"
-              />
-            </div>
-            <div>
-              <label className="text-ash uppercase text-[10px] block mb-1">Fecha de Regreso</label>
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="w-full bg-white/[0.03] border border-white/15 px-3 py-2 text-white focus:outline-none focus:border-earth"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="text-ash uppercase text-[10px] block mb-1">Punto de Partida</label>
-            <input
-              type="text"
-              value={originPoint}
-              onChange={(e) => setOriginPoint(e.target.value)}
-              placeholder="Ej. Gasolinera Interlomas"
-              className="w-full bg-white/[0.03] border border-white/15 px-3 py-2 text-white focus:outline-none focus:border-earth"
-            />
-          </div>
-
-          <div className="pt-4 border-t border-white/10 flex gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="w-1/2 py-3 border border-white/20 text-ash uppercase font-bold tracking-wider hover:text-white"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="w-1/2 py-3 bg-earth hover:bg-earth-bright text-white uppercase font-bold tracking-widest transition"
-            >
-              Iniciar Convocatoria
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+    <StepByStepRodadaModal
+      isOpen={isOpen}
+      mode="convoke"
+      activeRodada={activeRodada}
+      currentUser={currentUser}
+      onClose={onClose}
+      onSubmitConvoke={handleConvokeSubmit}
+      formatHumanDate={formatHumanDate}
+    />
   );
 };

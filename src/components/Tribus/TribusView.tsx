@@ -1,0 +1,2111 @@
+'use client';
+
+import React, { useState } from 'react';
+import { useApp } from '../../context/AppContext';
+import { 
+  Users, 
+  Calendar, 
+  Plus, 
+  Key, 
+  MapPin, 
+  Clock, 
+  Check, 
+  ChevronRight, 
+  ArrowLeft,
+  Navigation,
+  Compass,
+  CheckCircle2,
+  X,
+  ExternalLink,
+  Shield,
+  ThumbsUp,
+  ThumbsDown,
+  MessageSquare,
+  Send,
+  Search,
+  Sparkles,
+  Share2,
+  Bell,
+  Pencil,
+  Mountain,
+  UserPlus,
+  ChevronDown,
+  Camera,
+  Upload,
+  Image as ImageIcon
+} from 'lucide-react';
+import confetti from 'canvas-confetti';
+import { buildOrderedGoogleMapsUrl } from '../../utils/googleMaps';
+import { RouteProposal, Rodada } from '../../types';
+import { PlanCardModal } from './PlanCardModal';
+import { StepByStepRodadaModal } from './StepByStepRodadaModal';
+
+const RoadIcon: React.FC<{ className?: string }> = ({ className = "w-3.5 h-3.5" }) => (
+  <svg 
+    className={className} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+  >
+    <path d="M4 19L8 5h8l4 14" />
+    <line x1="12" y1="8" x2="12" y2="10" />
+    <line x1="12" y1="14" x2="12" y2="16" />
+  </svg>
+);
+
+interface TribusViewProps {
+  onOpenCreateCrew: () => void;
+  onOpenJoinCrew: () => void;
+  onOpenCreateRodada: () => void;
+  onOpenProposeRoute?: () => void;
+}
+
+export const TribusView: React.FC<TribusViewProps> = ({
+  onOpenCreateCrew,
+  onOpenJoinCrew,
+  onOpenCreateRodada,
+}) => {
+  const { 
+    crews, 
+    currentCrew,
+    setCurrentCrew,
+    updateCrew,
+    addCrewMember,
+    rodadas, 
+    currentRodada,
+    setCurrentRodada,
+    createRodada,
+    routeProposals,
+    proposeRoute,
+    voteRoute,
+    downvoteRoute,
+    addRouteComment,
+    lockWinningRoute,
+    unlockWinningRoute,
+    rsvpRodada,
+    userBikes,
+    motorcycles,
+    currentUser,
+    users,
+    openPilotProfileById
+  } = useApp();
+
+  // Helper to format date cleanly as "31 Oct 26", "20 Nov 26", or "31 Oct - 02 Nov 26"
+  const formatHumanDate = (dateStr: string, endDateStr?: string, includeYear: boolean = true): string => {
+    if (!dateStr) return '';
+    const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    
+    const parsePart = (str: string) => {
+      const parts = str.split('-');
+      if (parts.length === 3) {
+        const year = parts[0].slice(-2);
+        const day = parts[2].padStart(2, '0');
+        const monthIdx = parseInt(parts[1], 10) - 1;
+        return { day, month: months[monthIdx] || parts[1], year };
+      }
+      return null;
+    };
+
+    const start = parsePart(dateStr);
+    if (!start) return dateStr;
+
+    const yrSuffix = includeYear ? ` ${start.year}` : '';
+
+    if (endDateStr) {
+      const end = parsePart(endDateStr);
+      if (end) {
+        if (start.month === end.month) {
+          if (start.day === end.day) return `${start.day} ${start.month}${yrSuffix}`;
+          return `${start.day} - ${end.day} ${start.month}${yrSuffix}`;
+        }
+        return `${start.day} ${start.month} - ${end.day} ${end.month}${yrSuffix}`;
+      }
+    }
+
+    return `${start.day} ${start.month}${yrSuffix}`;
+  };
+
+  const formatDayOnly = (dateStr: string, endDateStr?: string): string => {
+    if (!dateStr) return '';
+    const parseDay = (s: string) => {
+      const p = s.split('-');
+      return p.length === 3 ? parseInt(p[2], 10) : s;
+    };
+    const startDay = parseDay(dateStr);
+    if (endDateStr) {
+      const endDay = parseDay(endDateStr);
+      if (startDay !== endDay) {
+        return `${startDay}-${endDay}`;
+      }
+    }
+    return `${startDay}`;
+  };
+
+  const formatMonthOnly = (dateStr: string): string => {
+    if (!dateStr) return '';
+    const months = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+      const mIdx = parseInt(parts[1], 10) - 1;
+      return months[mIdx] || parts[1];
+    }
+    return '';
+  };
+
+  // Selected Tribu inside this view (null = Directorio de Mis Tribus)
+  const [selectedTribuId, setSelectedTribuId] = useState<string | null>(null);
+  const [activeTribuTab, setActiveTribuTab] = useState<'rodadas' | 'miembros'>('rodadas');
+  
+  // Selected Rodada / Convocatoria Date inside the Tribu
+  const [selectedRodadaId, setSelectedRodadaId] = useState<string | null>(null);
+
+  // Simulated notification toast for sending alert to group pilots' phones
+  const [notificationToast, setNotificationToast] = useState<string | null>(null);
+
+  // Search query for Tribus list
+  const [searchTribuQuery, setSearchTribuQuery] = useState('');
+
+  // Selected Route Option Detail Modal (Airbnb style detail view)
+  const [detailProposalId, setDetailProposalId] = useState<string | null>(null);
+  const [commentInput, setCommentInput] = useState('');
+
+  // Detailed Plan Card Modal state (tarjetita del plan)
+  const [showPlanCardModal, setShowPlanCardModal] = useState<boolean>(false);
+  const [selectedConfirmedRodadaForPlan, setSelectedConfirmedRodadaForPlan] = useState<Rodada | null>(null);
+
+  // Interactive Route Proposal Modal state (multistop Google Maps route planner)
+  const [showInteractiveProposeModal, setShowInteractiveProposeModal] = useState<boolean>(false);
+  const [showConvokeModal, setShowConvokeModal] = useState<boolean>(false);
+
+  // Quick propose modal state
+  const [showProposeModal, setShowProposeModal] = useState<boolean>(false);
+  const [showAddPilotModal, setShowAddPilotModal] = useState<boolean>(false);
+  const [propTitle, setPropTitle] = useState('');
+  const [propDestination, setPropDestination] = useState('');
+  const [propState, setPropState] = useState('Estado de México');
+  const [propKm, setPropKm] = useState('140');
+  const [propOffroad, setPropOffroad] = useState('45');
+  const [propMeetingTime, setPropMeetingTime] = useState('08:00 AM');
+  const [propMeetingPoint, setPropMeetingPoint] = useState('Gasolinera Interlomas');
+  const [propPlan, setPropPlan] = useState('');
+
+  // Toast / feedback state
+  const [copiedCode, setCopiedCode] = useState(false);
+
+  // Edit group state
+  const [isEditingCrewName, setIsEditingCrewName] = useState(false);
+  const [editedCrewName, setEditedCrewName] = useState('');
+  const [editedCrewCover, setEditedCrewCover] = useState('');
+  const [showEditCrewModal, setShowEditCrewModal] = useState(false);
+  const [showCrewDropdown, setShowCrewDropdown] = useState(false);
+
+  // Active crew object
+  const activeTribu = crews.find(c => c.id === selectedTribuId) || null;
+  const isCreatorOrAdmin = activeTribu ? activeTribu.creatorId === currentUser.id : false;
+
+  const handleOpenEditCrew = () => {
+    if (!activeTribu) return;
+    setEditedCrewName(activeTribu.name);
+    setEditedCrewCover(activeTribu.coverImage || '');
+    setShowEditCrewModal(true);
+  };
+
+  const handleSaveCrewDetails = () => {
+    if (!activeTribu) return;
+    const trimmedName = editedCrewName.trim();
+    const trimmedCover = editedCrewCover.trim();
+    if (trimmedName) {
+      updateCrew(activeTribu.id, { 
+        name: trimmedName,
+        coverImage: trimmedCover || activeTribu.coverImage
+      });
+      setNotificationToast(`Grupo actualizado: "${trimmedName}".`);
+    }
+    setShowEditCrewModal(false);
+  };
+
+  const handleSaveCrewName = () => {
+    if (!activeTribu) return;
+    const trimmed = editedCrewName.trim();
+    if (trimmed && trimmed !== activeTribu.name) {
+      updateCrew(activeTribu.id, { name: trimmed });
+      setNotificationToast(`Nombre del grupo actualizado a "${trimmed}".`);
+    }
+    setIsEditingCrewName(false);
+  };
+
+  // Rodadas belonging to this Tribu
+  const tribuRodadas = activeTribu 
+    ? rodadas.filter(r => r.crewId === activeTribu.id)
+    : [];
+
+  // Rodadas Confirmadas (status === 'fijada') - Solo estas aparecen en la sección superior
+  const confirmedRodadas = tribuRodadas.filter(r => r.status === 'fijada');
+
+  // Active selected rodada (user-selected or first available)
+  const activeRodada = (selectedRodadaId ? tribuRodadas.find(r => r.id === selectedRodadaId) : null)
+    || tribuRodadas.find(r => r.id === currentRodada?.id) 
+    || tribuRodadas[0] 
+    || null;
+
+  // Route proposals for this rodada/date
+  const activeProposals = activeRodada 
+    ? routeProposals.filter(p => p.rodadaId === activeRodada.id)
+    : [];
+
+  // Sort proposals by net votes: (upvotes - downvotes) descending (Airbnb Wishlist style)
+  const sortedProposals = [...activeProposals].sort((a, b) => {
+    const scoreA = (a.votes?.length || 0) - (a.downvotes?.length || 0);
+    const scoreB = (b.votes?.length || 0) - (b.downvotes?.length || 0);
+    return scoreB - scoreA;
+  });
+
+  // Winning confirmed route if already locked
+  const winningRoute: RouteProposal | null = activeRodada?.winningRouteId 
+    ? (routeProposals.find(p => p.id === activeRodada.winningRouteId) || sortedProposals[0] || null)
+    : (activeRodada?.status === 'fijada' ? sortedProposals[0] || null : null);
+
+  // Confirmed attendees for active rodada
+  const confirmedAttendees = (activeRodada?.attendees || [])
+    .filter(a => a.status === 'confirmado')
+    .map(a => {
+      const user = users?.find(u => u.id === a.userId);
+      return {
+        userId: a.userId,
+        userName: user?.name || (a.userId === currentUser.id ? currentUser.name : a.userId),
+        userAvatar: user?.avatar || (a.userId === currentUser.id ? currentUser.avatar : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200')
+      };
+    });
+  const confirmedCount = confirmedAttendees.length;
+
+  // Proposal being viewed in detail modal
+  const selectedProposalForDetail = routeProposals.find(p => p.id === detailProposalId) || null;
+
+  // Copy invitation code
+  const handleCopyCode = (code: string) => {
+    if (!navigator.clipboard) return;
+    navigator.clipboard.writeText(code);
+    setCopiedCode(true);
+    setTimeout(() => setCopiedCode(false), 2000);
+  };
+
+  // Submit quick proposal
+  const handleQuickProposeSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeRodada || !propTitle.trim()) return;
+
+    const km = Number(propKm) || 120;
+    const off = Number(propOffroad) || 40;
+    const asp = 100 - off;
+
+    proposeRoute({
+      rodadaId: activeRodada.id,
+      title: propTitle.trim(),
+      destination: propDestination.trim() || 'Ruta Propuesta',
+      state: propState,
+      proposedByUserId: currentUser.id,
+      proposedByName: currentUser.name,
+      proposedByAvatar: currentUser.avatar,
+      description: propPlan.trim() || 'Propuesta alternativa para la rodada del grupo.',
+      coverImage: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=1000',
+      totalKm: km,
+      estimatedHours: `${Math.round(km / 35)}h`,
+      offroadPercentage: off,
+      asphaltPercentage: asp,
+      difficulty: off > 50 ? 'Avanzado / Técnico' : 'Intermedio',
+      campsite: {
+        name: propDestination || 'Punto de reunión',
+        elevationMeters: 2800,
+        minTempNight: '7°C',
+        security: 'Comunitario / Seguro',
+        amenities: ['Comida local', 'Gasolina cercana']
+      },
+      itinerary: [
+        {
+          day: 1,
+          title: `Travesía a ${propDestination}`,
+          description: `Punto de encuentro: ${propMeetingPoint} a las ${propMeetingTime}. Itinerario: ${propPlan || 'Rodada fluida y convivencia.'}`,
+          distanceKm: km,
+          offroadKm: Math.round((km * off) / 100),
+          terrainType: off > 40 ? 'Terracería, grava suelta y asfalto escénico' : 'Asfalto con curvas y brecha'
+        }
+      ],
+      waypoints: [
+        { id: `wp-${Date.now()}-1`, name: propMeetingPoint, lat: 19.3985, lng: -99.2789, type: 'start' },
+        { id: `wp-${Date.now()}-2`, name: propDestination, lat: 19.1923, lng: -100.1245, type: 'end' }
+      ],
+      coordinates: [
+        [19.3985, -99.2789],
+        [19.2800, -99.6500],
+        [19.1923, -100.1245]
+      ],
+      dayOfDeadVibe: 'Ambiente de camaradería y rodada de grupo',
+      safetyTips: ['Tanque lleno', 'Herramienta básica', 'Presiones revisadas']
+    });
+
+    const submittedTitle = propTitle.trim();
+    // Reset form
+    setPropTitle('');
+    setPropDestination('');
+    setPropPlan('');
+    setShowProposeModal(false);
+
+    // Notification toast for crew
+    setNotificationToast(`📱 Notificación enviada al celular de los integrantes: "${submittedTitle}" para el ${formatHumanDate(activeRodada.startDate, activeRodada.endDate, true)}`);
+    setTimeout(() => setNotificationToast(null), 5000);
+
+    confetti({
+      particleCount: 25,
+      spread: 45,
+      origin: { y: 0.6 }
+    });
+  };
+
+  // Submit handler for interactive multi-stop route builder modal
+  const handleInteractiveProposalSubmit = (
+    proposalData: Omit<RouteProposal, 'id' | 'votes' | 'comments'>,
+    dateConfig?: { mode: 'current' | 'custom' | 'tbd'; startDate?: string; endDate?: string }
+  ) => {
+    proposeRoute(proposalData);
+
+    const dateFormatted = dateConfig?.mode === 'custom' && dateConfig.startDate
+      ? formatHumanDate(dateConfig.startDate, dateConfig.endDate, true)
+      : dateConfig?.mode === 'tbd'
+      ? 'Fecha por definir'
+      : formatHumanDate(activeRodada?.startDate || '', activeRodada?.endDate, true);
+
+    setNotificationToast(
+      `📱 Notificación enviada al celular del grupo: "${proposalData.title}" para ${proposalData.destination} (${dateFormatted}).`
+    );
+    setTimeout(() => setNotificationToast(null), 5500);
+
+    confetti({
+      particleCount: 50,
+      spread: 60,
+      origin: { y: 0.6 }
+    });
+
+    setShowInteractiveProposeModal(false);
+  };
+
+  // Submit handler for step-by-step convoke rodada modal
+  const handleConvokeSubmit = (data: {
+    title: string;
+    subtitle: string;
+    description: string;
+    category: any;
+    startDate: string;
+    endDate: string;
+    originPoint: string;
+    proposal?: Omit<RouteProposal, 'id' | 'votes' | 'comments'>;
+  }) => {
+    const newRodada = createRodada({
+      title: data.title,
+      subtitle: data.subtitle,
+      description: data.description,
+      category: data.category,
+      startDate: data.startDate,
+      endDate: data.endDate,
+      originPoint: data.originPoint
+    });
+
+    if (data.proposal && newRodada) {
+      proposeRoute({ ...data.proposal, rodadaId: newRodada.id });
+    }
+
+    if (newRodada) {
+      setSelectedRodadaId(newRodada.id);
+    }
+
+    confetti({
+      particleCount: 50,
+      spread: 60,
+      origin: { y: 0.6 }
+    });
+
+    setNotificationToast(
+      `📱 Notificación enviada al grupo: Nueva rodada convocada para ${formatHumanDate(data.startDate, data.endDate, true)}`
+    );
+    setTimeout(() => setNotificationToast(null), 5000);
+
+    setShowConvokeModal(false);
+  };
+
+  // Lock winning route
+  const handleLockRoute = (routeId: string) => {
+    if (!activeRodada) return;
+    lockWinningRoute(activeRodada.id, routeId);
+    confetti({
+      particleCount: 50,
+      spread: 70,
+      origin: { y: 0.6 }
+    });
+  };
+
+  // Add comment to proposal
+  const handleSendComment = () => {
+    if (!detailProposalId || !commentInput.trim()) return;
+    addRouteComment(detailProposalId, commentInput.trim());
+    setCommentInput('');
+  };
+
+  // Filtered tribus for the directory
+  const filteredCrews = crews.filter(c => {
+    if (!searchTribuQuery.trim()) return true;
+    const q = searchTribuQuery.toLowerCase();
+    return c.name.toLowerCase().includes(q) || c.baseCity.toLowerCase().includes(q);
+  });
+
+  // =========================================================================
+  // VIEW 1: DIRECTORIO DE TRIBUS (COMPACTO, ELEGANTE Y ESCALABLE)
+  // =========================================================================
+  if (!activeTribu) {
+    return (
+      <div className="max-w-[1200px] w-full mx-auto pb-28 px-4 sm:px-6 font-mono">
+        
+        {/* Top Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-white/10 pb-5 pt-3 gap-4">
+          <div>
+            <span className="text-[10px] font-mono tracking-widest text-earth uppercase font-bold block mb-1">
+              [ RED DE COMUNIDADES ]
+            </span>
+            <h1 className="font-display font-black text-2xl sm:text-3xl text-white uppercase tracking-tight">
+              Tribus
+            </h1>
+            <p className="text-xs text-ash mt-1 max-w-xl">
+              Flotillas privadas de pilotos, garajes compartidos y votación de rodadas en consenso colaborativo.
+            </p>
+          </div>
+
+          {/* Action buttons with authentic NAO brand styling */}
+          <div className="flex items-center gap-3 shrink-0">
+            <button
+              onClick={onOpenJoinCrew}
+              className="px-3.5 py-2 border border-white/15 bg-white/[0.03] hover:bg-white/[0.08] text-chalk text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition"
+            >
+              <Key className="w-3.5 h-3.5 text-ash" />
+              <span>Unirse con Clave</span>
+            </button>
+            <button
+              onClick={onOpenCreateCrew}
+              className="px-4 py-2 bg-earth hover:bg-earth-bright text-white text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition border border-earth/30 shadow-sm"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Crear Tribu</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Directory Controls: Search and Count */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-4 border-b border-white/[0.06]">
+          <div className="relative flex-1 max-w-md">
+            <Search className="w-3.5 h-3.5 text-ash absolute left-3 top-1/2 -translate-y-1/2" />
+            <input 
+              type="text"
+              value={searchTribuQuery}
+              onChange={(e) => setSearchTribuQuery(e.target.value)}
+              placeholder="Buscar tribu por nombre o ciudad..."
+              className="w-full bg-[#12100E] border border-white/10 pl-8 pr-3 py-1.5 text-xs text-white placeholder-ash/50 focus:outline-none focus:border-earth"
+            />
+          </div>
+          <span className="text-[10px] text-ash uppercase tracking-wider">
+            {filteredCrews.length} {filteredCrews.length === 1 ? 'Tribu Activa' : 'Tribus Activas'}
+          </span>
+        </div>
+
+        {/* Compact, Sensible Directory List (Scales cleanly to 10+ Tribus) */}
+        <div className="divide-y divide-white/[0.06] border border-white/10 bg-[#0D0B0A] mt-4">
+          {filteredCrews.map((crew) => {
+            const isUserAdmin = crew.creatorId === currentUser.id;
+            const crewRides = rodadas.filter(r => r.crewId === crew.id);
+            const nextRide = crewRides[0] || null;
+            const rideProposals = nextRide ? routeProposals.filter(p => p.rodadaId === nextRide.id) : [];
+            const hasConfirmed = nextRide && (nextRide.status === 'fijada' || nextRide.winningRouteId);
+
+            return (
+              <div
+                key={crew.id}
+                onClick={() => {
+                  setSelectedTribuId(crew.id);
+                  setCurrentCrew(crew);
+                }}
+                className="group p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-white/[0.03] transition cursor-pointer"
+              >
+                {/* Left: Tribu Identity */}
+                <div className="flex items-start sm:items-center gap-3.5 min-w-0">
+                  {/* Foto de la Tribu / Portada o Monograma si no tiene */}
+                  <div className="w-12 h-12 rounded-xl overflow-hidden border border-white/15 bg-black/40 flex items-center justify-center shrink-0 group-hover:border-earth/50 transition shadow-sm">
+                    {crew.coverImage ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img 
+                        src={crew.coverImage} 
+                        alt={crew.name} 
+                        className="w-full h-full object-cover group-hover:scale-105 transition duration-300" 
+                      />
+                    ) : (
+                      <span className="text-earth font-display font-bold text-sm">
+                        {crew.name.slice(0, 2).toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-display font-bold text-sm sm:text-base text-white uppercase group-hover:text-earth transition truncate">
+                        {crew.name}
+                      </h3>
+                      {isUserAdmin ? (
+                        <span className="text-[9px] font-mono uppercase font-bold px-1.5 py-0.5 bg-earth/15 border border-earth/40 text-earth">
+                          Admin
+                        </span>
+                      ) : (
+                        <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 bg-white/[0.04] border border-white/10 text-ash">
+                          Miembro
+                        </span>
+                      )}
+                    </div>
+                    
+                    <div className="flex items-center gap-3 text-[11px] text-ash mt-1 flex-wrap">
+                      <span className="flex items-center gap-1 text-chalk/80">
+                        <MapPin className="w-3 h-3 text-earth shrink-0" />
+                        {crew.baseCity}
+                      </span>
+                      <span>•</span>
+                      <span className="flex items-center gap-1">
+                        <Users className="w-3 h-3 text-ash shrink-0" />
+                        {crew.members.length} {crew.members.length === 1 ? 'piloto' : 'pilotos'}
+                      </span>
+                      <span>•</span>
+                      <span className="text-[10px] text-ash/80">Clave: {crew.inviteCode}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Center / Right: Subtle Next Ride Preview */}
+                <div className="flex items-center justify-between md:justify-end gap-4 shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-white/[0.04]">
+                  {nextRide ? (
+                    <div className="text-left md:text-right">
+                      <span className="text-[9px] text-ash uppercase tracking-wider block">
+                        Próxima Rodada
+                      </span>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <Calendar className="w-3 h-3 text-earth shrink-0" />
+                        <span className="text-xs text-chalk font-medium truncate max-w-[220px]">
+                          {formatHumanDate(nextRide.startDate, nextRide.endDate)} • {nextRide.title}
+                        </span>
+                        {hasConfirmed ? (
+                          <span className="text-[9px] font-mono uppercase px-1.5 py-0.2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
+                            Confirmada
+                          </span>
+                        ) : (
+                          <span className="text-[9px] font-mono uppercase px-1.5 py-0.2 bg-amber-500/10 border border-amber-500/30 text-amber-300">
+                            {rideProposals.length} opciones
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <span className="text-[10px] text-ash/60 italic">Sin rodadas programadas</span>
+                  )}
+
+                  <div className="flex items-center gap-1 text-ash group-hover:text-white transition pl-2">
+                    <span className="text-[10px] uppercase font-bold tracking-wider hidden sm:inline group-hover:text-earth">
+                      Entrar
+                    </span>
+                    <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+
+          {filteredCrews.length === 0 && (
+            <div className="p-8 text-center text-ash text-xs space-y-3">
+              <p>No se encontraron tribus con ese criterio.</p>
+              <button
+                onClick={onOpenCreateCrew}
+                className="px-4 py-2 bg-earth text-white font-bold uppercase text-xs"
+              >
+                Crear una Nueva Tribu
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // =========================================================================
+  // VIEW 2: DENTRO DE LA TRIBU (VISTA SUTIL SUPERIOR + BOARD ESTILO AIRBNB)
+  // =========================================================================
+  return (
+    <div className="max-w-[1300px] w-full mx-auto pb-28 px-4 sm:px-6 font-mono space-y-6">
+      
+      {/* App Header (Estilo móvil con selector de grupo en el centro) */}
+      <div className="relative border-b border-white/10 pb-3 pt-1">
+        <div className="flex items-center justify-between gap-2">
+          {/* Izquierda: Volver al directorio */}
+          <button
+            onClick={() => setSelectedTribuId(null)}
+            className="p-1.5 -ml-1 text-ash hover:text-white transition group flex items-center gap-1 text-xs uppercase"
+            title="Ver todas las tribus"
+          >
+            <ArrowLeft className="w-4 h-4 text-earth group-hover:-translate-x-0.5 transition-transform" />
+            <span className="hidden sm:inline">Tribus</span>
+          </button>
+
+          {/* Centro: Nombre del Grupo con Flechita (Dropdown selector de grupos) */}
+          <div className="relative flex-1 flex justify-center">
+            <div className="relative flex items-center justify-center">
+              <button
+                onClick={() => setShowCrewDropdown(prev => !prev)}
+                  className={`px-3 py-1.5 rounded-xl transition-all flex flex-col items-center group max-w-[220px] sm:max-w-md mx-auto active:scale-95 ${
+                    showCrewDropdown ? 'bg-white/10 ring-1 ring-white/10' : 'hover:bg-white/5'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    {activeTribu.coverImage && (
+                      <div className="w-5 h-5 rounded-md overflow-hidden border border-white/20 shrink-0">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img 
+                          src={activeTribu.coverImage} 
+                          alt={activeTribu.name} 
+                          className="w-full h-full object-cover" 
+                        />
+                      </div>
+                    )}
+                    <span className="font-display font-black text-sm sm:text-base text-white uppercase tracking-tight truncate">
+                      {activeTribu.name}
+                    </span>
+                    <ChevronDown className={`w-3.5 h-3.5 text-earth shrink-0 transition-transform duration-200 ${showCrewDropdown ? 'rotate-180' : ''}`} />
+                  </div>
+                  <span className="text-[10px] font-mono text-ash truncate">
+                    {activeTribu.baseCity} • {activeTribu.members.length} pilotos
+                  </span>
+                </button>
+
+                {/* Lapiz de editar minimalista para nombre y foto */}
+                {isCreatorOrAdmin && (
+                  <button
+                    type="button"
+                    onClick={handleOpenEditCrew}
+                    title="Editar nombre y foto del grupo"
+                    className="p-1.5 rounded-lg text-ash/60 hover:text-earth hover:bg-white/5 transition shrink-0 ml-0.5"
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
+                  </button>
+                )}
+
+                {/* Dropdown selector de Tribus (Friendly Modern App Sheet/Menu) */}
+                {showCrewDropdown && (
+                  <>
+                    <div 
+                      className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px] transition-opacity" 
+                      onClick={() => setShowCrewDropdown(false)} 
+                    />
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-80 sm:w-96 bg-[#161311]/98 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.85)] ring-1 ring-white/5 z-50 p-3 space-y-2 animate-in fade-in zoom-in-95 duration-150">
+                      
+                      {/* Notch pointer */}
+                      <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 bg-[#161311] border-t border-l border-white/10" />
+                      
+                      {/* Friendly Header */}
+                      <div className="px-2 py-1 flex items-center justify-between border-b border-white/5 pb-2">
+                        <div className="flex items-center gap-2">
+                          <Users className="w-4 h-4 text-earth" />
+                          <span className="text-xs font-semibold text-white/90">Tus Grupos</span>
+                        </div>
+                        <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-white/5 text-ash border border-white/10">
+                          {crews.length} {crews.length === 1 ? 'grupo' : 'grupos'}
+                        </span>
+                      </div>
+
+                      {/* Crew List */}
+                      <div className="max-h-64 overflow-y-auto space-y-1 py-1 pr-1">
+                        {crews.map(c => {
+                          const isCurrent = c.id === activeTribu.id;
+                          const initials = c.name
+                            .split(' ')
+                            .map(w => w[0])
+                            .filter(Boolean)
+                            .slice(0, 2)
+                            .join('')
+                            .toUpperCase();
+
+                          return (
+                            <button
+                              key={c.id}
+                              onClick={() => {
+                                setSelectedTribuId(c.id);
+                                setShowCrewDropdown(false);
+                              }}
+                              className={`w-full text-left p-2.5 rounded-xl transition-all flex items-center gap-3 ${
+                                isCurrent 
+                                  ? 'bg-earth/15 border border-earth/40 text-white shadow-sm' 
+                                  : 'hover:bg-white/5 text-ash hover:text-white border border-transparent'
+                              }`}
+                            >
+                              {/* Avatar badge con fotito en vez de letras */}
+                              <div className={`w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center shrink-0 border transition ${
+                                isCurrent 
+                                  ? 'border-earth ring-1 ring-earth/50 shadow-md' 
+                                  : 'border-white/10 bg-white/5'
+                              }`}>
+                                {c.coverImage ? (
+                                  // eslint-disable-next-line @next/next/no-img-element
+                                  <img 
+                                    src={c.coverImage} 
+                                    alt={c.name} 
+                                    className="w-full h-full object-cover" 
+                                  />
+                                ) : (
+                                  <span className={`font-bold text-xs ${isCurrent ? 'text-earth' : 'text-ash'}`}>
+                                    {initials || 'TR'}
+                                  </span>
+                                )}
+                              </div>
+
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-1.5">
+                                  <p className="font-bold text-sm text-white truncate">{c.name}</p>
+                                </div>
+                                <p className="text-xs text-ash/90 truncate mt-0.5">
+                                  {c.baseCity} • {c.members.length} {c.members.length === 1 ? 'piloto' : 'pilotos'}
+                                </p>
+                              </div>
+
+                              {isCurrent ? (
+                                <div className="w-5 h-5 rounded-full bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center shrink-0">
+                                  <Check className="w-3 h-3 text-emerald-400" />
+                                </div>
+                              ) : (
+                                <span className="text-xs text-ash/40">Entrar</span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Friendly Actions */}
+                      <div className="pt-2 border-t border-white/5 space-y-1">
+                        {isCreatorOrAdmin && (
+                          <button
+                            onClick={() => {
+                              setShowCrewDropdown(false);
+                              handleOpenEditCrew();
+                            }}
+                            className="w-full text-left px-3 py-2 rounded-lg text-xs text-ash hover:text-white hover:bg-white/5 flex items-center gap-2.5 transition"
+                          >
+                            <Pencil className="w-3.5 h-3.5 text-earth" />
+                            <span>Editar grupo (nombre y foto)</span>
+                          </button>
+                        )}
+                        <button
+                          onClick={() => {
+                            setShowCrewDropdown(false);
+                            onOpenCreateCrew();
+                          }}
+                          className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-chalk hover:text-white hover:bg-white/5 flex items-center gap-2.5 transition"
+                        >
+                          <Plus className="w-3.5 h-3.5 text-earth" />
+                          <span>Crear nuevo grupo</span>
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+          </div>
+
+          {/* Derecha: Tabs Rodadas / Pilotos */}
+          <div className="flex border border-white/15 shrink-0 text-xs">
+            <button
+              onClick={() => setActiveTribuTab('rodadas')}
+              className={`px-2.5 sm:px-3 py-1 font-bold uppercase tracking-wider transition ${
+                activeTribuTab === 'rodadas'
+                  ? 'bg-earth text-white'
+                  : 'bg-transparent text-ash hover:text-white'
+              }`}
+            >
+              Rodadas
+            </button>
+            <button
+              onClick={() => setActiveTribuTab('miembros')}
+              className={`px-2.5 sm:px-3 py-1 font-bold uppercase tracking-wider transition ${
+                activeTribuTab === 'miembros'
+                  ? 'bg-earth text-white'
+                  : 'bg-transparent text-ash hover:text-white'
+              }`}
+            >
+              Pilotos ({activeTribu.members.length})
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* =================================================================== */}
+      {/* 1. VISTA SUTIL DE PRÓXIMAS RODADAS CONFIRMADAS                      */}
+      {/* (Solo rodadas confirmadas; las que están en votación van abajo)     */}
+      {/* =================================================================== */}
+      {confirmedRodadas.length === 0 ? null : confirmedRodadas.length === 1 ? (
+        /* Caso 1: Una sola rodada confirmada -> Hero Card cinematográfica */
+        (() => {
+          const confRodada = confirmedRodadas[0];
+          const confWinning = routeProposals.find(p => p.rodadaId === confRodada.id && p.id === confRodada.winningRouteId) 
+            || routeProposals.find(p => p.rodadaId === confRodada.id);
+          const confAttendees = (confRodada.attendees || [])
+            .filter(a => a.status === 'confirmado')
+            .map(a => {
+              const u = users?.find(user => user.id === a.userId);
+              return {
+                userId: a.userId,
+                userName: u?.name || (a.userId === currentUser.id ? currentUser.name : a.userId),
+                userAvatar: u?.avatar || (a.userId === currentUser.id ? currentUser.avatar : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200')
+              };
+            });
+          const confCount = confAttendees.length;
+          const isAttending = confRodada.attendees.some(a => a.userId === currentUser.id && a.status === 'confirmado');
+
+          return (
+            <div 
+              onClick={() => {
+                setSelectedConfirmedRodadaForPlan(confRodada);
+                setShowPlanCardModal(true);
+              }}
+              className="group relative overflow-hidden border border-earth/40 hover:border-earth bg-[#0D0B0A] transition-all duration-300 cursor-pointer shadow-lg p-3 sm:p-4"
+              title="Click para ver el plan completo de la rodada"
+            >
+              {/* Background Cover Image with subtle gradient overlay */}
+              <div className="absolute inset-0 z-0 pointer-events-none">
+                <img 
+                  src={confWinning?.coverImage || 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=1600'} 
+                  alt={confWinning?.destination || confRodada.title} 
+                  className="w-full h-full object-cover object-center opacity-25 group-hover:opacity-35 group-hover:scale-105 transition-all duration-500 ease-out"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#0D0B0A] via-[#0D0B0A]/85 to-transparent" />
+              </div>
+
+              {/* Content Container: Compact Layout */}
+              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                
+                {/* Left side: Badge + Destination + Metrics */}
+                <div className="space-y-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="flex items-center gap-1.5 text-[9px] font-mono uppercase font-black px-2 py-0.5 bg-emerald-500/20 border border-emerald-500/50 text-emerald-300">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      Ruta Confirmada
+                    </span>
+
+                    <span className="text-[11px] font-mono text-ash font-bold flex items-center gap-1 bg-black/60 px-2 py-0.5 border border-white/10">
+                      <Calendar className="w-3 h-3 text-earth" />
+                      <span className="text-white">{formatHumanDate(confRodada.startDate, confRodada.endDate, true)}</span>
+                    </span>
+                  </div>
+
+                  <div className="flex items-baseline gap-2 pt-0.5">
+                    <MapPin className="w-3.5 h-3.5 text-earth shrink-0 self-center" />
+                    <h3 className="text-sm sm:text-base font-display font-black text-white uppercase truncate group-hover:text-chalk transition tracking-tight">
+                      {confWinning ? confWinning.destination : confRodada.title}
+                    </h3>
+                    <span className="text-white/20 hidden md:inline">•</span>
+                    <span className="text-xs text-ash truncate hidden md:inline">
+                      {confWinning?.title || confRodada.subtitle}
+                    </span>
+                  </div>
+
+                  {/* Compact Metrics Row */}
+                  <div className="flex items-center gap-2 text-[11px] font-mono text-ash flex-wrap">
+                    <span>Salida: <strong className="text-chalk">{confWinning?.waypoints[0]?.name || confRodada.originPoint}</strong></span>
+                    {confWinning && (
+                      <>
+                        <span className="text-white/20">•</span>
+                        <span className="text-white font-bold">{confWinning.totalKm} km</span>
+                        <span className="text-white/20">•</span>
+                        <span className="flex items-center gap-1 text-earth font-bold">
+                          <Mountain className="w-3 h-3 text-earth shrink-0" />
+                          <span>{confWinning.offroadPercentage}%</span>
+                        </span>
+                        <span className="flex items-center gap-1 text-white font-bold">
+                          <RoadIcon className="w-3 h-3 text-white shrink-0" />
+                          <span>{confWinning.asphaltPercentage || (100 - confWinning.offroadPercentage)}%</span>
+                        </span>
+                        {confWinning.difficulty && (
+                          <>
+                            <span className="text-white/20">•</span>
+                            <span className="text-chalk uppercase">{confWinning.difficulty}</span>
+                          </>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Right side: Pilots + Action Buttons */}
+                <div className="flex items-center gap-2.5 shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-white/10 justify-between md:justify-end">
+                  {/* Attendees */}
+                  <div className="flex items-center gap-1.5">
+                    <div className="flex -space-x-1.5 overflow-hidden">
+                      {confAttendees.slice(0, 4).map((att, i) => (
+                        <img 
+                          key={att.userId + i}
+                          src={att.userAvatar} 
+                          alt={att.userName} 
+                          title={att.userName}
+                          className="w-5 h-5 rounded-full border border-black object-cover" 
+                        />
+                      ))}
+                    </div>
+                    <span className="text-[11px] font-mono text-ash">
+                      <strong className="text-white">{confCount}</strong>
+                    </span>
+                  </div>
+
+                  {/* RSVP button */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      rsvpRodada(
+                        confRodada.id, 
+                        userBikes[0]?.id || 'moto-default', 
+                        isAttending ? 'interesado' : 'confirmado'
+                      );
+                    }}
+                    className={`px-3 py-1.5 text-xs font-mono font-bold uppercase tracking-wider transition border flex items-center gap-1.5 shadow ${
+                      isAttending
+                        ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300'
+                        : 'bg-earth hover:bg-earth-bright border-earth text-white'
+                    }`}
+                  >
+                    {isAttending ? (
+                      <>
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>Asistiendo</span>
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Asistir</span>
+                      </>
+                    )}
+                  </button>
+
+                  {/* Ver Plan */}
+                  <button
+                    type="button"
+                    className="flex items-center gap-1 text-xs font-mono text-earth font-bold uppercase tracking-wider px-2.5 py-1.5 bg-black/60 border border-earth/30 group-hover:border-earth group-hover:bg-earth group-hover:text-white transition-all"
+                  >
+                    <span>Plan</span>
+                    <ChevronRight className="w-3.5 h-3.5 text-current" />
+                  </button>
+
+                  {isCreatorOrAdmin && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        unlockWinningRoute(confRodada.id);
+                      }}
+                      className="text-[10px] font-mono text-ash/60 hover:text-white uppercase px-1"
+                      title="Reabrir debate"
+                    >
+                      Reabrir
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })()
+      ) : (
+        /* Caso 2: Varias rodadas confirmadas -> Cuadros con cover de foto */
+        <div className="space-y-3">
+          <div className="flex items-center justify-between pb-1">
+            <h3 className="font-display font-black text-sm uppercase tracking-wider text-earth">
+              Próximas Rodadas Confirmadas ({confirmedRodadas.length})
+            </h3>
+            <span className="text-[10px] text-ash font-mono hidden sm:inline">
+              Haz clic para ver el plan completo
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+            {confirmedRodadas.map(rodada => {
+              const winning = routeProposals.find(p => p.rodadaId === rodada.id && p.id === rodada.winningRouteId) 
+                || routeProposals.find(p => p.rodadaId === rodada.id);
+              const attendees = (rodada.attendees || []).filter(a => a.status === 'confirmado');
+
+              return (
+                <div
+                  key={rodada.id}
+                  onClick={() => {
+                    setSelectedConfirmedRodadaForPlan(rodada);
+                    setShowPlanCardModal(true);
+                  }}
+                  className="group relative overflow-hidden bg-[#0D0B0A] border border-earth/30 hover:border-earth p-4 transition-all duration-300 cursor-pointer flex flex-col justify-between space-y-3 shadow-lg"
+                  title="Click para ver la tarjeta del plan"
+                >
+                  {/* Background cover image */}
+                  {winning?.coverImage && (
+                    <div className="absolute inset-0 z-0 pointer-events-none">
+                      <img 
+                        src={winning.coverImage} 
+                        alt={winning.destination} 
+                        className="w-full h-full object-cover object-center opacity-25 group-hover:opacity-35 group-hover:scale-105 transition-all duration-500 ease-out"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0D0B0A] via-[#0D0B0A]/80 to-transparent" />
+                    </div>
+                  )}
+
+                  <div className="relative z-10 space-y-2">
+                    {/* Fecha + Badge */}
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs font-mono font-bold text-white group-hover:text-chalk transition">
+                        {formatHumanDate(rodada.startDate, rodada.endDate, true)}
+                      </span>
+                      <span className="text-[8px] font-mono uppercase font-black px-1.5 py-0.5 bg-emerald-500/20 border border-emerald-500/40 text-emerald-300">
+                        Confirmada
+                      </span>
+                    </div>
+
+                    {/* Destino */}
+                    <div className="flex items-center gap-1.5 pt-1">
+                      <MapPin className="w-4 h-4 text-earth shrink-0" />
+                      <h4 className="text-base font-display font-black text-white uppercase truncate group-hover:text-chalk transition">
+                        {winning ? winning.destination : rodada.title}
+                      </h4>
+                    </div>
+                  </div>
+
+                  {/* Asistentes & Ver Plan */}
+                  <div className="relative z-10 flex items-center justify-between pt-2.5 border-t border-white/10 text-[11px] font-mono">
+                    <div className="flex items-center gap-1.5 text-ash">
+                      <Users className="w-3.5 h-3.5 text-earth" />
+                      <span className="text-white font-bold">{attendees.length}</span>
+                      <span>{attendees.length === 1 ? 'asistente' : 'asistentes'}</span>
+                    </div>
+                    <span className="text-earth text-[10px] uppercase font-bold tracking-wider group-hover:translate-x-0.5 transition-transform flex items-center gap-0.5">
+                      Ver Plan <ChevronRight className="w-3 h-3" />
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* =================================================================== */}
+      {/* 2. TAB: MIEMBROS & GARAJE                                          */}
+      {/* =================================================================== */}
+      {activeTribuTab === 'miembros' && (
+        <div className="space-y-4">
+          <div className="border-b border-white/10 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h3 className="font-display font-bold text-base text-white uppercase">
+                Pilotos de la Tribu ({activeTribu.members.length})
+              </h3>
+              <p className="text-xs text-ash">Lista de miembros registrados en la flotilla.</p>
+            </div>
+
+            <button
+              onClick={() => setShowAddPilotModal(true)}
+              className="px-3.5 py-1.5 bg-earth hover:bg-earth-bright text-white text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition self-start sm:self-auto border border-earth/40 shadow-sm"
+            >
+              <UserPlus className="w-3.5 h-3.5" />
+              <span>+ Añadir Piloto / Invitar</span>
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            {activeTribu.members.map(member => {
+              const isCreator = member.userId === activeTribu.creatorId;
+              const u = users.find(user => user.id === member.userId);
+              const bike = motorcycles?.find(m => m.userId === member.userId);
+              const displayName = u ? (u.id === currentUser.id ? `${u.name} (Tú)` : u.name) : member.userId;
+              const avatar = u?.avatar;
+              const motoModel = bike ? `${bike.brand} ${bike.model}` : null;
+
+              return (
+                <div 
+                  key={member.userId}
+                  onClick={() => openPilotProfileById(member.userId)}
+                  className="p-3 bg-[#0D0B0A] border border-white/10 flex items-center gap-3 hover:border-earth/40 transition cursor-pointer"
+                >
+                  <div className="w-10 h-10 border border-white/15 bg-black/40 flex items-center justify-center font-bold text-white text-xs shrink-0 overflow-hidden">
+                    {avatar ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img src={avatar} alt={displayName} className="w-full h-full object-cover" />
+                    ) : (
+                      member.userId.slice(0, 2).toUpperCase()
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-white uppercase truncate">
+                        {displayName}
+                      </span>
+                      {isCreator && (
+                        <span className="text-[9px] font-mono uppercase font-bold text-earth border border-earth/30 px-1 shrink-0">
+                          Admin
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-[10px] text-ash block mt-0.5 truncate">
+                      {member.role} {motoModel ? `• ${motoModel}` : ''}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* =================================================================== */}
+      {/* 3. TAB: RODADAS & CONVOCATORIAS PROPUESTAS                          */}
+      {/* =================================================================== */}
+      {activeTribuTab === 'rodadas' && (
+        <div className="space-y-5">
+          
+          {/* Header limpio de convocatorias */}
+          <div className="flex items-center justify-between gap-3 pb-3 border-b border-white/10">
+            <h2 className="font-display font-black text-xl text-white uppercase tracking-tight">
+              Convocatorias & Salidas
+            </h2>
+
+            <button
+              onClick={() => setShowConvokeModal(true)}
+              className="px-3.5 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] text-chalk hover:text-white border border-white/15 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition shrink-0"
+            >
+              <Plus className="w-3.5 h-3.5 text-earth" />
+              <span>Convocar Fecha</span>
+            </button>
+          </div>
+
+          {/* Selector de Fechas Convocadas (Pills compactas y claras) */}
+          <div className="flex items-stretch gap-2.5 overflow-x-auto pb-1 scrollbar-thin">
+            {tribuRodadas.map((rodada) => {
+              const isSelected = activeRodada?.id === rodada.id;
+              const rodadaProposals = routeProposals.filter(p => p.rodadaId === rodada.id);
+              const isConfirmed = rodada.status === 'fijada';
+
+              return (
+                <button
+                  key={rodada.id}
+                  onClick={() => setSelectedRodadaId(rodada.id)}
+                  className={`text-left px-3.5 py-2.5 border transition flex items-center gap-3 shrink-0 ${
+                    isSelected
+                      ? 'border-earth bg-earth/15 text-white shadow-sm ring-1 ring-earth/40'
+                      : 'border-white/10 bg-black/40 text-ash hover:border-white/25 hover:text-white'
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-xs font-mono font-bold tracking-wider uppercase ${
+                        isSelected ? 'text-earth' : 'text-chalk'
+                      }`}>
+                        {formatHumanDate(rodada.startDate, rodada.endDate, true)}
+                      </span>
+                      {isConfirmed ? (
+                        <span className="text-[8px] font-mono uppercase font-bold px-1.5 py-0.5 bg-emerald-500/15 border border-emerald-500/40 text-emerald-300">
+                          Confirmada
+                        </span>
+                      ) : (
+                        <span className="text-[8px] font-mono uppercase font-bold px-1.5 py-0.5 bg-amber-500/10 border border-amber-500/30 text-amber-300">
+                          {rodadaProposals.length} {rodadaProposals.length === 1 ? 'ruta' : 'rutas'}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-white/90 font-bold uppercase line-clamp-1 mt-0.5">
+                      {rodada.title}
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Opciones para la Fecha Seleccionada */}
+          {activeRodada && (
+            <div className="space-y-4 pt-1">
+              
+              {/* Header directo y sin redundancias */}
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <h3 className="font-display font-black text-lg text-white uppercase tracking-tight">
+                    Rutas Propuestas
+                  </h3>
+                  <span className="text-xs font-mono font-bold text-earth bg-earth/10 border border-earth/25 px-2 py-0.5">
+                    {activeProposals.length}
+                  </span>
+                </div>
+
+                <button
+                  onClick={() => setShowInteractiveProposeModal(true)}
+                  className="px-3.5 py-2 bg-earth hover:bg-earth-bright text-white text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition shrink-0 shadow border border-earth/40"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Proponer Ruta</span>
+                </button>
+              </div>
+
+          {/* Proposals Grid: Airbnb style cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {sortedProposals.map((proposal, index) => {
+              const upvotesCount = proposal.votes?.length || 0;
+              const downvotesCount = proposal.downvotes?.length || 0;
+              const netScore = upvotesCount - downvotesCount;
+              const hasUpvoted = proposal.votes?.includes(currentUser.id);
+              const hasDownvoted = proposal.downvotes?.includes(currentUser.id);
+              const isLeader = index === 0 && netScore > 0;
+              const isWinner = activeRodada.winningRouteId === proposal.id;
+
+              return (
+                <div
+                  key={proposal.id}
+                  className={`bg-[#0D0B0A] border transition flex flex-col justify-between group ${
+                    isWinner 
+                      ? 'border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.1)]'
+                      : isLeader
+                      ? 'border-earth/50 shadow-[0_0_15px_rgba(200,125,85,0.08)]'
+                      : 'border-white/10 hover:border-white/25'
+                  }`}
+                >
+                  <div>
+                    {/* Image Header with Leader Badge */}
+                    <div 
+                      onClick={() => setDetailProposalId(proposal.id)}
+                      className="relative h-44 w-full overflow-hidden cursor-pointer"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={proposal.coverImage}
+                        alt={proposal.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition duration-500 brightness-90 group-hover:brightness-100"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent pointer-events-none" />
+
+                      {/* Badges on top of image */}
+                      <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between">
+                        {isWinner ? (
+                          <span className="text-[9px] font-mono uppercase font-bold px-2 py-0.5 bg-emerald-500 text-black shadow">
+                            ★ Rodada Oficial
+                          </span>
+                        ) : isLeader ? (
+                          <span className="text-[9px] font-mono uppercase font-bold px-2 py-0.5 bg-earth text-white shadow">
+                            #1 Líder en Apoyo
+                          </span>
+                        ) : (
+                          <span className="text-[9px] font-mono uppercase font-bold px-2 py-0.5 bg-black/60 backdrop-blur-sm border border-white/20 text-ash">
+                            Opción #{index + 1}
+                          </span>
+                        )}
+
+                        <span className="text-[9px] font-mono uppercase px-2 py-0.5 bg-black/70 backdrop-blur-sm border border-white/15 text-chalk font-bold flex items-center gap-1.5">
+                          <span>{proposal.totalKm} km</span>
+                          <span className="text-white/30">•</span>
+                          <span className="flex items-center gap-0.5 text-earth" title="Montaña / Terracería">
+                            <Mountain className="w-2.5 h-2.5 text-earth shrink-0" />
+                            <span>{proposal.offroadPercentage}%</span>
+                          </span>
+                          <span className="flex items-center gap-0.5 text-white" title="Carretera / Asfalto">
+                            <RoadIcon className="w-2.5 h-2.5 text-white shrink-0" />
+                            <span>{proposal.asphaltPercentage || (100 - proposal.offroadPercentage)}%</span>
+                          </span>
+                        </span>
+                      </div>
+
+                      {/* Destination Pill at bottom of image */}
+                      <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between">
+                        <span className="text-xs text-white font-bold flex items-center gap-1 drop-shadow">
+                          <MapPin className="w-3 h-3 text-earth" />
+                          {proposal.destination}
+                        </span>
+                        <span className="text-[10px] text-ash drop-shadow">
+                          {proposal.difficulty}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Card Body */}
+                    <div className="p-4 space-y-3">
+                      <div>
+                        <h3 
+                          onClick={() => setDetailProposalId(proposal.id)}
+                          className="font-display font-bold text-base text-white uppercase group-hover:text-earth transition cursor-pointer truncate"
+                        >
+                          {proposal.title}
+                        </h3>
+                        <p className="text-xs text-ash line-clamp-2 mt-1 leading-relaxed">
+                          {proposal.description}
+                        </p>
+                      </div>
+
+                      {/* Proposer row */}
+                      <div className="flex items-center justify-between text-[11px] text-ash border-y border-white/[0.06] py-2">
+                        <div className="flex items-center gap-1.5 truncate">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={proposal.proposedByAvatar}
+                            alt={proposal.proposedByName}
+                            className="w-4 h-4 rounded-full object-cover shrink-0"
+                          />
+                          <span className="truncate">Por {proposal.proposedByName}</span>
+                        </div>
+                        <span className="text-chalk/80 shrink-0 font-medium">{proposal.estimatedHours} est.</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card Bottom: Collaborative Voting Toolbar (Airbnb Thumbs Up / Down) */}
+                  <div className="p-3 bg-black/30 border-t border-white/[0.06] flex items-center justify-between gap-2">
+                    
+                    {/* Thumbs Up & Thumbs Down Buttons */}
+                    <div className="flex items-center gap-1.5">
+                      {/* Upvote button */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          voteRoute(proposal.id);
+                        }}
+                        className={`px-2.5 py-1.5 border text-xs font-bold flex items-center gap-1.5 transition ${
+                          hasUpvoted
+                            ? 'bg-earth/20 border-earth text-earth'
+                            : 'bg-white/[0.03] border-white/10 text-ash hover:text-white hover:border-white/20'
+                        }`}
+                        title="Votar a favor (Manita arriba)"
+                      >
+                        <ThumbsUp className={`w-3.5 h-3.5 ${hasUpvoted ? 'text-earth' : ''}`} />
+                        <span>{upvotesCount}</span>
+                      </button>
+
+                      {/* Downvote button */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          downvoteRoute(proposal.id);
+                        }}
+                        className={`px-2.5 py-1.5 border text-xs font-bold flex items-center gap-1.5 transition ${
+                          hasDownvoted
+                            ? 'bg-rose-500/20 border-rose-500 text-rose-300'
+                            : 'bg-white/[0.03] border-white/10 text-ash hover:text-white hover:border-white/20'
+                        }`}
+                        title="Votar en contra (Manita abajo)"
+                      >
+                        <ThumbsDown className={`w-3.5 h-3.5 ${hasDownvoted ? 'text-rose-400' : ''}`} />
+                        <span>{downvotesCount}</span>
+                      </button>
+
+                      {/* Net score */}
+                      <span className="text-[10px] text-ash font-mono ml-1">
+                        {netScore >= 0 ? `+${netScore}` : netScore} netos
+                      </span>
+                    </div>
+
+                    {/* View Detail & Comments Button */}
+                    <button
+                      onClick={() => setDetailProposalId(proposal.id)}
+                      className="px-2.5 py-1.5 text-xs text-ash hover:text-white flex items-center gap-1 transition"
+                      title="Ver detalle y comentarios"
+                    >
+                      <MessageSquare className="w-3.5 h-3.5" />
+                      <span>{proposal.comments?.length || 0}</span>
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Si solo hay 1 opción, invitar a proponer alternativas */}
+          {activeProposals.length === 1 && (
+            <div className="p-4 border border-white/10 bg-[#0B0908] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-3">
+                <span className="p-2 bg-white/[0.04] text-earth border border-white/10 shrink-0">
+                  <Plus className="w-4 h-4" />
+                </span>
+                <div>
+                  <h4 className="font-bold text-white uppercase text-xs">¿Tienes otra ruta en mente para esta fecha?</h4>
+                  <p className="text-ash text-[11px] mt-0.5">
+                    Puedes proponer un trazado alternativo para que los pilotos elijan entre ambas opciones antes de la rodada.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowInteractiveProposeModal(true)}
+                className="px-3.5 py-2 border border-earth/40 hover:bg-earth/10 text-earth font-bold uppercase text-[11px] tracking-wider shrink-0 transition"
+              >
+                + Proponer Alternativa
+              </button>
+            </div>
+          )}
+
+          {activeProposals.length === 0 && (
+            <div className="p-8 border border-white/10 bg-[#0D0B0A] text-center space-y-3">
+              <Compass className="w-8 h-8 text-ash mx-auto" />
+              <p className="text-xs text-ash">Aún no hay opciones de ruta propuestas para esta fecha.</p>
+              <button
+                onClick={() => setShowInteractiveProposeModal(true)}
+                className="px-4 py-2 bg-earth text-white font-bold uppercase text-xs"
+              >
+                Proponer la Primera Opción
+              </button>
+            </div>
+          )}
+              </div>
+            )}
+        </div>
+      )}
+
+      {/* =================================================================== */}
+      {/* 4. MODAL: DETALLE DE RUTA + VOTACIÓN + COMENTARIOS (AIRBNB STYLE)    */}
+      {/* =================================================================== */}
+      {selectedProposalForDetail && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="border border-white/20 bg-[#0E0C0A] max-w-2xl w-full p-5 sm:p-6 space-y-5 my-auto max-h-[92vh] overflow-y-auto font-mono">
+            
+            {/* Modal Header */}
+            <div className="flex items-start justify-between border-b border-white/10 pb-4 gap-3">
+              <div>
+                <span className="text-[10px] font-mono text-earth uppercase font-bold tracking-widest block mb-1">
+                  [ DETALLE DE RUTA PROPUESTA ]
+                </span>
+                <h3 className="font-display font-bold text-xl text-white uppercase">
+                  {selectedProposalForDetail.title}
+                </h3>
+                <p className="text-xs text-ash mt-0.5">
+                  Propuesta por {selectedProposalForDetail.proposedByName} para {selectedProposalForDetail.destination}
+                </p>
+              </div>
+              <button
+                onClick={() => setDetailProposalId(null)}
+                className="text-ash hover:text-white p-1"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Cover Image & Quick Metrics */}
+            <div className="relative h-48 w-full overflow-hidden border border-white/10">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={selectedProposalForDetail.coverImage}
+                alt={selectedProposalForDetail.title}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+              <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-xs font-bold text-white">
+                <span>{selectedProposalForDetail.totalKm} km en total</span>
+                <div className="flex items-center gap-2.5">
+                  <span className="flex items-center gap-1 text-earth" title="Montaña / Terracería">
+                    <Mountain className="w-3.5 h-3.5 text-earth shrink-0" />
+                    <span>{selectedProposalForDetail.offroadPercentage}%</span>
+                  </span>
+                  <span className="text-white/40">•</span>
+                  <span className="flex items-center gap-1 text-white" title="Carretera / Asfalto">
+                    <RoadIcon className="w-3.5 h-3.5 text-white shrink-0" />
+                    <span>{selectedProposalForDetail.asphaltPercentage || (100 - selectedProposalForDetail.offroadPercentage)}%</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Voting Bar in Detail Modal */}
+            <div className="bg-black/40 border border-white/10 p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <span className="text-[10px] text-ash uppercase tracking-wider block">
+                  Votación de la Tribu
+                </span>
+                <span className="text-sm font-bold text-white">
+                  {(selectedProposalForDetail.votes?.length || 0) - (selectedProposalForDetail.downvotes?.length || 0)} votos netos ({selectedProposalForDetail.votes?.length || 0} a favor / {selectedProposalForDetail.downvotes?.length || 0} en contra)
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => voteRoute(selectedProposalForDetail.id)}
+                  className={`px-3 py-1.5 border text-xs font-bold flex items-center gap-1.5 transition ${
+                    selectedProposalForDetail.votes?.includes(currentUser.id)
+                      ? 'bg-earth/20 border-earth text-earth'
+                      : 'bg-white/[0.03] border-white/15 text-ash hover:text-white'
+                  }`}
+                >
+                  <ThumbsUp className="w-3.5 h-3.5" />
+                  <span>{selectedProposalForDetail.votes?.includes(currentUser.id) ? 'Te Gusta' : 'Me Gusta'}</span>
+                </button>
+
+                <button
+                  onClick={() => downvoteRoute(selectedProposalForDetail.id)}
+                  className={`px-3 py-1.5 border text-xs font-bold flex items-center gap-1.5 transition ${
+                    selectedProposalForDetail.downvotes?.includes(currentUser.id)
+                      ? 'bg-rose-500/20 border-rose-500 text-rose-300'
+                      : 'bg-white/[0.03] border-white/15 text-ash hover:text-white'
+                  }`}
+                >
+                  <ThumbsDown className="w-3.5 h-3.5" />
+                  <span>{selectedProposalForDetail.downvotes?.includes(currentUser.id) ? 'No te convence' : 'No me gusta'}</span>
+                </button>
+
+                {/* If user is Admin, they can crown this route */}
+                {isCreatorOrAdmin && activeRodada && (
+                  <button
+                    onClick={() => {
+                      handleLockRoute(selectedProposalForDetail.id);
+                      setDetailProposalId(null);
+                    }}
+                    className="px-3 py-1.5 bg-earth hover:bg-earth-bright text-white text-xs font-bold uppercase tracking-wider border border-earth/30 transition"
+                  >
+                    Confirmar como Oficial
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Description & Technical Itinerary */}
+            <div className="space-y-2 text-xs">
+              <span className="text-[10px] text-ash uppercase tracking-wider block font-bold">
+                Descripción & Plan de Ruta
+              </span>
+              <p className="text-chalk leading-relaxed bg-white/[0.02] border border-white/[0.06] p-3">
+                {selectedProposalForDetail.description}
+              </p>
+              {selectedProposalForDetail.itinerary && selectedProposalForDetail.itinerary[0] && (
+                <div className="text-[11px] text-ash bg-white/[0.02] border border-white/[0.06] p-3 space-y-1">
+                  <p><strong className="text-white">Terreno:</strong> {selectedProposalForDetail.itinerary[0].terrainType}</p>
+                  <p><strong className="text-white">Itinerario:</strong> {selectedProposalForDetail.itinerary[0].description}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Collaborative Comments Section (Airbnb style) */}
+            <div className="border-t border-white/10 pt-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] text-ash uppercase tracking-wider font-bold">
+                  Comentarios del Grupo ({selectedProposalForDetail.comments?.length || 0})
+                </span>
+                <span className="text-[10px] text-ash">Notas breves sobre esta opción</span>
+              </div>
+
+              {/* Comments List */}
+              <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                {selectedProposalForDetail.comments && selectedProposalForDetail.comments.length > 0 ? (
+                  selectedProposalForDetail.comments.map(c => (
+                    <div key={c.id} className="p-2.5 bg-white/[0.02] border border-white/[0.06] text-xs space-y-1">
+                      <div className="flex items-center justify-between text-[10px] text-ash">
+                        <span className="font-bold text-chalk">{c.userName}</span>
+                        <span>{c.createdAt}</span>
+                      </div>
+                      <p className="text-chalk/90 leading-normal">{c.text}</p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-xs text-ash/60 italic py-2">
+                    Aún no hay comentarios sobre esta ruta. Sé el primero en dejar una sugerencia o nota.
+                  </p>
+                )}
+              </div>
+
+              {/* Add Comment Input */}
+              <div className="flex gap-2 pt-1">
+                <input
+                  type="text"
+                  value={commentInput}
+                  onChange={(e) => setCommentInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleSendComment();
+                    }
+                  }}
+                  placeholder="Añade un comentario sobre esta opción..."
+                  className="flex-1 bg-white/[0.03] border border-white/15 px-3 py-2 text-xs text-white placeholder-ash/50 focus:outline-none focus:border-earth"
+                />
+                <button
+                  type="button"
+                  onClick={handleSendComment}
+                  disabled={!commentInput.trim()}
+                  className="px-3.5 py-2 bg-earth hover:bg-earth-bright disabled:opacity-40 text-white text-xs font-bold uppercase transition"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="border-t border-white/10 pt-3 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setDetailProposalId(null)}
+                className="px-4 py-2 border border-white/20 text-ash hover:text-white uppercase text-xs font-bold"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =================================================================== */}
+      {/* 5. MODAL: PROPUESTA RÁPIDA DE RUTA ALTERNATIVA                    */}
+      {/* =================================================================== */}
+      {showProposeModal && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="border border-white/20 bg-[#0E0C0A] max-w-lg w-full p-5 sm:p-6 space-y-4 my-auto max-h-[92vh] overflow-y-auto font-mono">
+            
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div>
+                <span className="font-mono text-[10px] text-earth uppercase tracking-widest font-bold flex items-center gap-1.5">
+                  <Bell className="w-3 h-3" />
+                  [ PROPONER RUTA ALTERNATIVA ]
+                </span>
+                <h3 className="font-display font-bold text-lg text-white uppercase">
+                  Alternativa para el {formatHumanDate(activeRodada.startDate, activeRodada.endDate, true)}
+                </h3>
+                <p className="text-[11px] text-ash mt-0.5">
+                  Al enviar tu propuesta, se notificará a los celulares de los pilotos de la tribu para que voten entre las opciones.
+                </p>
+              </div>
+              <button onClick={() => setShowProposeModal(false)} className="text-ash hover:text-white p-1">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleQuickProposeSubmit} className="space-y-3 text-xs">
+              <div>
+                <label className="text-ash uppercase text-[10px] block mb-1">Título de la Ruta</label>
+                <input
+                  type="text"
+                  required
+                  value={propTitle}
+                  onChange={(e) => setPropTitle(e.target.value)}
+                  placeholder="Ej. Brecha de los Volcanes & Paso de Cortés"
+                  className="w-full bg-white/[0.03] border border-white/15 px-3 py-2 text-white placeholder-ash/50 focus:outline-none focus:border-earth"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-ash uppercase text-[10px] block mb-1">Destino Principal</label>
+                  <input
+                    type="text"
+                    required
+                    value={propDestination}
+                    onChange={(e) => setPropDestination(e.target.value)}
+                    placeholder="Ej. Paso de Cortés"
+                    className="w-full bg-white/[0.03] border border-white/15 px-3 py-2 text-white focus:outline-none focus:border-earth"
+                  />
+                </div>
+                <div>
+                  <label className="text-ash uppercase text-[10px] block mb-1">Estado</label>
+                  <input
+                    type="text"
+                    value={propState}
+                    onChange={(e) => setPropState(e.target.value)}
+                    className="w-full bg-white/[0.03] border border-white/15 px-3 py-2 text-white focus:outline-none focus:border-earth"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-ash uppercase text-[10px] block mb-1">Distancia Total (km)</label>
+                  <input
+                    type="number"
+                    value={propKm}
+                    onChange={(e) => setPropKm(e.target.value)}
+                    className="w-full bg-white/[0.03] border border-white/15 px-3 py-2 text-white focus:outline-none focus:border-earth"
+                  />
+                </div>
+                <div>
+                  <label className="text-ash uppercase text-[10px] block mb-1">% Terracería (Off-Road)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={propOffroad}
+                    onChange={(e) => setPropOffroad(e.target.value)}
+                    className="w-full bg-white/[0.03] border border-white/15 px-3 py-2 text-white focus:outline-none focus:border-earth"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-ash uppercase text-[10px] block mb-1">Hora de Salida</label>
+                  <input
+                    type="text"
+                    value={propMeetingTime}
+                    onChange={(e) => setPropMeetingTime(e.target.value)}
+                    className="w-full bg-white/[0.03] border border-white/15 px-3 py-2 text-white focus:outline-none focus:border-earth"
+                  />
+                </div>
+                <div>
+                  <label className="text-ash uppercase text-[10px] block mb-1">Punto de Encuentro</label>
+                  <input
+                    type="text"
+                    value={propMeetingPoint}
+                    onChange={(e) => setPropMeetingPoint(e.target.value)}
+                    className="w-full bg-white/[0.03] border border-white/15 px-3 py-2 text-white focus:outline-none focus:border-earth"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-ash uppercase text-[10px] block mb-1">Plan / Resumen de la Ruta</label>
+                <textarea
+                  rows={2}
+                  value={propPlan}
+                  onChange={(e) => setPropPlan(e.target.value)}
+                  placeholder="Por qué propones esta ruta, tipo de motos y parada a comer..."
+                  className="w-full bg-white/[0.03] border border-white/15 px-3 py-2 text-white focus:outline-none focus:border-earth"
+                />
+              </div>
+
+              <div className="pt-3 border-t border-white/10 flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowProposeModal(false)}
+                  className="w-1/2 py-2.5 border border-white/20 text-ash uppercase font-bold tracking-wider hover:text-white"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="w-1/2 py-2.5 bg-earth hover:bg-earth-bright text-white font-bold uppercase tracking-wider transition border border-earth/30"
+                >
+                  Proponer a la Tribu
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* =================================================================== */}
+      {/* 6. MODAL: TARJETITA DEL PLAN DE LA RODADA (EXPEDICIÓN DETALLADA)    */}
+      {/* =================================================================== */}
+      {showPlanCardModal && (selectedConfirmedRodadaForPlan || activeRodada) && (
+        <PlanCardModal
+          rodada={selectedConfirmedRodadaForPlan || activeRodada!}
+          winningRoute={
+            (() => {
+              const r = selectedConfirmedRodadaForPlan || activeRodada!;
+              return r.winningRouteId 
+                ? routeProposals.find(p => p.id === r.winningRouteId) || routeProposals.find(p => p.rodadaId === r.id) || undefined
+                : routeProposals.find(p => p.rodadaId === r.id) || undefined;
+            })()
+          }
+          currentUser={currentUser}
+          allUsers={users}
+          userBikes={userBikes}
+          onClose={() => {
+            setShowPlanCardModal(false);
+            setSelectedConfirmedRodadaForPlan(null);
+          }}
+          onRsvp={rsvpRodada}
+          formatHumanDate={formatHumanDate}
+        />
+      )}
+
+      {/* =================================================================== */}
+      {/* 7. MODAL: PROPOSITOR MINIMALISTA POR PASOS (KISS ALTERNATIVA)       */}
+      {/* =================================================================== */}
+      {showInteractiveProposeModal && (
+        <StepByStepRodadaModal
+          isOpen={showInteractiveProposeModal}
+          mode="alternative"
+          activeRodada={activeRodada}
+          currentUser={currentUser}
+          onClose={() => setShowInteractiveProposeModal(false)}
+          onSubmitAlternative={handleInteractiveProposalSubmit}
+          formatHumanDate={formatHumanDate}
+        />
+      )}
+
+      {/* =================================================================== */}
+      {/* 8. MODAL: CONVOCAR FECHA / NUEVA RODADA POR PASOS (KISS CONVOCAR)   */}
+      {/* =================================================================== */}
+      {showConvokeModal && (
+        <StepByStepRodadaModal
+          isOpen={showConvokeModal}
+          mode="convoke"
+          activeRodada={activeRodada}
+          currentUser={currentUser}
+          onClose={() => setShowConvokeModal(false)}
+          onSubmitConvoke={handleConvokeSubmit}
+          formatHumanDate={formatHumanDate}
+        />
+      )}
+
+      {/* =================================================================== */}
+      {/* 9. MODAL: AÑADIR O INVITAR PILOTOS A LA TRIBU                       */}
+      {/* =================================================================== */}
+      {showAddPilotModal && activeTribu && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="border border-white/20 bg-[#0E0C0A] max-w-lg w-full p-5 sm:p-6 space-y-5 my-auto max-h-[92vh] overflow-y-auto font-mono">
+            {/* Header */}
+            <div className="flex items-start justify-between border-b border-white/10 pb-4 gap-3">
+              <div>
+                <span className="text-[10px] font-mono text-earth uppercase font-bold tracking-widest block mb-1">
+                  [ AÑADIR O INVITAR PILOTOS ]
+                </span>
+                <h3 className="font-display font-bold text-lg text-white uppercase">
+                  Añadir Piloto a {activeTribu.name}
+                </h3>
+                <p className="text-xs text-ash mt-0.5">
+                  Los nuevos pilotos se reflejarán de inmediato en los posts y rodadas de la tribu.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowAddPilotModal(false)}
+                className="text-ash hover:text-white p-1"
+                title="Cerrar"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Invite code quick copy */}
+            <div className="p-3 bg-white/[0.03] border border-white/10 flex items-center justify-between gap-3">
+              <div>
+                <span className="text-[10px] text-ash uppercase block">Clave de Invitación de la Tribu</span>
+                <span className="text-sm font-bold text-white tracking-wider font-mono">{activeTribu.inviteCode}</span>
+              </div>
+              <button
+                onClick={() => handleCopyCode(activeTribu.inviteCode)}
+                className="px-3 py-1.5 bg-earth/20 border border-earth/40 hover:bg-earth text-earth hover:text-white text-xs font-bold transition flex items-center gap-1.5 shrink-0"
+              >
+                <Key className="w-3.5 h-3.5" />
+                <span>Copiar Clave</span>
+              </button>
+            </div>
+
+            {/* Available community riders */}
+            <div className="space-y-3">
+              <span className="text-[10px] text-earth uppercase font-bold tracking-wider block">
+                Pilotos disponibles en MotoMami ({users.filter(u => !activeTribu.members.some(m => m.userId === u.id)).length})
+              </span>
+
+              {(() => {
+                const available = users.filter(u => !activeTribu.members.some(m => m.userId === u.id));
+                if (available.length === 0) {
+                  return (
+                    <div className="p-4 text-center border border-dashed border-white/10 text-xs text-ash">
+                      Todos los pilotos registrados ya forman parte de esta tribu.
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                    {available.map(u => {
+                      const bike = motorcycles?.find(m => m.userId === u.id);
+                      return (
+                        <div 
+                          key={u.id}
+                          className="p-2.5 bg-black/40 border border-white/10 flex items-center justify-between gap-3 hover:border-white/20 transition"
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img 
+                              src={u.avatar} 
+                              alt={u.name} 
+                              className="w-9 h-9 rounded-full object-cover border border-white/15 shrink-0" 
+                            />
+                            <div className="min-w-0">
+                              <p className="text-xs font-bold text-white uppercase truncate">{u.name}</p>
+                              <p className="text-[10px] text-ash truncate">
+                                {bike ? `${bike.brand} ${bike.model}` : u.handle}
+                              </p>
+                            </div>
+                          </div>
+
+                          <button
+                            onClick={() => {
+                              addCrewMember(activeTribu.id, u.id, 'Rider');
+                              setNotificationToast(`${u.name} ha sido añadido a ${activeTribu.name}.`);
+                              try {
+                                confetti({ particleCount: 25, spread: 60 });
+                              } catch {}
+                            }}
+                            className="px-2.5 py-1.5 bg-earth hover:bg-earth-bright text-white text-[11px] font-bold uppercase transition flex items-center gap-1 shrink-0"
+                          >
+                            <UserPlus className="w-3 h-3" />
+                            <span>+ Añadir</span>
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* Footer */}
+            <div className="border-t border-white/10 pt-4 flex justify-end">
+              <button
+                onClick={() => setShowAddPilotModal(false)}
+                className="px-4 py-2 bg-white/10 hover:bg-white/15 text-white text-xs font-bold uppercase transition"
+              >
+                Listo
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: EDITAR NOMBRE Y FOTO DEL GRUPO */}
+      {showEditCrewModal && activeTribu && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-md bg-[#141210] border border-white/10 rounded-2xl shadow-2xl p-5 sm:p-6 space-y-5 animate-in zoom-in-95 duration-200">
+            
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="flex items-center gap-2">
+                <Pencil className="w-4 h-4 text-earth" />
+                <h3 className="text-base font-bold text-white uppercase tracking-wide">Editar Grupo</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowEditCrewModal(false)}
+                className="text-ash hover:text-white transition p-1"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {/* Nombre */}
+              <div>
+                <label className="text-xs font-mono uppercase text-ash block mb-1.5 font-bold">
+                  Nombre del Grupo
+                </label>
+                <input
+                  type="text"
+                  value={editedCrewName}
+                  onChange={(e) => setEditedCrewName(e.target.value)}
+                  placeholder="Ej. MotoMami Adventure Crew"
+                  className="w-full bg-black/60 border border-white/15 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-ash/50 focus:outline-none focus:border-earth transition"
+                />
+              </div>
+
+              {/* Foto de portada */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-mono uppercase text-ash font-bold">
+                    Foto de Portada / Banner
+                  </label>
+                  <label className="cursor-pointer text-xs font-bold text-earth hover:text-earth-bright transition flex items-center gap-1.5 px-2.5 py-1 bg-earth/10 border border-earth/30 rounded-lg">
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>Subir de tu galería</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            if (typeof reader.result === 'string') {
+                              setEditedCrewCover(reader.result);
+                            }
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+                
+                {/* Preview */}
+                <div className="relative h-28 w-full rounded-xl overflow-hidden border border-white/15 mb-3 bg-black/40">
+                  {editedCrewCover ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img 
+                      src={editedCrewCover} 
+                      alt="Vista previa" 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center text-ash text-xs">
+                      <Camera className="w-6 h-6 mb-1 text-ash/40" />
+                      <span>Sin imagen seleccionada</span>
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-2.5">
+                    <span className="text-[10px] font-mono text-ash uppercase">Vista previa</span>
+                  </div>
+                </div>
+
+                {/* Fotitos para elegir (limpias, sin letras ni barras de texto) */}
+                <div>
+                  <span className="text-[10px] font-mono text-ash/80 block mb-2 font-bold uppercase tracking-wider">
+                    O elige una de estas fotos:
+                  </span>
+                  <div className="grid grid-cols-4 gap-2">
+                    {[
+                      'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=800',
+                      'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&q=80&w=800',
+                      'https://images.unsplash.com/photo-1515777315835-281b94c9589f?auto=format&fit=crop&q=80&w=800',
+                      'https://images.unsplash.com/photo-1609630875171-b1321377ee65?auto=format&fit=crop&q=80&w=800',
+                    ].map((imgUrl, idx) => {
+                      const isSelected = editedCrewCover === imgUrl;
+                      return (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => setEditedCrewCover(imgUrl)}
+                          className={`relative h-14 rounded-xl overflow-hidden border-2 transition-all ${
+                            isSelected 
+                              ? 'border-earth ring-2 ring-earth/50 shadow-md scale-102' 
+                              : 'border-white/10 opacity-70 hover:opacity-100 hover:border-white/30'
+                          }`}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img 
+                            src={imgUrl} 
+                            alt={`Foto ${idx + 1}`} 
+                            className="w-full h-full object-cover" 
+                          />
+                          {isSelected && (
+                            <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-earth text-white flex items-center justify-center shadow">
+                              <Check className="w-2.5 h-2.5" />
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/10">
+              <button
+                type="button"
+                onClick={() => setShowEditCrewModal(false)}
+                className="px-4 py-2 rounded-xl text-xs font-mono uppercase text-ash hover:text-white transition"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveCrewDetails}
+                disabled={!editedCrewName.trim()}
+                className="px-4 py-2 rounded-xl bg-earth hover:bg-earth-bright disabled:opacity-50 text-white text-xs font-bold uppercase tracking-wider transition flex items-center gap-1.5 shadow"
+              >
+                <Check className="w-3.5 h-3.5" />
+                <span>Guardar Cambios</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};

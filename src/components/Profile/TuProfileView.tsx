@@ -96,7 +96,7 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
   return (
     <div className="space-y-6 pb-28 max-w-[1440px] w-full mx-auto font-mono">
       
-      {/* 01. PROFILE HEADER (STRAVA TÚ EXACT REPLICA) */}
+      {/* 01. PROFILE HEADER */}
       <div className="bg-[#0D0B0A] border border-white/10 p-5 space-y-4">
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden border-2 border-earth ring-4 ring-earth/20 shrink-0">
@@ -200,7 +200,7 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
       </div>
 
       {/* ========================================================= */}
-      {/* 03. SUB-TAB: PROGRESO (TELEMETRY CHARTS STRAVA)          */}
+      {/* 03. SUB-TAB: PROGRESO (TELEMETRY CHARTS)                  */}
       {/* ========================================================= */}
       {activeSubTab === 'progreso' && (
         <div className="space-y-6">
@@ -241,7 +241,7 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
             </div>
 
             <p className="text-[10px] text-ash border-t border-white/[0.06] pt-2">
-              🔥 1 rodada más que la semana pasada a estas alturas.
+              +1 rodada más que la semana pasada a estas alturas.
             </p>
           </div>
 
@@ -319,8 +319,8 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
                     </h4>
                     <span className="text-[10px] text-earth">{act.location}</span>
                   </div>
-                  <span className="text-[10px] text-ash bg-white/[0.04] px-2 py-1 border border-white/10 uppercase">
-                    🏍️ {act.motoModel}
+                  <span className="text-[10px] text-chalk font-mono bg-white/[0.04] px-2 py-1 border border-white/10 uppercase tracking-wider">
+                    {act.motoModel}
                   </span>
                 </div>
 
@@ -431,19 +431,7 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
 
           </div>
 
-          {/* Retos promo */}
-          <div className="bg-gradient-to-r from-earth/20 to-black/40 border border-earth/30 p-5 space-y-3">
-            <h4 className="text-sm font-bold text-white uppercase">Retos de la Comunidad</h4>
-            <p className="text-xs text-ash">Únete a los retos mensuales para ganar hábitos y trofeos en tu vitrina.</p>
-            <button
-              onClick={() => setActiveNavTab('grupos')}
-              className="px-4 py-2 bg-earth hover:bg-earth/90 text-white text-xs font-bold uppercase tracking-wider transition active:scale-95"
-            >
-              Encuentra nuevos retos
-            </button>
-          </div>
-
-          {/* Vitrina de trofeos (Strava trophy cabinet) */}
+          {/* Vitrina de trofeos */}
           <div className="bg-[#0F0D0C] border border-white/10 p-5 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -462,7 +450,7 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
                 { label: '10', desc: '10 rodadas' },
                 { label: '5', desc: '5 rodadas' },
                 { label: '1K', desc: '1,000 km' },
-                { label: '⛰️', desc: 'Sierra King' }
+                { label: 'SR', desc: 'Sierra King' }
               ].map((badge, idx) => (
                 <div key={idx} className="flex flex-col items-center gap-1">
                   <div className="w-12 h-12 bg-white/[0.04] border border-earth/40 hover:border-earth flex items-center justify-center text-sm font-bold text-earth hover:scale-105 transition cursor-pointer shadow-lg">

@@ -5,6 +5,7 @@ import {
   User, 
   Motorcycle, 
   Crew, 
+  CrewMember,
   Rodada, 
   RouteProposal, 
   PackingItem,
@@ -12,6 +13,7 @@ import {
   RouteList,
   NavTab,
   ActivityPost,
+  ActivityComment,
   Challenge
 } from '../types';
 import { 
@@ -40,6 +42,8 @@ interface AppContextType {
   setCurrentCrew: (crew: Crew | null) => void;
   enterCrew: (crewId: string) => void;
   createCrew: (data: { name: string; tagline: string; description: string; baseCity: string; coverImage: string }) => Crew;
+  updateCrew: (crewId: string, updates: Partial<Crew>) => void;
+  addCrewMember: (crewId: string, userId: string, role?: CrewMember['role']) => void;
   joinCrewByCode: (code: string) => { success: boolean; message: string; crew?: Crew };
   rodadas: Rodada[];
   currentRodada: Rodada | null;
@@ -52,6 +56,7 @@ interface AppContextType {
   setSelectedRoute: (route: RouteProposal | null) => void;
   proposeRoute: (data: Omit<RouteProposal, 'id' | 'votes' | 'comments'>) => void;
   voteRoute: (routeId: string) => void;
+  downvoteRoute: (routeId: string) => void;
   addRouteComment: (routeId: string, text: string) => void;
   lockWinningRoute: (rodadaId: string, routeId: string) => void;
   unlockWinningRoute: (rodadaId: string) => void;
@@ -60,7 +65,7 @@ interface AppContextType {
   assignPackingItem: (rodadaId: string, itemId: string, userId: string, userName: string) => void;
   addPackingItem: (rodadaId: string, item: string, category: PackingItem['category']) => void;
   addGalleryPhoto: (rodadaId: string, url: string, caption: string) => void;
-  // Strava & Moto Architecture Extensions
+  // Moto Expeditions & GPS Architecture Extensions
   activities: ActivityPost[];
   toggleKudo: (activityId: string) => void;
   addActivityComment: (activityId: string, text: string) => void;
@@ -75,9 +80,13 @@ interface AppContextType {
   createRouteList: (name: string, description?: string) => void;
   addRouteToList: (listId: string, routeId: string) => void;
   removeRouteFromList: (listId: string, routeId: string) => void;
+  saveActivityAsRoute: (activity: ActivityPost) => void;
   selectedPilotProfile: User | null;
   setSelectedPilotProfile: (pilot: User | null) => void;
   openPilotProfileById: (userId: string) => void;
+  followingUserIds: string[];
+  toggleFollowUser: (userId: string) => void;
+  isFollowingUser: (userId: string) => boolean;
   activeNavTab: NavTab;
   setActiveNavTab: (tab: NavTab) => void;
 }
@@ -106,25 +115,69 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [selectedRoute, setSelectedRoute] = useState<RouteProposal | null>(INITIAL_ROUTE_PROPOSALS[0]);
   const [activeNavTab, setActiveNavTab] = useState<NavTab>('inicio');
 
-  // Strava & Moto Architecture state
+  // Moto Expeditions & Social state
   const [activities, setActivities] = useState<ActivityPost[]>(INITIAL_ACTIVITIES);
   const [challenges, setChallenges] = useState<Challenge[]>(INITIAL_CHALLENGES);
   const [completedRouteIds, setCompletedRouteIds] = useState<string[]>(CURRENT_USER.completedRouteIds || ['route-1', 'route-4']);
   const [savedRouteIds, setSavedRouteIds] = useState<string[]>(CURRENT_USER.savedRouteIds || ['route-2', 'route-3', 'route-5']);
   const [routeLists, setRouteLists] = useState<RouteList[]>(INITIAL_ROUTE_LISTS);
   const [selectedPilotProfile, setSelectedPilotProfile] = useState<User | null>(null);
+  const [followingUserIds, setFollowingUserIds] = useState<string[]>(['user-manuel', 'user-mich']);
 
   // Load from LocalStorage if available
   useEffect(() => {
     try {
+      const savedFollowing = localStorage.getItem('nao_following_users');
+      if (savedFollowing) setFollowingUserIds(JSON.parse(savedFollowing));
+
       const savedMotos = localStorage.getItem(STORAGE_KEYS.MOTORCYCLES);
-      if (savedMotos) setMotorcycles(JSON.parse(savedMotos));
+      if (savedMotos) {
+        const parsedMotos: Motorcycle[] = JSON.parse(savedMotos);
+        INITIAL_MOTORCYCLES.forEach(initM => {
+          if (!parsedMotos.some(m => m.id === initM.id)) {
+            parsedMotos.push(initM);
+          }
+        });
+        setMotorcycles(parsedMotos);
+      }
 
       const savedCrews = localStorage.getItem(STORAGE_KEYS.CREWS);
       if (savedCrews) {
-        const parsed = JSON.parse(savedCrews);
+        let parsed: Crew[] = JSON.parse(savedCrews);
+        parsed = parsed.map(c => {
+          if (c.id === 'crew-motomami') {
+            const currentMembers = Array.isArray(c.members) ? [...c.members] : [];
+            INITIAL_CREWS[0].members.forEach(initM => {
+              if (!currentMembers.some(m => m.userId === initM.userId)) {
+                currentMembers.push(initM);
+              }
+            });
+            return { ...c, members: currentMembers };
+          }
+          if (c.id === 'crew-sierrabrava') {
+            const currentMembers = Array.isArray(c.members) ? [...c.members] : [];
+            INITIAL_CREWS[1].members.forEach(initM => {
+              if (!currentMembers.some(m => m.userId === initM.userId)) {
+                currentMembers.push(initM);
+              }
+            });
+            return { ...c, creatorId: INITIAL_CREWS[1].creatorId, members: currentMembers };
+          }
+          return c;
+        });
         setCrews(parsed);
-        if (parsed.length > 0) setCurrentCrew(parsed[0]);
+        const myCrew = parsed.find(c => c.members.some(m => m.userId === CURRENT_USER.id)) || parsed[0];
+        setCurrentCrew(myCrew);
+      }
+
+      const savedActivities = localStorage.getItem(STORAGE_KEYS.ACTIVITIES);
+      if (savedActivities) {
+        try {
+          const parsedActs = JSON.parse(savedActivities);
+          if (Array.isArray(parsedActs) && parsedActs.length > 0) {
+            setActivities(parsedActs);
+          }
+        } catch {}
       }
 
       const savedRodadas = localStorage.getItem(STORAGE_KEYS.RODADAS);
@@ -148,6 +201,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Save changes
   useEffect(() => {
     try {
+      localStorage.setItem(STORAGE_KEYS.ACTIVITIES, JSON.stringify(activities));
+    } catch (e) { console.error(e); }
+  }, [activities]);
+  useEffect(() => {
+    try {
       localStorage.setItem(STORAGE_KEYS.MOTORCYCLES, JSON.stringify(motorcycles));
     } catch (e) { console.error(e); }
   }, [motorcycles]);
@@ -169,6 +227,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       localStorage.setItem(STORAGE_KEYS.ROUTES, JSON.stringify(routeProposals));
     } catch (e) { console.error(e); }
   }, [routeProposals]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('nao_following_users', JSON.stringify(followingUserIds));
+    } catch (e) { console.error(e); }
+  }, [followingUserIds]);
 
   const userBikes = motorcycles.filter(m => m.userId === currentUser.id);
 
@@ -207,6 +271,106 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return newCrew;
   };
 
+  const syncActivitiesWithCrew = (crewId: string, newCrewName?: string, members?: CrewMember[]) => {
+    setActivities(prev => {
+      const updated = prev.map(act => {
+        if (act.groupInfo?.crewId === crewId) {
+          const crewName = newCrewName || act.groupInfo.crewName;
+          let participants = act.groupInfo.participants;
+          if (members && members.length > 0) {
+            const existingMap = new Map((act.groupInfo.participants || []).map(p => [p.userId, p]));
+            participants = members.map(m => {
+              const existing = existingMap.get(m.userId);
+              const u = users.find(user => user.id === m.userId);
+              const b = motorcycles.find(moto => moto.userId === m.userId);
+              return {
+                userId: m.userId,
+                name: u?.name || existing?.name || m.userId,
+                handle: u?.handle || existing?.handle || `@${m.userId}`,
+                avatar: u?.avatar || existing?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250',
+                role: m.role || existing?.role || 'Rider',
+                motoModel: b ? `${b.brand} ${b.model}` : (existing?.motoModel || 'Doble Propósito')
+              };
+            });
+          }
+          return {
+            ...act,
+            groupInfo: {
+              ...act.groupInfo,
+              crewName,
+              participants
+            }
+          };
+        }
+        return act;
+      });
+      try {
+        localStorage.setItem(STORAGE_KEYS.ACTIVITIES, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
+
+  const updateCrew = (crewId: string, updates: Partial<Crew>) => {
+    let updatedList: Crew[] = [];
+    setCrews(prev => {
+      updatedList = prev.map(c => (c.id === crewId ? { ...c, ...updates } : c));
+      try {
+        localStorage.setItem(STORAGE_KEYS.CREWS, JSON.stringify(updatedList));
+      } catch {}
+      return updatedList;
+    });
+    setCurrentCrew(prev => (prev && prev.id === crewId ? { ...prev, ...updates } : prev));
+    if (updates.name || updates.members) {
+      syncActivitiesWithCrew(crewId, updates.name, updates.members);
+    }
+  };
+
+  const addCrewMember = (crewId: string, userId: string, role: CrewMember['role'] = 'Rider') => {
+    let updatedMembers: CrewMember[] = [];
+    setCrews(prev => {
+      const updatedList = prev.map(c => {
+        if (c.id === crewId) {
+          if (c.members.some(m => m.userId === userId)) {
+            updatedMembers = c.members;
+            return c;
+          }
+          updatedMembers = [
+            ...c.members,
+            { userId, role, joinedAt: new Date().toISOString().split('T')[0] }
+          ];
+          return {
+            ...c,
+            members: updatedMembers
+          };
+        }
+        return c;
+      });
+      try {
+        localStorage.setItem(STORAGE_KEYS.CREWS, JSON.stringify(updatedList));
+      } catch {}
+      return updatedList;
+    });
+
+    setCurrentCrew(prev => {
+      if (prev && prev.id === crewId) {
+        if (prev.members.some(m => m.userId === userId)) return prev;
+        return {
+          ...prev,
+          members: [
+            ...prev.members,
+            { userId, role, joinedAt: new Date().toISOString().split('T')[0] }
+          ]
+        };
+      }
+      return prev;
+    });
+
+    if (updatedMembers.length > 0) {
+      syncActivitiesWithCrew(crewId, undefined, updatedMembers);
+    }
+  };
+
   const joinCrewByCode = (code: string) => {
     const trimmed = code.trim().toUpperCase();
     const found = crews.find(c => c.inviteCode.toUpperCase() === trimmed);
@@ -219,19 +383,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setActiveNavTab('crew');
       return { success: true, message: `Ya eres miembro de ${found.name}`, crew: found };
     }
+    const updatedMembers: CrewMember[] = [
+      ...found.members,
+      { userId: currentUser.id, role: 'Rider', joinedAt: new Date().toISOString().split('T')[0] }
+    ];
     const updated: Crew = {
       ...found,
-      members: [...found.members, { userId: currentUser.id, role: 'Rider', joinedAt: new Date().toISOString().split('T')[0] }]
+      members: updatedMembers
     };
     setCrews(prev => prev.map(c => c.id === found.id ? updated : c));
     setCurrentCrew(updated);
     setActiveNavTab('crew');
+    syncActivitiesWithCrew(found.id, undefined, updatedMembers);
     return { success: true, message: `¡Te uniste a ${found.name}! Bienvenido a bordo.`, crew: updated };
   };
 
   const enterCrew = (crewId: string) => {
     const found = crews.find(c => c.id === crewId);
     if (found) {
+      const isMember = found.members.some(m => m.userId === currentUser.id);
+      if (!isMember) {
+        // No se permite ver el detalle de clubes a los que no perteneces
+        return;
+      }
       setCurrentCrew(found);
       setActiveNavTab('crew');
     }
@@ -240,11 +414,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const enterRodada = (rodadaId: string) => {
     const found = rodadas.find(rd => rd.id === rodadaId);
     if (found) {
-      setCurrentRodada(found);
       const associatedCrew = crews.find(c => c.id === found.crewId);
       if (associatedCrew) {
+        const isMember = associatedCrew.members.some(m => m.userId === currentUser.id);
+        if (!isMember) {
+          // No se puede entrar a eventos privados de clubes a los que no perteneces
+          return;
+        }
         setCurrentCrew(associatedCrew);
       }
+      setCurrentRodada(found);
       const routesForRodada = routeProposals.filter(r => r.rodadaId === rodadaId);
       if (routesForRodada.length > 0) {
         setSelectedRoute(routesForRodada[0]);
@@ -299,23 +478,74 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const voteRoute = (routeId: string) => {
-    setRouteProposals(prev => prev.map(r => {
-      if (r.id === routeId) {
-        const hasVoted = r.votes.includes(currentUser.id);
-        const newVotes = hasVoted 
-          ? r.votes.filter(id => id !== currentUser.id)
-          : [...r.votes, currentUser.id];
-        return { ...r, votes: newVotes };
-      }
-      return r;
-    }));
+    setRouteProposals(prev => {
+      const target = prev.find(r => r.id === routeId);
+      if (!target) return prev;
+      const isAlreadyVoted = target.votes.includes(currentUser.id);
+
+      return prev.map(r => {
+        if (r.id === routeId) {
+          const currentDownvotes = r.downvotes || [];
+          return {
+            ...r,
+            votes: isAlreadyVoted
+              ? r.votes.filter(id => id !== currentUser.id)
+              : [...r.votes, currentUser.id],
+            // Remove downvote if user is now upvoting
+            downvotes: isAlreadyVoted ? currentDownvotes : currentDownvotes.filter(id => id !== currentUser.id)
+          };
+        }
+        return r;
+      });
+    });
+
     setSelectedRoute(prev => {
       if (!prev || prev.id !== routeId) return prev;
       const hasVoted = prev.votes.includes(currentUser.id);
-      const newVotes = hasVoted
-        ? prev.votes.filter(id => id !== currentUser.id)
-        : [...prev.votes, currentUser.id];
-      return { ...prev, votes: newVotes };
+      const currentDownvotes = prev.downvotes || [];
+      return {
+        ...prev,
+        votes: hasVoted
+          ? prev.votes.filter(id => id !== currentUser.id)
+          : [...prev.votes, currentUser.id],
+        downvotes: hasVoted ? currentDownvotes : currentDownvotes.filter(id => id !== currentUser.id)
+      };
+    });
+  };
+
+  const downvoteRoute = (routeId: string) => {
+    setRouteProposals(prev => {
+      const target = prev.find(r => r.id === routeId);
+      if (!target) return prev;
+      const currentDownvotes = target.downvotes || [];
+      const isAlreadyDownvoted = currentDownvotes.includes(currentUser.id);
+
+      return prev.map(r => {
+        if (r.id === routeId) {
+          return {
+            ...r,
+            downvotes: isAlreadyDownvoted
+              ? (r.downvotes || []).filter(id => id !== currentUser.id)
+              : [...(r.downvotes || []), currentUser.id],
+            // Remove upvote if user is now downvoting
+            votes: isAlreadyDownvoted ? r.votes : r.votes.filter(id => id !== currentUser.id)
+          };
+        }
+        return r;
+      });
+    });
+
+    setSelectedRoute(prev => {
+      if (!prev || prev.id !== routeId) return prev;
+      const currentDownvotes = prev.downvotes || [];
+      const isAlreadyDownvoted = currentDownvotes.includes(currentUser.id);
+      return {
+        ...prev,
+        downvotes: isAlreadyDownvoted
+          ? currentDownvotes.filter(id => id !== currentUser.id)
+          : [...currentDownvotes, currentUser.id],
+        votes: isAlreadyDownvoted ? prev.votes : prev.votes.filter(id => id !== currentUser.id)
+      };
     });
   };
 
@@ -537,6 +767,44 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }));
   };
 
+  const saveActivityAsRoute = (activity: ActivityPost) => {
+    setRouteProposals(prev => {
+      if (prev.some(r => r.id === activity.id)) return prev;
+      const newProposal: RouteProposal = {
+        id: activity.id,
+        rodadaId: 'rodada-general',
+        title: activity.title,
+        destination: activity.location.split(',')[0] || activity.location,
+        state: activity.location.includes(',') ? activity.location.split(',')[1].trim() : 'México',
+        proposedByUserId: activity.pilotId,
+        proposedByName: activity.pilotName,
+        proposedByAvatar: activity.pilotAvatar,
+        description: `Ruta registrada por ${activity.pilotName} en ${activity.location}. ${activity.discipline}. Desnivel acumulado: +${activity.elevationGainM}m.`,
+        coverImage: (activity.photos && activity.photos[0]) || 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=1000',
+        totalKm: activity.distanceKm,
+        estimatedHours: activity.durationText,
+        offroadPercentage: activity.surfaceBreakdown?.dirtPercentage || 25,
+        asphaltPercentage: activity.surfaceBreakdown?.asphaltPercentage || 75,
+        difficulty: (activity.surfaceBreakdown?.dirtPercentage || 0) > 40 ? 'Avanzado / Técnico' : 'Intermedio',
+        campsite: {
+          name: 'Campamento Base ' + (activity.location.split(',')[0] || 'Ruta'),
+          elevationMeters: activity.elevationGainM,
+          minTempNight: '12°C',
+          security: 'Zona transitable y segura',
+          amenities: ['Señal celular intermitente', 'Agua']
+        },
+        itinerary: [],
+        waypoints: [],
+        coordinates: activity.coordinates,
+        votes: [],
+        comments: [],
+        dayOfDeadVibe: 'Ruta descubierta en la comunidad',
+        safetyTips: ['Revisar presión de llantas', 'Llevar agua y equipo de seguridad completo']
+      };
+      return [newProposal, ...prev];
+    });
+  };
+
   const toggleKudo = (activityId: string) => {
     setActivities(prev => prev.map(act => {
       if (act.id === activityId) {
@@ -556,11 +824,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const addActivityComment = (activityId: string, text: string) => {
     if (!text.trim()) return;
+    const newComment: ActivityComment = {
+      id: `comment-${Date.now()}`,
+      userId: currentUser.id,
+      userName: currentUser.name,
+      userAvatar: currentUser.avatar,
+      createdAt: 'Hace un momento',
+      text: text.trim()
+    };
+
     setActivities(prev => prev.map(act => {
       if (act.id === activityId) {
+        const existingComments = act.comments || [];
         return {
           ...act,
-          commentsCount: act.commentsCount + 1
+          commentsCount: (act.commentsCount || existingComments.length) + 1,
+          comments: [...existingComments, newComment]
         };
       }
       return act;
@@ -593,13 +872,79 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }));
   };
 
+  const toggleFollowUser = (userId: string) => {
+    setFollowingUserIds(prev => {
+      const exists = prev.includes(userId);
+      return exists ? prev.filter(id => id !== userId) : [...prev, userId];
+    });
+  };
+
+  const isFollowingUser = (userId: string) => {
+    return followingUserIds.includes(userId);
+  };
+
   const openPilotProfileById = (userId: string) => {
+    if (!userId) return;
+
+    // Si es el usuario actual, nunca abrir el modal de otro piloto: redirigir a su pestaña propia "Tú"
+    if (userId === currentUser.id || userId === currentUser.handle) {
+      setSelectedPilotProfile(null);
+      setActiveNavTab('tu');
+      return;
+    }
+
     const found = users.find(u => u.id === userId || u.handle === userId || u.name === userId);
     if (found) {
       setSelectedPilotProfile(found);
-    } else {
-      setSelectedPilotProfile(currentUser);
+      return;
     }
+
+    // Si no está en users, buscar en actividades y participantes
+    for (const act of activities) {
+      if (act.pilotId === userId) {
+        setSelectedPilotProfile({
+          id: act.pilotId,
+          name: act.pilotName,
+          handle: act.pilotHandle,
+          email: `${act.pilotHandle.replace('@', '')}@motomami.mx`,
+          avatar: act.pilotAvatar,
+          bio: `Piloto de MotoMami. Moto: ${act.motoModel}.`,
+          location: act.location || 'México',
+          ridingLevel: 'Avanzado',
+          stats: {
+            totalKm: Math.round(act.distanceKm * 18),
+            completedCount: 15,
+            elevationGain: act.elevationGainM * 12
+          }
+        });
+        return;
+      }
+      if (act.groupInfo?.participants) {
+        const p = act.groupInfo.participants.find(part => part.userId === userId || part.handle === userId);
+        if (p) {
+          setSelectedPilotProfile({
+            id: p.userId,
+            name: p.name,
+            handle: p.handle,
+            email: `${p.handle.replace('@', '')}@motomami.mx`,
+            avatar: p.avatar,
+            bio: `Piloto de la tribu ${act.groupInfo.crewName}. Rodando en ${p.motoModel || 'moto dual-sport'}.`,
+            location: 'México',
+            ridingLevel: 'Avanzado',
+            phone: '+52 55 4567 8901',
+            stats: {
+              totalKm: 5120,
+              completedCount: 26,
+              elevationGain: 21800
+            }
+          });
+          return;
+        }
+      }
+    }
+
+    // NUNCA hacer fallback al usuario actual
+    setSelectedPilotProfile(null);
   };
 
   return (
@@ -617,6 +962,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setCurrentCrew,
         enterCrew,
         createCrew,
+        updateCrew,
+        addCrewMember,
         joinCrewByCode,
         rodadas,
         currentRodada,
@@ -629,6 +976,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setSelectedRoute,
         proposeRoute,
         voteRoute,
+        downvoteRoute,
         addRouteComment,
         lockWinningRoute,
         unlockWinningRoute,
@@ -651,9 +999,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         createRouteList,
         addRouteToList,
         removeRouteFromList,
+        saveActivityAsRoute,
         selectedPilotProfile,
         setSelectedPilotProfile,
         openPilotProfileById,
+        followingUserIds,
+        toggleFollowUser,
+        isFollowingUser,
         activeNavTab,
         setActiveNavTab
       }}

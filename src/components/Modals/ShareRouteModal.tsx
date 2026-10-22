@@ -2,10 +2,26 @@
 
 import React, { useState } from 'react';
 import { RouteProposal } from '../../types';
-import { X, Copy, Check, Download, Navigation, Share2 } from 'lucide-react';
+import { X, Copy, Check, Download, Navigation, Share2, Mountain } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 import { buildOrderedGoogleMapsUrl } from '../../utils/googleMaps';
+
+const RoadIcon: React.FC<{ className?: string }> = ({ className = "w-3 h-3" }) => (
+  <svg 
+    className={className} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+  >
+    <path d="M4 19L8 5h8l4 14" />
+    <line x1="12" y1="8" x2="12" y2="10" />
+    <line x1="12" y1="14" x2="12" y2="16" />
+  </svg>
+);
 
 interface ShareRouteModalProps {
   route: RouteProposal | null;
@@ -26,7 +42,7 @@ export const ShareRouteModal: React.FC<ShareRouteModalProps> = ({
   const gmapsUrl = buildOrderedGoogleMapsUrl(route);
   const shortRouteUrl = `https://nao.club/r/${route.id}`;
   
-  const shareText = `🏍️ *NAO // MOTO EXPEDITIONS*\n*${route.title}*\n📍 ${route.destination}, ${route.state}\n📏 ${route.totalKm} km (${route.offroadPercentage}% Terracería)\n\n📍 Abrir en Google Maps:\n${gmapsUrl}\n\n🧭 Track GPX en NAO:\n${shortRouteUrl}`;
+  const shareText = `NAO // MOTO EXPEDITIONS\n${route.title}\nDestino: ${route.destination}, ${route.state}\nDistancia: ${route.totalKm} km (${route.offroadPercentage}% Terracería)\n\nGoogle Maps:\n${gmapsUrl}\n\nTrack GPX:\n${shortRouteUrl}`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(shareText);
@@ -115,9 +131,20 @@ ${gpxPoints}
             <p className="text-[11px] text-earth mt-0.5">
               {route.destination}, {route.state}
             </p>
-            <p className="text-[10px] text-ash mt-1">
-              {route.totalKm} km • {route.offroadPercentage}% Terracería • {route.difficulty}
-            </p>
+            <div className="flex items-center gap-2 text-[10px] text-ash mt-1">
+              <span>{route.totalKm} km</span>
+              <span>•</span>
+              <span className="flex items-center gap-0.5 text-earth font-bold" title="Montaña / Terracería">
+                <Mountain className="w-2.5 h-2.5 text-earth shrink-0" />
+                <span>{route.offroadPercentage}%</span>
+              </span>
+              <span className="flex items-center gap-0.5 text-white font-bold" title="Carretera / Asfalto">
+                <RoadIcon className="w-2.5 h-2.5 text-white shrink-0" />
+                <span>{route.asphaltPercentage || (100 - route.offroadPercentage)}%</span>
+              </span>
+              <span>•</span>
+              <span>{route.difficulty}</span>
+            </div>
           </div>
         </div>
 
@@ -128,7 +155,7 @@ ${gpxPoints}
             onClick={handleShareWhatsApp}
             className="w-full py-3.5 bg-[#25D366] hover:bg-[#20ba59] text-black font-bold text-xs uppercase tracking-wider transition flex items-center justify-center gap-2.5 shadow-lg"
           >
-            <span className="text-base font-sans">💬</span>
+            <Share2 className="w-4 h-4 text-black" />
             <span>Compartir por WhatsApp</span>
           </button>
 
@@ -140,7 +167,7 @@ ${gpxPoints}
               onClick={handleCopyLinkOnly}
               className="px-2.5 py-1 bg-white/[0.08] hover:bg-earth text-white text-[10px] uppercase font-bold tracking-wider transition"
             >
-              {copiedLinkOnly ? '✓ Copiado' : 'Copiar'}
+              {copiedLinkOnly ? 'Copiado' : 'Copiar'}
             </button>
           </div>
 
@@ -178,7 +205,7 @@ ${gpxPoints}
         </div>
 
         <p className="text-[10px] text-ash text-center font-mono">
-          NAO // Compatible con Garmin, OsmAnd, Gaia GPS y Google Maps.
+          NAO // Compatible con OsmAnd, Gaia GPS, CarPlay y Google Maps.
         </p>
       </div>
     </div>

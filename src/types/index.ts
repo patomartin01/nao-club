@@ -20,7 +20,33 @@ export type BikeType =
   | 'Sport Touring' 
   | 'Trail Ligera';
 
-export type NavTab = 'inicio' | 'mapas' | 'registrar' | 'grupos' | 'tu' | 'crew' | 'rodada' | 'garaje' | 'home' | 'rutas';
+export type NavTab = 'inicio' | 'mapas' | 'registrar' | 'tribus' | 'grupos' | 'tu' | 'crew' | 'rodada' | 'garaje' | 'home' | 'rutas';
+
+export interface ActivityComment {
+  id: string;
+  userId: string;
+  userName: string;
+  userAvatar: string;
+  createdAt: string;
+  text: string;
+}
+
+export interface ActivityParticipant {
+  userId: string;
+  name: string;
+  handle: string;
+  avatar: string;
+  role?: string;
+  motoModel?: string;
+}
+
+export interface ActivityGroupInfo {
+  crewId?: string;
+  crewName: string;
+  rodadaId?: string;
+  rodadaTitle?: string;
+  participants: ActivityParticipant[];
+}
 
 export interface ActivityPost {
   id: string;
@@ -29,7 +55,7 @@ export interface ActivityPost {
   pilotHandle: string;
   pilotAvatar: string;
   dateText: string;
-  device: string; // e.g. "Garmin fēnix 6X", "Garmin Forerunner 265", "NAO Cockpit GPS"
+  device: string;
   location: string;
   title: string;
   motoModel: string;
@@ -43,6 +69,8 @@ export interface ActivityPost {
   hasKudoed: boolean;
   kudosAvatars: string[];
   commentsCount: number;
+  comments?: ActivityComment[];
+  groupInfo?: ActivityGroupInfo;
   coordinates: [number, number][];
   photos?: string[];
   surfaceBreakdown: {
@@ -107,7 +135,7 @@ export interface RouteList {
   createdAt: string;
 }
 
-export type WaypointType = 'start' | 'camp' | 'scenic' | 'fuel' | 'food' | 'dirt' | 'end';
+export type WaypointType = 'start' | 'camp' | 'scenic' | 'fuel' | 'food' | 'dirt' | 'end' | 'culture';
 
 export interface Waypoint {
   id: string;
@@ -116,6 +144,7 @@ export interface Waypoint {
   lng: number;
   type: WaypointType;
   notes?: string;
+  description?: string;
 }
 
 export interface ItineraryDay {
@@ -151,7 +180,7 @@ export interface RouteProposal {
   estimatedHours: string;
   offroadPercentage: number;
   asphaltPercentage: number;
-  difficulty: 'Fácil (Fluida)' | 'Intermedio' | 'Avanzado / Técnico';
+  difficulty: 'Fácil (Fluida)' | 'Intermedio' | 'Avanzado / Técnico' | 'Desconocido / Por explorar';
   campsite: {
     name: string;
     elevationMeters: number;
@@ -163,9 +192,10 @@ export interface RouteProposal {
   waypoints: Waypoint[];
   coordinates: [number, number][]; // Route path coordinates for Leaflet
   votes: string[]; // user IDs who upvoted
+  downvotes?: string[]; // user IDs who downvoted
   comments: RouteComment[];
-  dayOfDeadVibe: string;
-  safetyTips: string[];
+  dayOfDeadVibe?: string;
+  safetyTips?: string[];
 }
 
 export interface RodadaAttendee {
@@ -173,7 +203,7 @@ export interface RodadaAttendee {
   motorcycleId?: string;
   status: 'confirmado' | 'interesado';
   confirmedAt: string;
-  gearCheck: {
+  gearCheck?: {
     sleepingBag0C: boolean;
     tireRepairKit: boolean;
     portableCompressor: boolean;

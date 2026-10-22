@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import { RouteProposal } from '../../types';
+import { RouteProposal, ActivityPost } from '../../types';
 import { useApp } from '../../context/AppContext';
 import { X, Bookmark, Plus, Check } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 interface SaveToListModalProps {
-  route: RouteProposal | null;
+  route: RouteProposal | ActivityPost | { id: string; title: string; [key: string]: any } | null;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -23,7 +23,8 @@ export const SaveToListModal: React.FC<SaveToListModalProps> = ({
     removeRouteFromList, 
     createRouteList,
     toggleSavedRoute,
-    savedRouteIds
+    savedRouteIds,
+    saveActivityAsRoute
   } = useApp();
 
   const [newListName, setNewListName] = useState('');
@@ -36,6 +37,12 @@ export const SaveToListModal: React.FC<SaveToListModalProps> = ({
       removeRouteFromList(listId, route.id);
     } else {
       addRouteToList(listId, route.id);
+      if (!savedRouteIds.includes(route.id)) {
+        toggleSavedRoute(route.id);
+      }
+      if ('distanceKm' in route && 'coordinates' in route) {
+        saveActivityAsRoute(route as ActivityPost);
+      }
       confetti({ particleCount: 20, spread: 40 });
     }
   };
@@ -59,7 +66,7 @@ export const SaveToListModal: React.FC<SaveToListModalProps> = ({
           <div className="flex items-center gap-2">
             <Bookmark className="w-4 h-4 text-earth" />
             <span className="text-[10px] uppercase font-bold tracking-widest text-ash">
-              ORGANIZAR EN LISTAS // WIKILOC SYNC
+              ORGANIZAR EN LISTAS // RUTAS & EXPEDICIONES
             </span>
           </div>
           <button 

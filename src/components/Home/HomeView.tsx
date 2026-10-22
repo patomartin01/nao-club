@@ -12,6 +12,7 @@ import {
   ChevronRight, 
   Compass, 
   Shield, 
+  ShieldCheck, 
   Flame, 
   ArrowUpRight,
   Sparkles
@@ -104,7 +105,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-white/10 border-t border-white/10 font-mono text-xs bg-[#0E0C0A]">
           <div className="p-4 sm:p-5">
             <span className="text-[10px] text-ash uppercase tracking-wider block">Grupos Inscritos</span>
-            <p className="font-bold text-white text-base mt-0.5">{crews.length} Moto Clubs</p>
+            <p className="font-bold text-white text-base mt-0.5">{crews.length} Tribus</p>
           </div>
           <div className="p-4 sm:p-5">
             <span className="text-[10px] text-ash uppercase tracking-wider block">Máquina Asignada</span>
@@ -123,7 +124,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </section>
 
-      {/* 02. SECTION: TUS GRUPOS & CLUBES DE MOTO (THE HUB) */}
+      {/* 02. SECTION: TUS GRUPOS & TRIBUS DE MOTO (THE HUB) */}
       <section className="space-y-6">
         <div className="border-b border-white/10 pb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
@@ -131,7 +132,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               [ 01 // SELECCIONA UN GRUPO PARA ENTRAR ]
             </span>
             <h2 className="font-display font-extrabold text-2xl sm:text-3xl text-white uppercase tracking-tight mt-1">
-              Tus Grupos & Moto Clubs ({crews.length})
+              Tus Grupos & Tribus ({crews.length})
             </h2>
             <p className="font-mono text-xs text-ash mt-1">
               Haz clic en cualquiera de tus grupos para entrar a su sala, ver sus miembros y gestionar sus rodadas.
@@ -151,8 +152,40 @@ export const HomeView: React.FC<HomeViewProps> = ({
         {/* Group Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {crews.map((crew) => {
+            const isMember = crew.members.some(m => m.userId === currentUser.id);
             const crewRodadas = rodadas.filter(r => r.crewId === crew.id);
             const activeRodada = crewRodadas.find(r => r.status === 'votacion') || crewRodadas[0];
+
+            if (!isMember) {
+              return (
+                <div 
+                  key={crew.id}
+                  className="border border-white/5 bg-[#080706] p-6 sm:p-8 flex flex-col justify-between opacity-80 cursor-default select-none"
+                  title="Tribu Privada • Acceso exclusivo para miembros"
+                >
+                  <div className="space-y-3">
+                    <span className="font-mono text-[9px] text-ash/60 uppercase tracking-widest block font-bold">
+                      [ TRIBU PRIVADA ]
+                    </span>
+                    <h3 className="font-display font-extrabold text-2xl text-chalk uppercase">
+                      {crew.name}
+                    </h3>
+                    <p className="font-mono text-xs text-ash/60 font-light">
+                      Tribu cerrada. Los detalles de rodadas y miembros son visibles únicamente para pilotos autorizados.
+                    </p>
+                  </div>
+                  <div className="pt-6 border-t border-white/[0.05] flex items-center justify-between text-ash/50 font-mono text-xs">
+                    <span className="flex items-center gap-1.5 text-ash/60">
+                      <ShieldCheck className="w-3.5 h-3.5 text-ash/40" />
+                      Solo miembros
+                    </span>
+                    <span className="text-[10px] uppercase bg-white/[0.02] border border-white/10 px-2 py-0.5 font-mono">
+                      Sin Acceso
+                    </span>
+                  </div>
+                </div>
+              );
+            }
 
             return (
               <div 
@@ -200,7 +233,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                       <div className="p-3 bg-white/[0.02] border border-white/10 flex items-center justify-between font-mono text-xs">
                         <div className="space-y-0.5">
                           <span className="text-[9px] text-earth uppercase tracking-wider block">
-                            {activeRodada.status === 'votacion' ? '⚡ Votación Abierta' : '✓ Expedición Confirmada'}
+                            {activeRodada.status === 'votacion' ? 'Votación Abierta' : 'Expedición Confirmada'}
                           </span>
                           <p className="text-white font-bold line-clamp-1">{activeRodada.title}</p>
                         </div>
@@ -233,13 +266,13 @@ export const HomeView: React.FC<HomeViewProps> = ({
               <Plus className="w-6 h-6" />
             </div>
             <h4 className="font-display font-bold text-lg text-white uppercase tracking-wider">
-              Crear Nuevo Moto Club
+              Crear Nueva Tribu
             </h4>
             <p className="font-mono text-xs text-ash max-w-xs mt-2 font-light">
-              Funda un nuevo squad para tus amigos, genera una clave única y organiza expediciones de fin de semana.
+              Funda una nueva tribu para tus amigos, genera una clave única y organiza expediciones de fin de semana.
             </p>
             <span className="mt-4 font-mono text-[10px] uppercase tracking-widest text-earth font-bold">
-              [ + REGISTRAR GRUPO ]
+              [ + REGISTRAR TRIBU ]
             </span>
           </div>
 
@@ -251,7 +284,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         <div className="border-b border-white/10 pb-4 flex items-center justify-between">
           <div>
             <span className="font-mono text-[10px] text-earth uppercase tracking-widest font-bold block">
-              [ 02 // EXPEDICIONES DE TUS CLUBES ]
+              [ 02 // EXPEDICIONES DE TUS TRIBUS ]
             </span>
             <h2 className="font-display font-extrabold text-2xl text-white uppercase tracking-tight mt-1">
               Convocatorias & Próximas Rodadas
@@ -277,7 +310,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 <div className="space-y-2 flex-1">
                   <div className="flex flex-wrap items-center gap-3 font-mono text-[10px]">
                     <span className="text-earth font-bold uppercase tracking-widest">
-                      [{crew?.name || 'MOTO CLUB'}]
+                      [{crew?.name || 'TRIBU'}]
                     </span>
                     <span className="text-ash">·</span>
                     <span className="text-white bg-white/10 px-2 py-0.5">

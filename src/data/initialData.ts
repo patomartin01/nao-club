@@ -2,12 +2,12 @@ import { User, Motorcycle, Crew, Rodada, RouteProposal, RouteList, ActivityPost,
 
 export const CURRENT_USER: User = {
   id: 'user-patricio',
-  name: 'Patricio Martín Vidal',
-  handle: '@pmartin_vidal',
+  name: 'Pato Martín',
+  handle: '@patomartin',
   email: 'pmartin.v2001@gmail.com',
   avatar: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
-  bio: 'Piloto multidisciplinario. Rodando carretera revirada, pistas y terracería. Salidas desde Interlomas.',
-  location: 'San Pedro Cholula / CDMX',
+  bio: 'Piloto multidisciplinario y miembro de MotoMami Crew. Rodando carretera revirada, pistas y terracería. Salidas desde Interlomas.',
+  location: 'Interlomas / CDMX',
   ridingLevel: 'Avanzado',
   emergencyContact: '+52 55 1234 5678 (Papá)',
   phone: '+52 55 9876 5432',
@@ -23,20 +23,88 @@ export const CURRENT_USER: User = {
 export const INITIAL_USERS: User[] = [
   CURRENT_USER,
   {
-    id: 'user-diego',
-    name: 'Diego "Capi" R.',
-    handle: '@diego_capi',
-    email: 'diego.capi@motomami.mx',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250',
-    bio: 'Navegación GPX, amante de brechas técnicas y fotos al atardecer.',
-    location: 'Bosques de las Lomas, CDMX',
+    id: 'user-manu-vidal',
+    name: 'Manu Martin Vidal',
+    handle: '@manumartin_v',
+    email: 'manu.vidal@motomami.mx',
+    avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=250',
+    bio: 'BMW R 1250 GS. Rutas largas, curvas de montaña y terracería con MotoMami Crew.',
+    location: 'Interlomas, CDMX',
     ridingLevel: 'Avanzado',
-    completedRouteIds: ['route-1', 'route-2', 'route-3'],
+    completedRouteIds: ['route-1', 'route-4', 'route-2'],
+    savedRouteIds: ['route-3'],
+    stats: {
+      totalKm: 3450,
+      completedCount: 24,
+      elevationGain: 16200
+    }
+  },
+  {
+    id: 'user-manuel',
+    name: 'Manuel Martin Galindo',
+    handle: '@manuel_martin',
+    email: 'manuel.martin@motomami.mx',
+    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=250',
+    bio: 'Rodando en BMW 650 GS. Rutas de curvas en cañones, pasos de montaña y salidas de fin de semana.',
+    location: 'Miguel Hidalgo, Ciudad de México',
+    ridingLevel: 'Avanzado',
+    completedRouteIds: ['route-1', 'route-4'],
+    savedRouteIds: ['route-2'],
+    stats: {
+      totalKm: 5820,
+      completedCount: 28,
+      elevationGain: 22400
+    }
+  },
+  {
+    id: 'user-mich',
+    name: 'Mich Aboumrad',
+    handle: '@mich_aboumrad',
+    email: 'mich.aboumrad@motomami.mx',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250',
+    bio: 'BMW R 1200 GS. Explorador de puertos de montaña, asfalto frío y terracerías fluidas.',
+    location: 'Lomas de Chapultepec, CDMX',
+    ridingLevel: 'Avanzado',
+    completedRouteIds: ['route-1', 'route-2'],
+    savedRouteIds: ['route-3'],
+    stats: {
+      totalKm: 4120,
+      completedCount: 19,
+      elevationGain: 17300
+    }
+  },
+  {
+    id: 'user-diego-terrazas',
+    name: 'Diego Terrazas',
+    handle: '@diego_terrazas',
+    email: 'diego.terrazas@motomami.mx',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=250',
+    bio: 'KTM 890 Adventure R. Navegación satelital por GPS y trazado de curvas cerradas.',
+    location: 'Santa Fe, CDMX',
+    ridingLevel: 'Avanzado',
+    completedRouteIds: ['route-1', 'route-3'],
     savedRouteIds: ['route-4'],
     stats: {
-      totalKm: 4200,
-      completedCount: 14,
-      elevationGain: 19500
+      totalKm: 3890,
+      completedCount: 16,
+      elevationGain: 15900
+    }
+  },
+  {
+    id: 'user-pepe',
+    name: 'Pepe González',
+    handle: '@pepe_gonzalez',
+    email: 'pepe.gonzalez@motomami.mx',
+    avatar: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&q=80&w=250',
+    bio: 'Honda Africa Twin. Rutas de aventura, siempre cuidando al grupo y disfrutando cada kilómetro.',
+    location: 'Herradura / Huixquilucan',
+    ridingLevel: 'Avanzado',
+    completedRouteIds: ['route-1', 'route-5'],
+    savedRouteIds: ['route-2'],
+    stats: {
+      totalKm: 4670,
+      completedCount: 22,
+      elevationGain: 18400
     }
   },
   {
@@ -60,24 +128,104 @@ export const INITIAL_USERS: User[] = [
     id: 'user-rigo',
     name: 'Rodrigo "Rigo" V.',
     handle: '@rigo_enduro',
-    email: 'rigo.v@motomami.mx',
+    email: 'rigo.enduro@motomami.mx',
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=250',
-    bio: 'Mecánica de emergencia, compresores y fogatas master. La terracería es vida.',
-    location: 'La Herradura, Huixquilucan',
+    bio: 'Husqvarna Norden 901 & Yamaha Ténéré 700. Barrendero de ruta, navegación satelital y terracería extrema.',
+    location: 'Valle de Bravo / CDMX',
     ridingLevel: 'Avanzado',
-    completedRouteIds: ['route-1', 'route-3', 'route-5'],
+    phone: '+52 722 345 6789',
+    completedRouteIds: ['route-2', 'route-5'],
+    savedRouteIds: ['route-1', 'route-4'],
+    stats: {
+      totalKm: 5120,
+      completedCount: 26,
+      elevationGain: 21800
+    }
+  },
+  {
+    id: 'user-diego',
+    name: 'Diego Morales',
+    handle: '@diego_t7',
+    email: 'diego.t7@motomami.mx',
+    avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=250',
+    bio: 'Yamaha Ténéré 700. Rutas técnicas, pasos de montaña y aventura pura sin asfalto.',
+    location: 'Coyoacán, CDMX',
+    ridingLevel: 'Avanzado',
+    completedRouteIds: ['route-2', 'route-4'],
+    savedRouteIds: ['route-1'],
+    stats: {
+      totalKm: 4320,
+      completedCount: 21,
+      elevationGain: 19500
+    }
+  },
+  {
+    id: 'user-andrea',
+    name: 'Andrea Reyes',
+    handle: '@andrea_track',
+    email: 'andrea.reyes@motomami.mx',
+    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=250',
+    bio: 'Yamaha MT-09 SP. Track days en asfalto, curvas rápidas y telemetría de inclinación.',
+    location: 'Puebla / CDMX',
+    ridingLevel: 'Avanzado',
+    phone: '+52 222 123 4567',
+    completedRouteIds: ['route-3'],
+    savedRouteIds: ['route-1'],
+    stats: {
+      totalKm: 3200,
+      completedCount: 18,
+      elevationGain: 9400
+    }
+  },
+  {
+    id: 'user-carlos',
+    name: 'Carlos Mendoza',
+    handle: '@carlos_rally',
+    email: 'carlos.mendoza@motomami.mx',
+    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=250',
+    bio: 'Triumph Tiger 900 Rally Pro. Rutas transcontinentales, serranías y caminos de herradura.',
+    location: 'Querétaro, QRO',
+    ridingLevel: 'Avanzado',
+    phone: '+52 442 987 6543',
+    completedRouteIds: ['route-1', 'route-4'],
     savedRouteIds: ['route-2'],
     stats: {
-      totalKm: 3400,
-      completedCount: 11,
-      elevationGain: 16800
+      totalKm: 6400,
+      completedCount: 31,
+      elevationGain: 24600
     }
   }
 ];
 
 export const INITIAL_MOTORCYCLES: Motorcycle[] = [
   {
+    id: 'moto-manuel',
+    userId: 'user-manuel',
+    brand: 'BMW',
+    model: '650 GS',
+    year: 2012,
+    displacementCc: 652,
+    type: 'Doble Propósito',
+    nickname: 'La 650 GS',
+    photoUrl: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=800',
+    modifications: ['Defensas de motor', 'Cubrepuños', 'Top case de aluminio'],
+    tires: 'Metzeler Tourance'
+  },
+  {
     id: 'moto-1',
+    userId: 'user-patricio',
+    brand: 'Royal Enfield',
+    model: 'Himalayan 411',
+    year: 2023,
+    displacementCc: 411,
+    type: 'Doble Propósito',
+    nickname: 'La Himalayan',
+    photoUrl: 'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&q=80&w=800',
+    modifications: ['Defensas de motor y tanque Royal Enfield', 'Skid plate de aluminio', 'Faros auxiliares LED Tripper', 'Cubrepuños Barkbusters'],
+    tires: 'Ceat Gripp-XL (Doble Propósito)'
+  },
+  {
+    id: 'moto-2',
     userId: 'user-patricio',
     brand: 'BMW',
     model: 'R 1250 GS Adventure',
@@ -90,17 +238,56 @@ export const INITIAL_MOTORCYCLES: Motorcycle[] = [
     tires: 'Continental TKC80 (Twinduro 50/50)'
   },
   {
-    id: 'moto-2',
-    userId: 'user-patricio',
+    id: 'moto-manu-vidal',
+    userId: 'user-manu-vidal',
+    brand: 'BMW',
+    model: 'R 1250 GS',
+    year: 2022,
+    displacementCc: 1254,
+    type: 'Adventure / Maxi-Trail',
+    nickname: 'La GS 1250',
+    photoUrl: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=800',
+    modifications: ['Defensas completas', 'Top case Vario', 'Luces de niebla LED'],
+    tires: 'Michelin Anakee Adventure'
+  },
+  {
+    id: 'moto-mich',
+    userId: 'user-mich',
+    brand: 'BMW',
+    model: 'R 1200 GS',
+    year: 2018,
+    displacementCc: 1170,
+    type: 'Adventure / Maxi-Trail',
+    nickname: 'La 1200 GS',
+    photoUrl: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=800',
+    modifications: ['Defensas completas Touratech', 'Faros LED antiniebla', 'Top case de aluminio'],
+    tires: 'Michelin Anakee Wild'
+  },
+  {
+    id: 'moto-diego-terrazas',
+    userId: 'user-diego-terrazas',
     brand: 'KTM',
     model: '890 Adventure R',
-    year: 2022,
+    year: 2023,
     displacementCc: 889,
     type: 'Doble Propósito',
-    nickname: 'La Avispa',
+    nickname: 'La 890 R',
     photoUrl: 'https://images.unsplash.com/photo-1609630875171-b1321377ee65?auto=format&fit=crop&q=80&w=800',
-    modifications: ['Suspensión WP Pro revalvulada', 'Handguards Barkbusters', 'Asiento rally de una pieza'],
-    tires: 'Mitas E-07+ Dakar'
+    modifications: ['Skid plate AXP Extreme', 'Handguards Barkbusters', 'Escape Akrapovič'],
+    tires: 'Motoz Tractionator'
+  },
+  {
+    id: 'moto-pepe',
+    userId: 'user-pepe',
+    brand: 'Honda',
+    model: 'CRF1100L Africa Twin',
+    year: 2022,
+    displacementCc: 1084,
+    type: 'Adventure / Maxi-Trail',
+    nickname: 'La Reina Roja',
+    photoUrl: 'https://images.unsplash.com/photo-1591637333184-19aa84b3e01f?auto=format&fit=crop&q=80&w=800',
+    modifications: ['Barras altas y bajas', 'Alforjas blandas Kriega', 'Parabrisas alto'],
+    tires: 'Pirelli Scorpion Rally STR'
   },
   {
     id: 'moto-diego',
@@ -138,8 +325,34 @@ export const INITIAL_MOTORCYCLES: Motorcycle[] = [
     type: 'Doble Propósito',
     nickname: 'Viking Explorer',
     photoUrl: 'https://images.unsplash.com/photo-1615172282427-9a57ef2d142e?auto=format&fit=crop&q=80&w=800',
-    modifications: ['GPS Garmin Montana 700i en torre de navegación', 'Kit herramientas Kriega Tool Roll'],
+    modifications: ['Torre de navegación GPS dedicada', 'Kit herramientas Kriega Tool Roll'],
     tires: 'Pirelli Scorpion Rally STR'
+  },
+  {
+    id: 'moto-rigo-t7',
+    userId: 'user-rigo',
+    brand: 'Yamaha',
+    model: 'Ténéré 700',
+    year: 2023,
+    displacementCc: 689,
+    type: 'Doble Propósito',
+    nickname: 'T7 Enduro',
+    photoUrl: 'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&q=80&w=800',
+    modifications: ['Escape Akrapovič Titanium', 'Llantas de competencia', 'Protector de radiador Camel ADV'],
+    tires: 'Motoz Tractionator RallZ'
+  },
+  {
+    id: 'moto-andrea-mt09',
+    userId: 'user-andrea',
+    brand: 'Yamaha',
+    model: 'MT-09 SP',
+    year: 2024,
+    displacementCc: 890,
+    type: 'Naked / Roadster',
+    nickname: 'Dark Side SP',
+    photoUrl: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=800',
+    modifications: ['Escape Akrapovič Full Titanium', 'Quickshifter bidireccional', 'Suspensiones Öhlins'],
+    tires: 'Bridgestone Battlax Hypersport S22'
   }
 ];
 
@@ -157,9 +370,11 @@ export const INITIAL_CREWS: Crew[] = [
     createdAt: '2024-03-15',
     members: [
       { userId: 'user-patricio', role: 'Capitán de Ruta', joinedAt: '2024-03-15' },
-      { userId: 'user-diego', role: 'Capitán de Ruta', joinedAt: '2024-03-16' },
-      { userId: 'user-sofia', role: 'Rider', joinedAt: '2024-03-18' },
-      { userId: 'user-rigo', role: 'Barrendero', joinedAt: '2024-03-20' },
+      { userId: 'user-manuel', role: 'Capitán de Ruta', joinedAt: '2024-03-15' },
+      { userId: 'user-manu-vidal', role: 'Rider', joinedAt: '2024-03-15' },
+      { userId: 'user-mich', role: 'Rider', joinedAt: '2024-03-16' },
+      { userId: 'user-diego-terrazas', role: 'Rider', joinedAt: '2024-03-18' },
+      { userId: 'user-pepe', role: 'Barrendero', joinedAt: '2024-03-20' },
     ]
   },
   {
@@ -171,12 +386,12 @@ export const INITIAL_CREWS: Crew[] = [
     inviteCode: 'BRAVA-44',
     coverImage: 'https://images.unsplash.com/photo-1542718610-a1d656d1884c?auto=format&fit=crop&q=80&w=1200',
     baseCity: 'Valle de Bravo & Toluca',
-    creatorId: 'user-patricio',
+    creatorId: 'user-diego',
     createdAt: '2024-06-01',
     members: [
-      { userId: 'user-patricio', role: 'Capitán de Ruta', joinedAt: '2024-06-01' },
-      { userId: 'user-diego', role: 'Rider', joinedAt: '2024-06-02' },
-      { userId: 'user-sofia', role: 'Rider', joinedAt: '2024-06-05' }
+      { userId: 'user-diego', role: 'Capitán de Ruta', joinedAt: '2024-06-01' },
+      { userId: 'user-sofia', role: 'Rider', joinedAt: '2024-06-05' },
+      { userId: 'user-rigo', role: 'Barrendero', joinedAt: '2024-06-10' }
     ]
   }
 ];
@@ -189,7 +404,7 @@ export const INITIAL_ROUTE_PROPOSALS: RouteProposal[] = [
     destination: 'Amanalco de Becerra / Valle de Bravo',
     state: 'Estado de México',
     proposedByUserId: 'user-patricio',
-    proposedByName: 'Patricio Martin',
+    proposedByName: 'Pato Martín',
     proposedByAvatar: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
     description: 'Campamento base a 3,000 msnm junto a un lago alpino. El mejor bosque de coníferas para soltar maletas pesadas y salir a hacer loops circulares por brechas madereras con pinocha y descensos a Valle de Bravo.',
     coverImage: 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&q=80&w=1000',
@@ -342,7 +557,7 @@ export const INITIAL_ROUTE_PROPOSALS: RouteProposal[] = [
       {
         id: 'c3',
         userId: 'user-patricio',
-        userName: 'Patricio Martin',
+        userName: 'Pato Martín',
         userAvatar: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
         text: 'La salida por el Arco Norte es una chulada desde Interlomas, cero semáforos ni tráfico de Pantitlán.',
         createdAt: 'Ayer'
@@ -507,6 +722,124 @@ export const INITIAL_ROUTE_PROPOSALS: RouteProposal[] = [
     ],
     dayOfDeadVibe: 'Naturaleza salvaje y cielo tapizado de estrellas. No hay festejos de pueblo, pero la vibra mística de los cañones es insuperable.',
     safetyTips: ['Tener cuidado con llantas con cámaras por la grava filosa', 'Llevar camelbak con mínimo 3L de agua']
+  },
+  {
+    id: 'route-zempoala-lagunas',
+    rodadaId: 'rodada-zempoala-2026',
+    title: 'Paso del Lobo: Curvas de Bosque & Asado en Tres Marías',
+    destination: 'Lagunas de Zempoala / Huitzilac',
+    state: 'Morelos',
+    proposedByUserId: 'user-manuel',
+    proposedByName: 'Manuel Martin Galindo',
+    proposedByAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=250',
+    description: 'Ruta matutina de un solo día. Curvas rápidas de pavimento frío, desvío por la brecha de terracería compacta bordeando la laguna y bajada a los puestos tradicionales de cecina.',
+    coverImage: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&q=80&w=1000',
+    totalKm: 98,
+    estimatedHours: '3h 30m',
+    offroadPercentage: 30,
+    asphaltPercentage: 70,
+    difficulty: 'Fácil (Fluida)',
+    campsite: {
+      name: 'Área Recreativa Lagunas de Zempoala',
+      elevationMeters: 2800,
+      minTempNight: '6°C',
+      security: 'Guardaparques CONANP',
+      amenities: ['Comida típica', 'Estacionamiento vigilado', 'Senderos']
+    },
+    itinerary: [
+      {
+        day: 1,
+        title: 'Curvas de Altura & Cecina de Tres Marías',
+        description: 'Salida de Perisur hacia la libre de Cuernavaca con parada en mirador de Zempoala y almuerzo campestre.',
+        distanceKm: 98,
+        offroadKm: 30,
+        terrainType: 'Asfalto revirado y brecha de bosque de oyamel'
+      }
+    ],
+    dayOfDeadVibe: 'Recorrido fresco de otoño entre bosques de pino y comida montañesa tradicional',
+    safetyTips: ['Cuidado con la humedad y hojas sueltas en curvas matutinas', 'Revisar presión de llantas para asfalto frío'],
+    waypoints: [
+      { id: 'zw-1', name: 'Perisur CDMX', lat: 19.3035, lng: -99.1878, type: 'start' },
+      { id: 'zw-2', name: 'Mirador Lagunas de Zempoala', lat: 19.0531, lng: -99.3142, type: 'scenic' },
+      { id: 'zw-3', name: 'Tres Marías (Cecina)', lat: 19.0558, lng: -99.2392, type: 'food' }
+    ],
+    coordinates: [
+      [19.3035, -99.1878],
+      [19.1820, -99.2150],
+      [19.0531, -99.3142],
+      [19.0558, -99.2392]
+    ],
+    votes: ['user-manuel', 'user-patricio'],
+    downvotes: [],
+    comments: [
+      {
+        id: 'cz-1',
+        userId: 'user-patricio',
+        userName: 'Pato Martín',
+        userAvatar: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
+        text: 'Me late perfecto para no perder el ritmo antes de diciembre.',
+        createdAt: 'Hace 2 horas'
+      }
+    ]
+  },
+  {
+    id: 'route-sierra-negra-tehuacan',
+    rodadaId: 'rodada-sierra-negra-2027',
+    title: 'Ascenso al Telescopio Milimétrico & Reserva Tehuacán',
+    destination: 'Sierra Negra / Pico de Orizaba',
+    state: 'Puebla',
+    proposedByUserId: 'user-diego',
+    proposedByName: 'Diego Morales',
+    proposedByAvatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=250',
+    description: 'Aventura de gran altitud subiendo por encima de los 4,000 msnm para contemplar el mar de nubes y acampar en el valle de cactáceas gigantes de Zapotitlán Salinas.',
+    coverImage: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=1000',
+    totalKm: 280,
+    estimatedHours: '6h',
+    offroadPercentage: 55,
+    asphaltPercentage: 45,
+    difficulty: 'Intermedio',
+    campsite: {
+      name: 'Reserva de la Biósfera Tehuacán-Cuicatlán',
+      elevationMeters: 1650,
+      minTempNight: '11°C',
+      security: 'Campamento comunitario Zapotitlán',
+      amenities: ['Zona de fogata', 'Sanitarios ecológicos', 'Cielos limpios para astronomía']
+    },
+    itinerary: [
+      {
+        day: 1,
+        title: 'Ascenso al Volcán Sierra Negra & Descenso a Tehuacán',
+        description: 'Trepada hasta la cota de los 4,100m para admirar el Citlaltépetl y posterior bajada al altiplano.',
+        distanceKm: 280,
+        offroadKm: 154,
+        terrainType: 'Tierra volcánica compacta, grava y cañones áridos'
+      }
+    ],
+    dayOfDeadVibe: 'Silencio y misticismo del desierto de cactáceas gigantes y estrellas despejadas',
+    safetyTips: ['Llevar capas térmicas para más de 4,000m', 'Monitorear posible mal de montaña en el ascenso'],
+    waypoints: [
+      { id: 'sn-1', name: 'Caseta San Marcos', lat: 19.3510, lng: -98.9210, type: 'start' },
+      { id: 'sn-2', name: 'Base Volcán Sierra Negra', lat: 18.9830, lng: -97.3140, type: 'dirt' },
+      { id: 'sn-3', name: 'Zapotitlán Salinas', lat: 18.3320, lng: -97.4720, type: 'camp' }
+    ],
+    coordinates: [
+      [19.3510, -98.9210],
+      [19.0430, -98.2010],
+      [18.9830, -97.3140],
+      [18.3320, -97.4720]
+    ],
+    votes: ['user-diego'],
+    downvotes: [],
+    comments: [
+      {
+        id: 'csn-1',
+        userId: 'user-diego',
+        userName: 'Diego Morales',
+        userAvatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=250',
+        text: 'Lleven ropa térmica de montaña en capas, en la cima el viento cala.',
+        createdAt: 'Ayer'
+      }
+    ]
   }
 ];
 
@@ -576,11 +909,11 @@ export const INITIAL_RODADA: Rodada = {
     }
   ],
   packingList: [
-    { id: 'p1', item: 'Compresor de aire eléctrico 12V / Batería', category: 'Herramientas', assignedToUserId: 'user-patricio', assignedToName: 'Patricio Martin', isDone: true },
+    { id: 'p1', item: 'Compresor de aire eléctrico 12V / Batería', category: 'Herramientas', assignedToUserId: 'user-patricio', assignedToName: 'Pato Martín', isDone: true },
     { id: 'p2', item: 'Kit de mechas para llantas tubeless y parches', category: 'Herramientas', assignedToUserId: 'user-rigo', assignedToName: 'Rodrigo V.', isDone: true },
     { id: 'p3', item: 'Juego de llaves Allen/Torx y desmontadores', category: 'Herramientas', assignedToUserId: 'user-diego', assignedToName: 'Diego "Capi"', isDone: true },
     { id: 'p4', item: 'Botiquín de primeros auxilios con torniquete y gasas', category: 'Seguridad & Salud', assignedToUserId: 'user-sofia', assignedToName: 'Sofía M.', isDone: true },
-    { id: 'p5', item: 'Radio comunicadores Baofeng VHF (frecuencia 146.520)', category: 'Seguridad & Salud', assignedToUserId: 'user-patricio', assignedToName: 'Patricio Martin', isDone: true },
+    { id: 'p5', item: 'Radio comunicadores Baofeng VHF (frecuencia 146.520)', category: 'Seguridad & Salud', assignedToUserId: 'user-patricio', assignedToName: 'Pato Martín', isDone: true },
     { id: 'p6', item: 'Casas de campaña resistentes a viento 4 estaciones', category: 'Campamento', isDone: true },
     { id: 'p7', item: 'Aislantes térmicos inflables R-value > 3.0', category: 'Campamento', isDone: true },
     { id: 'p8', item: 'Lámparas frontales de cabeza con baterías extra', category: 'Campamento', isDone: false },
@@ -592,7 +925,7 @@ export const INITIAL_RODADA: Rodada = {
       id: 'g1',
       url: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=1000',
       caption: 'Explorando las brechas madereras en amanecer',
-      uploadedByName: 'Patricio Martin',
+      uploadedByName: 'Pato Martín',
       uploadedAt: 'Hace 2 días'
     },
     {
@@ -641,14 +974,68 @@ export const SECOND_RODADA: Rodada = {
     }
   ],
   packingList: [
-    { id: 'pn-1', item: 'Lámpara frontal recargable y pilas de repuesto', category: 'Campamento', assignedToUserId: 'user-patricio', assignedToName: 'Patricio Martin', isDone: true },
+    { id: 'pn-1', item: 'Lámpara frontal recargable y pilas de repuesto', category: 'Campamento', assignedToUserId: 'user-patricio', assignedToName: 'Pato Martín', isDone: true },
     { id: 'pn-2', item: 'Kit de hidratación Camelbak 3L', category: 'Seguridad & Salud', assignedToUserId: 'user-diego', assignedToName: 'Diego "Capi"', isDone: true }
   ],
   gallery: [],
   createdAt: '2026-10-18'
 };
 
-export const INITIAL_RODADAS: Rodada[] = [INITIAL_RODADA, SECOND_RODADA];
+export const THIRD_RODADA: Rodada = {
+  id: 'rodada-zempoala-2026',
+  crewId: 'crew-motomami',
+  title: 'Ruta Relámpago Zempoala & Huitzilac',
+  subtitle: 'Curvas de montaña fría, paso de terracería y cecina en Tres Marías',
+  description: 'Rodada mañanera de 1 solo día convocada por Manuel. Salida 7:30 AM para desayunar en el bosque y estar de vuelta antes del tráfico.',
+  category: 'Rodada Rápida 1 Día',
+  status: 'votacion',
+  startDate: '2026-11-20',
+  endDate: '2026-11-20',
+  originPoint: 'Insurgentes Sur / Perisur, CDMX',
+  attendees: [
+    {
+      userId: 'user-manuel',
+      motorcycleId: 'moto-manuel',
+      status: 'confirmado',
+      confirmedAt: '2026-10-20'
+    },
+    {
+      userId: 'user-patricio',
+      motorcycleId: 'moto-1',
+      status: 'confirmado',
+      confirmedAt: '2026-10-21'
+    }
+  ],
+  packingList: [],
+  gallery: [],
+  createdAt: '2026-10-20'
+};
+
+export const FOURTH_RODADA: Rodada = {
+  id: 'rodada-sierra-negra-2027',
+  crewId: 'crew-motomami',
+  title: 'Travesía Sierra Negra & Valle de Tehuacán',
+  subtitle: 'Expedición de gran altitud a 4,000 msnm y campamento en cactáceas gigantes',
+  description: 'Convocatoria preliminar abierta para el primer puente del año. Ideal para preparar maletas pesadas y autonomía.',
+  category: 'Puente / Expedición Multi-días',
+  status: 'votacion',
+  startDate: '2027-02-06',
+  endDate: '2027-02-08',
+  originPoint: 'Caseta San Marcos, Autopista Puebla',
+  attendees: [
+    {
+      userId: 'user-diego',
+      motorcycleId: 'moto-diego',
+      status: 'confirmado',
+      confirmedAt: '2026-10-21'
+    }
+  ],
+  packingList: [],
+  gallery: [],
+  createdAt: '2026-10-21'
+};
+
+export const INITIAL_RODADAS: Rodada[] = [INITIAL_RODADA, THIRD_RODADA, FOURTH_RODADA, SECOND_RODADA];
 
 export const INITIAL_ROUTE_LISTS: RouteList[] = [
   {
@@ -672,15 +1059,15 @@ export const INITIAL_ROUTE_LISTS: RouteList[] = [
 export const INITIAL_ACTIVITIES: ActivityPost[] = [
   {
     id: 'act-1',
-    pilotId: 'user-inaki',
-    pilotName: 'Iñaki Rivera Robles',
-    pilotHandle: '@inaki_rr',
+    pilotId: 'user-manuel',
+    pilotName: 'Manuel Martin Galindo',
+    pilotHandle: '@manuel_martin',
     pilotAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=250',
     dateText: 'Hoy a las 6:58 a.m.',
-    device: 'Garmin Forerunner 265',
+    device: '',
     location: 'Miguel Hidalgo, Ciudad de México',
     title: 'Rodada Matutina // Curvas y Cañón de Zempoala',
-    motoModel: 'BMW R 1250 GS Adventure',
+    motoModel: 'BMW 650 GS',
     discipline: 'Carretera / Curvas',
     distanceKm: 74.2,
     elevationGainM: 1420,
@@ -694,6 +1081,32 @@ export const INITIAL_ACTIVITIES: ActivityPost[] = [
       'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=150'
     ],
     commentsCount: 3,
+    comments: [
+      {
+        id: 'comm-1',
+        userId: 'user-patricio',
+        userName: 'Pato Martín',
+        userAvatar: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
+        createdAt: 'Hoy a las 7:45 a.m.',
+        text: '¡Gran paso de curvas en el cañón! La 650 GS se portó impecable.'
+      },
+      {
+        id: 'comm-2',
+        userId: 'user-mich',
+        userName: 'Mich Aboumrad',
+        userAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250',
+        createdAt: 'Hoy a las 8:12 a.m.',
+        text: 'Qué buena salida nos aventamos hoy equipo. ¡La próxima toca parada en Tres Marías!'
+      },
+      {
+        id: 'comm-3',
+        userId: 'user-pepe',
+        userName: 'Pepe González',
+        userAvatar: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&q=80&w=250',
+        createdAt: 'Hoy a las 8:30 a.m.',
+        text: 'Cerrando el grupo con la Africa Twin, todo el camino despejado y sin incidentes.'
+      }
+    ],
     coordinates: [
       [19.4100, -99.1900],
       [19.3800, -99.2300],
@@ -705,19 +1118,74 @@ export const INITIAL_ACTIVITIES: ActivityPost[] = [
       asphaltPercentage: 88,
       dirtPercentage: 12,
       curveDensity: 'Alta'
+    },
+    photos: [
+      'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&q=80&w=1200',
+      'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&q=80&w=800',
+      'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=800'
+    ],
+    groupInfo: {
+      crewId: 'crew-motomami',
+      crewName: 'MotoMami Adventure Crew',
+      rodadaTitle: 'Curvas Matutinas & Cañón de Zempoala',
+      participants: [
+        {
+          userId: 'user-manuel',
+          name: 'Manuel Martin Galindo',
+          handle: '@manuel_martin',
+          avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=250',
+          motoModel: 'BMW 650 GS'
+        },
+        {
+          userId: 'user-patricio',
+          name: 'Pato Martín',
+          handle: '@patomartin',
+          avatar: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
+          motoModel: 'BMW R 1250 GS Adventure'
+        },
+        {
+          userId: 'user-manu-vidal',
+          name: 'Manu Martin Vidal',
+          handle: '@manumartin_v',
+          avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=250',
+          motoModel: 'BMW R 1250 GS'
+        },
+        {
+          userId: 'user-mich',
+          name: 'Mich Aboumrad',
+          handle: '@mich_aboumrad',
+          avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250',
+          motoModel: 'BMW R 1200 GS'
+        },
+        {
+          userId: 'user-diego-terrazas',
+          name: 'Diego Terrazas',
+          handle: '@diego_terrazas',
+          avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=250',
+          motoModel: 'KTM 890 Adventure R'
+        },
+        {
+          userId: 'user-pepe',
+          name: 'Pepe González',
+          handle: '@pepe_gonzalez',
+          avatar: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&q=80&w=250',
+          motoModel: 'Honda Africa Twin'
+        }
+      ]
     }
   },
   {
     id: 'act-2',
     pilotId: 'user-patricio',
-    pilotName: 'Patricio Martín Vidal',
-    pilotHandle: '@pmartin_vidal',
+    pilotName: 'Pato Martín',
+    pilotHandle: '@patomartin',
     pilotAvatar: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
     dateText: 'Ayer a las 7:01 a.m.',
-    device: 'Garmin fēnix 6X',
+    device: '',
     location: 'San Pedro Cholula, Puebla',
     title: 'Paso por Brechas y Reserva Cerro Zapotecas',
-    motoModel: 'KTM 890 Adventure R',
+    motoModel: 'Royal Enfield Himalayan 411 2023',
     discipline: 'Doble Propósito / Trail',
     distanceKm: 42.8,
     elevationGainM: 890,
@@ -742,6 +1210,32 @@ export const INITIAL_ACTIVITIES: ActivityPost[] = [
       asphaltPercentage: 35,
       dirtPercentage: 65,
       curveDensity: 'Media'
+    },
+    photos: [
+      'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&q=80&w=1200',
+      'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=1200',
+      'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&q=80&w=1200'
+    ],
+    groupInfo: {
+      crewId: 'crew-sierrabrava',
+      crewName: 'Sierra Brava Dual-Sport Club',
+      rodadaTitle: 'Paso por Brechas y Zapotecas',
+      participants: [
+        {
+          userId: 'user-patricio',
+          name: 'Pato Martín',
+          handle: '@patomartin',
+          avatar: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
+          motoModel: 'Royal Enfield Himalayan 411 2023'
+        },
+        {
+          userId: 'user-rigo',
+          name: 'Rodrigo "Rigo" V.',
+          handle: '@rigo_enduro',
+          avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=250',
+          motoModel: 'Yamaha Ténéré 700'
+        }
+      ]
     }
   },
   {
@@ -751,7 +1245,7 @@ export const INITIAL_ACTIVITIES: ActivityPost[] = [
     pilotHandle: '@andrea_track',
     pilotAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=250',
     dateText: 'Ayer a las 6:52 a.m.',
-    device: 'Garmin Venu 2',
+    device: '',
     location: 'Circuito Amozoc / Puebla Track',
     title: 'Sesión de Curvas y Crono en Circuito',
     motoModel: 'Yamaha MT-09 SP',
@@ -777,6 +1271,29 @@ export const INITIAL_ACTIVITIES: ActivityPost[] = [
       asphaltPercentage: 100,
       dirtPercentage: 0,
       curveDensity: 'Alta'
+    },
+    photos: [
+      'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=1200'
+    ],
+    groupInfo: {
+      crewId: 'crew-motomami',
+      crewName: 'MotoMami Adventure Crew',
+      participants: [
+        {
+          userId: 'user-andrea',
+          name: 'Andrea Reyes',
+          handle: '@andrea_track',
+          avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=250',
+          motoModel: 'Yamaha MT-09 SP'
+        },
+        {
+          userId: 'user-manuel',
+          name: 'Manuel Martin Galindo',
+          handle: '@manuel_martin',
+          avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=250',
+          motoModel: 'BMW 650 GS'
+        }
+      ]
     }
   },
   {
@@ -812,7 +1329,11 @@ export const INITIAL_ACTIVITIES: ActivityPost[] = [
       asphaltPercentage: 55,
       dirtPercentage: 45,
       curveDensity: 'Alta'
-    }
+    },
+    photos: [
+      'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=1200',
+      'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&q=80&w=800'
+    ]
   }
 ];
 
@@ -835,7 +1356,7 @@ export const INITIAL_CHALLENGES: Challenge[] = [
     targetKm: 5,
     currentKm: 3,
     participantsCount: 184,
-    badgeHex: '⛰️',
+    badgeHex: 'MTN',
     endDate: '15 Nov 2026',
     joined: true
   },
@@ -846,7 +1367,7 @@ export const INITIAL_CHALLENGES: Challenge[] = [
     targetKm: 200,
     currentKm: 85,
     participantsCount: 96,
-    badgeHex: '⚡',
+    badgeHex: 'ADV',
     endDate: '10 Nov 2026',
     joined: false
   }

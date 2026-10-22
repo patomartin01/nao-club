@@ -20,7 +20,7 @@ export const BottomBar: React.FC<BottomBarProps> = ({ onOpenRecordRoute }) => {
   const isInicio = activeNavTab === 'inicio' || activeNavTab === 'home';
   const isMapas = activeNavTab === 'mapas' || activeNavTab === 'rutas';
   const isRegistrar = activeNavTab === 'registrar';
-  const isGrupos = activeNavTab === 'grupos' || activeNavTab === 'crew' || activeNavTab === 'rodada';
+  const isTribus = activeNavTab === 'tribus' || activeNavTab === 'grupos' || activeNavTab === 'crew' || activeNavTab === 'rodada';
   const isTu = activeNavTab === 'tu' || activeNavTab === 'garaje';
 
   const handleRecordClick = () => {
@@ -30,13 +30,13 @@ export const BottomBar: React.FC<BottomBarProps> = ({ onOpenRecordRoute }) => {
 
   return (
     <aside 
-      aria-label="Navegación de aplicación móvil"
-      className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#0B0A09]/95 backdrop-blur-xl border-t border-white/[0.08] shadow-[0_-12px_36px_rgba(0,0,0,0.85)] select-none pb-[env(safe-area-inset-bottom,6px)]"
+      aria-label="Navegación de aplicación"
+      className="fixed bottom-0 left-0 right-0 z-50 bg-[#0B0A09]/95 backdrop-blur-xl border-t border-white/[0.08] shadow-[0_-12px_36px_rgba(0,0,0,0.85)] select-none pb-[env(safe-area-inset-bottom,6px)]"
     >
       {/* Top subtle micro-ruler */}
       <div className="w-full h-1 bg-black/60 overflow-hidden flex items-center border-b border-white/[0.04]">
         <div className="w-full flex justify-between px-2 opacity-25">
-          {Array.from({ length: 32 }).map((_, i) => (
+          {Array.from({ length: 48 }).map((_, i) => (
             <span
               key={i}
               className={`inline-block ${
@@ -47,8 +47,8 @@ export const BottomBar: React.FC<BottomBarProps> = ({ onOpenRecordRoute }) => {
         </div>
       </div>
 
-      {/* 5-column Strava-style mobile dock */}
-      <div className="max-w-md mx-auto px-2 py-1 flex items-center justify-between">
+      {/* 5-column dock (responsive for desktop and mobile) */}
+      <div className="max-w-xl mx-auto px-4 py-1.5 flex items-center justify-between">
         
         {/* 01. INICIO (FEED SOCIAL) */}
         <button
@@ -100,21 +100,21 @@ export const BottomBar: React.FC<BottomBarProps> = ({ onOpenRecordRoute }) => {
           </span>
         </button>
 
-        {/* 04. GRUPOS (CLUBES, EVENTOS, RETOS) */}
+        {/* 04. TRIBUS (COMUNIDADES Y EXPEDICIONES) */}
         <button
-          onClick={() => setActiveNavTab('grupos')}
+          onClick={() => setActiveNavTab('tribus')}
           className={`flex-1 min-h-[50px] flex flex-col items-center justify-center py-1 transition-all active:scale-95 group touch-manipulation ${
-            isGrupos ? 'text-white' : 'text-ash hover:text-white'
+            isTribus ? 'text-white' : 'text-ash hover:text-white'
           }`}
         >
           <div className="relative">
-            <Users className={`w-5 h-5 transition-transform ${isGrupos ? 'scale-105 text-earth' : 'group-hover:text-white'}`} />
+            <Users className={`w-5 h-5 transition-transform ${isTribus ? 'scale-105 text-earth' : 'group-hover:text-white'}`} />
             <span className="absolute -top-1 -right-2 text-[8px] font-mono px-1 bg-white/10 border border-white/20 text-white rounded-full">
               {crews.length}
             </span>
           </div>
-          <span className={`font-mono text-[9px] uppercase tracking-wider mt-1 ${isGrupos ? 'text-earth font-bold' : ''}`}>
-            Grupos
+          <span className={`font-mono text-[9px] uppercase tracking-wider mt-1 ${isTribus ? 'text-earth font-bold' : ''}`}>
+            Tribus
           </span>
         </button>
 

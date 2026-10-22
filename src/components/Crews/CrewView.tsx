@@ -22,10 +22,27 @@ import {
   Square,
   MapPin,
   MessageSquare,
-  Send
+  Send,
+  Mountain
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { buildOrderedGoogleMapsUrl } from '../../utils/googleMaps';
+
+const RoadIcon: React.FC<{ className?: string }> = ({ className = "w-3.5 h-3.5" }) => (
+  <svg 
+    className={className} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+  >
+    <path d="M4 19L8 5h8l4 14" />
+    <line x1="12" y1="8" x2="12" y2="10" />
+    <line x1="12" y1="14" x2="12" y2="16" />
+  </svg>
+);
 
 interface CrewViewProps {
   onOpenCreateCrew: () => void;
@@ -195,7 +212,7 @@ ${gpxPoints}
         </button>
 
         <span className="text-[10px] uppercase text-earth tracking-widest font-bold">
-          SALA DE CLUB // {currentCrew.name}
+          SALA DE TRIBU // {currentCrew.name}
         </span>
       </div>
 
@@ -219,7 +236,7 @@ ${gpxPoints}
         <div className="p-6 sm:p-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-2 max-w-2xl">
             <span className="font-mono text-[10px] text-earth uppercase tracking-widest font-bold block">
-              [ COMUNIDAD OFF-ROAD // MOTO CLUB ]
+              [ COMUNIDAD OFF-ROAD // TRIBU ]
             </span>
             <h1 className="font-display font-extrabold text-3xl sm:text-4xl text-white uppercase tracking-tight">
               {currentCrew.name}
@@ -258,7 +275,7 @@ ${gpxPoints}
                 </button>
                 <a
                   href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
-                    `¡Hola! Únete a nuestro moto club "${currentCrew.name}" en NAO para organizar las rodadas off-road. Usa la clave única: ${currentCrew.inviteCode}`
+                    `¡Hola! Únete a nuestra tribu "${currentCrew.name}" en NAO para organizar las rodadas off-road. Usa la clave única: ${currentCrew.inviteCode}`
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -303,7 +320,7 @@ ${gpxPoints}
           }`}
         >
           <Compass className="w-4 h-4" />
-          <span>⚡ Rodada & Votación Activa</span>
+          <span>Rodada & Votación Activa</span>
         </button>
 
         <button
@@ -315,7 +332,7 @@ ${gpxPoints}
           }`}
         >
           <Users className="w-4 h-4" />
-          <span>👥 Pilotos del Club ({currentCrew.members.length})</span>
+          <span>Pilotos de la Tribu ({currentCrew.members.length})</span>
         </button>
 
         <button
@@ -327,7 +344,7 @@ ${gpxPoints}
           }`}
         >
           <Calendar className="w-4 h-4" />
-          <span>📂 Todas las Rodadas ({crewRodadas.length})</span>
+          <span>Todas las Rodadas ({crewRodadas.length})</span>
         </button>
       </div>
 
@@ -341,7 +358,7 @@ ${gpxPoints}
                 <div className="space-y-2">
                   <div className="flex flex-wrap items-center gap-3 font-mono text-[10px]">
                     <span className="px-2 py-0.5 bg-earth/20 border border-earth text-earth font-bold uppercase tracking-widest">
-                      {activeRodada.status === 'votacion' ? '⚡ FASE: VOTACIÓN DE RUTAS EN CONSENSO' : '✓ RUTA GANADORA FIJADA'}
+                      {activeRodada.status === 'votacion' ? 'FASE: VOTACIÓN DE RUTAS EN CONSENSO' : 'RUTA GANADORA FIJADA'}
                     </span>
                     <span className="text-ash">·</span>
                     <span className="text-white bg-white/10 px-2 py-0.5 font-bold">
@@ -369,7 +386,7 @@ ${gpxPoints}
                         : 'bg-earth text-white border-earth hover:bg-earth-bright'
                     }`}
                   >
-                    {isUserConfirmed ? '✓ Asistencia Confirmada' : '+ Confirmar Asistencia'}
+                    {isUserConfirmed ? 'Asistencia Confirmada' : '+ Confirmar Asistencia'}
                   </button>
                 </div>
               </div>
@@ -433,8 +450,17 @@ ${gpxPoints}
                               <span className="text-white font-bold">{route.totalKm} km</span>
                             </div>
                             <div>
-                              <span className="text-ash block">Terracería</span>
-                              <span className="text-earth font-bold">{route.offroadPercentage}%</span>
+                              <span className="text-ash block">Terreno</span>
+                              <div className="flex items-center gap-1.5 mt-0.5">
+                                <span className="flex items-center gap-0.5 text-earth font-bold" title="Montaña / Terracería">
+                                  <Mountain className="w-2.5 h-2.5 text-earth shrink-0" />
+                                  <span>{route.offroadPercentage}%</span>
+                                </span>
+                                <span className="flex items-center gap-0.5 text-white font-bold" title="Carretera / Asfalto">
+                                  <RoadIcon className="w-2.5 h-2.5 text-white shrink-0" />
+                                  <span>{route.asphaltPercentage || (100 - route.offroadPercentage)}%</span>
+                                </span>
+                              </div>
                             </div>
                             <div>
                               <span className="text-ash block">Dificultad</span>
@@ -457,7 +483,7 @@ ${gpxPoints}
                                 : 'bg-white/[0.05] hover:bg-earth text-white border border-white/20'
                             }`}
                           >
-                            {hasVoted ? '✓ Tu Voto' : 'Votar'}
+                            {hasVoted ? 'Tu Voto' : 'Votar'}
                           </button>
 
                           {isWinning && (
@@ -500,7 +526,7 @@ ${gpxPoints}
                         }`}
                       >
                         <ThumbsUp className="w-4 h-4" />
-                        <span>{userHasVoted ? '✓ Has Votado Esta Opción' : 'Votar por Esta Opción'}</span>
+                        <span>{userHasVoted ? 'Has Votado Esta Opción' : 'Votar por Esta Opción'}</span>
                         <span className="ml-1 px-1.5 py-0.2 bg-black/20 text-inherit font-mono text-[10px]">
                           {activeRoute.votes.length}
                         </span>
@@ -559,8 +585,17 @@ ${gpxPoints}
                       <p className="text-lg font-bold text-white">{activeRoute.totalKm} km</p>
                     </div>
                     <div>
-                      <span className="text-[10px] text-ash uppercase block">Porcentaje Off-Road</span>
-                      <p className="text-lg font-bold text-earth">{activeRoute.offroadPercentage}% Terracería</p>
+                      <span className="text-[10px] text-ash uppercase block">Terreno</span>
+                      <div className="flex items-center gap-2.5 mt-1">
+                        <span className="flex items-center gap-1 text-base font-bold text-earth" title="Montaña / Terracería">
+                          <Mountain className="w-4 h-4 text-earth shrink-0" />
+                          <span>{activeRoute.offroadPercentage}%</span>
+                        </span>
+                        <span className="flex items-center gap-1 text-base font-bold text-white" title="Carretera / Asfalto">
+                          <RoadIcon className="w-4 h-4 text-white shrink-0" />
+                          <span>{activeRoute.asphaltPercentage || (100 - activeRoute.offroadPercentage)}%</span>
+                        </span>
+                      </div>
                     </div>
                     <div>
                       <span className="text-[10px] text-ash uppercase block">Altitud Campamento</span>
@@ -597,7 +632,7 @@ ${gpxPoints}
                           : 'bg-white text-obsidian border-white hover:bg-earth hover:text-white'
                       }`}
                     >
-                      {isUserConfirmed ? '✓ Confirmado' : '+ Ir a la Rodada'}
+                      {isUserConfirmed ? 'Confirmado' : '+ Ir a la Rodada'}
                     </button>
                   </div>
 
@@ -631,7 +666,7 @@ ${gpxPoints}
                           </div>
 
                           <span className="px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] uppercase font-bold">
-                            ✓ Confirmado
+                            Confirmado
                           </span>
                         </div>
                       );
@@ -700,7 +735,7 @@ ${gpxPoints}
             <div className="p-16 border border-white/10 bg-[#0B0A09] text-center font-mono text-xs text-ash space-y-4">
               <Compass className="w-10 h-10 text-earth mx-auto" />
               <h3 className="font-display font-bold text-xl text-white uppercase">
-                No Hay Rodada Convocada en Este Club
+                No Hay Rodada Convocada en Esta Tribu
               </h3>
               <p className="max-w-md mx-auto font-light">
                 Sé el capitán y convoca la primera expedición de fin de semana con fechas y destinos para que el grupo empiece a votar rutas.
@@ -734,23 +769,42 @@ ${gpxPoints}
               if (!user) return null;
               const userBike = motorcycles.find(m => m.userId === user.id);
 
+              const isMe = user.id === currentUser.id;
+
               return (
                 <div 
                   key={member.userId} 
-                  onClick={() => openPilotProfileById(user.id)}
-                  className="border border-white/10 hover:border-earth bg-[#0B0A09] p-5 space-y-4 font-mono text-xs flex flex-col justify-between cursor-pointer transition group shadow-lg"
-                  title="Ver perfil y telemetría de este piloto"
+                  onClick={() => {
+                    if (!isMe) openPilotProfileById(user.id);
+                  }}
+                  className={`border bg-[#0B0A09] p-5 space-y-4 font-mono text-xs flex flex-col justify-between transition shadow-lg ${
+                    isMe
+                      ? 'border-earth/30 ring-1 ring-earth/20 cursor-default'
+                      : 'border-white/10 hover:border-earth cursor-pointer group'
+                  }`}
+                  title={isMe ? 'Tu perfil en MotoMami' : 'Ver perfil y telemetría de este piloto'}
                 >
                   <div className="space-y-3">
                     <div className="flex items-center gap-3">
                       <img 
                         src={user.avatar} 
                         alt={user.name} 
-                        className="w-12 h-12 object-cover border border-white/20 group-hover:border-earth transition"
+                        className={`w-12 h-12 object-cover border transition ${
+                          isMe ? 'border-earth ring-1 ring-earth/40' : 'border-white/20 group-hover:border-earth'
+                        }`}
                       />
                       <div>
-                        <p className="font-bold text-white uppercase group-hover:text-earth transition">{user.name}</p>
-                        <p className="text-[10px] text-earth uppercase">{member.role}</p>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <p className={`font-bold uppercase transition ${isMe ? 'text-white' : 'text-white group-hover:text-earth'}`}>
+                            {user.name}
+                          </p>
+                          {isMe && (
+                            <span className="text-[8px] uppercase font-bold text-earth bg-earth/20 border border-earth/40 px-1 py-0.2">
+                              Tú
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[10px] text-ash font-mono">{user.handle}</p>
                       </div>
                     </div>
 
@@ -769,9 +823,15 @@ ${gpxPoints}
                         <p className="text-[9px] text-earth truncate">{userBike.tires}</p>
                       </div>
                     )}
-                    <span className="text-[9px] text-ash group-hover:text-earth uppercase tracking-wider block text-right font-bold transition">
-                      Ver Perfil Strava ↗
-                    </span>
+                    {!isMe ? (
+                      <span className="text-[9px] text-ash group-hover:text-earth uppercase tracking-wider block text-right font-bold transition">
+                        Ver Perfil del Piloto ↗
+                      </span>
+                    ) : (
+                      <span className="text-[9px] text-earth/80 uppercase tracking-wider block text-right font-bold">
+                        Tu Perfil (Tú)
+                      </span>
+                    )}
                   </div>
                 </div>
               );
@@ -786,7 +846,7 @@ ${gpxPoints}
           <div className="border-b border-white/10 pb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
               <span className="font-mono text-[10px] text-earth uppercase tracking-widest font-bold block">
-                [ HISTORIAL Y CONVOCATORIAS DEL CLUB ]
+                [ HISTORIAL Y CONVOCATORIAS DE LA TRIBU ]
               </span>
               <h2 className="font-display font-extrabold text-2xl text-white uppercase mt-1">
                 Todas las Rodadas ({crewRodadas.length})
@@ -815,7 +875,7 @@ ${gpxPoints}
                 <div className="space-y-2 flex-1">
                   <div className="flex items-center gap-3 font-mono text-[10px]">
                     <span className="px-2 py-0.5 bg-earth/20 border border-earth text-earth font-bold uppercase tracking-widest">
-                      {rd.status === 'votacion' ? '⚡ Votación Abierta de Rutas' : '✓ Confirmada'}
+                      {rd.status === 'votacion' ? 'Votación Abierta de Rutas' : 'Confirmada'}
                     </span>
                     <span className="text-ash">·</span>
                     <span className="text-white bg-white/10 px-2 py-0.5">
@@ -842,7 +902,7 @@ ${gpxPoints}
                   </div>
 
                   <button className="px-6 py-3.5 bg-white group-hover:bg-earth text-obsidian group-hover:text-white uppercase font-bold tracking-widest text-xs transition shrink-0">
-                    Ver Rodada en el Club →
+                    Ver Rodada en la Tribu →
                   </button>
                 </div>
               </div>
