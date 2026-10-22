@@ -267,5 +267,22 @@ export interface Crew {
   baseCity: string;
   creatorId: string;
   members: CrewMember[];
+  whatsappGroupUrl?: string;
   createdAt: string;
+}
+
+export interface CrewChatMessage {
+  id: string;
+  crewId: string;
+  userId: string;
+  userName: string;
+  userAvatar: string;
+  userBike?: string;
+  message: string;
+  createdAt: string;
+  systemAction?: {
+    type: 'rodada_confirmada' | 'ruta_propuesta' | 'nuevo_miembro';
+    targetTitle?: string;
+    targetId?: string;
+  };
 }

@@ -14,7 +14,8 @@ import {
   NavTab,
   ActivityPost,
   ActivityComment,
-  Challenge
+  Challenge,
+  CrewChatMessage
 } from '../types';
 import { 
   CURRENT_USER, 
@@ -26,7 +27,8 @@ import {
   INITIAL_ROUTE_PROPOSALS,
   INITIAL_ROUTE_LISTS,
   INITIAL_ACTIVITIES,
-  INITIAL_CHALLENGES
+  INITIAL_CHALLENGES,
+  INITIAL_CREW_MESSAGES
 } from '../data/initialData';
 
 interface AppContextType {
@@ -41,7 +43,7 @@ interface AppContextType {
   currentCrew: Crew | null;
   setCurrentCrew: (crew: Crew | null) => void;
   enterCrew: (crewId: string) => void;
-  createCrew: (data: { name: string; tagline: string; description: string; baseCity: string; coverImage: string }) => Crew;
+  createCrew: (data: { name: string; tagline: string; description: string; baseCity: string; coverImage: string; whatsappGroupUrl?: string }) => Crew;
   updateCrew: (crewId: string, updates: Partial<Crew>) => void;
   addCrewMember: (crewId: string, userId: string, role?: CrewMember['role']) => void;
   joinCrewByCode: (code: string) => { success: boolean; message: string; crew?: Crew };
@@ -89,6 +91,8 @@ interface AppContextType {
   isFollowingUser: (userId: string) => boolean;
   activeNavTab: NavTab;
   setActiveNavTab: (tab: NavTab) => void;
+  crewMessages: CrewChatMessage[];
+  sendCrewMessage: (crewId: string, text: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -100,7 +104,8 @@ const STORAGE_KEYS = {
   RODADAS: 'motomami_rodadas',
   ROUTES: 'motomami_routes',
   ACTIVITIES: 'nao_activities',
-  CHALLENGES: 'nao_challenges'
+  CHALLENGES: 'nao_challenges',
+  CREW_MESSAGES: 'motomami_crew_messages'
 };
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -114,6 +119,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [routeProposals, setRouteProposals] = useState<RouteProposal[]>(INITIAL_ROUTE_PROPOSALS);
   const [selectedRoute, setSelectedRoute] = useState<RouteProposal | null>(INITIAL_ROUTE_PROPOSALS[0]);
   const [activeNavTab, setActiveNavTab] = useState<NavTab>('inicio');
+  const [crewMessages, setCrewMessages] = useState<CrewChatMessage[]>(INITIAL_CREW_MESSAGES);
 
   // Moto Expeditions & Social state
   const [activities, setActivities] = useState<ActivityPost[]>(INITIAL_ACTIVITIES);
@@ -152,7 +158,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 currentMembers.push(initM);
               }
             });
-            return { ...c, members: currentMembers };
+            return {
+              ...c,
+              members: currentMembers,
+              whatsappGroupUrl: 'https://chat.whatsapp.com/Jg1AKUEqoXF7nXZuAPJ588'
+            };
           }
           if (c.id === 'crew-sierrabrava') {
             const currentMembers = Array.isArray(c.members) ? [...c.members] : [];
@@ -161,10 +171,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 currentMembers.push(initM);
               }
             });
-            return { ...c, creatorId: INITIAL_CREWS[1].creatorId, members: currentMembers };
+            // Remover cualquier link falso/dummy de Sierra Brava
+            const isDummyLink = !c.whatsappGroupUrl || 
+              c.whatsappGroupUrl.includes('SierraBravaDualSport') || 
+              c.whatsappGroupUrl.includes('Jg1AKUEqoXF7nXZuAPJ588');
+            return {
+              ...c,
+              members: currentMembers,
+              whatsappGroupUrl: isDummyLink ? undefined : c.whatsappGroupUrl
+            };
           }
           return c;
         });
+        localStorage.setItem(STORAGE_KEYS.CREWS, JSON.stringify(parsed));
         setCrews(parsed);
         const myCrew = parsed.find(c => c.members.some(m => m.userId === CURRENT_USER.id)) || parsed[0];
         setCurrentCrew(myCrew);
@@ -193,12 +212,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setRouteProposals(parsed);
         if (parsed.length > 0) setSelectedRoute(parsed[0]);
       }
+
+      const savedMessages = localStorage.getItem(STORAGE_KEYS.CREW_MESSAGES);
+      if (savedMessages) {
+        try {
+          const parsedMsgs = JSON.parse(savedMessages);
+          if (Array.isArray(parsedMsgs) && parsedMsgs.length > 0) {
+            setCrewMessages(parsedMsgs);
+          }
+        } catch {}
+      }
     } catch (e) {
       console.warn('Could not read from localStorage', e);
     }
   }, []);
 
   // Save changes
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.CREW_MESSAGES, JSON.stringify(crewMessages));
+    } catch (e) { console.error(e); }
+  }, [crewMessages]);
+
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEYS.ACTIVITIES, JSON.stringify(activities));
@@ -248,7 +283,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setMotorcycles(prev => prev.filter(m => m.id !== id));
   };
 
-  const createCrew = (data: { name: string; tagline: string; description: string; baseCity: string; coverImage: string }) => {
+  const createCrew = (data: { name: string; tagline: string; description: string; baseCity: string; coverImage: string; whatsappGroupUrl?: string }) => {
     const randomCode = `MAMI-${Math.floor(1000 + Math.random() * 9000)}`;
     const newCrew: Crew = {
       id: `crew-${Date.now()}`,
@@ -260,6 +295,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       coverImage: data.coverImage || 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=1200',
       baseCity: data.baseCity,
       creatorId: currentUser.id,
+      whatsappGroupUrl: data.whatsappGroupUrl,
       createdAt: new Date().toISOString().split('T')[0],
       members: [
         { userId: currentUser.id, role: 'Capitán de Ruta', joinedAt: new Date().toISOString().split('T')[0] }
@@ -324,6 +360,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (updates.name || updates.members) {
       syncActivitiesWithCrew(crewId, updates.name, updates.members);
     }
+  };
+
+  const sendCrewMessage = (crewId: string, text: string) => {
+    if (!text.trim()) return;
+    const userBikes = motorcycles.filter(m => m.userId === currentUser.id);
+    const userBike = userBikes[0] ? `${userBikes[0].brand} ${userBikes[0].model}` : undefined;
+    const newMsg: CrewChatMessage = {
+      id: `msg-${Date.now()}`,
+      crewId,
+      userId: currentUser.id,
+      userName: currentUser.name,
+      userAvatar: currentUser.avatar,
+      userBike,
+      message: text.trim(),
+      createdAt: new Date().toISOString()
+    };
+    setCrewMessages(prev => [...prev, newMsg]);
   };
 
   const addCrewMember = (crewId: string, userId: string, role: CrewMember['role'] = 'Rider') => {
@@ -1007,7 +1060,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         toggleFollowUser,
         isFollowingUser,
         activeNavTab,
-        setActiveNavTab
+        setActiveNavTab,
+        crewMessages,
+        sendCrewMessage
       }}
     >
       {children}

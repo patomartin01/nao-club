@@ -18,6 +18,7 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
   const [description, setDescription] = useState('');
   const [baseCity, setBaseCity] = useState('Interlomas / CDMX');
   const [coverImage, setCoverImage] = useState('');
+  const [whatsappGroupUrl, setWhatsappGroupUrl] = useState('');
 
   if (!isOpen) return null;
 
@@ -30,7 +31,8 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
       tagline: tagline.trim() || 'Tribu de motos trail y doble propósito.',
       description: description.trim() || 'Comunidad para organizar rodadas de fin de semana y expediciones.',
       baseCity: baseCity.trim(),
-      coverImage: coverImage.trim() || 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=1200'
+      coverImage: coverImage.trim() || 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=1200',
+      whatsappGroupUrl: whatsappGroupUrl.trim() || undefined
     });
 
     confetti({ particleCount: 60 });
@@ -88,6 +90,20 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
               placeholder="Filosofía de manejo, nivel de terracería y tipo de motos..."
               className="w-full bg-white/[0.03] border border-white/15 px-3 py-2 text-white focus:outline-none focus:border-earth"
             />
+          </div>
+
+          <div>
+            <label className="text-ash uppercase text-[10px] block mb-1">Enlace de invitación al grupo de WhatsApp (Opcional)</label>
+            <input
+              type="url"
+              value={whatsappGroupUrl}
+              onChange={(e) => setWhatsappGroupUrl(e.target.value)}
+              placeholder="https://chat.whatsapp.com/Jg1AKUEqoXF7nXZuAPJ588"
+              className="w-full bg-white/[0.03] border border-white/15 px-3 py-2 text-white focus:outline-none focus:border-earth text-xs font-mono"
+            />
+            <span className="text-[10px] text-ash/70 mt-1 block">
+              En WhatsApp: Abre tu grupo &gt; <strong>Info. del grupo</strong> &gt; <strong>Enlace de invitación al grupo</strong> y pégalo aquí para que tus pilotos se unan en 1 toque.
+            </span>
           </div>
 
           <div className="pt-4 border-t border-white/10 flex gap-3">

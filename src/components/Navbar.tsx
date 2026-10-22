@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useApp } from '../context/AppContext';
-import { Key, Share2, Check } from 'lucide-react';
+import { Key } from 'lucide-react';
 
 interface NavbarProps {
   onOpenCreateRodada: () => void;
@@ -16,26 +16,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenJoinCrew
 }) => {
   const { setActiveNavTab, currentUser } = useApp();
-  const [copied, setCopied] = useState(false);
-
-  const handleShare = async () => {
-    const shareData = {
-      title: 'NAO Moto Expeditions',
-      text: 'Únete a nuestra tribu de motociclismo en NAO.',
-      url: typeof window !== 'undefined' ? window.location.href : '',
-    };
-    if (typeof navigator !== 'undefined' && navigator.share && navigator.canShare?.(shareData)) {
-      try {
-        await navigator.share(shareData);
-      } catch (err) {
-        // user cancelled share dialog
-      }
-    } else if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      await navigator.clipboard.writeText(window.location.href);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
 
   return (
     <header className="sticky top-0 z-50 w-full bg-[#0B0A09] border-b border-white/[0.08] select-none pt-[env(safe-area-inset-top,0px)]">
@@ -84,28 +64,10 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             onClick={onOpenJoinCrew}
             title="Unirse con clave de tribu"
-            className="px-3 py-1.5 text-ash hover:text-white hover:bg-white/[0.04] border border-white/10 transition flex items-center gap-1.5 text-[10px] uppercase font-bold"
+            className="px-3 py-1.5 text-ash hover:text-white hover:bg-white/[0.04] border border-white/10 transition flex items-center gap-1.5 text-[10px] uppercase font-bold cursor-pointer"
           >
             <Key className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Unirse #</span>
-          </button>
-
-          <button
-            onClick={handleShare}
-            title="Compartir enlace de la aplicación"
-            className="px-3.5 py-1.5 bg-earth hover:bg-earth-bright text-white font-mono text-[10px] font-bold uppercase tracking-wider transition flex items-center gap-1.5 shrink-0 shadow-sm"
-          >
-            {copied ? (
-              <>
-                <Check className="w-3.5 h-3.5 text-white" />
-                <span>Copiado</span>
-              </>
-            ) : (
-              <>
-                <Share2 className="w-3.5 h-3.5" />
-                <span>Compartir</span>
-              </>
-            )}
           </button>
 
           {/* Pilot avatar thumbnail */}

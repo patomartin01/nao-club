@@ -10,6 +10,7 @@ import {
   MapPin, 
   Clock, 
   Check, 
+  Copy,
   ChevronRight, 
   ArrowLeft,
   Navigation,
@@ -39,6 +40,13 @@ import { buildOrderedGoogleMapsUrl } from '../../utils/googleMaps';
 import { RouteProposal, Rodada } from '../../types';
 import { PlanCardModal } from './PlanCardModal';
 import { StepByStepRodadaModal } from './StepByStepRodadaModal';
+import { RouteTacticalMapCard } from '../Routes/RouteTacticalMapCard';
+
+const WhatsAppIcon: React.FC<{ className?: string }> = ({ className = "w-3.5 h-3.5" }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M17.472 14.382c-.301-.15-1.78-.879-2.056-.98-.276-.1-.476-.15-.676.15-.2.301-.776.98-.952 1.18-.175.201-.351.226-.652.075-.301-.15-1.27-.468-2.42-1.494-.894-.799-1.498-1.786-1.674-2.087-.175-.301-.019-.464.132-.614.136-.135.301-.351.452-.527.15-.175.2-.301.301-.501.1-.201.05-.376-.025-.526-.075-.15-.677-1.632-.927-2.234-.244-.587-.492-.507-.676-.516l-.577-.01c-.2 0-.527.075-.802.376s-1.053 1.028-1.053 2.508 1.078 2.909 1.228 3.11c.15.201 2.122 3.24 5.141 4.544.718.31 1.279.496 1.716.635.722.23 1.38.197 1.9.12.579-.087 1.78-.727 2.03-1.43.25-.702.25-1.304.176-1.43-.075-.126-.276-.201-.577-.351zM12.04 2C6.495 2 2 6.495 2 12.04c0 1.93.548 3.737 1.496 5.275L2.062 22l4.856-1.402C8.38 21.494 10.158 22 12.04 22c5.545 0 10.04-4.495 10.04-10.04C22.08 6.495 17.585 2 12.04 2z" />
+  </svg>
+);
 
 const RoadIcon: React.FC<{ className?: string }> = ({ className = "w-3.5 h-3.5" }) => (
   <svg 
@@ -164,6 +172,8 @@ export const TribusView: React.FC<TribusViewProps> = ({
 
   // Simulated notification toast for sending alert to group pilots' phones
   const [notificationToast, setNotificationToast] = useState<string | null>(null);
+  const [showWhatsappMissingNotice, setShowWhatsappMissingNotice] = useState<boolean>(false);
+  const [copiedCrewShare, setCopiedCrewShare] = useState<boolean>(false);
 
   // Search query for Tribus list
   const [searchTribuQuery, setSearchTribuQuery] = useState('');
@@ -199,6 +209,8 @@ export const TribusView: React.FC<TribusViewProps> = ({
   const [isEditingCrewName, setIsEditingCrewName] = useState(false);
   const [editedCrewName, setEditedCrewName] = useState('');
   const [editedCrewCover, setEditedCrewCover] = useState('');
+  const [editedCrewWhatsapp, setEditedCrewWhatsapp] = useState('');
+  const [copiedNaoLink, setCopiedNaoLink] = useState(false);
   const [showEditCrewModal, setShowEditCrewModal] = useState(false);
   const [showCrewDropdown, setShowCrewDropdown] = useState(false);
 
@@ -210,7 +222,60 @@ export const TribusView: React.FC<TribusViewProps> = ({
     if (!activeTribu) return;
     setEditedCrewName(activeTribu.name);
     setEditedCrewCover(activeTribu.coverImage || '');
+    setEditedCrewWhatsapp(activeTribu.whatsappGroupUrl || '');
     setShowEditCrewModal(true);
+  };
+
+  const handleCopyNaoLink = () => {
+    const url = typeof window !== 'undefined' ? `${window.location.origin}/?tab=tribus` : 'https://nao-club-three.vercel.app';
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url);
+      setCopiedNaoLink(true);
+      setNotificationToast('¡Enlace de NAO copiado! Pégalo en la descripción de tu grupo de WhatsApp.');
+      setTimeout(() => setCopiedNaoLink(false), 3000);
+    }
+  };
+
+  const handleWhatsAppHeaderClick = (e: React.MouseEvent) => {
+    if (activeTribu?.whatsappGroupUrl && activeTribu.whatsappGroupUrl.trim() !== '') {
+      window.open(activeTribu.whatsappGroupUrl, '_blank', 'noopener,noreferrer');
+    } else {
+      e.preventDefault();
+      setShowWhatsappMissingNotice((prev) => !prev);
+      setTimeout(() => setShowWhatsappMissingNotice(false), 4500);
+    }
+  };
+
+  const handleShareCrewWithCode = async () => {
+    if (!activeTribu) return;
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://nao-club-three.vercel.app';
+    const shareUrl = `${origin}/?tab=tribus&tribu=${activeTribu.id}&code=${activeTribu.inviteCode}`;
+    const shareText = `🏍️ Únete a la tribu "${activeTribu.name}" en NAO\n🔑 Clave de acceso: ${activeTribu.inviteCode}\n🔗 Enlace directo: ${shareUrl}`;
+
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share({
+          title: `Tribu ${activeTribu.name} - NAO`,
+          text: `Únete a la tribu "${activeTribu.name}" en NAO. Clave de acceso: ${activeTribu.inviteCode}`,
+          url: shareUrl,
+        });
+        setCopiedCrewShare(true);
+        setTimeout(() => setCopiedCrewShare(false), 3000);
+        return;
+      } catch (err) {
+        // Fallback to clipboard if share cancelled
+      }
+    }
+
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      await navigator.clipboard.writeText(shareText);
+      setCopiedCrewShare(true);
+      setNotificationToast(`¡Enlace y clave (${activeTribu.inviteCode}) de ${activeTribu.name} copiados!`);
+      setTimeout(() => {
+        setCopiedCrewShare(false);
+        setNotificationToast(null);
+      }, 4000);
+    }
   };
 
   const handleSaveCrewDetails = () => {
@@ -220,7 +285,8 @@ export const TribusView: React.FC<TribusViewProps> = ({
     if (trimmedName) {
       updateCrew(activeTribu.id, { 
         name: trimmedName,
-        coverImage: trimmedCover || activeTribu.coverImage
+        coverImage: trimmedCover || activeTribu.coverImage,
+        whatsappGroupUrl: editedCrewWhatsapp.trim() || undefined
       });
       setNotificationToast(`Grupo actualizado: "${trimmedName}".`);
     }
@@ -657,47 +723,66 @@ export const TribusView: React.FC<TribusViewProps> = ({
             <span className="hidden sm:inline">Tribus</span>
           </button>
 
-          {/* Centro: Nombre del Grupo con Flechita (Dropdown selector de grupos) */}
-          <div className="relative flex-1 flex justify-center">
+          {/* Centro: Selector de Grupo & Acciones de Tribu */}
+          <div className="relative flex-1 flex flex-col items-center justify-center min-w-0">
+            {/* Acciones arriba del nombre centradas (cero empalmes) */}
+            <div className="flex items-center justify-center gap-1.5 -mb-0.5">
+              <button
+                type="button"
+                onClick={handleOpenEditCrew}
+                title="Editar grupo (nombre, foto y WhatsApp)"
+                className="p-1 rounded-md text-ash/60 hover:text-earth hover:bg-white/5 transition shrink-0 cursor-pointer"
+              >
+                <Pencil className="w-3.5 h-3.5" />
+              </button>
+
+              <button
+                type="button"
+                onClick={handleShareCrewWithCode}
+                title={`Compartir ${activeTribu.name} (Clave: ${activeTribu.inviteCode})`}
+                className={`p-1 rounded-md transition shrink-0 cursor-pointer ${
+                  copiedCrewShare 
+                    ? 'text-emerald-400 bg-emerald-500/10' 
+                    : 'text-ash/60 hover:text-earth hover:bg-white/5'
+                }`}
+              >
+                {copiedCrewShare ? (
+                  <Check className="w-3.5 h-3.5 text-emerald-400" />
+                ) : (
+                  <Share2 className="w-3.5 h-3.5" />
+                )}
+              </button>
+            </div>
+
+            {/* Nombre del Grupo con Flechita (Dropdown selector de grupos) */}
             <div className="relative flex items-center justify-center">
               <button
+                type="button"
                 onClick={() => setShowCrewDropdown(prev => !prev)}
-                  className={`px-3 py-1.5 rounded-xl transition-all flex flex-col items-center group max-w-[220px] sm:max-w-md mx-auto active:scale-95 ${
-                    showCrewDropdown ? 'bg-white/10 ring-1 ring-white/10' : 'hover:bg-white/5'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    {activeTribu.coverImage && (
-                      <div className="w-5 h-5 rounded-md overflow-hidden border border-white/20 shrink-0">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img 
-                          src={activeTribu.coverImage} 
-                          alt={activeTribu.name} 
-                          className="w-full h-full object-cover" 
-                        />
-                      </div>
-                    )}
-                    <span className="font-display font-black text-sm sm:text-base text-white uppercase tracking-tight truncate">
-                      {activeTribu.name}
-                    </span>
-                    <ChevronDown className={`w-3.5 h-3.5 text-earth shrink-0 transition-transform duration-200 ${showCrewDropdown ? 'rotate-180' : ''}`} />
-                  </div>
-                  <span className="text-[10px] font-mono text-ash truncate">
-                    {activeTribu.baseCity} • {activeTribu.members.length} pilotos
+                className={`px-3 py-1 rounded-xl transition-all flex flex-col items-center group max-w-[220px] sm:max-w-md mx-auto active:scale-95 ${
+                  showCrewDropdown ? 'bg-white/10 ring-1 ring-white/10' : 'hover:bg-white/5'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  {activeTribu.coverImage && (
+                    <div className="w-5 h-5 rounded-md overflow-hidden border border-white/20 shrink-0">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img 
+                        src={activeTribu.coverImage} 
+                        alt={activeTribu.name} 
+                        className="w-full h-full object-cover" 
+                      />
+                    </div>
+                  )}
+                  <span className="font-display font-black text-sm sm:text-base text-white uppercase tracking-tight truncate">
+                    {activeTribu.name}
                   </span>
-                </button>
-
-                {/* Lapiz de editar minimalista para nombre y foto */}
-                {isCreatorOrAdmin && (
-                  <button
-                    type="button"
-                    onClick={handleOpenEditCrew}
-                    title="Editar nombre y foto del grupo"
-                    className="p-1.5 rounded-lg text-ash/60 hover:text-earth hover:bg-white/5 transition shrink-0 ml-0.5"
-                  >
-                    <Pencil className="w-3.5 h-3.5" />
-                  </button>
-                )}
+                  <ChevronDown className={`w-3.5 h-3.5 text-earth shrink-0 transition-transform duration-200 ${showCrewDropdown ? 'rotate-180' : ''}`} />
+                </div>
+                <span className="text-[10px] font-mono text-ash truncate">
+                  {activeTribu.baseCity} • {activeTribu.members.length} pilotos
+                </span>
+              </button>
 
                 {/* Dropdown selector de Tribus (Friendly Modern App Sheet/Menu) */}
                 {showCrewDropdown && (
@@ -790,18 +875,48 @@ export const TribusView: React.FC<TribusViewProps> = ({
 
                       {/* Friendly Actions */}
                       <div className="pt-2 border-t border-white/5 space-y-1">
-                        {isCreatorOrAdmin && (
+                        {activeTribu.whatsappGroupUrl ? (
+                          <a
+                            href={activeTribu.whatsappGroupUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-emerald-400 hover:bg-emerald-500/10 flex items-center gap-2.5 transition"
+                          >
+                            <WhatsAppIcon className="w-3.5 h-3.5 text-emerald-400" />
+                            <span>Abrir grupo de WhatsApp</span>
+                          </a>
+                        ) : (
                           <button
                             onClick={() => {
                               setShowCrewDropdown(false);
                               handleOpenEditCrew();
                             }}
-                            className="w-full text-left px-3 py-2 rounded-lg text-xs text-ash hover:text-white hover:bg-white/5 flex items-center gap-2.5 transition"
+                            className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-emerald-400 hover:bg-emerald-500/10 flex items-center gap-2.5 transition"
                           >
-                            <Pencil className="w-3.5 h-3.5 text-earth" />
-                            <span>Editar grupo (nombre y foto)</span>
+                            <WhatsAppIcon className="w-3.5 h-3.5 text-emerald-400" />
+                            <span>Conectar grupo de WhatsApp</span>
                           </button>
                         )}
+                        <button
+                          onClick={() => {
+                            setShowCrewDropdown(false);
+                            handleOpenEditCrew();
+                          }}
+                          className="w-full text-left px-3 py-2 rounded-lg text-xs text-ash hover:text-white hover:bg-white/5 flex items-center gap-2.5 transition cursor-pointer"
+                        >
+                          <Pencil className="w-3.5 h-3.5 text-earth" />
+                          <span>Editar grupo (nombre, foto y WhatsApp)</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            setShowCrewDropdown(false);
+                            handleShareCrewWithCode();
+                          }}
+                          className="w-full text-left px-3 py-2 rounded-lg text-xs text-ash hover:text-white hover:bg-white/5 flex items-center gap-2.5 transition cursor-pointer"
+                        >
+                          <Share2 className="w-3.5 h-3.5 text-earth" />
+                          <span>Compartir grupo (enlace y clave {activeTribu.inviteCode})</span>
+                        </button>
                         <button
                           onClick={() => {
                             setShowCrewDropdown(false);
@@ -819,28 +934,81 @@ export const TribusView: React.FC<TribusViewProps> = ({
               </div>
           </div>
 
-          {/* Derecha: Tabs Rodadas / Pilotos */}
-          <div className="flex border border-white/15 shrink-0 text-xs">
+          {/* Derecha: WhatsApp + Tabs Rodadas / Pilotos */}
+          <div className="relative flex items-center gap-2 shrink-0">
+            {/* Botón WhatsApp */}
             <button
-              onClick={() => setActiveTribuTab('rodadas')}
-              className={`px-2.5 sm:px-3 py-1 font-bold uppercase tracking-wider transition ${
-                activeTribuTab === 'rodadas'
-                  ? 'bg-earth text-white'
-                  : 'bg-transparent text-ash hover:text-white'
+              type="button"
+              onClick={handleWhatsAppHeaderClick}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-bold transition shrink-0 cursor-pointer shadow-sm active:scale-95 ${
+                activeTribu.whatsappGroupUrl
+                  ? 'bg-[#25D366]/15 hover:bg-[#25D366]/25 border-[#25D366]/40 text-[#25D366]'
+                  : 'bg-white/[0.04] hover:bg-white/[0.08] border-white/15 text-ash hover:text-white'
               }`}
+              title={activeTribu.whatsappGroupUrl ? 'Abrir grupo de WhatsApp' : 'Sin enlace de WhatsApp cargado'}
             >
-              Rodadas
+              <WhatsAppIcon className={`w-3.5 h-3.5 shrink-0 ${activeTribu.whatsappGroupUrl ? 'text-[#25D366]' : 'text-ash'}`} />
+              <span className="text-[11px] font-bold">WhatsApp</span>
             </button>
-            <button
-              onClick={() => setActiveTribuTab('miembros')}
-              className={`px-2.5 sm:px-3 py-1 font-bold uppercase tracking-wider transition ${
-                activeTribuTab === 'miembros'
-                  ? 'bg-earth text-white'
-                  : 'bg-transparent text-ash hover:text-white'
-              }`}
-            >
-              Pilotos ({activeTribu.members.length})
-            </button>
+
+            {/* Mini Aviso: Sin enlace de WhatsApp vinculado */}
+            {showWhatsappMissingNotice && (
+              <div className="absolute top-full right-0 mt-2 z-50 w-72 p-3.5 bg-[#141210] border border-white/20 rounded-xl shadow-2xl animate-in fade-in slide-in-from-top-1 duration-150">
+                <div className="flex items-start gap-2.5">
+                  <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0 mt-0.5">
+                    <WhatsAppIcon className="w-3.5 h-3.5 text-ash" />
+                  </div>
+                  <div className="space-y-1 min-w-0 flex-1 text-left">
+                    <h5 className="text-xs font-bold text-white uppercase tracking-wider font-mono">
+                      Sin enlace de WhatsApp
+                    </h5>
+                    <p className="text-[11px] text-ash leading-relaxed">
+                      Este grupo aún no tiene un enlace de WhatsApp vinculado.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowWhatsappMissingNotice(false);
+                        handleOpenEditCrew();
+                      }}
+                      className="text-[11px] font-bold text-earth hover:text-earth-bright underline pt-1 block cursor-pointer"
+                    >
+                      Vincular chat en Ajustes ✏️ →
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowWhatsappMissingNotice(false)}
+                    className="text-ash/60 hover:text-white p-0.5 cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div className="flex border border-white/15 shrink-0 text-xs">
+              <button
+                onClick={() => setActiveTribuTab('rodadas')}
+                className={`px-2.5 sm:px-3 py-1 font-bold uppercase tracking-wider transition ${
+                  activeTribuTab === 'rodadas'
+                    ? 'bg-earth text-white'
+                    : 'bg-transparent text-ash hover:text-white'
+                }`}
+              >
+                Rodadas
+              </button>
+              <button
+                onClick={() => setActiveTribuTab('miembros')}
+                className={`px-2.5 sm:px-3 py-1 font-bold uppercase tracking-wider transition ${
+                  activeTribuTab === 'miembros'
+                    ? 'bg-earth text-white'
+                    : 'bg-transparent text-ash hover:text-white'
+                }`}
+              >
+                Pilotos ({activeTribu.members.length})
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -1119,6 +1287,61 @@ export const TribusView: React.FC<TribusViewProps> = ({
             </button>
           </div>
 
+          {/* Tarjeta de integración con WhatsApp */}
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-950/40 via-emerald-900/15 to-transparent border border-emerald-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                <WhatsAppIcon className="w-5 h-5 text-emerald-400" />
+              </div>
+              <div>
+                <h4 className="font-display font-bold text-sm text-white uppercase tracking-wide flex items-center gap-2">
+                  <span>Chat de WhatsApp de la Tribu</span>
+                  {activeTribu.whatsappGroupUrl && (
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                      Conectado
+                    </span>
+                  )}
+                </h4>
+                <p className="text-xs text-ash">
+                  {activeTribu.whatsappGroupUrl 
+                    ? 'Comunidad activa en WhatsApp para el cotorreo diario, stickers y avisos de última hora.'
+                    : 'Aún no se ha vinculado el grupo de WhatsApp de esta tribu.'}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              {activeTribu.whatsappGroupUrl ? (
+                <a
+                  href={activeTribu.whatsappGroupUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition shadow"
+                >
+                  <WhatsAppIcon className="w-3.5 h-3.5" />
+                  <span>Abrir WhatsApp</span>
+                </a>
+              ) : (
+                <button
+                  onClick={handleOpenEditCrew}
+                  className="px-3.5 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Vincular WhatsApp</span>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={handleCopyNaoLink}
+                className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-ash hover:text-white text-xs font-mono transition flex items-center gap-1.5"
+                title="Copiar link de NAO para la descripción del grupo de WhatsApp"
+              >
+                <Copy className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="hidden md:inline">{copiedNaoLink ? '¡Copiado!' : 'Copiar Link NAO'}</span>
+              </button>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
             {activeTribu.members.map(member => {
               const isCreator = member.userId === activeTribu.creatorId;
@@ -1275,59 +1498,19 @@ export const TribusView: React.FC<TribusViewProps> = ({
                   }`}
                 >
                   <div>
-                    {/* Image Header with Leader Badge */}
+                    {/* Tactical Map Header with Topo Contours & GPS Vector Track */}
                     <div 
                       onClick={() => setDetailProposalId(proposal.id)}
-                      className="relative h-44 w-full overflow-hidden cursor-pointer"
+                      className="cursor-pointer group/map"
                     >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={proposal.coverImage}
-                        alt={proposal.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition duration-500 brightness-90 group-hover:brightness-100"
+                      <RouteTacticalMapCard
+                        proposal={proposal}
+                        heightClass="h-44"
+                        isWinner={isWinner}
+                        isLeader={isLeader}
+                        optionIndex={index}
+                        showOverlayBadges={true}
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent pointer-events-none" />
-
-                      {/* Badges on top of image */}
-                      <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between">
-                        {isWinner ? (
-                          <span className="text-[9px] font-mono uppercase font-bold px-2 py-0.5 bg-emerald-500 text-black shadow">
-                            ★ Rodada Oficial
-                          </span>
-                        ) : isLeader ? (
-                          <span className="text-[9px] font-mono uppercase font-bold px-2 py-0.5 bg-earth text-white shadow">
-                            #1 Líder en Apoyo
-                          </span>
-                        ) : (
-                          <span className="text-[9px] font-mono uppercase font-bold px-2 py-0.5 bg-black/60 backdrop-blur-sm border border-white/20 text-ash">
-                            Opción #{index + 1}
-                          </span>
-                        )}
-
-                        <span className="text-[9px] font-mono uppercase px-2 py-0.5 bg-black/70 backdrop-blur-sm border border-white/15 text-chalk font-bold flex items-center gap-1.5">
-                          <span>{proposal.totalKm} km</span>
-                          <span className="text-white/30">•</span>
-                          <span className="flex items-center gap-0.5 text-earth" title="Montaña / Terracería">
-                            <Mountain className="w-2.5 h-2.5 text-earth shrink-0" />
-                            <span>{proposal.offroadPercentage}%</span>
-                          </span>
-                          <span className="flex items-center gap-0.5 text-white" title="Carretera / Asfalto">
-                            <RoadIcon className="w-2.5 h-2.5 text-white shrink-0" />
-                            <span>{proposal.asphaltPercentage || (100 - proposal.offroadPercentage)}%</span>
-                          </span>
-                        </span>
-                      </div>
-
-                      {/* Destination Pill at bottom of image */}
-                      <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between">
-                        <span className="text-xs text-white font-bold flex items-center gap-1 drop-shadow">
-                          <MapPin className="w-3 h-3 text-earth" />
-                          {proposal.destination}
-                        </span>
-                        <span className="text-[10px] text-ash drop-shadow">
-                          {proposal.difficulty}
-                        </span>
-                      </div>
                     </div>
 
                     {/* Card Body */}
@@ -1488,29 +1671,13 @@ export const TribusView: React.FC<TribusViewProps> = ({
               </button>
             </div>
 
-            {/* Cover Image & Quick Metrics */}
-            <div className="relative h-48 w-full overflow-hidden border border-white/10">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={selectedProposalForDetail.coverImage}
-                alt={selectedProposalForDetail.title}
-                className="w-full h-full object-cover"
+            {/* Tactical Topo Map & Quick Metrics in Detail Modal */}
+            <div className="border border-white/10 overflow-hidden">
+              <RouteTacticalMapCard
+                proposal={selectedProposalForDetail}
+                heightClass="h-52"
+                showOverlayBadges={true}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
-              <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-xs font-bold text-white">
-                <span>{selectedProposalForDetail.totalKm} km en total</span>
-                <div className="flex items-center gap-2.5">
-                  <span className="flex items-center gap-1 text-earth" title="Montaña / Terracería">
-                    <Mountain className="w-3.5 h-3.5 text-earth shrink-0" />
-                    <span>{selectedProposalForDetail.offroadPercentage}%</span>
-                  </span>
-                  <span className="text-white/40">•</span>
-                  <span className="flex items-center gap-1 text-white" title="Carretera / Asfalto">
-                    <RoadIcon className="w-3.5 h-3.5 text-white shrink-0" />
-                    <span>{selectedProposalForDetail.asphaltPercentage || (100 - selectedProposalForDetail.offroadPercentage)}%</span>
-                  </span>
-                </div>
-              </div>
             </div>
 
             {/* Voting Bar in Detail Modal */}
@@ -1526,27 +1693,29 @@ export const TribusView: React.FC<TribusViewProps> = ({
 
               <div className="flex items-center gap-2">
                 <button
+                  type="button"
                   onClick={() => voteRoute(selectedProposalForDetail.id)}
-                  className={`px-3 py-1.5 border text-xs font-bold flex items-center gap-1.5 transition ${
+                  title="Votar a favor"
+                  className={`p-2 sm:px-3 sm:py-2 border text-xs font-bold flex items-center justify-center transition cursor-pointer ${
                     selectedProposalForDetail.votes?.includes(currentUser.id)
                       ? 'bg-earth/20 border-earth text-earth'
-                      : 'bg-white/[0.03] border-white/15 text-ash hover:text-white'
+                      : 'bg-white/[0.03] border-white/15 text-ash hover:text-white hover:border-white/30'
                   }`}
                 >
-                  <ThumbsUp className="w-3.5 h-3.5" />
-                  <span>{selectedProposalForDetail.votes?.includes(currentUser.id) ? 'Te Gusta' : 'Me Gusta'}</span>
+                  <ThumbsUp className="w-4 h-4" />
                 </button>
 
                 <button
+                  type="button"
                   onClick={() => downvoteRoute(selectedProposalForDetail.id)}
-                  className={`px-3 py-1.5 border text-xs font-bold flex items-center gap-1.5 transition ${
+                  title="Votar en contra"
+                  className={`p-2 sm:px-3 sm:py-2 border text-xs font-bold flex items-center justify-center transition cursor-pointer ${
                     selectedProposalForDetail.downvotes?.includes(currentUser.id)
                       ? 'bg-rose-500/20 border-rose-500 text-rose-300'
-                      : 'bg-white/[0.03] border-white/15 text-ash hover:text-white'
+                      : 'bg-white/[0.03] border-white/15 text-ash hover:text-white hover:border-white/30'
                   }`}
                 >
-                  <ThumbsDown className="w-3.5 h-3.5" />
-                  <span>{selectedProposalForDetail.downvotes?.includes(currentUser.id) ? 'No te convence' : 'No me gusta'}</span>
+                  <ThumbsDown className="w-4 h-4" />
                 </button>
 
                 {/* If user is Admin, they can crown this route */}
@@ -1977,9 +2146,9 @@ export const TribusView: React.FC<TribusViewProps> = ({
             </div>
 
             <div className="space-y-4">
-              {/* Nombre */}
+              {/* Nombre del Grupo */}
               <div>
-                <label className="text-xs font-mono uppercase text-ash block mb-1.5 font-bold">
+                <label className="text-[11px] font-mono uppercase text-ash block mb-1.5 font-bold tracking-wider">
                   Nombre del Grupo
                 </label>
                 <input
@@ -1987,19 +2156,19 @@ export const TribusView: React.FC<TribusViewProps> = ({
                   value={editedCrewName}
                   onChange={(e) => setEditedCrewName(e.target.value)}
                   placeholder="Ej. MotoMami Adventure Crew"
-                  className="w-full bg-black/60 border border-white/15 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-ash/50 focus:outline-none focus:border-earth transition"
+                  className="w-full bg-black/60 border border-white/15 focus:border-white/40 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-ash/40 focus:outline-none transition font-sans"
                 />
               </div>
 
-              {/* Foto de portada */}
+              {/* Portada del Grupo */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-mono uppercase text-ash font-bold">
-                    Foto de Portada / Banner
+                  <label className="text-[11px] font-mono uppercase text-ash font-bold tracking-wider">
+                    Portada
                   </label>
-                  <label className="cursor-pointer text-xs font-bold text-earth hover:text-earth-bright transition flex items-center gap-1.5 px-2.5 py-1 bg-earth/10 border border-earth/30 rounded-lg">
-                    <Upload className="w-3.5 h-3.5" />
-                    <span>Subir de tu galería</span>
+                  <label className="cursor-pointer text-[11px] font-bold text-ash hover:text-white transition flex items-center gap-1.5 px-2.5 py-1 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg">
+                    <Upload className="w-3 h-3 text-ash" />
+                    <span>Subir foto</span>
                     <input
                       type="file"
                       accept="image/*"
@@ -2020,37 +2189,33 @@ export const TribusView: React.FC<TribusViewProps> = ({
                   </label>
                 </div>
                 
-                {/* Preview */}
-                <div className="relative h-28 w-full rounded-xl overflow-hidden border border-white/15 mb-3 bg-black/40">
+                {/* Banner Preview */}
+                <div className="relative h-24 w-full rounded-xl overflow-hidden border border-white/10 bg-black/40">
                   {editedCrewCover ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img 
                       src={editedCrewCover} 
-                      alt="Vista previa" 
+                      alt="Portada de la tribu" 
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center text-ash text-xs">
-                      <Camera className="w-6 h-6 mb-1 text-ash/40" />
-                      <span>Sin imagen seleccionada</span>
+                    <div className="w-full h-full flex items-center justify-center text-ash text-xs">
+                      <Camera className="w-5 h-5 mr-2 text-ash/40" />
+                      <span>Sin imagen</span>
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-2.5">
-                    <span className="text-[10px] font-mono text-ash uppercase">Vista previa</span>
-                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                 </div>
 
-                {/* Fotitos para elegir (limpias, sin letras ni barras de texto) */}
-                <div>
-                  <span className="text-[10px] font-mono text-ash/80 block mb-2 font-bold uppercase tracking-wider">
-                    O elige una de estas fotos:
-                  </span>
-                  <div className="grid grid-cols-4 gap-2">
+                {/* Presets discretos */}
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="text-[10px] font-mono text-ash/60 shrink-0">Presets:</span>
+                  <div className="flex items-center gap-2 overflow-x-auto pb-0.5">
                     {[
-                      'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=800',
+                      'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=800',
+                      'https://images.unsplash.com/photo-1542718610-a1d656d1884c?auto=format&fit=crop&q=80&w=800',
                       'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&q=80&w=800',
                       'https://images.unsplash.com/photo-1515777315835-281b94c9589f?auto=format&fit=crop&q=80&w=800',
-                      'https://images.unsplash.com/photo-1609630875171-b1321377ee65?auto=format&fit=crop&q=80&w=800',
                     ].map((imgUrl, idx) => {
                       const isSelected = editedCrewCover === imgUrl;
                       return (
@@ -2058,27 +2223,69 @@ export const TribusView: React.FC<TribusViewProps> = ({
                           key={idx}
                           type="button"
                           onClick={() => setEditedCrewCover(imgUrl)}
-                          className={`relative h-14 rounded-xl overflow-hidden border-2 transition-all ${
+                          className={`relative w-12 h-8 rounded-lg overflow-hidden border transition shrink-0 cursor-pointer ${
                             isSelected 
-                              ? 'border-earth ring-2 ring-earth/50 shadow-md scale-102' 
-                              : 'border-white/10 opacity-70 hover:opacity-100 hover:border-white/30'
+                              ? 'border-earth ring-1 ring-earth' 
+                              : 'border-white/10 opacity-60 hover:opacity-100 hover:border-white/30'
                           }`}
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img 
                             src={imgUrl} 
-                            alt={`Foto ${idx + 1}`} 
+                            alt={`Preset ${idx + 1}`} 
                             className="w-full h-full object-cover" 
                           />
-                          {isSelected && (
-                            <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-earth text-white flex items-center justify-center shadow">
-                              <Check className="w-2.5 h-2.5" />
-                            </div>
-                          )}
                         </button>
                       );
                     })}
                   </div>
+                </div>
+              </div>
+
+              {/* Vínculo de WhatsApp (Limpio, moderno, sin muros de texto) */}
+              <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/10 space-y-3">
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-[11px] font-mono uppercase text-ash font-bold flex items-center gap-1.5">
+                      <WhatsAppIcon className="w-3.5 h-3.5 text-[#25D366]" />
+                      <span>Chat de WhatsApp</span>
+                    </label>
+                    {editedCrewWhatsapp && (
+                      <a
+                        href={editedCrewWhatsapp}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[10px] text-[#25D366] hover:underline font-mono"
+                      >
+                        Abrir enlace ↗
+                      </a>
+                    )}
+                  </div>
+                  <input
+                    type="url"
+                    value={editedCrewWhatsapp}
+                    onChange={(e) => setEditedCrewWhatsapp(e.target.value)}
+                    placeholder="https://chat.whatsapp.com/..."
+                    className="w-full bg-black/60 border border-white/10 focus:border-white/30 rounded-lg px-3 py-2 text-xs text-white placeholder-ash/40 focus:outline-none transition font-mono"
+                  />
+                  <span className="text-[10px] text-ash/60 mt-1 block">
+                    Pega el enlace de invitación de tu grupo para que tus pilotos se unan con 1 toque.
+                  </span>
+                </div>
+
+                <div className="pt-2.5 border-t border-white/5 flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <span className="text-xs text-white font-medium block">Link de NAO</span>
+                    <span className="text-[10px] text-ash/70 block">Pégalo en la descripción de tu WhatsApp</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleCopyNaoLink}
+                    className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-mono transition shrink-0 flex items-center gap-1.5 cursor-pointer active:scale-95"
+                  >
+                    <Copy className="w-3 h-3 text-ash" />
+                    <span>{copiedNaoLink ? '✓ Copiado' : 'Copiar link'}</span>
+                  </button>
                 </div>
               </div>
             </div>

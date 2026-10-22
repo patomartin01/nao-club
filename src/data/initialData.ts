@@ -1,4 +1,4 @@
-import { User, Motorcycle, Crew, Rodada, RouteProposal, RouteList, ActivityPost, Challenge } from '../types';
+import { User, Motorcycle, Crew, Rodada, RouteProposal, RouteList, ActivityPost, Challenge, CrewChatMessage } from '../types';
 
 export const CURRENT_USER: User = {
   id: 'user-patricio',
@@ -375,7 +375,8 @@ export const INITIAL_CREWS: Crew[] = [
       { userId: 'user-mich', role: 'Rider', joinedAt: '2024-03-16' },
       { userId: 'user-diego-terrazas', role: 'Rider', joinedAt: '2024-03-18' },
       { userId: 'user-pepe', role: 'Barrendero', joinedAt: '2024-03-20' },
-    ]
+    ],
+    whatsappGroupUrl: 'https://chat.whatsapp.com/Jg1AKUEqoXF7nXZuAPJ588'
   },
   {
     id: 'crew-sierrabrava',
@@ -391,7 +392,8 @@ export const INITIAL_CREWS: Crew[] = [
     members: [
       { userId: 'user-diego', role: 'Capitán de Ruta', joinedAt: '2024-06-01' },
       { userId: 'user-sofia', role: 'Rider', joinedAt: '2024-06-05' },
-      { userId: 'user-rigo', role: 'Barrendero', joinedAt: '2024-06-10' }
+      { userId: 'user-rigo', role: 'Barrendero', joinedAt: '2024-06-10' },
+      { userId: 'user-patricio', role: 'Rider', joinedAt: '2024-06-12' }
     ]
   }
 ];
@@ -1373,3 +1375,45 @@ export const INITIAL_CHALLENGES: Challenge[] = [
   }
 ];
 
+export const INITIAL_CREW_MESSAGES: CrewChatMessage[] = [
+  {
+    id: 'msg-1',
+    crewId: 'crew-motomami',
+    userId: 'user-sofia',
+    userName: 'Sofía Ramos',
+    userAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=250',
+    userBike: 'Yamaha Ténéré 700',
+    message: '¡Qué onda tribu! ¿Quién lleva el compresor portátil para este fin?',
+    createdAt: '2026-10-22T09:15:00Z'
+  },
+  {
+    id: 'msg-2',
+    crewId: 'crew-motomami',
+    userId: 'user-mateo',
+    userName: 'Mateo Garza',
+    userAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=250',
+    userBike: 'KTM 890 Adventure R',
+    message: 'Yo lo cargo en las maletas, junto con el kit de mechas y bomba de inflado rápido 🛠️',
+    createdAt: '2026-10-22T09:22:00Z'
+  },
+  {
+    id: 'msg-3',
+    crewId: 'crew-motomami',
+    userId: 'user-patricio',
+    userName: 'Pato Martín',
+    userAvatar: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
+    userBike: 'BMW R 1250 GS Adv',
+    message: 'Vientos. El punto de reunión en la gasolinera de Santa Fe sigue en pie a las 6:30 AM para salir con tanque lleno.',
+    createdAt: '2026-10-22T09:35:00Z'
+  },
+  {
+    id: 'msg-4',
+    crewId: 'crew-motomami',
+    userId: 'user-manu-vidal',
+    userName: 'Manu Martin Vidal',
+    userAvatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=250',
+    userBike: 'BMW R 1250 GS',
+    message: 'Perfecto, tanque lleno y presiones de llantas listas desde la noche anterior ⚡',
+    createdAt: '2026-10-22T09:42:00Z'
+  }
+];

@@ -52,8 +52,9 @@ export const BottomBar: React.FC<BottomBarProps> = ({ onOpenRecordRoute }) => {
         
         {/* 01. INICIO (FEED SOCIAL) */}
         <button
+          type="button"
           onClick={() => setActiveNavTab('inicio')}
-          className={`flex-1 min-h-[50px] flex flex-col items-center justify-center py-1 transition-all active:scale-95 group touch-manipulation ${
+          className={`flex-1 min-h-[50px] flex flex-col items-center justify-center py-1 transition-all active:scale-95 group touch-manipulation cursor-pointer ${
             isInicio ? 'text-white' : 'text-ash hover:text-white'
           }`}
         >
@@ -72,8 +73,9 @@ export const BottomBar: React.FC<BottomBarProps> = ({ onOpenRecordRoute }) => {
 
         {/* 02. MAPAS (EXPLORADOR) */}
         <button
+          type="button"
           onClick={() => setActiveNavTab('mapas')}
-          className={`flex-1 min-h-[50px] flex flex-col items-center justify-center py-1 transition-all active:scale-95 group touch-manipulation ${
+          className={`flex-1 min-h-[50px] flex flex-col items-center justify-center py-1 transition-all active:scale-95 group touch-manipulation cursor-pointer ${
             isMapas ? 'text-white' : 'text-ash hover:text-white'
           }`}
         >
@@ -85,8 +87,9 @@ export const BottomBar: React.FC<BottomBarProps> = ({ onOpenRecordRoute }) => {
 
         {/* 03. REGISTRAR (CABINA GPS) */}
         <button
+          type="button"
           onClick={handleRecordClick}
-          className={`flex-1 min-h-[50px] flex flex-col items-center justify-center py-1 transition-all active:scale-95 group touch-manipulation ${
+          className={`flex-1 min-h-[50px] flex flex-col items-center justify-center py-1 transition-all active:scale-95 group touch-manipulation cursor-pointer ${
             isRegistrar ? 'text-white' : 'text-ash hover:text-white'
           }`}
         >
@@ -102,8 +105,9 @@ export const BottomBar: React.FC<BottomBarProps> = ({ onOpenRecordRoute }) => {
 
         {/* 04. TRIBUS (COMUNIDADES Y EXPEDICIONES) */}
         <button
+          type="button"
           onClick={() => setActiveNavTab('tribus')}
-          className={`flex-1 min-h-[50px] flex flex-col items-center justify-center py-1 transition-all active:scale-95 group touch-manipulation ${
+          className={`flex-1 min-h-[50px] flex flex-col items-center justify-center py-1 transition-all active:scale-95 group touch-manipulation cursor-pointer ${
             isTribus ? 'text-white' : 'text-ash hover:text-white'
           }`}
         >
@@ -120,8 +124,9 @@ export const BottomBar: React.FC<BottomBarProps> = ({ onOpenRecordRoute }) => {
 
         {/* 05. TÚ (PERFIL DE PILOTO) */}
         <button
+          type="button"
           onClick={() => setActiveNavTab('tu')}
-          className={`flex-1 min-h-[50px] flex flex-col items-center justify-center py-1 transition-all active:scale-95 group touch-manipulation ${
+          className={`flex-1 min-h-[50px] flex flex-col items-center justify-center py-1 transition-all active:scale-95 group touch-manipulation cursor-pointer ${
             isTu ? 'text-white' : 'text-ash hover:text-white'
           }`}
         >
