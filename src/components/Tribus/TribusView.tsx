@@ -710,260 +710,252 @@ export const TribusView: React.FC<TribusViewProps> = ({
   return (
     <div className="max-w-[1300px] w-full mx-auto pb-28 px-4 sm:px-6 font-mono space-y-6">
       
-      {/* App Header (Estilo móvil con selector de grupo en el centro) */}
-      <div className="relative border-b border-white/10 pb-3 pt-1">
+      {/* App Header (Responsive & Mobile-Native) */}
+      <div className="relative border-b border-white/10 pb-3 pt-1 space-y-2.5">
+        
+        {/* Row 1: Back + Tribe Selector + Clean Icon Actions */}
         <div className="flex items-center justify-between gap-2">
           {/* Izquierda: Volver al directorio */}
           <button
             onClick={() => setSelectedTribuId(null)}
-            className="p-1.5 -ml-1 text-ash hover:text-white transition group flex items-center gap-1 text-xs uppercase"
+            className="p-1.5 -ml-1 text-ash hover:text-white transition group flex items-center gap-1 text-xs uppercase shrink-0"
             title="Ver todas las tribus"
           >
             <ArrowLeft className="w-4 h-4 text-earth group-hover:-translate-x-0.5 transition-transform" />
-            <span className="hidden sm:inline">Tribus</span>
+            <span className="hidden sm:inline font-bold">Tribus</span>
           </button>
 
-          {/* Centro: Selector de Grupo & Acciones de Tribu */}
-          <div className="relative flex-1 flex flex-col items-center justify-center min-w-0">
-            {/* Acciones arriba del nombre centradas (cero empalmes) */}
-            <div className="flex items-center justify-center gap-1.5 -mb-0.5">
-              <button
-                type="button"
-                onClick={handleOpenEditCrew}
-                title="Editar grupo (nombre, foto y WhatsApp)"
-                className="p-1 rounded-md text-ash/60 hover:text-earth hover:bg-white/5 transition shrink-0 cursor-pointer"
-              >
-                <Pencil className="w-3.5 h-3.5" />
-              </button>
-
-              <button
-                type="button"
-                onClick={handleShareCrewWithCode}
-                title={`Compartir ${activeTribu.name} (Clave: ${activeTribu.inviteCode})`}
-                className={`p-1 rounded-md transition shrink-0 cursor-pointer ${
-                  copiedCrewShare 
-                    ? 'text-emerald-400 bg-emerald-500/10' 
-                    : 'text-ash/60 hover:text-earth hover:bg-white/5'
-                }`}
-              >
-                {copiedCrewShare ? (
-                  <Check className="w-3.5 h-3.5 text-emerald-400" />
-                ) : (
-                  <Share2 className="w-3.5 h-3.5" />
-                )}
-              </button>
-            </div>
-
-            {/* Nombre del Grupo con Flechita (Dropdown selector de grupos) */}
-            <div className="relative flex items-center justify-center">
-              <button
-                type="button"
-                onClick={() => setShowCrewDropdown(prev => !prev)}
-                className={`px-3 py-1 rounded-xl transition-all flex flex-col items-center group max-w-[220px] sm:max-w-md mx-auto active:scale-95 ${
-                  showCrewDropdown ? 'bg-white/10 ring-1 ring-white/10' : 'hover:bg-white/5'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  {activeTribu.coverImage && (
-                    <div className="w-5 h-5 rounded-md overflow-hidden border border-white/20 shrink-0">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img 
-                        src={activeTribu.coverImage} 
-                        alt={activeTribu.name} 
-                        className="w-full h-full object-cover" 
-                      />
-                    </div>
-                  )}
-                  <span className="font-display font-black text-sm sm:text-base text-white uppercase tracking-tight truncate">
-                    {activeTribu.name}
-                  </span>
-                  <ChevronDown className={`w-3.5 h-3.5 text-earth shrink-0 transition-transform duration-200 ${showCrewDropdown ? 'rotate-180' : ''}`} />
+          {/* Centro: Selector de Grupo */}
+          <div className="relative flex-1 flex items-center justify-center min-w-0">
+            <button
+              type="button"
+              onClick={() => setShowCrewDropdown(prev => !prev)}
+              className={`px-2 sm:px-3 py-1 rounded-xl transition-all flex items-center gap-2 group max-w-[200px] sm:max-w-md mx-auto active:scale-95 ${
+                showCrewDropdown ? 'bg-white/10 ring-1 ring-white/10' : 'hover:bg-white/5'
+              }`}
+            >
+              {activeTribu.coverImage && (
+                <div className="w-5 h-5 rounded-md overflow-hidden border border-white/20 shrink-0">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img 
+                    src={activeTribu.coverImage} 
+                    alt={activeTribu.name} 
+                    className="w-full h-full object-cover" 
+                  />
                 </div>
-                <span className="text-[10px] font-mono text-ash truncate">
-                  {activeTribu.baseCity} • {activeTribu.members.length} pilotos
-                </span>
-              </button>
+              )}
+              <span className="font-display font-black text-sm sm:text-base text-white uppercase tracking-tight truncate">
+                {activeTribu.name}
+              </span>
+              <ChevronDown className={`w-3.5 h-3.5 text-earth shrink-0 transition-transform duration-200 ${showCrewDropdown ? 'rotate-180' : ''}`} />
+            </button>
 
-                {/* Dropdown selector de Tribus (Friendly Modern App Sheet/Menu) */}
-                {showCrewDropdown && (
-                  <>
-                    <div 
-                      className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px] transition-opacity" 
-                      onClick={() => setShowCrewDropdown(false)} 
-                    />
-                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-80 sm:w-96 bg-[#161311]/98 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.85)] ring-1 ring-white/5 z-50 p-3 space-y-2 animate-in fade-in zoom-in-95 duration-150">
-                      
-                      {/* Notch pointer */}
-                      <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 bg-[#161311] border-t border-l border-white/10" />
-                      
-                      {/* Friendly Header */}
-                      <div className="px-2 py-1 flex items-center justify-between border-b border-white/5 pb-2">
-                        <div className="flex items-center gap-2">
-                          <Users className="w-4 h-4 text-earth" />
-                          <span className="text-xs font-semibold text-white/90">Tus Grupos</span>
-                        </div>
-                        <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-white/5 text-ash border border-white/10">
-                          {crews.length} {crews.length === 1 ? 'grupo' : 'grupos'}
-                        </span>
-                      </div>
-
-                      {/* Crew List */}
-                      <div className="max-h-64 overflow-y-auto space-y-1 py-1 pr-1">
-                        {crews.map(c => {
-                          const isCurrent = c.id === activeTribu.id;
-                          const initials = c.name
-                            .split(' ')
-                            .map(w => w[0])
-                            .filter(Boolean)
-                            .slice(0, 2)
-                            .join('')
-                            .toUpperCase();
-
-                          return (
-                            <button
-                              key={c.id}
-                              onClick={() => {
-                                setSelectedTribuId(c.id);
-                                setShowCrewDropdown(false);
-                              }}
-                              className={`w-full text-left p-2.5 rounded-xl transition-all flex items-center gap-3 ${
-                                isCurrent 
-                                  ? 'bg-earth/15 border border-earth/40 text-white shadow-sm' 
-                                  : 'hover:bg-white/5 text-ash hover:text-white border border-transparent'
-                              }`}
-                            >
-                              {/* Avatar badge con fotito en vez de letras */}
-                              <div className={`w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center shrink-0 border transition ${
-                                isCurrent 
-                                  ? 'border-earth ring-1 ring-earth/50 shadow-md' 
-                                  : 'border-white/10 bg-white/5'
-                              }`}>
-                                {c.coverImage ? (
-                                  // eslint-disable-next-line @next/next/no-img-element
-                                  <img 
-                                    src={c.coverImage} 
-                                    alt={c.name} 
-                                    className="w-full h-full object-cover" 
-                                  />
-                                ) : (
-                                  <span className={`font-bold text-xs ${isCurrent ? 'text-earth' : 'text-ash'}`}>
-                                    {initials || 'TR'}
-                                  </span>
-                                )}
-                              </div>
-
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-1.5">
-                                  <p className="font-bold text-sm text-white truncate">{c.name}</p>
-                                </div>
-                                <p className="text-xs text-ash/90 truncate mt-0.5">
-                                  {c.baseCity} • {c.members.length} {c.members.length === 1 ? 'piloto' : 'pilotos'}
-                                </p>
-                              </div>
-
-                              {isCurrent ? (
-                                <div className="w-5 h-5 rounded-full bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center shrink-0">
-                                  <Check className="w-3 h-3 text-emerald-400" />
-                                </div>
-                              ) : (
-                                <span className="text-xs text-ash/40">Entrar</span>
-                              )}
-                            </button>
-                          );
-                        })}
-                      </div>
-
-                      {/* Friendly Actions */}
-                      <div className="pt-2 border-t border-white/5 space-y-1">
-                        {activeTribu.whatsappGroupUrl ? (
-                          <a
-                            href={activeTribu.whatsappGroupUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-emerald-400 hover:bg-emerald-500/10 flex items-center gap-2.5 transition"
-                          >
-                            <WhatsAppIcon className="w-3.5 h-3.5 text-emerald-400" />
-                            <span>Abrir grupo de WhatsApp</span>
-                          </a>
-                        ) : (
-                          <button
-                            onClick={() => {
-                              setShowCrewDropdown(false);
-                              handleOpenEditCrew();
-                            }}
-                            className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-emerald-400 hover:bg-emerald-500/10 flex items-center gap-2.5 transition"
-                          >
-                            <WhatsAppIcon className="w-3.5 h-3.5 text-emerald-400" />
-                            <span>Conectar grupo de WhatsApp</span>
-                          </button>
-                        )}
-                        <button
-                          onClick={() => {
-                            setShowCrewDropdown(false);
-                            handleOpenEditCrew();
-                          }}
-                          className="w-full text-left px-3 py-2 rounded-lg text-xs text-ash hover:text-white hover:bg-white/5 flex items-center gap-2.5 transition cursor-pointer"
-                        >
-                          <Pencil className="w-3.5 h-3.5 text-earth" />
-                          <span>Editar grupo (nombre, foto y WhatsApp)</span>
-                        </button>
-                        <button
-                          onClick={() => {
-                            setShowCrewDropdown(false);
-                            handleShareCrewWithCode();
-                          }}
-                          className="w-full text-left px-3 py-2 rounded-lg text-xs text-ash hover:text-white hover:bg-white/5 flex items-center gap-2.5 transition cursor-pointer"
-                        >
-                          <Share2 className="w-3.5 h-3.5 text-earth" />
-                          <span>Compartir grupo (enlace y clave {activeTribu.inviteCode})</span>
-                        </button>
-                        <button
-                          onClick={() => {
-                            setShowCrewDropdown(false);
-                            onOpenCreateCrew();
-                          }}
-                          className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-chalk hover:text-white hover:bg-white/5 flex items-center gap-2.5 transition"
-                        >
-                          <Plus className="w-3.5 h-3.5 text-earth" />
-                          <span>Crear nuevo grupo</span>
-                        </button>
-                      </div>
+            {/* Dropdown selector de Tribus */}
+            {showCrewDropdown && (
+              <>
+                <div 
+                  className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px] transition-opacity" 
+                  onClick={() => setShowCrewDropdown(false)} 
+                />
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-80 sm:w-96 bg-[#161311]/98 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.85)] ring-1 ring-white/5 z-50 p-3 space-y-2 animate-in fade-in zoom-in-95 duration-150">
+                  
+                  {/* Notch pointer */}
+                  <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 bg-[#161311] border-t border-l border-white/10" />
+                  
+                  {/* Header */}
+                  <div className="px-2 py-1 flex items-center justify-between border-b border-white/5 pb-2">
+                    <div className="flex items-center gap-2">
+                      <Users className="w-4 h-4 text-earth" />
+                      <span className="text-xs font-semibold text-white/90">Tus Grupos</span>
                     </div>
-                  </>
-                )}
-              </div>
+                    <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-white/5 text-ash border border-white/10">
+                      {crews.length} {crews.length === 1 ? 'grupo' : 'grupos'}
+                    </span>
+                  </div>
+
+                  {/* Crew List */}
+                  <div className="max-h-64 overflow-y-auto space-y-1 py-1 pr-1">
+                    {crews.map(c => {
+                      const isCurrent = c.id === activeTribu.id;
+                      const initials = c.name
+                        .split(' ')
+                        .map(w => w[0])
+                        .filter(Boolean)
+                        .slice(0, 2)
+                        .join('')
+                        .toUpperCase();
+
+                      return (
+                        <button
+                          key={c.id}
+                          onClick={() => {
+                            setSelectedTribuId(c.id);
+                            setShowCrewDropdown(false);
+                          }}
+                          className={`w-full text-left p-2.5 rounded-xl transition-all flex items-center gap-3 ${
+                            isCurrent 
+                              ? 'bg-earth/15 border border-earth/40 text-white shadow-sm' 
+                              : 'hover:bg-white/5 text-ash hover:text-white border border-transparent'
+                          }`}
+                        >
+                          <div className={`w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center shrink-0 border transition ${
+                            isCurrent 
+                              ? 'border-earth ring-1 ring-earth/50 shadow-md' 
+                              : 'border-white/10 bg-white/5'
+                          }`}>
+                            {c.coverImage ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img 
+                                src={c.coverImage} 
+                                alt={c.name} 
+                                className="w-full h-full object-cover" 
+                              />
+                            ) : (
+                              <span className={`font-bold text-xs ${isCurrent ? 'text-earth' : 'text-ash'}`}>
+                                {initials || 'TR'}
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="flex-1 min-w-0">
+                            <p className="font-bold text-sm text-white truncate">{c.name}</p>
+                            <p className="text-xs text-ash/90 truncate mt-0.5">
+                              {c.baseCity} • {c.members.length} {c.members.length === 1 ? 'piloto' : 'pilotos'}
+                            </p>
+                          </div>
+
+                          {isCurrent ? (
+                            <div className="w-5 h-5 rounded-full bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center shrink-0">
+                              <Check className="w-3 h-3 text-emerald-400" />
+                            </div>
+                          ) : (
+                            <span className="text-xs text-ash/40">Entrar</span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Actions */}
+                  <div className="pt-2 border-t border-white/5 space-y-1">
+                    {activeTribu.whatsappGroupUrl ? (
+                      <a
+                        href={activeTribu.whatsappGroupUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-emerald-400 hover:bg-emerald-500/10 flex items-center gap-2.5 transition"
+                      >
+                        <WhatsAppIcon className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>Abrir grupo de WhatsApp</span>
+                      </a>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          setShowCrewDropdown(false);
+                          handleOpenEditCrew();
+                        }}
+                        className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-emerald-400 hover:bg-emerald-500/10 flex items-center gap-2.5 transition"
+                      >
+                        <WhatsAppIcon className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>Conectar grupo de WhatsApp</span>
+                      </button>
+                    )}
+                    <button
+                      onClick={() => {
+                        setShowCrewDropdown(false);
+                        handleOpenEditCrew();
+                      }}
+                      className="w-full text-left px-3 py-2 rounded-lg text-xs text-ash hover:text-white hover:bg-white/5 flex items-center gap-2.5 transition cursor-pointer"
+                    >
+                      <Pencil className="w-3.5 h-3.5 text-earth" />
+                      <span>Editar grupo</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowCrewDropdown(false);
+                        handleShareCrewWithCode();
+                      }}
+                      className="w-full text-left px-3 py-2 rounded-lg text-xs text-ash hover:text-white hover:bg-white/5 flex items-center gap-2.5 transition cursor-pointer"
+                    >
+                      <Share2 className="w-3.5 h-3.5 text-earth" />
+                      <span>Compartir clave ({activeTribu.inviteCode})</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowCrewDropdown(false);
+                        onOpenCreateCrew();
+                      }}
+                      className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-chalk hover:text-white hover:bg-white/5 flex items-center gap-2.5 transition"
+                    >
+                      <Plus className="w-3.5 h-3.5 text-earth" />
+                      <span>Crear nuevo grupo</span>
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
-          {/* Derecha: WhatsApp + Tabs Rodadas / Pilotos */}
-          <div className="relative flex items-center gap-2 shrink-0">
-            {/* Botón WhatsApp */}
+          {/* Derecha: Acciones Compactas (KISS: iconos limpios) */}
+          <div className="relative flex items-center gap-1 shrink-0">
+            {/* Editar grupo */}
+            <button
+              type="button"
+              onClick={handleOpenEditCrew}
+              title="Editar grupo"
+              className="p-1.5 rounded-lg text-ash hover:text-earth hover:bg-white/5 transition shrink-0 cursor-pointer active:scale-90"
+            >
+              <Pencil className="w-4 h-4" />
+            </button>
+
+            {/* Compartir grupo */}
+            <button
+              type="button"
+              onClick={handleShareCrewWithCode}
+              title={`Compartir clave ${activeTribu.inviteCode}`}
+              className={`p-1.5 rounded-lg transition shrink-0 cursor-pointer active:scale-90 ${
+                copiedCrewShare 
+                  ? 'text-emerald-400 bg-emerald-500/10' 
+                  : 'text-ash hover:text-earth hover:bg-white/5'
+              }`}
+            >
+              {copiedCrewShare ? (
+                <Check className="w-4 h-4 text-emerald-400" />
+              ) : (
+                <Share2 className="w-4 h-4" />
+              )}
+            </button>
+
+            {/* WhatsApp Icon */}
             <button
               type="button"
               onClick={handleWhatsAppHeaderClick}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-bold transition shrink-0 cursor-pointer shadow-sm active:scale-95 ${
+              className={`p-1.5 rounded-lg border transition shrink-0 cursor-pointer shadow-sm active:scale-90 relative ${
                 activeTribu.whatsappGroupUrl
                   ? 'bg-[#25D366]/15 hover:bg-[#25D366]/25 border-[#25D366]/40 text-[#25D366]'
                   : 'bg-white/[0.04] hover:bg-white/[0.08] border-white/15 text-ash hover:text-white'
               }`}
-              title={activeTribu.whatsappGroupUrl ? 'Abrir grupo de WhatsApp' : 'Sin enlace de WhatsApp cargado'}
+              title={activeTribu.whatsappGroupUrl ? 'Abrir grupo de WhatsApp' : 'Sin enlace de WhatsApp'}
             >
-              <WhatsAppIcon className={`w-3.5 h-3.5 shrink-0 ${activeTribu.whatsappGroupUrl ? 'text-[#25D366]' : 'text-ash'}`} />
-              <span className="text-[11px] font-bold">WhatsApp</span>
+              <WhatsAppIcon className={`w-4 h-4 ${activeTribu.whatsappGroupUrl ? 'text-[#25D366]' : 'text-ash'}`} />
+              {activeTribu.whatsappGroupUrl && (
+                <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[#25D366] animate-pulse" />
+              )}
             </button>
 
             {/* Mini Aviso: Sin enlace de WhatsApp vinculado */}
             {showWhatsappMissingNotice && (
-              <div className="absolute top-full right-0 mt-2 z-50 w-72 p-3.5 bg-[#141210] border border-white/20 rounded-xl shadow-2xl animate-in fade-in slide-in-from-top-1 duration-150">
+              <div className="absolute top-full right-0 mt-2 z-50 w-72 p-3 bg-[#141210] border border-white/20 rounded-xl shadow-2xl animate-in fade-in slide-in-from-top-1 duration-150">
                 <div className="flex items-start gap-2.5">
                   <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0 mt-0.5">
                     <WhatsAppIcon className="w-3.5 h-3.5 text-ash" />
                   </div>
                   <div className="space-y-1 min-w-0 flex-1 text-left">
                     <h5 className="text-xs font-bold text-white uppercase tracking-wider font-mono">
-                      Sin enlace de WhatsApp
+                      Sin WhatsApp
                     </h5>
                     <p className="text-[11px] text-ash leading-relaxed">
-                      Este grupo aún no tiene un enlace de WhatsApp vinculado.
+                      Este grupo aún no tiene enlace de WhatsApp vinculado.
                     </p>
                     <button
                       type="button"
@@ -971,9 +963,9 @@ export const TribusView: React.FC<TribusViewProps> = ({
                         setShowWhatsappMissingNotice(false);
                         handleOpenEditCrew();
                       }}
-                      className="text-[11px] font-bold text-earth hover:text-earth-bright underline pt-1 block cursor-pointer"
+                      className="text-[11px] font-bold text-earth hover:text-earth-bright underline pt-0.5 block cursor-pointer"
                     >
-                      Vincular chat en Ajustes ✏️ →
+                      Vincular en Ajustes ✏️ →
                     </button>
                   </div>
                   <button
@@ -986,31 +978,35 @@ export const TribusView: React.FC<TribusViewProps> = ({
                 </div>
               </div>
             )}
-
-            <div className="flex border border-white/15 shrink-0 text-xs">
-              <button
-                onClick={() => setActiveTribuTab('rodadas')}
-                className={`px-2.5 sm:px-3 py-1 font-bold uppercase tracking-wider transition ${
-                  activeTribuTab === 'rodadas'
-                    ? 'bg-earth text-white'
-                    : 'bg-transparent text-ash hover:text-white'
-                }`}
-              >
-                Rodadas
-              </button>
-              <button
-                onClick={() => setActiveTribuTab('miembros')}
-                className={`px-2.5 sm:px-3 py-1 font-bold uppercase tracking-wider transition ${
-                  activeTribuTab === 'miembros'
-                    ? 'bg-earth text-white'
-                    : 'bg-transparent text-ash hover:text-white'
-                }`}
-              >
-                Pilotos ({activeTribu.members.length})
-              </button>
-            </div>
           </div>
         </div>
+
+        {/* Row 2: Segmented Tabs (Clean, Full-Width on Mobile, Touch-Friendly) */}
+        <div className="flex items-center justify-center pt-0.5">
+          <div className="w-full sm:w-auto inline-flex p-1 bg-black/60 border border-white/10 rounded-xl">
+            <button
+              onClick={() => setActiveTribuTab('rodadas')}
+              className={`flex-1 sm:flex-initial px-6 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition ${
+                activeTribuTab === 'rodadas'
+                  ? 'bg-earth text-white shadow-sm'
+                  : 'text-ash hover:text-white'
+              }`}
+            >
+              Rodadas
+            </button>
+            <button
+              onClick={() => setActiveTribuTab('miembros')}
+              className={`flex-1 sm:flex-initial px-6 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition ${
+                activeTribuTab === 'miembros'
+                  ? 'bg-earth text-white shadow-sm'
+                  : 'text-ash hover:text-white'
+              }`}
+            >
+              Pilotos ({activeTribu.members.length})
+            </button>
+          </div>
+        </div>
+
       </div>
 
       {/* =================================================================== */}
@@ -1086,28 +1082,22 @@ export const TribusView: React.FC<TribusViewProps> = ({
                   </div>
 
                   {/* Compact Metrics Row */}
-                  <div className="flex items-center gap-2 text-[11px] font-mono text-ash flex-wrap">
-                    <span>Salida: <strong className="text-chalk">{confWinning?.waypoints[0]?.name || confRodada.originPoint}</strong></span>
+                  <div className="flex items-center gap-1.5 text-[10px] font-mono flex-wrap pt-0.5">
                     {confWinning && (
-                      <>
-                        <span className="text-white/20">•</span>
-                        <span className="text-white font-bold">{confWinning.totalKm} km</span>
-                        <span className="text-white/20">•</span>
-                        <span className="flex items-center gap-1 text-earth font-bold">
-                          <Mountain className="w-3 h-3 text-earth shrink-0" />
-                          <span>{confWinning.offroadPercentage}%</span>
-                        </span>
-                        <span className="flex items-center gap-1 text-white font-bold">
-                          <RoadIcon className="w-3 h-3 text-white shrink-0" />
-                          <span>{confWinning.asphaltPercentage || (100 - confWinning.offroadPercentage)}%</span>
-                        </span>
-                        {confWinning.difficulty && (
-                          <>
-                            <span className="text-white/20">•</span>
-                            <span className="text-chalk uppercase">{confWinning.difficulty}</span>
-                          </>
-                        )}
-                      </>
+                      <span className="px-2 py-0.5 bg-black/60 border border-white/10 text-white font-bold">
+                        {confWinning.totalKm} km
+                      </span>
+                    )}
+                    {confWinning && (
+                      <span className="px-2 py-0.5 bg-earth/15 border border-earth/30 text-earth font-bold flex items-center gap-1">
+                        <Mountain className="w-3 h-3 text-earth shrink-0" />
+                        <span>{confWinning.offroadPercentage}% tierra</span>
+                      </span>
+                    )}
+                    {confWinning?.difficulty && (
+                      <span className="px-2 py-0.5 bg-white/5 border border-white/10 text-ash uppercase">
+                        {confWinning.difficulty}
+                      </span>
                     )}
                   </div>
                 </div>
@@ -1275,39 +1265,38 @@ export const TribusView: React.FC<TribusViewProps> = ({
           <div className="border-b border-white/10 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h3 className="font-display font-bold text-base text-white uppercase">
-                Pilotos de la Tribu ({activeTribu.members.length})
+                Pilotos ({activeTribu.members.length})
               </h3>
-              <p className="text-xs text-ash">Lista de miembros registrados en la flotilla.</p>
             </div>
 
             <button
               onClick={() => setShowAddPilotModal(true)}
-              className="px-3.5 py-1.5 bg-earth hover:bg-earth-bright text-white text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition self-start sm:self-auto border border-earth/40 shadow-sm"
+              className="px-3 py-1.5 bg-earth hover:bg-earth-bright text-white text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition self-start sm:self-auto border border-earth/40 shadow-sm active:scale-95"
             >
               <UserPlus className="w-3.5 h-3.5" />
-              <span>+ Añadir Piloto / Invitar</span>
+              <span>+ Invitar Piloto</span>
             </button>
           </div>
 
           {/* Tarjeta de integración con WhatsApp */}
-          <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-950/40 via-emerald-900/15 to-transparent border border-emerald-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="p-3.5 rounded-2xl bg-gradient-to-r from-emerald-950/40 via-emerald-900/15 to-transparent border border-emerald-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center shrink-0">
-                <WhatsAppIcon className="w-5 h-5 text-emerald-400" />
+              <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                <WhatsAppIcon className="w-4 h-4 text-emerald-400" />
               </div>
               <div>
-                <h4 className="font-display font-bold text-sm text-white uppercase tracking-wide flex items-center gap-2">
-                  <span>Chat de WhatsApp de la Tribu</span>
+                <h4 className="font-display font-bold text-xs sm:text-sm text-white uppercase tracking-wide flex items-center gap-2">
+                  <span>Chat de WhatsApp</span>
                   {activeTribu.whatsappGroupUrl && (
-                    <span className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                    <span className="px-1.5 py-0.2 rounded text-[9px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                       Conectado
                     </span>
                   )}
                 </h4>
-                <p className="text-xs text-ash">
+                <p className="text-[11px] text-ash">
                   {activeTribu.whatsappGroupUrl 
-                    ? 'Comunidad activa en WhatsApp para el cotorreo diario, stickers y avisos de última hora.'
-                    : 'Aún no se ha vinculado el grupo de WhatsApp de esta tribu.'}
+                    ? 'Chat para avisos rápidos y coordinación.'
+                    : 'Sin enlace de WhatsApp vinculado.'}
                 </p>
               </div>
             </div>
@@ -1318,7 +1307,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                   href={activeTribu.whatsappGroupUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition shadow"
+                  className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition shadow"
                 >
                   <WhatsAppIcon className="w-3.5 h-3.5" />
                   <span>Abrir WhatsApp</span>
@@ -1326,20 +1315,20 @@ export const TribusView: React.FC<TribusViewProps> = ({
               ) : (
                 <button
                   onClick={handleOpenEditCrew}
-                  className="px-3.5 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition"
+                  className="px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>Vincular WhatsApp</span>
+                  <span>Vincular</span>
                 </button>
               )}
               <button
                 type="button"
                 onClick={handleCopyNaoLink}
-                className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-ash hover:text-white text-xs font-mono transition flex items-center gap-1.5"
-                title="Copiar link de NAO para la descripción del grupo de WhatsApp"
+                className="px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-ash hover:text-white text-xs font-mono transition flex items-center gap-1.5"
+                title="Copiar link de NAO para el grupo"
               >
                 <Copy className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="hidden md:inline">{copiedNaoLink ? '¡Copiado!' : 'Copiar Link NAO'}</span>
+                <span className="hidden md:inline">{copiedNaoLink ? '¡Copiado!' : 'Copiar Link'}</span>
               </button>
             </div>
           </div>
@@ -1396,22 +1385,22 @@ export const TribusView: React.FC<TribusViewProps> = ({
         <div className="space-y-5">
           
           {/* Header limpio de convocatorias */}
-          <div className="flex items-center justify-between gap-3 pb-3 border-b border-white/10">
-            <h2 className="font-display font-black text-xl text-white uppercase tracking-tight">
-              Convocatorias & Salidas
+          <div className="flex items-center justify-between gap-3 pb-2.5 border-b border-white/10">
+            <h2 className="font-display font-black text-lg sm:text-xl text-white uppercase tracking-tight">
+              Convocatorias
             </h2>
 
             <button
               onClick={() => setShowConvokeModal(true)}
-              className="px-3.5 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] text-chalk hover:text-white border border-white/15 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition shrink-0"
+              className="px-3 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] text-chalk hover:text-white border border-white/15 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition shrink-0 active:scale-95"
             >
               <Plus className="w-3.5 h-3.5 text-earth" />
-              <span>Convocar Fecha</span>
+              <span>+ Convocar</span>
             </button>
           </div>
 
-          {/* Selector de Fechas Convocadas (Pills compactas y claras) */}
-          <div className="flex items-stretch gap-2.5 overflow-x-auto pb-1 scrollbar-thin">
+          {/* Selector de Fechas Convocadas (Pills compactas y claras con scroll touch) */}
+          <div className="flex items-stretch gap-2 overflow-x-auto pb-1 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0">
             {tribuRodadas.map((rodada) => {
               const isSelected = activeRodada?.id === rodada.id;
               const rodadaProposals = routeProposals.filter(p => p.rodadaId === rodada.id);
@@ -1421,7 +1410,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                 <button
                   key={rodada.id}
                   onClick={() => setSelectedRodadaId(rodada.id)}
-                  className={`text-left px-3.5 py-2.5 border transition flex items-center gap-3 shrink-0 ${
+                  className={`text-left px-3 py-2 border transition flex items-center gap-2.5 shrink-0 active:scale-95 ${
                     isSelected
                       ? 'border-earth bg-earth/15 text-white shadow-sm ring-1 ring-earth/40'
                       : 'border-white/10 bg-black/40 text-ash hover:border-white/25 hover:text-white'
@@ -1435,11 +1424,11 @@ export const TribusView: React.FC<TribusViewProps> = ({
                         {formatHumanDate(rodada.startDate, rodada.endDate, true)}
                       </span>
                       {isConfirmed ? (
-                        <span className="text-[8px] font-mono uppercase font-bold px-1.5 py-0.5 bg-emerald-500/15 border border-emerald-500/40 text-emerald-300">
+                        <span className="text-[8px] font-mono uppercase font-bold px-1.5 py-0.2 bg-emerald-500/15 border border-emerald-500/40 text-emerald-300">
                           Confirmada
                         </span>
                       ) : (
-                        <span className="text-[8px] font-mono uppercase font-bold px-1.5 py-0.5 bg-amber-500/10 border border-amber-500/30 text-amber-300">
+                        <span className="text-[8px] font-mono uppercase font-bold px-1.5 py-0.2 bg-amber-500/10 border border-amber-500/30 text-amber-300">
                           {rodadaProposals.length} {rodadaProposals.length === 1 ? 'ruta' : 'rutas'}
                         </span>
                       )}
@@ -1455,25 +1444,25 @@ export const TribusView: React.FC<TribusViewProps> = ({
 
           {/* Opciones para la Fecha Seleccionada */}
           {activeRodada && (
-            <div className="space-y-4 pt-1">
+            <div className="space-y-3.5 pt-1">
               
               {/* Header directo y sin redundancias */}
               <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2.5">
-                  <h3 className="font-display font-black text-lg text-white uppercase tracking-tight">
-                    Rutas Propuestas
+                <div className="flex items-center gap-2">
+                  <h3 className="font-display font-black text-base sm:text-lg text-white uppercase tracking-tight">
+                    Propuestas
                   </h3>
-                  <span className="text-xs font-mono font-bold text-earth bg-earth/10 border border-earth/25 px-2 py-0.5">
+                  <span className="text-xs font-mono font-bold text-earth bg-earth/10 border border-earth/25 px-1.5 py-0.5">
                     {activeProposals.length}
                   </span>
                 </div>
 
                 <button
                   onClick={() => setShowInteractiveProposeModal(true)}
-                  className="px-3.5 py-2 bg-earth hover:bg-earth-bright text-white text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition shrink-0 shadow border border-earth/40"
+                  className="px-3 py-1.5 bg-earth hover:bg-earth-bright text-white text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition shrink-0 shadow border border-earth/40 active:scale-95"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>Proponer Ruta</span>
+                  <span>+ Proponer</span>
                 </button>
               </div>
 
