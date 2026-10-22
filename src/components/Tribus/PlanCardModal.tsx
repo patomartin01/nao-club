@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { Rodada, RouteProposal, User, Motorcycle } from '../../types';
 import { buildOrderedGoogleMapsUrl } from '../../utils/googleMaps';
+import { RouteTacticalMapCard } from '../Routes/RouteTacticalMapCard';
 
 const RoadIcon: React.FC<{ className?: string }> = ({ className = "w-3.5 h-3.5" }) => (
   <svg 
@@ -81,6 +82,39 @@ export const PlanCardModal: React.FC<PlanCardModalProps> = ({
     });
 
   const mapsUrl = winningRoute ? buildOrderedGoogleMapsUrl(winningRoute, rodada.originPoint) : null;
+
+  const displayProposal: RouteProposal = winningRoute || {
+    id: `plan-${rodada.id}`,
+    rodadaId: rodada.id,
+    title: rodada.title,
+    destination: rodada.title,
+    state: 'México',
+    proposedByUserId: rodada.attendees[0]?.userId || currentUser.id,
+    proposedByName: 'Comité de Ruta',
+    proposedByAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250',
+    description: rodada.description || rodada.subtitle || '',
+    coverImage: '',
+    totalKm: 120,
+    estimatedHours: '3.5h',
+    offroadPercentage: 35,
+    asphaltPercentage: 65,
+    difficulty: 'Intermedio',
+    campsite: {
+      name: 'Campamento Base',
+      elevationMeters: 2800,
+      minTempNight: '7°C',
+      security: 'Zona controlada',
+      amenities: ['Fogata', 'Agua de manantial']
+    },
+    itinerary: [],
+    waypoints: [
+      { id: 'w1', name: rodada.originPoint || 'Punto de Salida', lat: 19.30, lng: -99.19, type: 'start' },
+      { id: 'w2', name: rodada.title, lat: 19.10, lng: -99.30, type: 'camp' }
+    ],
+    coordinates: [[-99.19, 19.30], [-99.30, 19.10]],
+    votes: [],
+    comments: []
+  };
 
   const handleShare = () => {
     if (typeof window !== 'undefined') {
@@ -152,27 +186,12 @@ export const PlanCardModal: React.FC<PlanCardModalProps> = ({
         {/* Scrollable Body */}
         <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-5">
 
-        {/* Portada si existe */}
-        {winningRoute?.coverImage && (
-          <div className="relative h-44 sm:h-52 w-full overflow-hidden border border-white/10">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={winningRoute.coverImage}
-              alt={winningRoute.title}
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent pointer-events-none" />
-            <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-xs text-white">
-              <div className="flex items-center gap-1.5 font-bold">
-                <MapPin className="w-3.5 h-3.5 text-earth" />
-                <span>{winningRoute.destination}, {winningRoute.state}</span>
-              </div>
-              <span className="text-[11px] font-mono text-ash bg-black/60 px-2 py-0.5 border border-white/10">
-                {winningRoute.difficulty}
-              </span>
-            </div>
-          </div>
-        )}
+        {/* Mapa Táctico Vectorial GPS y Curvas de Nivel (Cero fotos stock) */}
+        <RouteTacticalMapCard
+          proposal={displayProposal}
+          isWinner={true}
+          className="h-48 sm:h-56 w-full border border-white/10"
+        />
 
         {/* Métricas Principales de la Rodada */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 border border-white/10 bg-black/40 p-3">

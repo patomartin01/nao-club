@@ -1045,13 +1045,15 @@ export const TribusView: React.FC<TribusViewProps> = ({
               className="group relative overflow-hidden border border-earth/40 hover:border-earth bg-[#0D0B0A] transition-all duration-300 cursor-pointer shadow-lg p-3 sm:p-4"
               title="Click para ver el plan completo de la rodada"
             >
-              {/* Background Cover Image with subtle gradient overlay */}
-              <div className="absolute inset-0 z-0 pointer-events-none">
-                <img 
-                  src={confWinning?.coverImage || 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=1600'} 
-                  alt={confWinning?.destination || confRodada.title} 
-                  className="w-full h-full object-cover object-center opacity-25 group-hover:opacity-35 group-hover:scale-105 transition-all duration-500 ease-out"
-                />
+              {/* Background Tactical Topographic & GPS Vector Pattern */}
+              <div className="absolute inset-0 z-0 pointer-events-none opacity-25 group-hover:opacity-40 transition-opacity duration-500 overflow-hidden">
+                {confWinning && (
+                  <RouteTacticalMapCard
+                    proposal={confWinning}
+                    isWinner={true}
+                    className="w-full h-full scale-110 pointer-events-none"
+                  />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-r from-[#0D0B0A] via-[#0D0B0A]/85 to-transparent" />
               </div>
 
@@ -1215,13 +1217,13 @@ export const TribusView: React.FC<TribusViewProps> = ({
                   className="group relative overflow-hidden bg-[#0D0B0A] border border-earth/30 hover:border-earth p-4 transition-all duration-300 cursor-pointer flex flex-col justify-between space-y-3 shadow-lg"
                   title="Click para ver la tarjeta del plan"
                 >
-                  {/* Background cover image */}
-                  {winning?.coverImage && (
-                    <div className="absolute inset-0 z-0 pointer-events-none">
-                      <img 
-                        src={winning.coverImage} 
-                        alt={winning.destination} 
-                        className="w-full h-full object-cover object-center opacity-25 group-hover:opacity-35 group-hover:scale-105 transition-all duration-500 ease-out"
+                  {/* Background Tactical Topographic & GPS Vector Pattern */}
+                  {winning && (
+                    <div className="absolute inset-0 z-0 pointer-events-none opacity-20 group-hover:opacity-35 transition-opacity duration-500 overflow-hidden">
+                      <RouteTacticalMapCard
+                        proposal={winning}
+                        isWinner={true}
+                        className="w-full h-full scale-110 pointer-events-none"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-[#0D0B0A] via-[#0D0B0A]/80 to-transparent" />
                     </div>
