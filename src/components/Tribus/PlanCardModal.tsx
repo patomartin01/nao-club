@@ -19,9 +19,11 @@ import {
   Flag,
   Share2,
   Check,
-  Mountain
+  Mountain,
+  HelpCircle,
+  XCircle
 } from 'lucide-react';
-import { Rodada, RouteProposal, User, Motorcycle } from '../../types';
+import { Rodada, RouteProposal, User, Motorcycle, RsvpStatus } from '../../types';
 import { buildOrderedGoogleMapsUrl } from '../../utils/googleMaps';
 import { RouteTacticalMapCard } from '../Routes/RouteTacticalMapCard';
 
@@ -48,7 +50,7 @@ interface PlanCardModalProps {
   allUsers: User[];
   userBikes: Motorcycle[];
   onClose: () => void;
-  onRsvp: (rodadaId: string, bikeId: string, status: 'confirmado' | 'interesado') => void;
+  onRsvp: (rodadaId: string, bikeId: string, status: RsvpStatus) => void;
   formatHumanDate: (start: string, end?: string, includeYear?: boolean) => string;
 }
 
@@ -63,23 +65,41 @@ export const PlanCardModal: React.FC<PlanCardModalProps> = ({
   formatHumanDate
 }) => {
   const [copiedLink, setCopiedLink] = useState(false);
+  const [attendeeTab, setAttendeeTab] = useState<'confirmados' | 'por_confirmar' | 'no_asistire'>('confirmados');
 
-  const isConfirmed = rodada.attendees.some(
-    a => a.userId === currentUser.id && a.status === 'confirmado'
-  );
+  const userAttendee = rodada.attendees.find(a => a.userId === currentUser.id);
+  const currentStatus: RsvpStatus | null = userAttendee ? userAttendee.status : null;
+
+  const mapPilot = (att: { userId: string; status: RsvpStatus }) => {
+    const u = allUsers.find(user => user.id === att.userId);
+    return {
+      userId: att.userId,
+      userName: u ? u.name : (att.userId === currentUser.id ? currentUser.name : 'Piloto'),
+      userHandle: u ? u.handle : (att.userId === currentUser.id ? currentUser.handle : '@piloto'),
+      userAvatar: u ? u.avatar : (att.userId === currentUser.id ? currentUser.avatar : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250'),
+      ridingLevel: u ? u.ridingLevel : 'Intermedio',
+      status: att.status
+    };
+  };
 
   const confirmedAttendees = rodada.attendees
     .filter(a => a.status === 'confirmado')
-    .map(att => {
-      const u = allUsers.find(user => user.id === att.userId);
-      return {
-        userId: att.userId,
-        userName: u ? u.name : 'Piloto',
-        userHandle: u ? u.handle : '@piloto',
-        userAvatar: u ? u.avatar : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250',
-        ridingLevel: u ? u.ridingLevel : 'Intermedio'
-      };
-    });
+    .map(mapPilot);
+
+  const maybeAttendees = rodada.attendees
+    .filter(a => a.status === 'por_confirmar' || a.status === 'interesado')
+    .map(mapPilot);
+
+  const declinedAttendees = rodada.attendees
+    .filter(a => a.status === 'no_asistire')
+    .map(mapPilot);
+
+  const currentDisplayList = 
+    attendeeTab === 'confirmados' 
+      ? confirmedAttendees 
+      : attendeeTab === 'por_confirmar' 
+      ? maybeAttendees 
+      : declinedAttendees;
 
   const mapsUrl = winningRoute ? buildOrderedGoogleMapsUrl(winningRoute, rodada.originPoint) : null;
 
@@ -332,42 +352,98 @@ export const PlanCardModal: React.FC<PlanCardModalProps> = ({
           </div>
         </div>
 
-        {/* Pilotos Confirmados */}
+        {/* Pilotos y Asistencia Clasificada */}
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <span className="text-[10px] font-mono text-earth uppercase font-bold tracking-widest flex items-center gap-1.5">
               <Users className="w-3.5 h-3.5" />
-              Pilotos Confirmados ({confirmedAttendees.length})
+              Asistencia de la Tribu
             </span>
+
+            {/* Segmented filter pills */}
+            <div className="inline-flex rounded-lg border border-white/10 bg-black/60 p-0.5 text-[11px] font-mono">
+              <button
+                type="button"
+                onClick={() => setAttendeeTab('confirmados')}
+                className={`px-2 py-0.5 rounded font-bold uppercase transition flex items-center gap-1 ${
+                  attendeeTab === 'confirmados'
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
+                    : 'text-ash hover:text-white border border-transparent'
+                }`}
+              >
+                <span>Asistiré</span>
+                <span className="text-[10px] opacity-80">({confirmedAttendees.length})</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setAttendeeTab('por_confirmar')}
+                className={`px-2 py-0.5 rounded font-bold uppercase transition flex items-center gap-1 ${
+                  attendeeTab === 'por_confirmar'
+                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
+                    : 'text-ash hover:text-white border border-transparent'
+                }`}
+              >
+                <span>Por confirmar</span>
+                <span className="text-[10px] opacity-80">({maybeAttendees.length})</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setAttendeeTab('no_asistire')}
+                className={`px-2 py-0.5 rounded font-bold uppercase transition flex items-center gap-1 ${
+                  attendeeTab === 'no_asistire'
+                    ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40 shadow-sm'
+                    : 'text-ash hover:text-white border border-transparent'
+                }`}
+              >
+                <span>No asistiré</span>
+                <span className="text-[10px] opacity-80">({declinedAttendees.length})</span>
+              </button>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {confirmedAttendees.map(att => (
-              <div key={att.userId} className="p-2.5 border border-white/10 bg-black/40 flex items-center gap-3">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={att.userAvatar}
-                  alt={att.userName}
-                  className="w-8 h-8 rounded-full object-cover border border-white/20 shrink-0"
-                />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-white truncate">{att.userName}</span>
-                    <span className="text-[9px] text-emerald-400 font-mono">Confirmado</span>
+          {currentDisplayList.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {currentDisplayList.map(att => (
+                <div key={att.userId} className="p-2.5 border border-white/10 bg-black/40 flex items-center gap-3">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={att.userAvatar}
+                    alt={att.userName}
+                    className="w-8 h-8 rounded-full object-cover border border-white/20 shrink-0"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-1">
+                      <span className="text-xs font-bold text-white truncate">{att.userName}</span>
+                      <span className={`text-[9px] font-mono px-1.5 py-0.2 rounded border uppercase font-bold shrink-0 ${
+                        att.status === 'confirmado'
+                          ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
+                          : att.status === 'no_asistire'
+                          ? 'bg-rose-500/15 border-rose-500/40 text-rose-300'
+                          : 'bg-amber-500/15 border-amber-500/40 text-amber-300'
+                      }`}>
+                        {att.status === 'confirmado' ? 'Asistirá' : att.status === 'no_asistire' ? 'No asiste' : 'Por confirmar'}
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-ash block truncate">
+                      {att.userHandle} • {att.ridingLevel}
+                    </span>
                   </div>
-                  <span className="text-[10px] text-ash block truncate">
-                    {att.userHandle} • {att.ridingLevel}
-                  </span>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="p-4 border border-dashed border-white/10 bg-black/20 text-center text-xs text-ash font-mono">
+              {attendeeTab === 'confirmados' && 'Aún no hay pilotos confirmados.'}
+              {attendeeTab === 'por_confirmar' && 'No hay pilotos por confirmar.'}
+              {attendeeTab === 'no_asistire' && 'Ningún piloto ha declinado esta rodada.'}
+            </div>
+          )}
         </div>
         </div>
 
         {/* Footer Actions - Pinned */}
-        <div className="shrink-0 px-5 sm:px-6 py-3.5 border-t border-white/10 bg-[#13100D] flex flex-col sm:flex-row items-center justify-between gap-3 z-10">
-          <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div className="shrink-0 px-5 sm:px-6 py-3.5 border-t border-white/10 bg-[#13100D] flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 z-10">
+          <div className="flex items-center gap-2">
             <button
               onClick={handleShare}
               className="px-3.5 py-2 border border-white/15 hover:border-white/30 text-ash hover:text-white text-xs uppercase font-bold tracking-wider flex items-center gap-1.5 transition"
@@ -390,18 +466,56 @@ export const PlanCardModal: React.FC<PlanCardModalProps> = ({
             )}
           </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-            <button
-              onClick={() => onRsvp(rodada.id, userBikes[0]?.id || 'moto-1', isConfirmed ? 'interesado' : 'confirmado')}
-              className={`px-4 py-2 text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition w-full sm:w-auto justify-center ${
-                isConfirmed
-                  ? 'bg-emerald-500/15 border border-emerald-500 text-emerald-400 hover:bg-emerald-500/25'
-                  : 'bg-earth hover:bg-earth-bright text-white'
-              }`}
-            >
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>{isConfirmed ? 'Asistencia Confirmada' : 'Confirmar mi Asistencia'}</span>
-            </button>
+          {/* 3 Opciones de Asistencia: Asistiré, Por confirmar, No asistiré */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 justify-end">
+            <span className="text-[10px] text-ash font-mono uppercase font-bold hidden lg:inline">
+              Tu Asistencia:
+            </span>
+            <div className="grid grid-cols-3 sm:flex items-center rounded-lg border border-white/15 bg-black/60 p-1 gap-1 w-full sm:w-auto">
+              <button
+                type="button"
+                onClick={() => onRsvp(rodada.id, userBikes[0]?.id || 'moto-1', 'confirmado')}
+                className={`px-2.5 sm:px-3 py-1.5 rounded-md text-xs font-mono font-bold uppercase transition flex items-center justify-center gap-1.5 ${
+                  currentStatus === 'confirmado'
+                    ? 'bg-emerald-500/25 border border-emerald-500/60 text-emerald-300 shadow-sm'
+                    : 'text-ash hover:text-white border border-transparent'
+                }`}
+                title="Confirmar asistencia"
+              >
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span>Asistiré</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onRsvp(rodada.id, userBikes[0]?.id || 'moto-1', 'por_confirmar')}
+                className={`px-2.5 sm:px-3 py-1.5 rounded-md text-xs font-mono font-bold uppercase transition flex items-center justify-center gap-1.5 ${
+                  currentStatus === 'por_confirmar' || currentStatus === 'interesado'
+                    ? 'bg-amber-500/25 border border-amber-500/60 text-amber-300 shadow-sm'
+                    : 'text-ash hover:text-white border border-transparent'
+                }`}
+                title="Por confirmar asistencia"
+              >
+                <HelpCircle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <span className="hidden sm:inline">Por confirmar</span>
+                <span className="sm:hidden">Duda</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onRsvp(rodada.id, userBikes[0]?.id || 'moto-1', 'no_asistire')}
+                className={`px-2.5 sm:px-3 py-1.5 rounded-md text-xs font-mono font-bold uppercase transition flex items-center justify-center gap-1.5 ${
+                  currentStatus === 'no_asistire'
+                    ? 'bg-rose-500/25 border border-rose-500/60 text-rose-300 shadow-sm'
+                    : 'text-ash hover:text-white border border-transparent'
+                }`}
+                title="No asistiré"
+              >
+                <XCircle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                <span className="hidden sm:inline">No asistiré</span>
+                <span className="sm:hidden">No voy</span>
+              </button>
+            </div>
           </div>
         </div>
 

@@ -198,10 +198,12 @@ export interface RouteProposal {
   safetyTips?: string[];
 }
 
+export type RsvpStatus = 'confirmado' | 'por_confirmar' | 'no_asistire' | 'interesado';
+
 export interface RodadaAttendee {
   userId: string;
   motorcycleId?: string;
-  status: 'confirmado' | 'interesado';
+  status: RsvpStatus;
   confirmedAt: string;
   gearCheck?: {
     sleepingBag0C: boolean;

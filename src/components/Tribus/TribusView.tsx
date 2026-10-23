@@ -35,7 +35,9 @@ import {
   Upload,
   Image as ImageIcon,
   Vote,
-  AlertCircle
+  AlertCircle,
+  HelpCircle,
+  XCircle
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { buildOrderedGoogleMapsUrl } from '../../utils/googleMaps';
@@ -620,10 +622,11 @@ export const TribusView: React.FC<TribusViewProps> = ({
             );
             const newProposalsCount = unvotedProposals.length;
 
-            // 4. Si hay rodada confirmada y no has confirmado asistencia (RSVP)
-            const hasPendingRsvp = Boolean(
-              nextConfirmedRide && 
-              !nextConfirmedRide.attendees.some(a => a.userId === currentUser.id && a.status === 'confirmado')
+            // 4. Si hay rodada confirmada y el usuario aún no ha respondido o está en 'por confirmar'
+            const userAttendeeForRide = nextConfirmedRide?.attendees.find(a => a.userId === currentUser.id);
+            const hasPendingRsvp = Boolean(nextConfirmedRide && !userAttendeeForRide);
+            const isUserUndecided = Boolean(
+              nextConfirmedRide && userAttendeeForRide && (userAttendeeForRide.status === 'por_confirmar' || userAttendeeForRide.status === 'interesado')
             );
 
             return (
@@ -752,6 +755,16 @@ export const TribusView: React.FC<TribusViewProps> = ({
                           >
                             <AlertCircle className="w-2.5 h-2.5 text-rose-400" />
                             <span>RSVP pendiente</span>
+                          </span>
+                        )}
+
+                        {isUserUndecided && (
+                          <span 
+                            title="Marcaste tu asistencia como 'por confirmar'"
+                            className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-300 font-bold flex items-center gap-1"
+                          >
+                            <HelpCircle className="w-2.5 h-2.5 text-amber-400" />
+                            <span>Por confirmar</span>
                           </span>
                         )}
                       </div>
@@ -1111,7 +1124,8 @@ export const TribusView: React.FC<TribusViewProps> = ({
               };
             });
           const confCount = confAttendees.length;
-          const isAttending = confRodada.attendees.some(a => a.userId === currentUser.id && a.status === 'confirmado');
+          const userAtt = confRodada.attendees.find(a => a.userId === currentUser.id);
+          const userRsvpStatus = userAtt ? userAtt.status : null;
 
           return (
             <div 
@@ -1203,35 +1217,76 @@ export const TribusView: React.FC<TribusViewProps> = ({
                     </span>
                   </div>
 
-                  {/* RSVP button */}
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      rsvpRodada(
-                        confRodada.id, 
-                        userBikes[0]?.id || 'moto-default', 
-                        isAttending ? 'interesado' : 'confirmado'
-                      );
-                    }}
-                    className={`px-3 py-1.5 text-xs font-mono font-bold uppercase tracking-wider transition border flex items-center gap-1.5 shadow ${
-                      isAttending
-                        ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300'
-                        : 'bg-earth hover:bg-earth-bright border-earth text-white'
-                    }`}
+                  {/* 3-way RSVP selector: Asistiré, Por confirmar, No asistiré */}
+                  <div 
+                    onClick={(e) => e.stopPropagation()} 
+                    className="inline-flex rounded-lg border border-white/15 bg-black/70 p-0.5 text-[11px] font-mono gap-0.5"
                   >
-                    {isAttending ? (
-                      <>
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>Asistiendo</span>
-                      </>
-                    ) : (
-                      <>
-                        <Plus className="w-3.5 h-3.5" />
-                        <span>Asistir</span>
-                      </>
-                    )}
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        rsvpRodada(
+                          confRodada.id, 
+                          userBikes[0]?.id || 'moto-default', 
+                          'confirmado'
+                        );
+                        if (userRsvpStatus !== 'confirmado') {
+                          confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
+                        }
+                      }}
+                      className={`px-2 sm:px-2.5 py-1 rounded font-bold uppercase transition flex items-center gap-1 ${
+                        userRsvpStatus === 'confirmado'
+                          ? 'bg-emerald-500/25 border border-emerald-500/60 text-emerald-300 shadow'
+                          : 'text-ash hover:text-white border border-transparent'
+                      }`}
+                      title="Confirmar que asistirás"
+                    >
+                      <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
+                      <span>Asistiré</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        rsvpRodada(
+                          confRodada.id, 
+                          userBikes[0]?.id || 'moto-default', 
+                          'por_confirmar'
+                        );
+                      }}
+                      className={`px-2 sm:px-2.5 py-1 rounded font-bold uppercase transition flex items-center gap-1 ${
+                        userRsvpStatus === 'por_confirmar' || userRsvpStatus === 'interesado'
+                          ? 'bg-amber-500/25 border border-amber-500/60 text-amber-300 shadow'
+                          : 'text-ash hover:text-white border border-transparent'
+                      }`}
+                      title="Por confirmar tu asistencia"
+                    >
+                      <HelpCircle className="w-3 h-3 text-amber-400 shrink-0" />
+                      <span className="hidden sm:inline">Por confirmar</span>
+                      <span className="sm:hidden">Duda</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        rsvpRodada(
+                          confRodada.id, 
+                          userBikes[0]?.id || 'moto-default', 
+                          'no_asistire'
+                        );
+                      }}
+                      className={`px-2 sm:px-2.5 py-1 rounded font-bold uppercase transition flex items-center gap-1 ${
+                        userRsvpStatus === 'no_asistire'
+                          ? 'bg-rose-500/25 border border-rose-500/60 text-rose-300 shadow'
+                          : 'text-ash hover:text-white border border-transparent'
+                      }`}
+                      title="No podrás asistir"
+                    >
+                      <XCircle className="w-3 h-3 text-rose-400 shrink-0" />
+                      <span className="hidden sm:inline">No asistiré</span>
+                      <span className="sm:hidden">No voy</span>
+                    </button>
+                  </div>
 
                   {/* Ver Plan */}
                   <button

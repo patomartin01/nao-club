@@ -15,7 +15,8 @@ import {
   ActivityPost,
   ActivityComment,
   Challenge,
-  CrewChatMessage
+  CrewChatMessage,
+  RsvpStatus
 } from '../types';
 import { 
   CURRENT_USER, 
@@ -62,7 +63,7 @@ interface AppContextType {
   addRouteComment: (routeId: string, text: string) => void;
   lockWinningRoute: (rodadaId: string, routeId: string) => void;
   unlockWinningRoute: (rodadaId: string) => void;
-  rsvpRodada: (rodadaId: string, motorcycleId: string, status: 'confirmado' | 'interesado') => void;
+  rsvpRodada: (rodadaId: string, motorcycleId: string, status: RsvpStatus) => void;
   togglePackingItem: (rodadaId: string, itemId: string) => void;
   assignPackingItem: (rodadaId: string, itemId: string, userId: string, userName: string) => void;
   addPackingItem: (rodadaId: string, item: string, category: PackingItem['category']) => void;
@@ -648,7 +649,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const rsvpRodada = (rodadaId: string, motorcycleId: string, status: 'confirmado' | 'interesado') => {
+  const rsvpRodada = (rodadaId: string, motorcycleId: string, status: RsvpStatus) => {
     let updatedAttendeesList: any[] = [];
     setRodadas(prev => prev.map(rd => {
       if (rd.id === rodadaId) {
