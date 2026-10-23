@@ -33,7 +33,9 @@ import {
   ChevronDown,
   Camera,
   Upload,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Vote,
+  AlertCircle
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { buildOrderedGoogleMapsUrl } from '../../utils/googleMaps';
@@ -587,9 +589,42 @@ export const TribusView: React.FC<TribusViewProps> = ({
           {filteredCrews.map((crew) => {
             const isUserAdmin = crew.creatorId === currentUser.id;
             const crewRides = rodadas.filter(r => r.crewId === crew.id);
-            const nextRide = crewRides[0] || null;
-            const rideProposals = nextRide ? routeProposals.filter(p => p.rodadaId === nextRide.id) : [];
-            const hasConfirmed = nextRide && (nextRide.status === 'fijada' || nextRide.winningRouteId);
+
+            // 1. Siguiente ruta confirmada (si es que hay)
+            const confirmedRides = crewRides
+              .filter(r => r.status === 'fijada' || Boolean(r.winningRouteId))
+              .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+            const nextConfirmedRide = confirmedRides[0] || null;
+            const otherConfirmedCount = Math.max(0, confirmedRides.length - 1);
+
+            // 2. Fechas abiertas convocadas pendientes de tu voto
+            const openVotingRides = crewRides.filter(r => r.status === 'votacion');
+            const unvotedRides = openVotingRides.filter(r => {
+              const proposalsForRide = routeProposals.filter(p => p.rodadaId === r.id);
+              if (proposalsForRide.length === 0) return true;
+              const hasVoted = proposalsForRide.some(p => 
+                p.votes.includes(currentUser.id) || (p.downvotes && p.downvotes.includes(currentUser.id))
+              );
+              return !hasVoted;
+            });
+            const unvotedDatesCount = unvotedRides.length;
+
+            // 3. Nuevas propuestas en la tribu que no has votado ni propuesto tú
+            const crewProposals = routeProposals.filter(p => 
+              crewRides.some(r => r.id === p.rodadaId)
+            );
+            const unvotedProposals = crewProposals.filter(p => 
+              !p.votes.includes(currentUser.id) && 
+              !(p.downvotes && p.downvotes.includes(currentUser.id)) && 
+              p.proposedByUserId !== currentUser.id
+            );
+            const newProposalsCount = unvotedProposals.length;
+
+            // 4. Si hay rodada confirmada y no has confirmado asistencia (RSVP)
+            const hasPendingRsvp = Boolean(
+              nextConfirmedRide && 
+              !nextConfirmedRide.attendees.some(a => a.userId === currentUser.id && a.status === 'confirmado')
+            );
 
             return (
               <div
@@ -650,34 +685,80 @@ export const TribusView: React.FC<TribusViewProps> = ({
                   </div>
                 </div>
 
-                {/* Center / Right: Subtle Next Ride Preview */}
+                {/* Center / Right: Siguiente ruta confirmada (solo si hay) + Notificaciones */}
                 <div className="flex items-center justify-between md:justify-end gap-4 shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-white/[0.04]">
-                  {nextRide ? (
-                    <div className="text-left md:text-right">
-                      <span className="text-[9px] text-ash uppercase tracking-wider block">
-                        Próxima Rodada
-                      </span>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <Calendar className="w-3 h-3 text-earth shrink-0" />
-                        <span className="text-xs text-chalk font-medium truncate max-w-[220px]">
-                          {formatHumanDate(nextRide.startDate, nextRide.endDate)} • {nextRide.title}
+                  <div className="text-left md:text-right space-y-1.5">
+                    {nextConfirmedRide ? (
+                      <div>
+                        <span className="text-[9px] text-ash uppercase tracking-wider block font-bold">
+                          Próxima Ruta Confirmada
                         </span>
-                        {hasConfirmed ? (
-                          <span className="text-[9px] font-mono uppercase px-1.5 py-0.2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
-                            Confirmada
+                        <div className="flex items-center gap-2 mt-0.5 md:justify-end">
+                          <Calendar className="w-3 h-3 text-emerald-400 shrink-0" />
+                          <span className="text-xs text-chalk font-bold truncate max-w-[200px] sm:max-w-[260px]">
+                            {formatHumanDate(nextConfirmedRide.startDate, nextConfirmedRide.endDate)} • {nextConfirmedRide.title}
                           </span>
-                        ) : (
-                          <span className="text-[9px] font-mono uppercase px-1.5 py-0.2 bg-amber-500/10 border border-amber-500/30 text-amber-300">
-                            {rideProposals.length} opciones
+                          <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 font-bold flex items-center gap-1 shrink-0">
+                            <Check className="w-2.5 h-2.5" />
+                            <span>Confirmada</span>
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="md:text-right">
+                        <span className="text-[10px] text-ash/60 font-mono italic block">
+                          Sin ruta confirmada aún
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Notificaciones de fechas por votar, nuevas propuestas u otras confirmadas */}
+                    {(unvotedDatesCount > 0 || newProposalsCount > 0 || otherConfirmedCount > 0 || hasPendingRsvp) && (
+                      <div className="flex items-center gap-1.5 flex-wrap md:justify-end pt-0.5">
+                        {unvotedDatesCount > 0 && (
+                          <span 
+                            title="Fechas abiertas convocadas pendientes de tu voto"
+                            className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-300 font-bold flex items-center gap-1"
+                          >
+                            <Vote className="w-2.5 h-2.5 text-amber-400" />
+                            <span>{unvotedDatesCount} {unvotedDatesCount === 1 ? 'fecha por votar' : 'fechas por votar'}</span>
+                          </span>
+                        )}
+
+                        {newProposalsCount > 0 && (
+                          <span 
+                            title="Nuevas propuestas de ruta en el grupo"
+                            className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-earth/15 border border-earth/40 text-earth font-bold flex items-center gap-1"
+                          >
+                            <Sparkles className="w-2.5 h-2.5 text-earth" />
+                            <span>{newProposalsCount} {newProposalsCount === 1 ? 'nueva propuesta' : 'nuevas propuestas'}</span>
+                          </span>
+                        )}
+
+                        {otherConfirmedCount > 0 && (
+                          <span 
+                            title="Otras fechas confirmadas en el calendario"
+                            className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-white/[0.04] border border-white/15 text-ash font-bold flex items-center gap-1"
+                          >
+                            <Calendar className="w-2.5 h-2.5 text-ash" />
+                            <span>+{otherConfirmedCount} confirmada</span>
+                          </span>
+                        )}
+
+                        {hasPendingRsvp && (
+                          <span 
+                            title="Confirma tu asistencia en la rodada confirmada"
+                            className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-rose-500/15 border border-rose-500/40 text-rose-300 font-bold flex items-center gap-1"
+                          >
+                            <AlertCircle className="w-2.5 h-2.5 text-rose-400" />
+                            <span>RSVP pendiente</span>
                           </span>
                         )}
                       </div>
-                    </div>
-                  ) : (
-                    <span className="text-[10px] text-ash/60 italic">Sin rodadas programadas</span>
-                  )}
+                    )}
+                  </div>
 
-                  <div className="flex items-center gap-1 text-ash group-hover:text-white transition pl-2">
+                  <div className="flex items-center gap-1 text-ash group-hover:text-white transition pl-2 shrink-0">
                     <span className="text-[10px] uppercase font-bold tracking-wider hidden sm:inline group-hover:text-earth">
                       Entrar
                     </span>
