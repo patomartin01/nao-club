@@ -37,7 +37,8 @@ import {
   Vote,
   AlertCircle,
   HelpCircle,
-  XCircle
+  XCircle,
+  Bike
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { buildOrderedGoogleMapsUrl } from '../../utils/googleMaps';
@@ -181,6 +182,10 @@ export const TribusView: React.FC<TribusViewProps> = ({
 
   // Search query for Tribus list
   const [searchTribuQuery, setSearchTribuQuery] = useState('');
+
+  // Search & filter for Pilots tab
+  const [pilotSearchQuery, setPilotSearchQuery] = useState('');
+  const [pilotRoleFilter, setPilotRoleFilter] = useState<'all' | 'capitan' | 'barrendero' | 'rider'>('all');
 
   // Selected Route Option Detail Modal (Airbnb style detail view)
   const [detailProposalId, setDetailProposalId] = useState<string | null>(null);
@@ -1105,9 +1110,9 @@ export const TribusView: React.FC<TribusViewProps> = ({
 
       {/* =================================================================== */}
       {/* 1. VISTA SUTIL DE PRÓXIMAS RODADAS CONFIRMADAS                      */}
-      {/* (Solo rodadas confirmadas; las que están en votación van abajo)     */}
+      {/* (Solo en pestaña Rodadas; en Pilotos se muestra el roster de lleno)  */}
       {/* =================================================================== */}
-      {confirmedRodadas.length === 0 ? null : confirmedRodadas.length === 1 ? (
+      {activeTribuTab === 'rodadas' && (confirmedRodadas.length === 0 ? null : confirmedRodadas.length === 1 ? (
         /* Caso 1: Una sola rodada confirmada -> Hero Card cinematográfica */
         (() => {
           const confRodada = confirmedRodadas[0];
@@ -1391,128 +1396,321 @@ export const TribusView: React.FC<TribusViewProps> = ({
             })}
           </div>
         </div>
-      )}
+      ))}
 
       {/* =================================================================== */}
-      {/* 2. TAB: MIEMBROS & GARAJE                                          */}
+      {/* 2. TAB: PILOTOS & GARAJE DE LA TRIBU                                */}
       {/* =================================================================== */}
-      {activeTribuTab === 'miembros' && (
-        <div className="space-y-4">
-          <div className="border-b border-white/10 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <h3 className="font-display font-bold text-base text-white uppercase">
-                Pilotos ({activeTribu.members.length})
-              </h3>
-            </div>
+      {activeTribuTab === 'miembros' && (() => {
+        const captainsCount = activeTribu.members.filter(m => m.role === 'Capitán de Ruta').length;
+        const sweepersCount = activeTribu.members.filter(m => m.role === 'Barrendero').length;
+        const ridersCount = activeTribu.members.filter(m => m.role !== 'Capitán de Ruta' && m.role !== 'Barrendero').length;
+        const nextConfirmedRide = confirmedRodadas[0];
 
-            <button
-              onClick={() => setShowAddPilotModal(true)}
-              className="px-3 py-1.5 bg-earth hover:bg-earth-bright text-white text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition self-start sm:self-auto border border-earth/40 shadow-sm active:scale-95"
-            >
-              <UserPlus className="w-3.5 h-3.5" />
-              <span>+ Invitar Piloto</span>
-            </button>
-          </div>
+        const filteredMembers = activeTribu.members.filter(member => {
+          const u = users.find(user => user.id === member.userId);
+          const bike = motorcycles?.find(m => m.userId === member.userId);
+          const nameMatch = (u?.name || member.userId).toLowerCase().includes(pilotSearchQuery.toLowerCase());
+          const handleMatch = (u?.handle || '').toLowerCase().includes(pilotSearchQuery.toLowerCase());
+          const motoMatch = bike ? `${bike.brand} ${bike.model}`.toLowerCase().includes(pilotSearchQuery.toLowerCase()) : false;
+          const matchesSearch = !pilotSearchQuery || nameMatch || handleMatch || motoMatch;
 
-          {/* Tarjeta de integración con WhatsApp */}
-          <div className="p-3.5 rounded-2xl bg-gradient-to-r from-emerald-950/40 via-emerald-900/15 to-transparent border border-emerald-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center shrink-0">
-                <WhatsAppIcon className="w-4 h-4 text-emerald-400" />
-              </div>
+          if (!matchesSearch) return false;
+
+          if (pilotRoleFilter === 'capitan') return member.role === 'Capitán de Ruta';
+          if (pilotRoleFilter === 'barrendero') return member.role === 'Barrendero';
+          if (pilotRoleFilter === 'rider') return member.role !== 'Capitán de Ruta' && member.role !== 'Barrendero';
+          return true;
+        });
+
+        return (
+          <div className="space-y-4">
+            {/* Header & Quick Action Toolbar */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-3">
               <div>
-                <h4 className="font-display font-bold text-xs sm:text-sm text-white uppercase tracking-wide flex items-center gap-2">
-                  <span>Chat de WhatsApp</span>
-                  {activeTribu.whatsappGroupUrl && (
-                    <span className="px-1.5 py-0.2 rounded text-[9px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                      Conectado
-                    </span>
-                  )}
-                </h4>
-                <p className="text-[11px] text-ash">
-                  {activeTribu.whatsappGroupUrl 
-                    ? 'Chat para avisos rápidos y coordinación.'
-                    : 'Sin enlace de WhatsApp vinculado.'}
+                <h3 className="font-display font-bold text-base text-white uppercase flex items-center gap-2">
+                  <span>Roster de Pilotos</span>
+                  <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-white/10 text-ash">
+                    {activeTribu.members.length}
+                  </span>
+                </h3>
+                <p className="text-[11px] text-ash font-mono mt-0.5">
+                  {captainsCount} {captainsCount === 1 ? 'Capitán' : 'Capitanes'} • {sweepersCount} {sweepersCount === 1 ? 'Barrendero' : 'Barrenderos'} • {ridersCount} Riders
                 </p>
               </div>
-            </div>
 
-            <div className="flex items-center gap-2 shrink-0">
-              {activeTribu.whatsappGroupUrl ? (
-                <a
-                  href={activeTribu.whatsappGroupUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition shadow"
-                >
-                  <WhatsAppIcon className="w-3.5 h-3.5" />
-                  <span>Abrir WhatsApp</span>
-                </a>
-              ) : (
+              <div className="flex items-center gap-2 flex-wrap">
+                {activeTribu.whatsappGroupUrl ? (
+                  <a
+                    href={activeTribu.whatsappGroupUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-400 text-xs font-mono font-bold flex items-center gap-1.5 transition"
+                    title="Abrir chat grupal en WhatsApp"
+                  >
+                    <WhatsAppIcon className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>WhatsApp</span>
+                    <ExternalLink className="w-3 h-3 opacity-70" />
+                  </a>
+                ) : (
+                  <button
+                    onClick={handleOpenEditCrew}
+                    className="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/15 text-ash hover:text-white text-xs font-mono flex items-center gap-1.5 transition"
+                    title="Vincular grupo de WhatsApp de la tribu"
+                  >
+                    <WhatsAppIcon className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>+ WhatsApp</span>
+                  </button>
+                )}
+
                 <button
-                  onClick={handleOpenEditCrew}
-                  className="px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition"
+                  type="button"
+                  onClick={handleCopyNaoLink}
+                  className="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-ash hover:text-white text-xs font-mono transition flex items-center gap-1.5"
+                  title="Copiar link de invitación a la tribu"
                 >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Vincular</span>
+                  <Copy className="w-3.5 h-3.5" />
+                  <span className="hidden md:inline">{copiedNaoLink ? 'Copiado' : 'Link Tribu'}</span>
                 </button>
-              )}
-              <button
-                type="button"
-                onClick={handleCopyNaoLink}
-                className="px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-ash hover:text-white text-xs font-mono transition flex items-center gap-1.5"
-                title="Copiar link de NAO para el grupo"
-              >
-                <Copy className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="hidden md:inline">{copiedNaoLink ? '¡Copiado!' : 'Copiar Link'}</span>
-              </button>
-            </div>
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-            {activeTribu.members.map(member => {
-              const isCreator = member.userId === activeTribu.creatorId;
-              const u = users.find(user => user.id === member.userId);
-              const bike = motorcycles?.find(m => m.userId === member.userId);
-              const displayName = u ? (u.id === currentUser.id ? `${u.name} (Tú)` : u.name) : member.userId;
-              const avatar = u?.avatar;
-              const motoModel = bike ? `${bike.brand} ${bike.model}` : null;
-
-              return (
-                <div 
-                  key={member.userId}
-                  onClick={() => openPilotProfileById(member.userId)}
-                  className="p-3 bg-[#0D0B0A] border border-white/10 flex items-center gap-3 hover:border-earth/40 transition cursor-pointer"
+                <button
+                  onClick={() => setShowAddPilotModal(true)}
+                  className="px-3.5 py-1.5 bg-earth hover:bg-earth-bright text-white text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition border border-earth/40 shadow-sm active:scale-95 rounded-lg"
                 >
-                  <div className="w-10 h-10 border border-white/15 bg-black/40 flex items-center justify-center font-bold text-white text-xs shrink-0 overflow-hidden">
-                    {avatar ? (
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <img src={avatar} alt={displayName} className="w-full h-full object-cover" />
-                    ) : (
-                      member.userId.slice(0, 2).toUpperCase()
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-white uppercase truncate">
-                        {displayName}
-                      </span>
-                      {isCreator && (
-                        <span className="text-[9px] font-mono uppercase font-bold text-earth border border-earth/30 px-1 shrink-0">
-                          Admin
+                  <UserPlus className="w-3.5 h-3.5" />
+                  <span>+ Invitar Piloto</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Filter Pills & Search Input */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+              {/* Role filter pills */}
+              <div className="inline-flex rounded-lg border border-white/10 bg-black/60 p-0.5 text-[11px] font-mono overflow-x-auto">
+                <button
+                  type="button"
+                  onClick={() => setPilotRoleFilter('all')}
+                  className={`px-2.5 py-1 rounded font-bold uppercase transition ${
+                    pilotRoleFilter === 'all'
+                      ? 'bg-earth text-white shadow-sm'
+                      : 'text-ash hover:text-white'
+                  }`}
+                >
+                  Todos ({activeTribu.members.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPilotRoleFilter('capitan')}
+                  className={`px-2.5 py-1 rounded font-bold uppercase transition flex items-center gap-1 ${
+                    pilotRoleFilter === 'capitan'
+                      ? 'bg-amber-500/25 border border-amber-500/60 text-amber-300 shadow-sm'
+                      : 'text-ash hover:text-white'
+                  }`}
+                >
+                  <Compass className="w-3 h-3 text-amber-400" />
+                  Capitanes ({captainsCount})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPilotRoleFilter('barrendero')}
+                  className={`px-2.5 py-1 rounded font-bold uppercase transition flex items-center gap-1 ${
+                    pilotRoleFilter === 'barrendero'
+                      ? 'bg-blue-500/25 border border-blue-500/60 text-blue-300 shadow-sm'
+                      : 'text-ash hover:text-white'
+                  }`}
+                >
+                  <Shield className="w-3 h-3 text-blue-400" />
+                  Barrenderos ({sweepersCount})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPilotRoleFilter('rider')}
+                  className={`px-2.5 py-1 rounded font-bold uppercase transition ${
+                    pilotRoleFilter === 'rider'
+                      ? 'bg-white/15 text-white border border-white/30 shadow-sm'
+                      : 'text-ash hover:text-white'
+                  }`}
+                >
+                  Riders ({ridersCount})
+                </button>
+              </div>
+
+              {/* Search input */}
+              <div className="relative sm:w-64">
+                <Search className="w-3.5 h-3.5 text-ash absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  type="text"
+                  value={pilotSearchQuery}
+                  onChange={(e) => setPilotSearchQuery(e.target.value)}
+                  placeholder="Buscar piloto o moto..."
+                  className="w-full pl-8 pr-3 py-1.5 text-xs font-mono bg-black/50 border border-white/10 rounded-lg text-white placeholder-ash/60 focus:outline-none focus:border-earth"
+                />
+              </div>
+            </div>
+
+            {/* Pilot Cards Grid */}
+            {filteredMembers.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                {filteredMembers.map(member => {
+                  const isCreator = member.userId === activeTribu.creatorId;
+                  const u = users.find(user => user.id === member.userId);
+                  const bike = motorcycles?.find(m => m.userId === member.userId);
+                  const displayName = u ? (u.id === currentUser.id ? `${u.name} (Tú)` : u.name) : member.userId;
+                  const avatar = u?.avatar;
+                  const isCaptain = member.role === 'Capitán de Ruta';
+                  const isSweeper = member.role === 'Barrendero';
+                  const memberRsvp = nextConfirmedRide?.attendees?.find(a => a.userId === member.userId);
+
+                  return (
+                    <div 
+                      key={member.userId}
+                      onClick={() => openPilotProfileById(member.userId)}
+                      className={`p-4 bg-[#0F0C0A] hover:bg-[#16120F] border transition-all cursor-pointer group flex flex-col justify-between relative overflow-hidden rounded-xl shadow-md ${
+                        isCaptain 
+                          ? 'border-amber-500/30 hover:border-amber-500/70' 
+                          : isSweeper 
+                          ? 'border-blue-500/30 hover:border-blue-500/70' 
+                          : 'border-white/10 hover:border-earth/60'
+                      }`}
+                    >
+                      {/* Top: Avatar + Identity + Role Badges */}
+                      <div>
+                        <div className="flex items-start gap-3">
+                          {/* Avatar with role ring */}
+                          <div className={`w-12 h-12 rounded-xl overflow-hidden shrink-0 border-2 bg-black/60 relative ${
+                            isCaptain 
+                              ? 'border-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.25)]' 
+                              : isSweeper 
+                              ? 'border-blue-400 shadow-[0_0_12px_rgba(96,165,250,0.25)]' 
+                              : isCreator 
+                              ? 'border-earth shadow-[0_0_12px_rgba(230,81,0,0.2)]' 
+                              : 'border-white/20'
+                          }`}>
+                            {avatar ? (
+                              <img src={avatar} alt={displayName} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center font-bold text-white text-xs">
+                                {member.userId.slice(0, 2).toUpperCase()}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Identity Info */}
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="text-xs font-bold text-white uppercase group-hover:text-earth-bright transition truncate">
+                                {displayName}
+                              </span>
+                              {isCreator && (
+                                <span className="text-[9px] font-mono uppercase font-bold text-earth border border-earth/40 bg-earth/10 px-1 py-0.2 rounded shrink-0">
+                                  ADMIN
+                                </span>
+                              )}
+                            </div>
+                            
+                            <span className="text-[11px] text-ash block truncate mt-0.5">
+                              {u?.handle || '@piloto'} {u?.location ? `• ${u.location}` : ''}
+                            </span>
+
+                            <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                              {isCaptain ? (
+                                <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-amber-500/15 border border-amber-500/40 text-amber-300 flex items-center gap-1">
+                                  <Compass className="w-2.5 h-2.5 text-amber-400" />
+                                  Capitán de Ruta
+                                </span>
+                              ) : isSweeper ? (
+                                <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-blue-500/15 border border-blue-500/40 text-blue-300 flex items-center gap-1">
+                                  <Shield className="w-2.5 h-2.5 text-blue-400" />
+                                  Barrendero
+                                </span>
+                              ) : (
+                                <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-white/5 border border-white/15 text-ash">
+                                  Rider
+                                </span>
+                              )}
+                              
+                              {u?.ridingLevel && (
+                                <span className="text-[9px] font-mono text-ash/80 truncate">
+                                  • {u.ridingLevel}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Middle: Moto / Garaje Info */}
+                        <div className="mt-3 pt-2.5 border-t border-white/[0.08] flex items-center justify-between text-xs font-mono">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <div className="w-6 h-6 rounded bg-white/5 flex items-center justify-center shrink-0 border border-white/10">
+                              <Bike className="w-3.5 h-3.5 text-earth" />
+                            </div>
+                            <div className="min-w-0">
+                              <span className="text-white font-bold block truncate text-xs">
+                                {bike ? `${bike.brand} ${bike.model}` : 'Sin moto registrada'}
+                              </span>
+                              {bike?.displacementCc ? (
+                                <span className="text-[10px] text-ash block truncate">
+                                  {bike.displacementCc} cc {bike.type ? `• ${bike.type}` : ''}
+                                </span>
+                              ) : null}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Bottom: Next Rodada RSVP Status & Profile Action */}
+                      <div className="mt-3 pt-2 border-t border-white/[0.06] flex items-center justify-between text-[11px] font-mono">
+                        {nextConfirmedRide ? (
+                          <div className="flex items-center gap-1.5">
+                            {memberRsvp?.status === 'confirmado' ? (
+                              <span className="text-emerald-400 font-bold flex items-center gap-1 text-[10px]">
+                                <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
+                                <span>Asistirá</span>
+                              </span>
+                            ) : memberRsvp?.status === 'por_confirmar' || memberRsvp?.status === 'interesado' ? (
+                              <span className="text-amber-300 font-bold flex items-center gap-1 text-[10px]">
+                                <HelpCircle className="w-3 h-3 text-amber-400 shrink-0" />
+                                <span>Por confirmar</span>
+                              </span>
+                            ) : memberRsvp?.status === 'no_asistire' ? (
+                              <span className="text-rose-400 font-bold flex items-center gap-1 text-[10px]">
+                                <XCircle className="w-3 h-3 text-rose-400 shrink-0" />
+                                <span>No asistirá</span>
+                              </span>
+                            ) : (
+                              <span className="text-ash/60 text-[10px]">Sin confirmar</span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-ash/60 text-[10px]">Miembro activo</span>
+                        )}
+
+                        <span className="text-ash group-hover:text-white text-[10px] font-mono flex items-center gap-0.5 ml-auto transition-transform group-hover:translate-x-0.5">
+                          Ver Perfil →
                         </span>
-                      )}
+                      </div>
                     </div>
-                    <span className="text-[10px] text-ash block mt-0.5 truncate">
-                      {member.role} {motoModel ? `• ${motoModel}` : ''}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="p-8 border border-dashed border-white/10 bg-black/20 text-center rounded-xl space-y-2">
+                <p className="text-ash text-xs font-mono">No se encontraron pilotos con ese filtro.</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPilotSearchQuery('');
+                    setPilotRoleFilter('all');
+                  }}
+                  className="text-xs font-mono text-earth hover:text-earth-bright underline"
+                >
+                  Limpiar filtros
+                </button>
+              </div>
+            )}
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* =================================================================== */}
       {/* 3. TAB: RODADAS & CONVOCATORIAS PROPUESTAS                          */}
