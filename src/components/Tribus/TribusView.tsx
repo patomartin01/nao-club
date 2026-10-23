@@ -1710,8 +1710,10 @@ export const TribusView: React.FC<TribusViewProps> = ({
                       </button>
 
                       {/* Net score */}
-                      <span className="text-[10px] text-ash font-mono ml-1">
-                        {netScore >= 0 ? `+${netScore}` : netScore} netos
+                      <span className={`text-xs font-mono font-bold ml-1 ${
+                        netScore > 0 ? 'text-earth' : netScore < 0 ? 'text-rose-400' : 'text-ash'
+                      }`}>
+                        {netScore > 0 ? `+${netScore}` : netScore}
                       </span>
                     </div>
 
@@ -1807,15 +1809,31 @@ export const TribusView: React.FC<TribusViewProps> = ({
               />
             </div>
 
-            {/* Voting Bar in Detail Modal */}
-            <div className="bg-black/40 border border-white/10 p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <span className="text-[10px] text-ash uppercase tracking-wider block">
-                  Votación de la Tribu
+            {/* Voting Bar in Detail Modal - Pure KISS */}
+            <div className="bg-black/40 border border-white/10 p-3 sm:p-3.5 flex items-center justify-between gap-3 font-mono">
+              <div className="flex items-center gap-3">
+                <span className={`text-base font-bold font-mono ${
+                  ((selectedProposalForDetail.votes?.length || 0) - (selectedProposalForDetail.downvotes?.length || 0)) > 0
+                    ? 'text-earth'
+                    : ((selectedProposalForDetail.votes?.length || 0) - (selectedProposalForDetail.downvotes?.length || 0)) < 0
+                    ? 'text-rose-400'
+                    : 'text-white'
+                }`}>
+                  {((selectedProposalForDetail.votes?.length || 0) - (selectedProposalForDetail.downvotes?.length || 0)) > 0 
+                    ? `+${(selectedProposalForDetail.votes?.length || 0) - (selectedProposalForDetail.downvotes?.length || 0)}`
+                    : (selectedProposalForDetail.votes?.length || 0) - (selectedProposalForDetail.downvotes?.length || 0)}
                 </span>
-                <span className="text-sm font-bold text-white">
-                  {(selectedProposalForDetail.votes?.length || 0) - (selectedProposalForDetail.downvotes?.length || 0)} votos netos ({selectedProposalForDetail.votes?.length || 0} a favor / {selectedProposalForDetail.downvotes?.length || 0} en contra)
-                </span>
+
+                <div className="flex items-center gap-3 text-xs border-l border-white/10 pl-3">
+                  <span className="text-emerald-400 flex items-center gap-1 font-bold" title="Votos a favor">
+                    <ThumbsUp className="w-3.5 h-3.5" />
+                    <span>{selectedProposalForDetail.votes?.length || 0}</span>
+                  </span>
+                  <span className="text-rose-400 flex items-center gap-1 font-bold" title="Votos en contra">
+                    <ThumbsDown className="w-3.5 h-3.5" />
+                    <span>{selectedProposalForDetail.downvotes?.length || 0}</span>
+                  </span>
+                </div>
               </div>
 
               <div className="flex items-center gap-2">
