@@ -57,57 +57,57 @@ export const SaveToListModal: React.FC<SaveToListModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-fadeIn overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#1A1918]/70 backdrop-blur-sm animate-fadeIn overflow-y-auto">
       <div 
-        className="bg-[#0D0B0A] border border-white/15 w-full max-w-md text-chalk p-5 sm:p-8 shadow-2xl relative font-mono space-y-5 my-auto max-h-[94vh] overflow-y-auto"
+        className="bg-[#FAF6ED] border-2 border-[#1A1918] w-full max-w-md text-[#1A1918] p-6 sm:p-7 shadow-[8px_8px_0px_#1A1918] relative font-sans space-y-5 my-auto max-h-[94vh] overflow-y-auto rounded-[28px] animate-scaleUp"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b border-white/10 pb-4">
+        <div className="flex items-center justify-between border-b-2 border-[#1A1918] pb-4">
           <div className="flex items-center gap-2">
-            <Bookmark className="w-4 h-4 text-earth" />
-            <span className="text-[10px] uppercase font-bold tracking-widest text-ash">
-              ORGANIZAR EN LISTAS // RUTAS & EXPEDICIONES
+            <Bookmark className="w-4 h-4 text-[#E6332A]" />
+            <span className="text-[10px] uppercase font-mono font-black tracking-widest text-[#E6332A]">
+              ★ ORGANIZAR EN LISTAS ★
             </span>
           </div>
           <button 
             onClick={onClose}
-            className="w-7 h-7 rounded-full bg-white/5 border border-white/15 text-ash hover:text-white flex items-center justify-center transition"
+            className="w-8 h-8 rounded-xl bg-[#FAF6ED] border-2 border-[#1A1918] text-[#1A1918] hover:bg-[#E6332A] hover:text-white flex items-center justify-center transition shadow-[2px_2px_0px_#1A1918]"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         <div>
-          <h4 className="font-display font-bold text-sm text-white uppercase tracking-wider line-clamp-1">
+          <h4 className="font-display font-black text-lg text-[#1A1918] uppercase tracking-wide line-clamp-1">
             {route.title}
           </h4>
-          <p className="text-[11px] text-ash mt-0.5">
-            Selecciona en qué listas o carpetas deseas guardar esta ruta:
+          <p className="text-xs text-[#1A1918]/70 mt-1 font-serif italic">
+            Selecciona en qué colecciones deseas archivar esta ruta:
           </p>
         </div>
 
         {/* Existing Lists */}
-        <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+        <div className="space-y-2.5 max-h-56 overflow-y-auto pr-1">
           {routeLists.map(list => {
             const isIncluded = list.routeIds.includes(route.id);
             return (
               <div 
                 key={list.id}
                 onClick={() => handleToggleList(list.id, isIncluded)}
-                className={`p-3 border flex items-center justify-between cursor-pointer transition ${
+                className={`p-3.5 border-2 border-[#1A1918] rounded-xl flex items-center justify-between cursor-pointer transition shadow-[2px_2px_0px_#1A1918] ${
                   isIncluded 
-                    ? 'bg-earth/15 border-earth text-white' 
-                    : 'bg-white/[0.02] border-white/10 text-white/70 hover:border-white/30'
+                    ? 'bg-[#F4EEDB]' 
+                    : 'bg-[#FAF6ED] hover:bg-[#F4EEDB]'
                 }`}
               >
                 <div>
-                  <p className="font-bold text-xs uppercase">{list.name}</p>
-                  <p className="text-[10px] text-ash">{list.routeIds.length} rutas en esta lista</p>
+                  <p className="font-display font-black text-xs uppercase text-[#1A1918]">{list.name}</p>
+                  <p className="text-[10px] text-[#1A1918]/60 font-mono font-bold">{list.routeIds.length} rutas en esta lista</p>
                 </div>
-                <div className={`w-5 h-5 rounded border flex items-center justify-center ${
-                  isIncluded ? 'bg-earth border-earth text-white' : 'border-white/30 bg-black/40'
+                <div className={`w-5 h-5 rounded-md border-2 border-[#1A1918] flex items-center justify-center shadow-[1px_1px_0px_#1A1918] ${
+                  isIncluded ? 'bg-[#E6332A] text-white' : 'bg-[#FAF6ED]'
                 }`}>
-                  {isIncluded && <Check className="w-3.5 h-3.5" />}
+                  {isIncluded && <Check className="w-3.5 h-3.5 stroke-[3]" />}
                 </div>
               </div>
             );
@@ -116,26 +116,26 @@ export const SaveToListModal: React.FC<SaveToListModalProps> = ({
 
         {/* Add New List Form */}
         {isCreating ? (
-          <form onSubmit={handleCreateList} className="space-y-3 pt-2 border-t border-white/10">
+          <form onSubmit={handleCreateList} className="space-y-3 pt-2 border-t-2 border-[#1A1918]">
             <input 
               type="text"
               placeholder="Ej. Rutas Huasteca Potosina"
               value={newListName}
               onChange={(e) => setNewListName(e.target.value)}
-              className="w-full bg-black/60 border border-white/20 px-3 py-2 text-xs text-white placeholder-ash focus:outline-none focus:border-earth"
+              className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] px-3.5 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:border-[#E6332A] rounded-xl shadow-[2px_2px_0px_#1A1918] font-bold"
               autoFocus
             />
             <div className="flex gap-2">
               <button
                 type="submit"
-                className="flex-1 py-2 bg-earth hover:bg-earth/80 text-white font-bold text-[10px] uppercase tracking-wider transition"
+                className="flex-1 py-2.5 bg-[#E6332A] hover:bg-[#d02c24] text-white font-display font-black text-xs uppercase tracking-wider rounded-xl transition border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
               >
                 Guardar Lista
               </button>
               <button
                 type="button"
                 onClick={() => setIsCreating(false)}
-                className="px-3 py-2 bg-white/5 border border-white/15 text-ash hover:text-white text-[10px] uppercase font-bold"
+                className="px-4 py-2.5 bg-[#FAF6ED] border-2 border-[#1A1918] text-[#1A1918] hover:bg-[#F4EEDB] text-xs uppercase font-display font-black rounded-xl shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
               >
                 Cancelar
               </button>
@@ -144,17 +144,17 @@ export const SaveToListModal: React.FC<SaveToListModalProps> = ({
         ) : (
           <button
             onClick={() => setIsCreating(true)}
-            className="w-full py-2.5 border border-dashed border-white/20 hover:border-earth text-ash hover:text-earth text-xs uppercase font-bold tracking-wider transition flex items-center justify-center gap-2"
+            className="w-full py-3 border-2 border-[#1A1918] bg-[#F4EEDB] hover:bg-[#EDE6D3] text-[#1A1918] text-xs uppercase font-display font-black tracking-wider transition flex items-center justify-center gap-2 rounded-xl shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
           >
-            <Plus className="w-3.5 h-3.5" />
+            <Plus className="w-3.5 h-3.5 text-[#E6332A] stroke-[3]" />
             <span>Crear Nueva Colección</span>
           </button>
         )}
 
-        <div className="pt-2 border-t border-white/10 flex justify-end">
+        <div className="pt-2 border-t-2 border-[#1A1918] flex justify-end">
           <button
             onClick={onClose}
-            className="px-6 py-2 bg-white text-obsidian font-bold text-xs uppercase tracking-wider hover:bg-chalk transition"
+            className="px-6 py-2.5 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] font-display font-black text-xs uppercase tracking-widest transition active:translate-x-0.5 active:translate-y-0.5 active:shadow-none shadow-[3px_3px_0px_#1A1918] border-2 border-[#1A1918] rounded-xl"
           >
             Listo
           </button>

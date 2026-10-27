@@ -47,19 +47,19 @@ export const PilotProfileModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-fadeIn overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#1A1918]/70 backdrop-blur-sm animate-fadeIn overflow-y-auto">
       <div 
-        className="bg-[#0D0B0A] border border-white/15 w-full max-w-2xl my-auto max-h-[94vh] overflow-y-auto text-chalk shadow-2xl relative font-mono"
+        className="bg-[#FAF6ED] border-2 border-[#1A1918] w-full max-w-2xl my-auto max-h-[94vh] overflow-y-auto text-[#1A1918] shadow-[8px_8px_0px_#1A1918] relative font-sans rounded-[28px] animate-scaleUp"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header Banner */}
-        <div className="bg-gradient-to-r from-[#1c1815] via-[#2A1D17] to-[#12100E] border-b border-white/10 p-3.5 sm:p-4 flex items-center justify-between">
-          <span className="text-[10px] uppercase font-bold tracking-widest text-earth bg-black/60 px-2.5 py-1 border border-earth/30 backdrop-blur-sm">
-            [ TELEMETRÍA PILOTO // MOTOMAMI GPS ]
+        <div className="bg-[#F4EEDB] border-b-2 border-[#1A1918] p-4 flex items-center justify-between rounded-t-[26px]">
+          <span className="text-[10px] uppercase font-mono font-black tracking-widest text-[#E6332A] bg-[#FAF6ED] px-3 py-1 border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] rounded-lg">
+            ★ DOSSIER DE PILOTO ★
           </span>
           <button 
             onClick={() => setSelectedPilotProfile(null)}
-            className="w-8 h-8 rounded-full bg-black/60 border border-white/20 text-white flex items-center justify-center hover:bg-earth transition shrink-0"
+            className="w-8 h-8 rounded-xl bg-[#FAF6ED] border-2 border-[#1A1918] text-[#1A1918] flex items-center justify-center hover:bg-[#E6332A] hover:text-white transition shrink-0 shadow-[2px_2px_0px_#1A1918]"
             title="Cerrar perfil"
           >
             <X className="w-4 h-4" />
@@ -67,34 +67,34 @@ export const PilotProfileModal: React.FC = () => {
         </div>
 
         {/* Profile Identity Bar */}
-        <div className="p-4 sm:p-6 md:p-7 space-y-5 sm:space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3.5 sm:gap-4 min-w-0 flex-1">
+        <div className="p-5 sm:p-7 space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+            <div className="flex items-center gap-4 min-w-0 flex-1">
               <div className="relative shrink-0">
                 <img 
                   src={selectedPilotProfile.avatar} 
                   alt={selectedPilotProfile.name}
-                  className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 border-earth/50 object-cover shadow-2xl bg-black"
+                  className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl border-2 border-[#1A1918] object-cover shadow-[3px_3px_0px_#1A1918] bg-[#F4EEDB]"
                 />
-                <span className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-black" title="Piloto en línea" />
+                <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-[#1A1918] shadow-xs" title="Piloto en línea" />
               </div>
               <div className="min-w-0 flex-1">
-                <h3 className="font-display font-black text-xl sm:text-2xl text-white uppercase tracking-normal leading-snug break-words">
+                <h3 className="font-display font-black text-xl sm:text-2xl text-[#1A1918] uppercase tracking-wide leading-tight break-words">
                   {selectedPilotProfile.name}
                 </h3>
-                <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 mt-1 text-xs">
-                  <span className="text-earth font-mono font-bold">{selectedPilotProfile.handle}</span>
-                  <span className="text-white/20">•</span>
-                  <span className="text-ash flex items-center gap-1 text-[11px] truncate">
-                    <MapPin className="w-3 h-3 text-earth shrink-0" />
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1 text-xs">
+                  <span className="text-[#E6332A] font-mono font-black">{selectedPilotProfile.handle}</span>
+                  <span className="text-[#1A1918]/30">•</span>
+                  <span className="text-[#1A1918]/70 font-serif italic flex items-center gap-1 text-xs truncate font-medium">
+                    <MapPin className="w-3.5 h-3.5 text-[#E06423] shrink-0" />
                     {selectedPilotProfile.location}
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 shrink-0 self-start sm:self-center">
-              <span className="px-2.5 py-1.5 bg-white/5 border border-white/15 text-[10px] text-chalk font-mono font-bold uppercase tracking-wider whitespace-nowrap">
+            <div className="flex items-center gap-2.5 shrink-0 self-start sm:self-center">
+              <span className="px-3 py-1.5 bg-[#F4EEDB] border-2 border-[#1A1918] text-[10px] text-[#1A1918] font-display font-black uppercase tracking-wider whitespace-nowrap shadow-[2px_2px_0px_#1A1918] rounded-xl">
                 Nivel: {selectedPilotProfile.ridingLevel}
               </span>
 
@@ -102,20 +102,20 @@ export const PilotProfileModal: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => toggleFollowUser(selectedPilotProfile.id)}
-                  className={`px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider transition flex items-center justify-center gap-1.5 whitespace-nowrap ${
+                  className={`px-4 py-2 text-xs font-display font-black uppercase tracking-wider transition flex items-center justify-center gap-1.5 whitespace-nowrap rounded-xl border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${
                     isFollowingUser(selectedPilotProfile.id)
-                      ? 'bg-white/10 hover:bg-red-500/15 text-white hover:text-red-400 border border-white/20 hover:border-red-500/40'
-                      : 'bg-earth hover:bg-earth/80 text-white border border-earth shadow-lg'
+                      ? 'bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918]'
+                      : 'bg-[#E6332A] hover:bg-[#d02c24] text-white'
                   }`}
                 >
                   {isFollowingUser(selectedPilotProfile.id) ? (
                     <>
-                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      <Check className="w-3.5 h-3.5 text-[#1A1918]" />
                       <span>Siguiendo</span>
                     </>
                   ) : (
                     <>
-                      <UserPlus className="w-3.5 h-3.5" />
+                      <UserPlus className="w-3.5 h-3.5 text-[#F7B32B]" />
                       <span>+ Seguir</span>
                     </>
                   )}
@@ -125,89 +125,89 @@ export const PilotProfileModal: React.FC = () => {
           </div>
 
           {/* Followers & Community Stats Counter */}
-          <div className="flex items-center gap-3 sm:gap-4 text-xs text-ash border-y border-white/10 py-2.5 overflow-x-auto">
+          <div className="flex items-center gap-4 text-xs text-[#1A1918]/70 border-y-2 border-[#1A1918] py-3 overflow-x-auto font-medium">
             <div>
-              <strong className="text-white font-mono">
+              <strong className="text-[#1A1918] font-display font-black text-sm">
                 {isFollowingUser(selectedPilotProfile.id) ? 143 : 142}
               </strong>{' '}
-              <span className="text-[11px] uppercase">Seguidores</span>
+              <span className="text-[11px] uppercase tracking-wider">Seguidores</span>
             </div>
-            <span>•</span>
+            <span className="text-[#1A1918]/30">•</span>
             <div>
-              <strong className="text-white font-mono">88</strong>{' '}
-              <span className="text-[11px] uppercase">Siguiendo</span>
+              <strong className="text-[#1A1918] font-display font-black text-sm">88</strong>{' '}
+              <span className="text-[11px] uppercase tracking-wider">Siguiendo</span>
             </div>
-            <span>•</span>
+            <span className="text-[#1A1918]/30">•</span>
             <div>
-              <strong className="text-earth font-mono">{pilotBikes.length}</strong>{' '}
-              <span className="text-[11px] uppercase">{pilotBikes.length === 1 ? 'Moto' : 'Motos'}</span>
+              <strong className="text-[#E6332A] font-display font-black text-sm">{pilotBikes.length}</strong>{' '}
+              <span className="text-[11px] uppercase tracking-wider">{pilotBikes.length === 1 ? 'Moto' : 'Motos'}</span>
             </div>
           </div>
 
           {/* Bio statement */}
-          <div className="p-3.5 sm:p-4 bg-white/[0.03] border border-white/10 text-xs text-white/80 leading-relaxed font-light break-words">
+          <div className="p-4 bg-[#F4EEDB] border-2 border-[#1A1918] rounded-2xl text-xs text-[#1A1918] leading-relaxed font-serif italic break-words shadow-[3px_3px_0px_#1A1918] font-medium">
             &ldquo;{selectedPilotProfile.bio}&rdquo;
           </div>
 
           {/* GPS METRICS HUD */}
-          <div>
-            <div className="flex items-center justify-between border-b border-white/10 pb-2 mb-3">
-              <span className="text-[10px] text-ash uppercase tracking-widest font-bold flex items-center gap-1.5">
-                <TrendingUp className="w-3.5 h-3.5 text-earth shrink-0" />
-                Estadísticas de Temporada (Telemetría GPS)
+          <div className="space-y-3">
+            <div className="flex items-center justify-between border-b-2 border-[#1A1918] pb-2">
+              <span className="text-[10px] text-[#1A1918]/70 uppercase tracking-widest font-mono font-black flex items-center gap-1.5">
+                <TrendingUp className="w-3.5 h-3.5 text-[#E6332A] shrink-0" />
+                Estadísticas de Temporada (Telemetría)
               </span>
-              <span className="text-[10px] text-emerald-400 font-bold uppercase whitespace-nowrap">
+              <span className="text-[10px] text-[#1A1918] font-mono font-black uppercase whitespace-nowrap bg-[#F7B32B] px-2 py-0.5 border-2 border-[#1A1918] rounded-md shadow-[1px_1px_0px_#1A1918]">
                 Verificado GPS
               </span>
             </div>
 
-            <div className="grid grid-cols-3 gap-2 sm:gap-3">
-              <div className="p-2.5 sm:p-3.5 bg-[#12100E] border border-white/10 text-center">
-                <span className="text-[9px] text-ash uppercase block tracking-wider">Km en Tierra</span>
-                <p className="font-mono font-bold text-sm sm:text-base text-white mt-1 whitespace-nowrap">
+            <div className="grid grid-cols-3 gap-3">
+              <div className="p-3 bg-[#F4EEDB] border-2 border-[#1A1918] text-center rounded-2xl shadow-[3px_3px_0px_#1A1918]">
+                <span className="text-[9px] text-[#1A1918]/70 uppercase block font-display font-black">Km en Tierra</span>
+                <p className="font-display font-black text-base sm:text-lg text-[#1A1918] mt-1 whitespace-nowrap">
                   {stats.totalKm.toLocaleString()}
                 </p>
-                <span className="text-[9px] text-earth block mt-0.5">Kilómetros rodados</span>
+                <span className="text-[9px] text-[#1A1918]/60 block mt-0.5 font-serif italic font-medium">Kilómetros rodados</span>
               </div>
 
-              <div className="p-2.5 sm:p-3.5 bg-[#12100E] border border-white/10 text-center">
-                <span className="text-[9px] text-ash uppercase block tracking-wider">Expediciones</span>
-                <p className="font-mono font-bold text-sm sm:text-base text-white mt-1 whitespace-nowrap">
+              <div className="p-3 bg-[#F4EEDB] border-2 border-[#1A1918] text-center rounded-2xl shadow-[3px_3px_0px_#1A1918]">
+                <span className="text-[9px] text-[#1A1918]/70 uppercase block font-display font-black">Expediciones</span>
+                <p className="font-display font-black text-base sm:text-lg text-[#1A1918] mt-1 whitespace-nowrap">
                   {stats.completedCount}
                 </p>
-                <span className="text-[9px] text-emerald-400 block mt-0.5">Rutas concluidas</span>
+                <span className="text-[9px] text-[#1D4477] block mt-0.5 font-serif italic font-bold">Rutas concluidas</span>
               </div>
 
-              <div className="p-2.5 sm:p-3.5 bg-[#12100E] border border-white/10 text-center">
-                <span className="text-[9px] text-ash uppercase block tracking-wider">Desnivel Positivo</span>
-                <p className="font-mono font-bold text-sm sm:text-base text-cyan-300 mt-1 whitespace-nowrap">
+              <div className="p-3 bg-[#F4EEDB] border-2 border-[#1A1918] text-center rounded-2xl shadow-[3px_3px_0px_#1A1918]">
+                <span className="text-[9px] text-[#1A1918]/70 uppercase block font-display font-black">Desnivel Positivo</span>
+                <p className="font-display font-black text-base sm:text-lg text-[#E06423] mt-1 whitespace-nowrap">
                   +{stats.elevationGain.toLocaleString()}m
                 </p>
-                <span className="text-[9px] text-ash block mt-0.5">Metros de altitud</span>
+                <span className="text-[9px] text-[#1A1918]/60 block mt-0.5 font-serif italic font-medium">Metros de altitud</span>
               </div>
             </div>
           </div>
 
           {/* HANGAR / MOTORCYCLES */}
           {pilotBikes.length > 0 && (
-            <div>
-              <span className="text-[10px] text-ash uppercase tracking-widest font-bold block mb-3 border-b border-white/10 pb-2 flex items-center gap-1.5">
-                <Bike className="w-3.5 h-3.5 text-earth shrink-0" />
+            <div className="space-y-3">
+              <span className="text-[10px] text-[#1A1918]/70 uppercase tracking-widest font-mono font-black block border-b-2 border-[#1A1918] pb-2 flex items-center gap-1.5">
+                <Bike className="w-3.5 h-3.5 text-[#1A1918] shrink-0" />
                 Hangar &amp; Flotilla del Piloto ({pilotBikes.length})
               </span>
               <div className={`grid gap-3 ${pilotBikes.length > 1 ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'}`}>
                 {pilotBikes.map(bike => (
-                  <div key={bike.id} className="p-3.5 bg-[#110F0D] border border-white/10 flex items-center gap-3.5">
+                  <div key={bike.id} className="p-3.5 bg-[#F4EEDB] border-2 border-[#1A1918] rounded-2xl flex items-center gap-3.5 shadow-[3px_3px_0px_#1A1918]">
                     <img 
                       src={bike.photoUrl} 
                       alt={bike.model} 
-                      className="w-16 h-16 sm:w-20 sm:h-20 object-cover border border-white/10 shrink-0 bg-black"
+                      className="w-16 h-16 sm:w-20 sm:h-20 object-cover border-2 border-[#1A1918] rounded-xl shrink-0 bg-[#FAF6ED]"
                     />
                     <div className="text-xs min-w-0 flex-1">
-                      <p className="font-bold text-white uppercase text-sm truncate">{bike.brand} {bike.model}</p>
-                      <p className="text-[10px] text-earth mt-0.5">{bike.type} • {bike.displacementCc}cc</p>
-                      <p className="text-[10px] text-ash mt-1">
-                        Llantas: <strong className="text-white font-mono">{bike.tires}</strong>
+                      <p className="font-display font-black text-[#1A1918] uppercase text-sm truncate">{bike.brand} {bike.model}</p>
+                      <p className="text-[10px] text-[#E6332A] font-mono font-black mt-0.5 uppercase">{bike.type} • {bike.displacementCc}cc</p>
+                      <p className="text-[10px] text-[#1A1918]/70 mt-1 font-serif italic font-medium">
+                        Llantas: <strong className="text-[#1A1918] font-mono font-black not-italic">{bike.tires}</strong>
                       </p>
                     </div>
                   </div>
@@ -218,20 +218,20 @@ export const PilotProfileModal: React.FC = () => {
 
           {/* RUTAS TRAZADAS POR EL PILOTO */}
           {pilotCreatedRoutes.length > 0 && (
-            <div>
-              <span className="text-[10px] text-ash uppercase tracking-widest font-bold block mb-3 border-b border-white/10 pb-2 flex items-center gap-1.5">
-                <Compass className="w-3.5 h-3.5 text-earth shrink-0" />
+            <div className="space-y-3">
+              <span className="text-[10px] text-[#1A1918]/70 uppercase tracking-widest font-mono font-black block border-b-2 border-[#1A1918] pb-2 flex items-center gap-1.5">
+                <Compass className="w-3.5 h-3.5 text-[#E6332A] shrink-0" />
                 Rutas Trazadas por {selectedPilotProfile.name} ({pilotCreatedRoutes.length})
               </span>
               <div className="space-y-2">
                 {pilotCreatedRoutes.map(route => (
                   <div 
                     key={route.id}
-                    className="p-3 bg-white/[0.02] border border-white/10 hover:border-earth flex items-center justify-between gap-3 text-xs transition"
+                    className="p-3.5 bg-[#F4EEDB] border-2 border-[#1A1918] rounded-2xl flex items-center justify-between gap-3 text-xs transition shadow-[3px_3px_0px_#1A1918]"
                   >
                     <div className="min-w-0 flex-1">
-                      <p className="font-bold text-white uppercase truncate">{route.title}</p>
-                      <p className="text-[10px] text-ash truncate">{route.destination}, {route.state} • {route.totalKm} km ({route.offroadPercentage}% brecha)</p>
+                      <p className="font-display font-black text-[#1A1918] uppercase truncate">{route.title}</p>
+                      <p className="text-[11px] text-[#1A1918]/70 font-serif italic truncate font-medium">{route.destination}, {route.state} • {route.totalKm} km ({route.offroadPercentage}% brecha)</p>
                     </div>
                     <button
                       onClick={() => {
@@ -239,7 +239,7 @@ export const PilotProfileModal: React.FC = () => {
                         setSelectedPilotProfile(null);
                         enterRodada(route.rodadaId);
                       }}
-                      className="px-3 py-1.5 bg-earth text-white font-bold text-[10px] uppercase tracking-wider hover:bg-earth/80 transition flex items-center gap-1 shrink-0"
+                      className="px-3.5 py-2 bg-[#E6332A] hover:bg-[#d02c24] text-white border-2 border-[#1A1918] font-display font-black text-[10px] uppercase tracking-widest transition flex items-center gap-1 shrink-0 rounded-xl shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
                     >
                       <span>Ver Ruta</span>
                       <ArrowUpRight className="w-3.5 h-3.5" />
@@ -254,12 +254,12 @@ export const PilotProfileModal: React.FC = () => {
           {selectedPilotProfile.phone && (
             <div className="pt-2">
               <a
-                href={`https://wa.me/${selectedPilotProfile.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`¡Hola ${selectedPilotProfile.name}! Vi tu perfil en NAO Moto Expeditions, ¿qué tal si organizamos una rodada?`)}`}
+                href={`https://wa.me/${selectedPilotProfile.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`¡Hola ${selectedPilotProfile.name}! Vi tu perfil en NAO, ¿qué tal si organizamos una rodada?`)}`}
                 target="_blank"
                 rel="noreferrer"
-                className="w-full py-3 bg-[#25D366]/20 hover:bg-[#25D366] text-white border border-[#25D366]/40 text-center font-bold text-xs uppercase tracking-wider transition flex items-center justify-center gap-2"
+                className="w-full py-3 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border-2 border-[#1A1918] text-center font-display font-black text-xs uppercase tracking-wider transition flex items-center justify-center gap-2 rounded-xl shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
               >
-                <Phone className="w-4 h-4 text-[#25D366] group-hover:text-black" />
+                <Phone className="w-4 h-4 text-[#1D4477]" />
                 <span>Contactar por WhatsApp</span>
               </a>
             </div>

@@ -31,6 +31,7 @@ import {
   INITIAL_CHALLENGES,
   INITIAL_CREW_MESSAGES
 } from '../data/initialData';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 interface AppContextType {
   currentUser: User;
@@ -94,6 +95,14 @@ interface AppContextType {
   setActiveNavTab: (tab: NavTab) => void;
   crewMessages: CrewChatMessage[];
   sendCrewMessage: (crewId: string, text: string) => void;
+  // Auth & Multi-user Cloud state
+  isAuthModalOpen: boolean;
+  setAuthModalOpen: (open: boolean) => void;
+  isSupabaseOnline: boolean;
+  switchCurrentUser: (userId: string) => void;
+  signUp: (email: string, password: string, name: string, handle: string) => Promise<{ success: boolean; message: string }>;
+  signIn: (email: string, password: string) => Promise<{ success: boolean; message: string }>;
+  signOut: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -111,7 +120,7 @@ const STORAGE_KEYS = {
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User>(CURRENT_USER);
-  const [users] = useState<User[]>(INITIAL_USERS);
+  const [users, setUsers] = useState<User[]>(INITIAL_USERS);
   const [motorcycles, setMotorcycles] = useState<Motorcycle[]>(INITIAL_MOTORCYCLES);
   const [crews, setCrews] = useState<Crew[]>(INITIAL_CREWS);
   const [currentCrew, setCurrentCrew] = useState<Crew | null>(INITIAL_CREWS[0]);
@@ -121,6 +130,169 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [selectedRoute, setSelectedRoute] = useState<RouteProposal | null>(INITIAL_ROUTE_PROPOSALS[0]);
   const [activeNavTab, setActiveNavTab] = useState<NavTab>('inicio');
   const [crewMessages, setCrewMessages] = useState<CrewChatMessage[]>(INITIAL_CREW_MESSAGES);
+
+  // Auth & Cloud State
+  const [isAuthModalOpen, setAuthModalOpen] = useState(false);
+  const [isSupabaseOnline] = useState(isSupabaseConfigured());
+
+  // Switch active pilot (for demo testing and profile changing)
+  const switchCurrentUser = (userId: string) => {
+    const found = users.find(u => u.id === userId);
+    if (found) {
+      setCurrentUser(found);
+      try {
+        localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(found));
+      } catch {}
+    }
+  };
+
+  const loadSupabaseProfile = async (authUserId: string, fallbackEmail?: string) => {
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', authUserId)
+        .single();
+
+      if (profile) {
+        const mappedUser: User = {
+          id: profile.id,
+          name: profile.name,
+          handle: profile.handle,
+          email: profile.email || fallbackEmail || '',
+          avatar: profile.avatar_url || 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
+          bio: profile.bio || 'Piloto en NAO.',
+          location: profile.location || 'México',
+          ridingLevel: (profile.riding_level as any) || 'Intermedio',
+          phone: profile.phone,
+          emergencyContact: profile.emergency_contact
+        };
+        setCurrentUser(mappedUser);
+        setUsers(prev => {
+          if (prev.some(u => u.id === mappedUser.id)) {
+            return prev.map(u => u.id === mappedUser.id ? mappedUser : u);
+          }
+          return [mappedUser, ...prev];
+        });
+        try {
+          localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(mappedUser));
+        } catch {}
+      }
+    } catch {}
+  };
+
+  // Sign Up with Supabase / Local Fallback
+  const signUp = async (email: string, password: string, name: string, handle: string): Promise<{ success: boolean; message: string }> => {
+    if (isSupabaseConfigured()) {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name,
+            handle,
+            avatar_url: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250'
+          }
+        }
+      });
+      if (error) {
+        return { success: false, message: error.message };
+      }
+      if (data.user) {
+        const newPilot: User = {
+          id: data.user.id,
+          name,
+          handle,
+          email,
+          avatar: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
+          bio: 'Piloto en NAO.',
+          location: 'México',
+          ridingLevel: 'Intermedio'
+        };
+        setCurrentUser(newPilot);
+        setUsers(prev => [newPilot, ...prev]);
+        try {
+          localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(newPilot));
+        } catch {}
+        return { success: true, message: '¡Cuenta creada con éxito! Bienvenido a NAO.' };
+      }
+    }
+
+    // Local / Demo registration
+    const newPilot: User = {
+      id: `user-${Date.now()}`,
+      name,
+      handle,
+      email,
+      avatar: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
+      bio: 'Piloto registrado en NAO.',
+      location: 'México',
+      ridingLevel: 'Intermedio'
+    };
+    setCurrentUser(newPilot);
+    setUsers(prev => [newPilot, ...prev]);
+    try {
+      localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(newPilot));
+    } catch {}
+    return { success: true, message: '¡Cuenta creada con éxito en modo local!' };
+  };
+
+  // Sign In with Supabase / Local Fallback
+  const signIn = async (email: string, password: string): Promise<{ success: boolean; message: string }> => {
+    if (isSupabaseConfigured()) {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+      if (error) {
+        return { success: false, message: error.message };
+      }
+      if (data.user) {
+        await loadSupabaseProfile(data.user.id, data.user.email);
+        return { success: true, message: '¡Sesión iniciada con éxito!' };
+      }
+    }
+
+    // Local / Demo login
+    const found = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+    if (found) {
+      setCurrentUser(found);
+      try {
+        localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(found));
+      } catch {}
+      return { success: true, message: `¡Bienvenido de vuelta, ${found.name}!` };
+    } else {
+      const loggedPilot: User = {
+        id: `user-${Date.now()}`,
+        name: email.split('@')[0],
+        handle: `@${email.split('@')[0]}`,
+        email,
+        avatar: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
+        bio: 'Piloto en NAO.',
+        location: 'México',
+        ridingLevel: 'Intermedio'
+      };
+      setCurrentUser(loggedPilot);
+      setUsers(prev => [loggedPilot, ...prev]);
+      try {
+        localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(loggedPilot));
+      } catch {}
+      return { success: true, message: '¡Sesión iniciada!' };
+    }
+  };
+
+  // Sign Out
+  const signOut = async () => {
+    if (isSupabaseConfigured()) {
+      try {
+        await supabase.auth.signOut();
+      } catch {}
+    }
+    setCurrentUser(CURRENT_USER);
+    try {
+      localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+    } catch {}
+  };
 
   // Moto Expeditions & Social state
   const [activities, setActivities] = useState<ActivityPost[]>(INITIAL_ACTIVITIES);
@@ -161,6 +333,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             });
             return {
               ...c,
+              name: 'NAO Adventure Crew',
+              inviteCode: 'NAO-2026',
               members: currentMembers,
               whatsappGroupUrl: 'https://chat.whatsapp.com/Jg1AKUEqoXF7nXZuAPJ588'
             };
@@ -195,7 +369,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         try {
           const parsedActs = JSON.parse(savedActivities);
           if (Array.isArray(parsedActs) && parsedActs.length > 0) {
-            setActivities(parsedActs);
+            const sanitizedActs = parsedActs.map((act: ActivityPost) => {
+              if (act.groupInfo && act.groupInfo.crewName) {
+                return {
+                  ...act,
+                  groupInfo: {
+                    ...act.groupInfo,
+                    crewName: act.groupInfo.crewName.replace(/MotoMami/gi, 'NAO')
+                  }
+                };
+              }
+              return act;
+            });
+            setActivities(sanitizedActs);
           }
         } catch {}
       }
@@ -226,6 +412,78 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } catch (e) {
       console.warn('Could not read from localStorage', e);
     }
+  }, []);
+
+  // Supabase Cloud Hydration & Realtime Session
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+
+    // Check active session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        loadSupabaseProfile(session.user.id, session.user.email);
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        loadSupabaseProfile(session.user.id, session.user.email);
+      }
+    });
+
+    // Hydrate profiles from cloud
+    supabase.from('profiles').select('*').then(({ data }) => {
+      if (data && data.length > 0) {
+        const mappedUsers: User[] = data.map((p: any) => ({
+          id: p.id,
+          name: p.name,
+          handle: p.handle,
+          email: p.email,
+          avatar: p.avatar_url || 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
+          bio: p.bio || 'Piloto en NAO.',
+          location: p.location || 'México',
+          ridingLevel: (p.riding_level as any) || 'Intermedio',
+          phone: p.phone,
+          emergencyContact: p.emergency_contact
+        }));
+        setUsers(prev => {
+          const cloudIds = new Set(mappedUsers.map(u => u.id));
+          return [...mappedUsers, ...prev.filter(u => !cloudIds.has(u.id))];
+        });
+      }
+    });
+
+    // Hydrate crews from cloud
+    supabase.from('crews').select('*, crew_members(*)').then(({ data }) => {
+      if (data && data.length > 0) {
+        const mappedCrews: Crew[] = data.map((c: any) => ({
+          id: c.id,
+          name: c.name,
+          slug: c.slug,
+          tagline: c.tagline || '',
+          description: c.description || '',
+          inviteCode: c.invite_code,
+          coverImage: c.cover_image || 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=1200',
+          baseCity: c.base_city || 'México',
+          creatorId: c.creator_id || '',
+          members: (c.crew_members || []).map((m: any) => ({
+            userId: m.user_id,
+            role: m.role || 'Rider',
+            joinedAt: m.joined_at?.split('T')[0] || ''
+          })),
+          whatsappGroupUrl: c.whatsapp_group_url,
+          createdAt: c.created_at?.split('T')[0] || ''
+        }));
+        setCrews(prev => {
+          const cloudIds = new Set(mappedCrews.map(cr => cr.id));
+          return [...mappedCrews, ...prev.filter(cr => !cloudIds.has(cr.id))];
+        });
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   // Save changes
@@ -960,9 +1218,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           id: act.pilotId,
           name: act.pilotName,
           handle: act.pilotHandle,
-          email: `${act.pilotHandle.replace('@', '')}@motomami.mx`,
+          email: `${act.pilotHandle.replace('@', '')}@nao.club`,
           avatar: act.pilotAvatar,
-          bio: `Piloto de MotoMami. Moto: ${act.motoModel}.`,
+          bio: `Piloto de NAO. Moto: ${act.motoModel}.`,
           location: act.location || 'México',
           ridingLevel: 'Avanzado',
           stats: {
@@ -980,7 +1238,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             id: p.userId,
             name: p.name,
             handle: p.handle,
-            email: `${p.handle.replace('@', '')}@motomami.mx`,
+            email: `${p.handle.replace('@', '')}@nao.club`,
             avatar: p.avatar,
             bio: `Piloto de la tribu ${act.groupInfo.crewName}. Rodando en ${p.motoModel || 'moto dual-sport'}.`,
             location: 'México',
@@ -1063,7 +1321,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         activeNavTab,
         setActiveNavTab,
         crewMessages,
-        sendCrewMessage
+        sendCrewMessage,
+        isAuthModalOpen,
+        setAuthModalOpen,
+        isSupabaseOnline,
+        switchCurrentUser,
+        signUp,
+        signIn,
+        signOut
       }}
     >
       {children}

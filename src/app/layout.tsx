@@ -3,7 +3,7 @@ import './globals.css';
 import { AppProvider } from '../context/AppContext';
 
 export const viewport: Viewport = {
-  themeColor: '#0B0A09',
+  themeColor: '#121110',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -12,14 +12,14 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'NAO — Moto Expeditions | Plataforma de Rodadas Off-Road & Dual-Sport',
-  description: 'Plataforma de exploración comunitaria para rodadas en motos doble propósito, consenso de rutas por votación, navegación GPX y organización de clubs.',
-  keywords: ['NAO', 'motos trail', 'off-road', 'doble proposito', 'expediciones', 'rutas gpx', 'moto clubs'],
+  title: 'NAO — The Emporium of Two-Wheeled Escapes | Moto Expeditions & Commune',
+  description: 'Plataforma comunitaria y de exploración para motociclismo de aventura, rodadas en consenso, garajes compartidos y expediciones off-road.',
+  keywords: ['NAO', 'motos custom', 'dual-sport', 'deus ex machina', 'expediciones', 'rutas gpx', 'moto club'],
   authors: [{ name: 'Patricio Martin' }],
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'NAO Club'
+    title: 'NAO Moto'
   },
   formatDetection: {
     telephone: false
@@ -32,12 +32,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es" className="dark">
+    <html lang="es">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link 
-          href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;600;700;800&display=swap" 
+          href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,500;1,6..72,600&family=Oswald:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400;1,600&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" 
           rel="stylesheet" 
         />
         <link
@@ -47,7 +47,7 @@ export default function RootLayout({
           crossOrigin=""
         />
       </head>
-      <body className="min-h-screen bg-obsidian text-chalk selection:bg-earth selection:text-white font-sans antialiased">
+      <body className="min-h-screen bg-[#F6F4EE] text-[#141312] selection:bg-[#F2B705] selection:text-[#141312] font-sans antialiased">
         <AppProvider>
           {children}
         </AppProvider>

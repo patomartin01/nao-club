@@ -87,7 +87,7 @@ ${shareUrl}`;
       try {
         await navigator.share({
           title: item.title,
-          text: `Checa esta rodada de ${item.pilotName || 'Pato Martín'} en MotoMami: ${item.title}`,
+          text: `Checa esta rodada de ${item.pilotName || 'Pato Martín'} en NAO: ${item.title}`,
           url: shareUrl,
         });
       } catch (_) {
@@ -121,35 +121,32 @@ ${shareUrl}`;
 
   return (
     <div 
-      className="fixed inset-0 z-[99999] bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 overflow-y-auto animate-fadeIn"
+      className="fixed inset-0 z-[99999] bg-[#1A1918]/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-y-auto animate-fadeIn"
       onClick={onClose}
     >
       <div 
         onClick={(e) => e.stopPropagation()}
-        className="bg-[#0F0E0D] border border-white/15 w-full max-w-lg shadow-[0_25px_60px_rgba(0,0,0,0.85)] rounded-2xl relative text-chalk font-mono my-auto max-h-[92vh] flex flex-col overflow-hidden ring-1 ring-white/10"
+        className="bg-[#FAF6ED] border-2 border-[#1A1918] w-full max-w-lg shadow-[8px_8px_0px_#1A1918] rounded-[28px] relative text-[#1A1918] font-sans my-auto max-h-[92vh] flex flex-col overflow-hidden animate-scaleUp"
       >
-        {/* TOP ACCENT LINE */}
-        <div className="h-1 bg-gradient-to-r from-transparent via-earth to-transparent w-full shrink-0" />
-
         {/* MODAL HEADER */}
-        <div className="p-4 sm:p-5 flex items-center justify-between border-b border-white/10 shrink-0 bg-gradient-to-b from-white/[0.03] to-transparent">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-earth/15 border border-earth/30 flex items-center justify-center text-earth shadow-inner shrink-0">
-              <Share2 className="w-5 h-5" />
+        <div className="p-5 flex items-center justify-between border-b-2 border-[#1A1918] shrink-0 bg-[#F4EEDB] rounded-t-[26px]">
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-[#FAF6ED] border-2 border-[#1A1918] flex items-center justify-center text-[#1A1918] shadow-[2px_2px_0px_#1A1918] shrink-0">
+              <Share2 className="w-5 h-5 text-[#E6332A]" />
             </div>
             <div>
-              <h3 className="font-display font-extrabold text-base sm:text-lg text-white uppercase tracking-wider">
+              <span className="font-mono text-[10px] text-[#E6332A] uppercase tracking-[0.2em] font-black block">
+                ★ ENLACE Y COMUNIDAD ★
+              </span>
+              <h3 className="font-display font-black text-xl text-[#1A1918] uppercase tracking-wide">
                 Compartir Rodada
               </h3>
-              <p className="text-[11px] text-ash/80 mt-0.5">
-                Envía a tu tribu o comparte el enlace directo
-              </p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-ash hover:text-white bg-white/[0.04] hover:bg-white/10 border border-white/10 hover:border-white/20 transition"
+            className="w-8 h-8 rounded-xl flex items-center justify-center text-[#1A1918] hover:bg-[#E6332A] hover:text-white bg-[#FAF6ED] border-2 border-[#1A1918] transition shadow-[2px_2px_0px_#1A1918]"
             title="Cerrar"
           >
             <X className="w-4 h-4" />
@@ -157,53 +154,52 @@ ${shareUrl}`;
         </div>
 
         {/* ITEM PREVIEW CARD */}
-        <div className="p-3.5 sm:p-4 bg-gradient-to-br from-white/[0.04] via-black/40 to-black/60 border-b border-white/10 shrink-0">
+        <div className="p-4 bg-[#F4EEDB] border-b-2 border-[#1A1918] shrink-0">
           <div className="flex items-center gap-3.5">
             {item.coverImage ? (
-              <div className="w-16 h-16 rounded-xl overflow-hidden border border-white/20 shrink-0 relative group shadow-md">
+              <div className="w-16 h-16 rounded-xl overflow-hidden border-2 border-[#1A1918] shrink-0 relative group shadow-[2px_2px_0px_#1A1918] bg-[#FAF6ED]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img 
                   src={item.coverImage} 
                   alt={item.title} 
                   className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" 
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
               </div>
             ) : (
-              <div className="w-16 h-16 rounded-xl bg-earth/10 border border-earth/30 flex items-center justify-center text-earth shrink-0 shadow-md">
-                <Navigation className="w-7 h-7" />
+              <div className="w-16 h-16 rounded-xl bg-[#FAF6ED] border-2 border-[#1A1918] flex items-center justify-center text-[#1A1918] shrink-0 shadow-[2px_2px_0px_#1A1918]">
+                <Navigation className="w-7 h-7 text-[#F7B32B]" />
               </div>
             )}
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-[9px] uppercase font-bold text-earth bg-earth/15 px-2 py-0.5 rounded border border-earth/30 flex items-center gap-1">
-                  <Sparkles className="w-2.5 h-2.5" />
+                <span className="text-[9px] uppercase font-mono font-black text-[#E6332A] bg-[#FAF6ED] px-2 py-0.5 rounded border border-[#1A1918] flex items-center gap-1 shadow-[1px_1px_0px_#1A1918]">
+                  <Sparkles className="w-2.5 h-2.5 text-[#F7B32B]" />
                   {item.discipline || 'Ruta'}
                 </span>
                 {item.motoModel && (
-                  <span className="text-[10px] text-ash/90 truncate uppercase flex items-center gap-1">
-                    <Bike className="w-3 h-3 text-stone-400 shrink-0" />
+                  <span className="text-[10px] text-[#1A1918]/80 truncate uppercase font-mono font-bold flex items-center gap-1">
+                    <Bike className="w-3 h-3 text-[#E06423] shrink-0" />
                     {item.motoModel}
                   </span>
                 )}
               </div>
-              <h4 className="text-sm font-bold text-white truncate mt-1">
+              <h4 className="text-sm font-display font-black text-[#1A1918] uppercase tracking-wide truncate mt-1">
                 {item.title}
               </h4>
-              <div className="text-[11px] text-ash mt-1 flex items-center gap-2.5 flex-wrap">
-                <span className="text-stone-300 font-medium">{item.pilotName || currentUser.name}</span>
+              <div className="text-[11px] text-[#1A1918]/70 mt-0.5 flex items-center gap-2 flex-wrap">
+                <span className="font-serif italic text-[#1A1918] font-medium">{item.pilotName || currentUser.name}</span>
                 {item.distanceKm && (
                   <>
-                    <span className="text-white/20">•</span>
-                    <span className="text-white font-mono font-bold bg-white/[0.06] px-1.5 py-0.2 rounded text-[10px]">
+                    <span className="text-[#1A1918]/40">•</span>
+                    <span className="text-[#1A1918] font-mono font-black bg-[#FAF6ED] px-1.5 py-0.2 rounded border border-[#1A1918] text-[10px] shadow-[1px_1px_0px_#1A1918]">
                       {item.distanceKm.toFixed(1)} km
                     </span>
                   </>
                 )}
                 {item.elevationGainM && (
                   <>
-                    <span className="text-white/20">•</span>
-                    <span className="text-cyan-300 font-mono text-[10px]">
+                    <span className="text-[#1A1918]/40">•</span>
+                    <span className="text-[#E06423] font-mono font-bold text-[10px]">
                       +{item.elevationGainM}m alt
                     </span>
                   </>
@@ -213,15 +209,15 @@ ${shareUrl}`;
           </div>
         </div>
 
-        {/* NAVIGATION PILL TABS (2 OPTIONS ONLY) */}
-        <div className="p-3 border-b border-white/10 bg-[#121110] shrink-0">
-          <div className="grid grid-cols-2 gap-1.5 p-1 bg-black/60 rounded-xl border border-white/10 text-xs font-bold uppercase tracking-wider">
+        {/* NAVIGATION PILL TABS */}
+        <div className="p-3 border-b-2 border-[#1A1918] bg-[#FAF6ED] shrink-0">
+          <div className="grid grid-cols-2 gap-1.5 p-1 bg-[#F4EEDB] rounded-xl border-2 border-[#1A1918] text-xs font-display uppercase tracking-wider">
             <button
               onClick={() => setActiveTab('grupos')}
               className={`py-2 px-3 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 ${
                 activeTab === 'grupos'
-                  ? 'bg-earth text-white shadow-md shadow-earth/25 font-bold'
-                  : 'text-ash hover:text-white hover:bg-white/[0.04]'
+                  ? 'bg-[#E6332A] text-white shadow-[2px_2px_0px_#1A1918] font-black border border-[#1A1918]'
+                  : 'text-[#1A1918]/70 hover:text-[#1A1918] font-bold'
               }`}
             >
               <Users className="w-4 h-4" />
@@ -232,8 +228,8 @@ ${shareUrl}`;
               onClick={() => setActiveTab('compartir')}
               className={`py-2 px-3 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 ${
                 activeTab === 'compartir'
-                  ? 'bg-earth text-white shadow-md shadow-earth/25 font-bold'
-                  : 'text-ash hover:text-white hover:bg-white/[0.04]'
+                  ? 'bg-[#E6332A] text-white shadow-[2px_2px_0px_#1A1918] font-black border border-[#1A1918]'
+                  : 'text-[#1A1918]/70 hover:text-[#1A1918] font-bold'
               }`}
             >
               <Share2 className="w-4 h-4" />
@@ -243,16 +239,16 @@ ${shareUrl}`;
         </div>
 
         {/* TAB CONTENTS (SCROLLABLE) */}
-        <div className="p-4 sm:p-5 overflow-y-auto space-y-4 max-h-[50vh]">
+        <div className="p-5 overflow-y-auto space-y-4 max-h-[50vh] bg-[#FAF6ED]">
           {/* TAB 1: TRIBUS */}
           {activeTab === 'grupos' && (
             <div className="space-y-3">
-              <div className="flex items-center justify-between text-[11px] text-ash">
-                <span className="flex items-center gap-1.5 uppercase tracking-wider font-semibold">
-                  <Radio className="w-3.5 h-3.5 text-earth animate-pulse" />
+              <div className="flex items-center justify-between text-xs text-[#1A1918]/70">
+                <span className="flex items-center gap-1.5 uppercase font-mono font-black tracking-wider">
+                  <Radio className="w-3.5 h-3.5 text-[#E6332A] animate-pulse" />
                   Compartir en el muro de tu tribu
                 </span>
-                <span className="text-[10px] text-stone-500 font-mono">
+                <span className="text-[10px] text-[#1A1918] font-mono font-black bg-[#F4EEDB] px-2 py-0.5 border border-[#1A1918] rounded">
                   {availableCrews.length} disponibles
                 </span>
               </div>
@@ -263,10 +259,10 @@ ${shareUrl}`;
                   return (
                     <div
                       key={crew.id}
-                      className={`p-3.5 rounded-xl border transition-all duration-200 flex items-center justify-between gap-3 ${
+                      className={`p-3.5 rounded-xl border-2 border-[#1A1918] transition-all duration-200 flex items-center justify-between gap-3 shadow-[2px_2px_0px_#1A1918] ${
                         isShared 
-                          ? 'border-emerald-500/40 bg-emerald-950/20 shadow-[0_0_20px_rgba(16,185,129,0.1)]' 
-                          : 'border-white/10 bg-gradient-to-r from-white/[0.04] to-transparent hover:from-earth/[0.08] hover:to-white/[0.02] hover:border-earth/40'
+                          ? 'bg-[#F4EEDB]' 
+                          : 'bg-[#FAF6ED] hover:bg-[#F4EEDB]'
                       }`}
                     >
                       <div className="flex items-center gap-3.5 min-w-0">
@@ -275,22 +271,21 @@ ${shareUrl}`;
                           <img 
                             src={crew.coverImage} 
                             alt={crew.name}
-                            className="w-12 h-12 rounded-xl object-cover border border-white/15 shadow-sm" 
+                            className="w-12 h-12 rounded-xl object-cover border-2 border-[#1A1918] shadow-[1px_1px_0px_#1A1918] bg-[#F4EEDB]" 
                           />
-                          <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-black/80 border border-white/20 flex items-center justify-center">
-                            <ShieldCheck className="w-2.5 h-2.5 text-earth" />
+                          <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-[#FAF6ED] border border-[#1A1918] flex items-center justify-center shadow-xs">
+                            <ShieldCheck className="w-2.5 h-2.5 text-[#E6332A]" />
                           </div>
                         </div>
 
                         <div className="min-w-0">
-                          <h5 className="text-sm font-bold text-white truncate flex items-center gap-2">
-                            {crew.name}
+                          <h5 className="text-sm font-display font-black text-[#1A1918] uppercase tracking-wide truncate">
+                            {crew.name.replace(/MotoMami/gi, 'NAO')}
                           </h5>
-                          <p className="text-[11px] text-ash truncate mt-0.5 flex items-center gap-1.5">
-                            <span className="text-stone-300 font-semibold">{crew.members.length} pilotos</span>
+                          <p className="text-[11px] text-[#1A1918]/70 truncate mt-0.5 flex items-center gap-1.5 font-mono">
+                            <span className="text-[#1A1918] not-italic font-black text-[10px] uppercase">{crew.members.length} pilotos</span>
                             <span>•</span>
-                            <span className="flex items-center gap-1 truncate text-stone-400">
-                              <MapPin className="w-3 h-3 text-stone-500 inline shrink-0" />
+                            <span className="truncate">
                               {crew.baseCity}
                             </span>
                           </p>
@@ -299,20 +294,20 @@ ${shareUrl}`;
 
                       <button
                         onClick={() => handleShareToGroup(crew.id)}
-                        className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-200 shrink-0 flex items-center gap-2 shadow-sm ${
+                        className={`px-4 py-2 rounded-xl text-xs font-display font-black uppercase tracking-wider transition-all duration-200 shrink-0 flex items-center gap-1.5 border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${
                           isShared
-                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 cursor-default'
-                            : 'bg-earth hover:bg-earth/90 text-white border border-earth/80 shadow-earth/20 active:scale-95'
+                            ? 'bg-[#1D4477] text-white cursor-default'
+                            : 'bg-[#E6332A] hover:bg-[#d02c24] text-white'
                         }`}
                       >
                         {isShared ? (
                           <>
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                            <CheckCircle2 className="w-3.5 h-3.5 text-white" />
                             <span>Enviado</span>
                           </>
                         ) : (
                           <>
-                            <Send className="w-3.5 h-3.5" />
+                            <Send className="w-3.5 h-3.5 text-white" />
                             <span>Enviar</span>
                           </>
                         )}
@@ -323,12 +318,12 @@ ${shareUrl}`;
               </div>
 
               {sharedGroups.length > 0 && (
-                <div className="p-3.5 rounded-xl bg-emerald-950/30 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2.5 animate-fadeIn">
-                  <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                    <Check className="w-3.5 h-3.5 text-emerald-400" />
+                <div className="p-3.5 rounded-xl bg-[#F4EEDB] border-2 border-[#1A1918] text-[#1A1918] text-xs flex items-center gap-2.5 animate-fadeIn shadow-[2px_2px_0px_#1A1918]">
+                  <div className="w-6 h-6 rounded-full bg-[#1D4477] text-white flex items-center justify-center shrink-0">
+                    <Check className="w-3.5 h-3.5" />
                   </div>
-                  <span className="leading-snug">
-                    ¡Rodada compartida con éxito! Los miembros de la tribu ya pueden ver el track y saludar en el muro de actividades.
+                  <span className="font-serif italic leading-snug font-medium">
+                    ¡Rodada compartida con éxito! Los miembros de la tribu ya pueden ver el track y saludar en el muro.
                   </span>
                 </div>
               )}
@@ -340,24 +335,24 @@ ${shareUrl}`;
             <div className="space-y-4">
               {/* ENLACE PÚBLICO DIRECTO */}
               <div className="space-y-1.5">
-                <label className="text-[10px] uppercase font-bold text-ash tracking-wider flex items-center gap-1.5">
-                  <Copy className="w-3 h-3 text-earth" />
+                <label className="text-[10px] uppercase font-mono font-black text-[#1A1918]/70 tracking-wider flex items-center gap-1.5">
+                  <Copy className="w-3 h-3 text-[#E6332A]" />
                   Copiar enlace directo
                 </label>
-                <div className="flex items-center gap-2 p-1.5 sm:p-2 bg-black/70 border border-white/15 rounded-xl focus-within:border-earth/60 transition">
+                <div className="flex items-center gap-2 p-2 bg-[#FAF6ED] border-2 border-[#1A1918] rounded-xl focus-within:border-[#E6332A] transition shadow-[2px_2px_0px_#1A1918]">
                   <input 
                     type="text" 
                     readOnly 
                     value={shareUrl} 
-                    className="bg-transparent text-xs text-stone-200 font-mono flex-1 outline-none truncate px-2"
+                    className="bg-transparent text-xs text-[#1A1918] font-mono flex-1 outline-none truncate px-2 font-bold"
                   />
                   <button
                     onClick={handleCopyLink}
-                    className="px-3.5 py-1.5 bg-earth hover:bg-earth/90 text-white font-bold text-xs uppercase tracking-wider transition-all shrink-0 flex items-center gap-1.5 rounded-lg active:scale-95 shadow-sm shadow-earth/20"
+                    className="px-4 py-2 bg-[#E6332A] hover:bg-[#d02c24] text-white font-display font-black text-xs uppercase tracking-wider transition-all shrink-0 flex items-center gap-1.5 rounded-lg border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
                   >
                     {copiedLink ? (
                       <>
-                        <Check className="w-3.5 h-3.5" />
+                        <Check className="w-3.5 h-3.5 text-white" />
                         <span>Copiado</span>
                       </>
                     ) : (
@@ -370,13 +365,13 @@ ${shareUrl}`;
                 </div>
               </div>
 
-              {/* SEPARADOR SUTIL */}
+              {/* SEPARADOR */}
               <div className="relative py-1">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-white/10" />
+                  <div className="w-full border-t-2 border-[#1A1918]" />
                 </div>
-                <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-wider">
-                  <span className="bg-[#0F0E0D] px-2 text-ash">o enviar vía</span>
+                <div className="relative flex justify-center text-[10px] uppercase font-mono font-black tracking-wider">
+                  <span className="bg-[#FAF6ED] px-3 text-[#1A1918]/60 border border-[#1A1918] rounded-full">o enviar vía</span>
                 </div>
               </div>
 
@@ -385,56 +380,56 @@ ${shareUrl}`;
                 {/* WHATSAPP */}
                 <button
                   onClick={handleShareWhatsApp}
-                  className="p-3.5 bg-gradient-to-r from-[#25D366]/15 to-transparent hover:from-[#25D366]/25 border border-[#25D366]/30 hover:border-[#25D366]/60 text-[#25D366] font-bold text-xs uppercase tracking-wider transition-all duration-200 flex items-center gap-3 rounded-xl active:scale-[0.98] group"
+                  className="p-3 bg-[#FAF6ED] hover:bg-[#F4EEDB] border-2 border-[#1A1918] font-display font-bold text-xs uppercase tracking-wider transition-all duration-200 flex items-center gap-3 rounded-xl active:translate-x-0.5 active:translate-y-0.5 active:shadow-none shadow-[2px_2px_0px_#1A1918]"
                 >
-                  <div className="w-9 h-9 rounded-xl bg-[#25D366] text-black flex items-center justify-center font-bold text-sm shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+                  <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-sm shrink-0 border border-[#1A1918] shadow-[1px_1px_0px_#1A1918]">
                     WA
                   </div>
                   <div className="text-left min-w-0">
-                    <span className="block text-white font-bold group-hover:text-[#25D366] transition">WhatsApp</span>
-                    <span className="text-[10px] text-ash font-normal truncate block">Chat directo o estado</span>
+                    <span className="block text-[#1A1918] font-black">WhatsApp</span>
+                    <span className="text-[10px] text-[#1A1918]/60 font-serif italic truncate block">Chat directo o estado</span>
                   </div>
                 </button>
 
                 {/* TELEGRAM */}
                 <button
                   onClick={handleShareTelegram}
-                  className="p-3.5 bg-gradient-to-r from-[#229ED9]/15 to-transparent hover:from-[#229ED9]/25 border border-[#229ED9]/30 hover:border-[#229ED9]/60 text-[#229ED9] font-bold text-xs uppercase tracking-wider transition-all duration-200 flex items-center gap-3 rounded-xl active:scale-[0.98] group"
+                  className="p-3 bg-[#FAF6ED] hover:bg-[#F4EEDB] border-2 border-[#1A1918] font-display font-bold text-xs uppercase tracking-wider transition-all duration-200 flex items-center gap-3 rounded-xl active:translate-x-0.5 active:translate-y-0.5 active:shadow-none shadow-[2px_2px_0px_#1A1918]"
                 >
-                  <div className="w-9 h-9 rounded-xl bg-[#229ED9] text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+                  <div className="w-9 h-9 rounded-xl bg-sky-600 text-white flex items-center justify-center font-bold text-sm shrink-0 border border-[#1A1918] shadow-[1px_1px_0px_#1A1918]">
                     TG
                   </div>
                   <div className="text-left min-w-0">
-                    <span className="block text-white font-bold group-hover:text-[#229ED9] transition">Telegram</span>
-                    <span className="text-[10px] text-ash font-normal truncate block">Canales y chats de ruta</span>
+                    <span className="block text-[#1A1918] font-black">Telegram</span>
+                    <span className="text-[10px] text-[#1A1918]/60 font-serif italic truncate block">Canales y chats de ruta</span>
                   </div>
                 </button>
 
                 {/* X (TWITTER) */}
                 <button
                   onClick={handleShareTwitter}
-                  className="p-3.5 bg-white/[0.04] hover:bg-white/[0.08] border border-white/15 hover:border-white/30 text-white font-bold text-xs uppercase tracking-wider transition-all duration-200 flex items-center gap-3 rounded-xl active:scale-[0.98] group"
+                  className="p-3 bg-[#FAF6ED] hover:bg-[#F4EEDB] border-2 border-[#1A1918] font-display font-bold text-xs uppercase tracking-wider transition-all duration-200 flex items-center gap-3 rounded-xl active:translate-x-0.5 active:translate-y-0.5 active:shadow-none shadow-[2px_2px_0px_#1A1918]"
                 >
-                  <div className="w-9 h-9 rounded-xl bg-black text-white border border-white/30 flex items-center justify-center font-bold text-sm shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+                  <div className="w-9 h-9 rounded-xl bg-[#1A1918] text-white flex items-center justify-center font-bold text-sm shrink-0 border border-[#1A1918] shadow-[1px_1px_0px_#1A1918]">
                     𝕏
                   </div>
                   <div className="text-left min-w-0">
-                    <span className="block text-white font-bold group-hover:text-stone-300 transition">X (Twitter)</span>
-                    <span className="text-[10px] text-ash font-normal truncate block">Publicar con telemetría</span>
+                    <span className="block text-[#1A1918] font-black">X (Twitter)</span>
+                    <span className="text-[10px] text-[#1A1918]/60 font-serif italic truncate block">Publicar con telemetría</span>
                   </div>
                 </button>
 
                 {/* FACEBOOK */}
                 <button
                   onClick={handleShareFacebook}
-                  className="p-3.5 bg-gradient-to-r from-[#1877F2]/15 to-transparent hover:from-[#1877F2]/25 border border-[#1877F2]/30 hover:border-[#1877F2]/60 text-[#1877F2] font-bold text-xs uppercase tracking-wider transition-all duration-200 flex items-center gap-3 rounded-xl active:scale-[0.98] group"
+                  className="p-3 bg-[#FAF6ED] hover:bg-[#F4EEDB] border-2 border-[#1A1918] font-display font-bold text-xs uppercase tracking-wider transition-all duration-200 flex items-center gap-3 rounded-xl active:translate-x-0.5 active:translate-y-0.5 active:shadow-none shadow-[2px_2px_0px_#1A1918]"
                 >
-                  <div className="w-9 h-9 rounded-xl bg-[#1877F2] text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+                  <div className="w-9 h-9 rounded-xl bg-[#1D4477] text-white flex items-center justify-center font-bold text-sm shrink-0 border border-[#1A1918] shadow-[1px_1px_0px_#1A1918]">
                     FB
                   </div>
                   <div className="text-left min-w-0">
-                    <span className="block text-white font-bold group-hover:text-[#1877F2] transition">Facebook</span>
-                    <span className="text-[10px] text-ash font-normal truncate block">Muro o comunidad motera</span>
+                    <span className="block text-[#1A1918] font-black">Facebook</span>
+                    <span className="text-[10px] text-[#1A1918]/60 font-serif italic truncate block">Muro o comunidad motera</span>
                   </div>
                 </button>
               </div>
@@ -443,11 +438,11 @@ ${shareUrl}`;
               {typeof navigator !== 'undefined' && (
                 <button
                   onClick={handleNativeShare}
-                  className="w-full py-3 px-4 bg-gradient-to-r from-earth/15 via-white/[0.03] to-transparent hover:from-earth/25 border border-earth/30 hover:border-earth text-white font-bold text-xs uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2.5 rounded-xl active:scale-[0.98] shadow-sm"
+                  className="w-full py-3.5 px-4 bg-[#F4EEDB] hover:bg-[#EDE6D3] border-2 border-[#1A1918] text-[#1A1918] font-display font-black text-xs uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2 rounded-xl active:translate-x-0.5 active:translate-y-0.5 active:shadow-none shadow-[2px_2px_0px_#1A1918]"
                 >
-                  <Smartphone className="w-4 h-4 text-earth" />
+                  <Smartphone className="w-4 h-4 text-[#E6332A]" />
                   <span>Compartir con aplicaciones de tu teléfono</span>
-                  <ExternalLink className="w-3.5 h-3.5 text-ash" />
+                  <ExternalLink className="w-3.5 h-3.5 text-[#1A1918]" />
                 </button>
               )}
             </div>
@@ -455,10 +450,10 @@ ${shareUrl}`;
         </div>
 
         {/* MODAL FOOTER */}
-        <div className="p-3.5 sm:p-4 bg-[#12100F] border-t border-white/10 flex items-center justify-end shrink-0">
+        <div className="p-4 bg-[#F4EEDB] border-t-2 border-[#1A1918] flex items-center justify-end shrink-0">
           <button
             onClick={onClose}
-            className="px-6 py-2 rounded-xl bg-white/[0.06] hover:bg-white/15 border border-white/20 hover:border-white/40 text-white uppercase font-bold text-xs tracking-wider transition-all active:scale-95"
+            className="px-6 py-2.5 rounded-xl bg-[#FAF6ED] hover:bg-[#EDE6D3] text-[#1A1918] border-2 border-[#1A1918] uppercase font-display font-black text-xs tracking-widest transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none shadow-[3px_3px_0px_#1A1918]"
           >
             Listo
           </button>

@@ -31,107 +31,94 @@ export const BottomBar: React.FC<BottomBarProps> = ({ onOpenRecordRoute }) => {
   return (
     <aside 
       aria-label="Navegación de aplicación"
-      className="fixed bottom-0 left-0 right-0 z-50 bg-[#0B0A09]/95 backdrop-blur-xl border-t border-white/[0.08] shadow-[0_-12px_36px_rgba(0,0,0,0.85)] select-none pb-[env(safe-area-inset-bottom,6px)]"
+      className="fixed bottom-0 left-0 right-0 z-50 bg-[#FAF6ED]/95 backdrop-blur-xl border-t-2 border-[#1A1918] shadow-[0_-4px_25px_rgba(26,25,24,0.08)] select-none pb-[env(safe-area-inset-bottom,6px)]"
     >
-      {/* Top subtle micro-ruler */}
-      <div className="w-full h-1 bg-black/60 overflow-hidden flex items-center border-b border-white/[0.04]">
-        <div className="w-full flex justify-between px-2 opacity-25">
-          {Array.from({ length: 48 }).map((_, i) => (
-            <span
-              key={i}
-              className={`inline-block ${
-                i % 4 === 0 ? 'h-1 w-[1px] bg-white' : 'h-0.5 w-[1px] bg-white/40'
-              }`}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* 5-column dock (responsive for desktop and mobile) */}
-      <div className="max-w-xl mx-auto px-4 py-1.5 flex items-center justify-between">
+      {/* 5-column dock with Risograph / Matchbook styling */}
+      <div className="max-w-xl mx-auto px-4 py-2 flex items-center justify-between">
         
-        {/* 01. INICIO (FEED SOCIAL) */}
+        {/* 01. INICIO (DESPACHO) */}
         <button
           type="button"
           onClick={() => setActiveNavTab('inicio')}
           className={`flex-1 min-h-[50px] flex flex-col items-center justify-center py-1 transition-all active:scale-95 group touch-manipulation cursor-pointer ${
-            isInicio ? 'text-white' : 'text-ash hover:text-white'
+            isInicio ? 'text-[#E6332A]' : 'text-[#1A1918]/60 hover:text-[#1A1918]'
           }`}
         >
           <div className="relative">
-            <Home className={`w-5 h-5 transition-transform ${isInicio ? 'scale-105 text-earth' : 'group-hover:text-white'}`} />
+            <Home className={`w-5 h-5 transition-transform ${isInicio ? 'scale-110 stroke-[2.5]' : 'group-hover:text-[#1A1918]'}`} />
             {activities.length > 0 && (
-              <span className="absolute -top-1 -right-2 text-[8px] font-mono px-1 bg-earth/20 border border-earth/40 text-earth rounded-full">
+              <span className="absolute -top-1 -right-2 text-[8px] font-mono px-1 bg-[#1A1918] text-white rounded-full font-bold">
                 {activities.length}
               </span>
             )}
           </div>
-          <span className={`font-mono text-[9px] uppercase tracking-wider mt-1 ${isInicio ? 'text-earth font-bold' : ''}`}>
-            Inicio
+          <span className={`font-display uppercase tracking-widest text-[10px] mt-1 ${isInicio ? 'text-[#E6332A] font-black' : 'font-bold'}`}>
+            Despacho
           </span>
         </button>
 
-        {/* 02. MAPAS (EXPLORADOR) */}
+        {/* 02. MAPAS (RUTAS) */}
         <button
           type="button"
           onClick={() => setActiveNavTab('mapas')}
           className={`flex-1 min-h-[50px] flex flex-col items-center justify-center py-1 transition-all active:scale-95 group touch-manipulation cursor-pointer ${
-            isMapas ? 'text-white' : 'text-ash hover:text-white'
+            isMapas ? 'text-[#E6332A]' : 'text-[#1A1918]/60 hover:text-[#1A1918]'
           }`}
         >
-          <Compass className={`w-5 h-5 transition-transform ${isMapas ? 'scale-105 text-earth' : 'group-hover:text-white'}`} />
-          <span className={`font-mono text-[9px] uppercase tracking-wider mt-1 ${isMapas ? 'text-earth font-bold' : ''}`}>
-            Mapas
+          <Compass className={`w-5 h-5 transition-transform ${isMapas ? 'scale-110 stroke-[2.5]' : 'group-hover:text-[#1A1918]'}`} />
+          <span className={`font-display uppercase tracking-widest text-[10px] mt-1 ${isMapas ? 'text-[#E6332A] font-black' : 'font-bold'}`}>
+            Rutas
           </span>
         </button>
 
-        {/* 03. REGISTRAR (CABINA GPS) */}
+        {/* 03. REGISTRAR (SEAL / STAMP BUTTON) */}
         <button
           type="button"
           onClick={handleRecordClick}
-          className={`flex-1 min-h-[50px] flex flex-col items-center justify-center py-1 transition-all active:scale-95 group touch-manipulation cursor-pointer ${
-            isRegistrar ? 'text-white' : 'text-ash hover:text-white'
-          }`}
+          className="flex-1 min-h-[50px] flex flex-col items-center justify-center py-1 transition-all active:scale-95 group touch-manipulation cursor-pointer -mt-4"
+          title="Registrar rodada en vivo"
         >
-          <div className={`w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all ${
-            isRegistrar ? 'border-earth bg-earth/20 scale-105' : 'border-ash/70 group-hover:border-white'
+          <div className={`w-12 h-12 rounded-2xl border-2 border-[#1A1918] flex items-center justify-center transition-all shadow-[3px_3px_0px_#1A1918] group-active:translate-x-[2px] group-active:translate-y-[2px] group-active:shadow-none ${
+            isRegistrar 
+              ? 'bg-[#E6332A] text-white' 
+              : 'bg-[#F7B32B] hover:bg-[#E6332A] text-[#1A1918]'
           }`}>
-            <Circle className={`w-3.5 h-3.5 fill-current ${isRegistrar ? 'text-earth' : 'text-ash group-hover:text-white'}`} />
+            <Circle className="w-5 h-5 fill-current" />
           </div>
-          <span className={`font-mono text-[9px] uppercase tracking-wider mt-0.5 ${isRegistrar ? 'text-earth font-bold' : ''}`}>
-            Registrar
+          <span className="font-display uppercase tracking-widest text-[9px] mt-1 text-[#1A1918] font-black">
+            Grabar
           </span>
         </button>
 
-        {/* 04. TRIBUS (COMUNIDADES Y EXPEDICIONES) */}
+        {/* 04. TRIBUS (CLUBS) */}
         <button
           type="button"
           onClick={() => setActiveNavTab('tribus')}
           className={`flex-1 min-h-[50px] flex flex-col items-center justify-center py-1 transition-all active:scale-95 group touch-manipulation cursor-pointer ${
-            isTribus ? 'text-white' : 'text-ash hover:text-white'
+            isTribus ? 'text-[#E6332A]' : 'text-[#1A1918]/60 hover:text-[#1A1918]'
           }`}
         >
           <div className="relative">
-            <Users className={`w-5 h-5 transition-transform ${isTribus ? 'scale-105 text-earth' : 'group-hover:text-white'}`} />
-            <span className="absolute -top-1 -right-2 text-[8px] font-mono px-1 bg-white/10 border border-white/20 text-white rounded-full">
+            <Users className={`w-5 h-5 transition-transform ${isTribus ? 'scale-110 stroke-[2.5]' : 'group-hover:text-[#1A1918]'}`} />
+            <span className="absolute -top-1 -right-2 text-[8px] font-mono px-1 bg-[#F7B32B] text-[#1A1918] font-black border border-[#1A1918] rounded-full">
               {crews.length}
             </span>
           </div>
-          <span className={`font-mono text-[9px] uppercase tracking-wider mt-1 ${isTribus ? 'text-earth font-bold' : ''}`}>
+          <span className={`font-display uppercase tracking-widest text-[10px] mt-1 ${isTribus ? 'text-[#E6332A] font-black' : 'font-bold'}`}>
             Tribus
           </span>
         </button>
 
-        {/* 05. TÚ (PERFIL DE PILOTO) */}
+        {/* 05. TÚ (PILOTO) */}
         <button
           type="button"
           onClick={() => setActiveNavTab('tu')}
           className={`flex-1 min-h-[50px] flex flex-col items-center justify-center py-1 transition-all active:scale-95 group touch-manipulation cursor-pointer ${
-            isTu ? 'text-white' : 'text-ash hover:text-white'
+            isTu ? 'text-[#E6332A]' : 'text-[#1A1918]/60 hover:text-[#1A1918]'
           }`}
         >
-          <div className={`w-6 h-6 rounded-full overflow-hidden border transition-all ${
-            isTu ? 'border-earth ring-2 ring-earth/30' : 'border-white/30 group-hover:border-white'
+          <div className={`w-7 h-7 rounded-xl overflow-hidden border-2 border-[#1A1918] transition-all shadow-[1px_1px_0px_#1A1918] ${
+            isTu ? 'ring-2 ring-[#E6332A] scale-105' : 'group-hover:border-[#E6332A]'
           }`}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img 
@@ -140,8 +127,8 @@ export const BottomBar: React.FC<BottomBarProps> = ({ onOpenRecordRoute }) => {
               className="w-full h-full object-cover" 
             />
           </div>
-          <span className={`font-mono text-[9px] uppercase tracking-wider mt-1 ${isTu ? 'text-earth font-bold' : ''}`}>
-            Tú
+          <span className={`font-display uppercase tracking-widest text-[10px] mt-1 ${isTu ? 'text-[#E6332A] font-black' : 'font-bold'}`}>
+            Piloto
           </span>
         </button>
 

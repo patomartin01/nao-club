@@ -782,7 +782,7 @@ ${gpxPoints}
                       ? 'border-earth/30 ring-1 ring-earth/20 cursor-default'
                       : 'border-white/10 hover:border-earth cursor-pointer group'
                   }`}
-                  title={isMe ? 'Tu perfil en MotoMami' : 'Ver perfil y telemetría de este piloto'}
+                  title={isMe ? 'Tu perfil en NAO' : 'Ver perfil y telemetría de este piloto'}
                 >
                   <div className="space-y-3">
                     <div className="flex items-center gap-3">

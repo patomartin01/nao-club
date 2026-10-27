@@ -16,6 +16,7 @@ import { CreateCrewModal } from '../components/Modals/CreateCrewModal';
 import { CreateRodadaModal } from '../components/Modals/CreateRodadaModal';
 import { PilotProfileModal } from '../components/Modals/PilotProfileModal';
 import { LiveRouteRecorderModal } from '../components/Modals/LiveRouteRecorderModal';
+import { AuthModal } from '../components/Modals/AuthModal';
 import { BottomBar } from '../components/Navigation/BottomBar';
 
 export default function Home() {
@@ -29,9 +30,9 @@ export default function Home() {
   const [recordRouteOpen, setRecordRouteOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#0B0A09] text-chalk flex flex-col antialiased selection:bg-earth selection:text-white">
+    <div className="min-h-screen bg-[#F4EEDB] text-[#1A1918] flex flex-col antialiased selection:bg-[#E6332A] selection:text-white">
       
-      {/* 1. Superficial-Style Navbar */}
+      {/* 1. Deus Ex Machina Editorial Masthead Navbar */}
       <Navbar
         onOpenCreateRodada={() => setCreateRodadaOpen(true)}
         onOpenProposeRoute={() => setProposeRouteOpen(true)}
@@ -44,12 +45,14 @@ export default function Home() {
       <main className={`flex-1 w-full mx-auto ${
         (activeNavTab === 'mapas' || activeNavTab === 'rutas')
           ? 'p-0 max-w-none h-[calc(100dvh-60px)] overflow-hidden relative'
-          : 'max-w-[1440px] px-4 sm:px-8 lg:px-12 pt-6 sm:pt-10 pb-28 sm:pb-24'
+          : 'max-w-[1520px] px-3 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-24'
       }`}>
-        {/* TAB 01: INICIO (FEED SOCIAL DE PILOTOS) */}
+        {/* TAB 01: INICIO (DESPACHO TÁCTICO Y OPERACIONES) */}
         {(activeNavTab === 'inicio' || activeNavTab === 'home') && (
           <InicioFeedView
             onOpenRecordRoute={() => setRecordRouteOpen(true)}
+            onOpenCreateRodada={() => setCreateRodadaOpen(true)}
+            onOpenProposeRoute={() => setProposeRouteOpen(true)}
           />
         )}
 
@@ -112,6 +115,8 @@ export default function Home() {
       />
 
       <PilotProfileModal />
+
+      <AuthModal />
 
       <LiveRouteRecorderModal 
         isOpen={recordRouteOpen || activeNavTab === 'registrar'} 

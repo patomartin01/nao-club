@@ -20,7 +20,8 @@ import {
   Calendar,
   Layers,
   Clock,
-  Navigation
+  Navigation,
+  UserCheck
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -69,7 +70,8 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
     userBikes, 
     completedRouteIds, 
     routeProposals, 
-    setActiveNavTab 
+    setActiveNavTab,
+    setAuthModalOpen
   } = useApp();
 
   const [activeSubTab, setActiveSubTab] = useState<ProfileSubTab>('progreso');
@@ -94,108 +96,136 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
   const maxKmWeek = Math.max(...WEEKLY_DATA.map(d => d.km));
 
   return (
-    <div className="space-y-6 pb-28 max-w-[1440px] w-full mx-auto font-mono">
+    <div className="space-y-8 pb-32 max-w-[1440px] w-full mx-auto font-sans text-[#141312]">
       
-      {/* 01. PROFILE HEADER */}
-      <div className="bg-[#0D0B0A] border border-white/10 p-5 space-y-4">
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden border-2 border-earth ring-4 ring-earth/20 shrink-0">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img 
-              src={currentUser.avatar} 
-              alt={currentUser.name}
-              className="w-full h-full object-cover" 
-            />
+      {/* 01. PROFILE HEADER (Authentic Pilot Matchbook Dossier) */}
+      <div className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[28px] p-6 sm:p-10 space-y-6 shadow-[6px_6px_0px_#1A1918] relative overflow-hidden">
+        {/* Subtle background typographic watermark */}
+        <div className="absolute right-[-10px] top-[-15px] pointer-events-none select-none opacity-[0.04] text-[#1A1918] font-display font-black text-9xl tracking-tighter">
+          PILOT
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 relative z-10">
+          <div className="relative shrink-0">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-2 border-[#1A1918] shadow-[4px_4px_0px_#1A1918] bg-[#F4EEDB]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img 
+                src={currentUser.avatar} 
+                alt={currentUser.name}
+                className="w-full h-full object-cover" 
+              />
+            </div>
+            <span className="absolute -bottom-2 -right-2 px-2 py-0.5 bg-[#E6332A] text-white text-[8px] font-mono uppercase font-black rounded border border-[#1A1918] shadow-[1px_1px_0px_#1A1918]">
+              VERIFICADO
+            </span>
           </div>
 
-          <div className="space-y-1">
-            <h1 className="text-xl sm:text-2xl font-bold text-white uppercase tracking-tight">
+          <div className="space-y-1.5 flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-display text-[10px] text-[#E6332A] uppercase tracking-[0.2em] font-black">
+                ★ CREDENCIAL DE PILOTO TITULAR ★
+              </span>
+              <span className="text-[10px] font-mono text-[#1A1918] uppercase tracking-widest bg-[#FAF6ED] px-2.5 py-0.5 border-2 border-[#1A1918] rounded-md font-black shadow-[1px_1px_0px_#1A1918]">
+                MATRÍCULA #0419-CDMX
+              </span>
+            </div>
+
+            <h1 className="text-2xl sm:text-4xl font-display font-black text-[#1A1918] uppercase tracking-wide">
               {currentUser.name}
             </h1>
-            <p className="text-xs text-ash">
+            <p className="text-xs font-serif italic text-[#1A1918]/70 font-medium">
               {currentUser.handle} • {currentUser.location}
             </p>
-            <div className="flex items-center gap-2 pt-1 text-xs">
-              <span className="text-white font-bold">{currentUser.stats?.completedCount || 33}</span>
-              <span className="text-ash">actividades</span>
-              <span className="text-ash">•</span>
-              <span className="text-white font-bold">15</span>
-              <span className="text-ash">seguidores</span>
-              <span className="text-ash">•</span>
-              <span className="text-white font-bold">11</span>
-              <span className="text-ash">siguiendo</span>
+            <div className="flex items-center gap-3 pt-1 text-xs">
+              <span className="font-display font-black text-[#1A1918]">{currentUser.stats?.completedCount || 33}</span>
+              <span className="text-[#1A1918]/70 font-medium">salidas oficiales</span>
+              <span className="text-[#1A1918]/30">•</span>
+              <span className="font-display font-black text-[#1A1918]">15</span>
+              <span className="text-[#1A1918]/70 font-medium">compañeros de ruta</span>
+              <span className="text-[#1A1918]/30">•</span>
+              <span className="font-display font-black text-[#1A1918]">11</span>
+              <span className="text-[#1A1918]/70 font-medium">siguiendo</span>
             </div>
           </div>
         </div>
 
         {/* Action Buttons: Editar Perfil / Compartir */}
-        <div className="flex items-center gap-2 pt-2">
+        <div className="flex items-center gap-3 pt-2 relative z-10">
           <button
             onClick={onOpenEditProfile}
-            className="flex-1 py-2 px-3 bg-white/[0.04] hover:bg-white/[0.08] border border-white/15 text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition active:scale-95"
+            className="flex-1 py-3 px-4 bg-[#1A1918] hover:bg-black text-[#FAF6ED] text-xs font-display font-black uppercase tracking-widest flex items-center justify-center gap-2 transition rounded-xl border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
           >
-            <Edit3 className="w-3.5 h-3.5 text-earth" />
+            <Edit3 className="w-3.5 h-3.5 text-[#F7B32B]" />
             <span>Editar perfil</span>
           </button>
 
           <button
             onClick={handleShareProfile}
-            className="flex-1 py-2 px-3 bg-white/[0.04] hover:bg-white/[0.08] border border-white/15 text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition active:scale-95"
+            className="flex-1 py-3 px-4 bg-[#F7B32B] hover:bg-[#e5a424] text-[#1A1918] text-xs font-display font-black uppercase tracking-widest flex items-center justify-center gap-2 transition rounded-xl border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
           >
-            <Share2 className="w-3.5 h-3.5 text-earth" />
-            <span>Compartir perfil</span>
+            <Share2 className="w-3.5 h-3.5 text-[#1A1918]" />
+            <span>Compartir</span>
+          </button>
+
+          <button
+            onClick={() => setAuthModalOpen(true)}
+            className="py-3 px-3.5 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] text-xs font-display font-black uppercase tracking-widest flex items-center justify-center gap-2 transition rounded-xl border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+            title="Gestionar sesión o cambiar piloto"
+          >
+            <UserCheck className="w-3.5 h-3.5 text-[#E6332A]" />
+            <span className="hidden sm:inline">Cuenta</span>
           </button>
         </div>
       </div>
 
       {/* 02. 4 SUB-TABS (PROGRESO, ACTIVIDADES, GALERÍA, MÁS) */}
-      <div className="flex border-b border-white/10 bg-[#0D0B0A] text-xs">
+      <div className="p-1.5 bg-[#FAF6ED] border-2 border-[#1A1918] rounded-2xl flex gap-1.5 shadow-[3px_3px_0px_#1A1918]">
         <button
           onClick={() => setActiveSubTab('progreso')}
-          className={`flex-1 py-3 flex flex-col items-center justify-center gap-1 uppercase tracking-wider font-bold transition ${
+          className={`flex-1 py-3 flex items-center justify-center gap-2 uppercase tracking-wider font-display transition rounded-xl text-xs ${
             activeSubTab === 'progreso'
-              ? 'text-earth border-b-2 border-earth bg-earth/5'
-              : 'text-ash hover:text-white'
+              ? 'bg-[#1A1918] text-[#FAF6ED] font-black border border-[#1A1918] shadow-[2px_2px_0px_#1A1918]'
+              : 'text-[#1A1918]/70 hover:text-[#1A1918] font-bold'
           }`}
         >
-          <BarChart2 className="w-4 h-4" />
-          <span className="text-[10px]">Progreso</span>
+          <BarChart2 className="w-4 h-4 text-[#F7B32B]" />
+          <span className="text-[10px] tracking-widest">Progreso</span>
         </button>
 
         <button
           onClick={() => setActiveSubTab('actividades')}
-          className={`flex-1 py-3 flex flex-col items-center justify-center gap-1 uppercase tracking-wider font-bold transition ${
+          className={`flex-1 py-3 flex items-center justify-center gap-2 uppercase tracking-wider font-display transition rounded-xl text-xs ${
             activeSubTab === 'actividades'
-              ? 'text-earth border-b-2 border-earth bg-earth/5'
-              : 'text-ash hover:text-white'
+              ? 'bg-[#1A1918] text-[#FAF6ED] font-black border border-[#1A1918] shadow-[2px_2px_0px_#1A1918]'
+              : 'text-[#1A1918]/70 hover:text-[#1A1918] font-bold'
           }`}
         >
-          <FileText className="w-4 h-4" />
-          <span className="text-[10px]">Actividades</span>
+          <FileText className="w-4 h-4 text-[#F7B32B]" />
+          <span className="text-[10px] tracking-widest">Actividades</span>
         </button>
 
         <button
           onClick={() => setActiveSubTab('galeria')}
-          className={`flex-1 py-3 flex flex-col items-center justify-center gap-1 uppercase tracking-wider font-bold transition ${
+          className={`flex-1 py-3 flex items-center justify-center gap-2 uppercase tracking-wider font-display transition rounded-xl text-xs ${
             activeSubTab === 'galeria'
-              ? 'text-earth border-b-2 border-earth bg-earth/5'
-              : 'text-ash hover:text-white'
+              ? 'bg-[#1A1918] text-[#FAF6ED] font-black border border-[#1A1918] shadow-[2px_2px_0px_#1A1918]'
+              : 'text-[#1A1918]/70 hover:text-[#1A1918] font-bold'
           }`}
         >
-          <Grid className="w-4 h-4" />
-          <span className="text-[10px]">Galería</span>
+          <Grid className="w-4 h-4 text-[#F7B32B]" />
+          <span className="text-[10px] tracking-widest">Galería</span>
         </button>
 
         <button
           onClick={() => setActiveSubTab('mas')}
-          className={`flex-1 py-3 flex flex-col items-center justify-center gap-1 uppercase tracking-wider font-bold transition ${
+          className={`flex-1 py-3 flex items-center justify-center gap-2 uppercase tracking-wider font-display transition rounded-xl text-xs ${
             activeSubTab === 'mas'
-              ? 'text-earth border-b-2 border-earth bg-earth/5'
-              : 'text-ash hover:text-white'
+              ? 'bg-[#1A1918] text-[#FAF6ED] font-black border border-[#1A1918] shadow-[2px_2px_0px_#1A1918]'
+              : 'text-[#1A1918]/70 hover:text-[#1A1918] font-bold'
           }`}
         >
-          <Menu className="w-4 h-4" />
-          <span className="text-[10px]">Más</span>
+          <Menu className="w-4 h-4 text-[#F7B32B]" />
+          <span className="text-[10px] tracking-widest">Más</span>
         </button>
       </div>
 
@@ -205,15 +235,15 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
       {activeSubTab === 'progreso' && (
         <div className="space-y-6">
           {/* Discipline selector */}
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
             {['Todos los deportes', 'Carretera', 'Doble Propósito', 'Enduro', 'Pista'].map(d => (
               <button
                 key={d}
                 onClick={() => setSelectedDiscipline(d)}
-                className={`px-3 py-1.5 text-[10px] uppercase tracking-wider whitespace-nowrap border ${
+                className={`px-4 py-2 text-[10px] uppercase tracking-wider font-display whitespace-nowrap rounded-xl border-2 transition shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${
                   selectedDiscipline === d
-                    ? 'bg-earth text-white border-earth font-bold'
-                    : 'bg-white/[0.02] text-ash border-white/10 hover:text-white'
+                    ? 'bg-[#1A1918] text-[#FAF6ED] border-[#1A1918] font-black'
+                    : 'bg-[#FAF6ED] text-[#1A1918] border-[#1A1918] hover:bg-[#F4EEDB] font-bold'
                 }`}
               >
                 {d}
@@ -222,40 +252,42 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
           </div>
 
           {/* This Week Summary */}
-          <div className="bg-[#0F0D0C] border border-white/10 p-5 space-y-3">
-            <span className="text-[10px] text-earth uppercase tracking-widest font-bold">Esta Semana</span>
+          <div className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[24px] p-6 space-y-4 shadow-[5px_5px_0px_#1A1918]">
+            <span className="text-[10px] text-[#E6332A] uppercase tracking-widest font-display font-black">
+              ★ BITÁCORA DE ESTA SEMANA ★
+            </span>
             
-            <div className="grid grid-cols-3 gap-3">
-              <div>
-                <span className="text-[9px] uppercase tracking-wider text-ash block">Distancia</span>
-                <span className="text-xl font-bold text-white font-mono">42.8 <span className="text-xs text-ash font-normal">km</span></span>
+            <div className="grid grid-cols-3 gap-3 sm:gap-4">
+              <div className="bg-[#F4EEDB] border-2 border-[#1A1918] rounded-xl p-4 shadow-[2px_2px_0px_#1A1918]">
+                <span className="text-[9px] uppercase tracking-wider text-[#1A1918]/70 block font-display font-black">Distancia</span>
+                <span className="text-2xl sm:text-3xl font-black text-[#1A1918] font-display">42.8 <span className="text-xs text-[#1A1918]/70 font-sans font-bold">km</span></span>
               </div>
-              <div>
-                <span className="text-[9px] uppercase tracking-wider text-ash block">Desnivel</span>
-                <span className="text-xl font-bold text-white font-mono">890 <span className="text-xs text-ash font-normal">m</span></span>
+              <div className="bg-[#F4EEDB] border-2 border-[#1A1918] rounded-xl p-4 shadow-[2px_2px_0px_#1A1918]">
+                <span className="text-[9px] uppercase tracking-wider text-[#1A1918]/70 block font-display font-black">Desnivel</span>
+                <span className="text-2xl sm:text-3xl font-black text-[#1A1918] font-display">890 <span className="text-xs text-[#1A1918]/70 font-sans font-bold">m</span></span>
               </div>
-              <div>
-                <span className="text-[9px] uppercase tracking-wider text-ash block">Tiempo</span>
-                <span className="text-xl font-bold text-white font-mono">1h 45m</span>
+              <div className="bg-[#F4EEDB] border-2 border-[#1A1918] rounded-xl p-4 shadow-[2px_2px_0px_#1A1918]">
+                <span className="text-[9px] uppercase tracking-wider text-[#1A1918]/70 block font-display font-black">Tiempo</span>
+                <span className="text-2xl sm:text-3xl font-black text-[#1A1918] font-display">1h 45m</span>
               </div>
             </div>
 
-            <p className="text-[10px] text-ash border-t border-white/[0.06] pt-2">
-              +1 rodada más que la semana pasada a estas alturas.
+            <p className="text-xs text-[#1A1918]/70 border-t-2 border-[#1A1918] pt-3 font-serif italic font-medium">
+              +1 rodada más que la semana pasada a estas alturas. Máquina en óptimo desempeño.
             </p>
           </div>
 
           {/* 12-Week Interactive Bar Chart */}
-          <div className="bg-[#0F0D0C] border border-white/10 p-5 space-y-4">
+          <div className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[24px] p-6 space-y-5 shadow-[5px_5px_0px_#1A1918]">
             <div className="flex items-center justify-between">
               <div>
-                <h4 className="text-xs font-bold text-white uppercase tracking-wider">Últimas 12 Semanas</h4>
-                <p className="text-[10px] text-ash">Kilómetros acumulados por semana</p>
+                <h4 className="text-sm font-display font-black text-[#1A1918] uppercase tracking-wide">Últimas 12 Semanas</h4>
+                <p className="text-xs text-[#1A1918]/70 font-serif italic font-medium">Kilómetros acumulados por semana</p>
               </div>
-              <span className="text-[10px] text-earth font-bold font-mono">Prom: 48.2 km/sem</span>
+              <span className="text-xs text-[#1A1918] font-display font-black bg-[#F7B32B] px-2.5 py-1 rounded-md border-2 border-[#1A1918] shadow-[1px_1px_0px_#1A1918]">Prom: 48.2 km/sem</span>
             </div>
 
-            <div className="h-44 flex items-end gap-1.5 pt-6 pb-2 border-b border-white/10">
+            <div className="h-44 flex items-end gap-1.5 pt-6 pb-2 border-b-2 border-[#1A1918]">
               {WEEKLY_DATA.map((item, idx) => {
                 const heightPct = item.km > 0 ? Math.max(12, Math.round((item.km / maxKmWeek) * 100)) : 4;
                 const isCurrent = idx === WEEKLY_DATA.length - 1;
@@ -263,15 +295,15 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
                 return (
                   <div key={idx} className="flex-1 flex flex-col items-center gap-1 group relative">
                     {/* Tooltip on hover */}
-                    <div className="absolute -top-9 bg-black border border-white/20 text-white text-[9px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap z-10 font-mono">
+                    <div className="absolute -top-9 bg-[#1A1918] text-[#FAF6ED] text-[9px] px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap z-10 font-mono shadow-[2px_2px_0px_#1A1918] border border-[#FAF6ED]/20">
                       {item.km} km ({item.elev}m)
                     </div>
 
                     <div 
-                      className={`w-full rounded-t-sm transition-all duration-300 ${
+                      className={`w-full rounded-t-sm transition-all duration-300 border border-[#1A1918] ${
                         isCurrent 
-                          ? 'bg-earth shadow-[0_0_12px_rgba(224,109,56,0.5)]' 
-                          : item.km > 0 ? 'bg-white/30 group-hover:bg-white/60' : 'bg-white/5'
+                          ? 'bg-[#E6332A] shadow-xs' 
+                          : item.km > 0 ? 'bg-[#1A1918] group-hover:bg-[#E06423]' : 'bg-[#F4EEDB]'
                       }`}
                       style={{ height: `${heightPct}%` }}
                     />
@@ -280,7 +312,7 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
               })}
             </div>
 
-            <div className="flex justify-between text-[9px] text-ash uppercase">
+            <div className="flex justify-between text-[10px] text-[#1A1918]/70 uppercase font-display font-black">
               <span>Hace 12 semanas</span>
               <span>Esta semana</span>
             </div>
@@ -292,50 +324,50 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
       {/* 04. SUB-TAB: ACTIVIDADES (SEARCHABLE HISTORICAL LOG)      */}
       {/* ========================================================= */}
       {activeSubTab === 'actividades' && (
-        <div className="space-y-4">
+        <div className="space-y-5">
           {/* Search bar */}
           <div className="relative">
-            <Search className="w-4 h-4 text-ash absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-[#1A1918]/60 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={activitySearch}
               onChange={(e) => setActivitySearch(e.target.value)}
               placeholder="Buscar por destino, moto o título..."
-              className="w-full bg-[#0F0D0C] border border-white/10 pl-9 pr-4 py-2.5 text-xs text-white placeholder-ash focus:outline-none focus:border-earth"
+              className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] pl-10 pr-4 py-3 text-xs text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:ring-2 focus:ring-[#E6332A] shadow-[3px_3px_0px_#1A1918] rounded-xl font-medium"
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {filteredHistory.map(act => (
               <div 
                 key={act.id}
-                className="bg-[#0F0D0C] border border-white/10 p-4 space-y-3 hover:border-earth/40 transition"
+                className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[24px] p-5 space-y-4 shadow-[4px_4px_0px_#1A1918] hover:shadow-[7px_7px_0px_#1A1918] transition duration-200"
               >
                 <div className="flex items-start justify-between">
                   <div>
-                    <span className="text-[10px] text-ash">{act.dateText}</span>
-                    <h4 className="text-sm font-bold text-white uppercase mt-0.5">
+                    <span className="text-[10px] text-[#1A1918]/70 font-serif italic font-medium">{act.dateText}</span>
+                    <h4 className="text-base font-display font-black text-[#1A1918] uppercase tracking-wide mt-0.5">
                       {act.title}
                     </h4>
-                    <span className="text-[10px] text-earth">{act.location}</span>
+                    <span className="text-xs text-[#E6332A] font-display font-black">{act.location}</span>
                   </div>
-                  <span className="text-[10px] text-chalk font-mono bg-white/[0.04] px-2 py-1 border border-white/10 uppercase tracking-wider">
+                  <span className="text-[10px] text-[#1A1918] font-display font-black bg-[#F4EEDB] px-2.5 py-1 border-2 border-[#1A1918] uppercase tracking-wider rounded-md shadow-[1px_1px_0px_#1A1918]">
                     {act.motoModel}
                   </span>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2 bg-black/40 border border-white/5 p-2.5 text-xs">
+                <div className="grid grid-cols-3 gap-2 bg-[#F4EEDB] border-2 border-[#1A1918] rounded-xl p-3 text-xs shadow-[2px_2px_0px_#1A1918]">
                   <div>
-                    <span className="text-[8px] uppercase text-ash block">Distancia</span>
-                    <span className="text-white font-bold">{act.distanceKm} km</span>
+                    <span className="text-[8px] uppercase text-[#1A1918]/70 block font-display font-black">Distancia</span>
+                    <span className="text-[#1A1918] font-display font-black">{act.distanceKm} km</span>
                   </div>
                   <div>
-                    <span className="text-[8px] uppercase text-ash block">Desnivel</span>
-                    <span className="text-white font-bold">{act.elevationGainM} m</span>
+                    <span className="text-[8px] uppercase text-[#1A1918]/70 block font-display font-black">Desnivel</span>
+                    <span className="text-[#1A1918] font-display font-black">{act.elevationGainM} m</span>
                   </div>
                   <div>
-                    <span className="text-[8px] uppercase text-ash block">Tiempo</span>
-                    <span className="text-white font-bold">{act.durationText}</span>
+                    <span className="text-[8px] uppercase text-[#1A1918]/70 block font-display font-black">Tiempo</span>
+                    <span className="text-[#1A1918] font-display font-black">{act.durationText}</span>
                   </div>
                 </div>
               </div>
@@ -349,27 +381,27 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
       {/* ========================================================= */}
       {activeSubTab === 'galeria' && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+          <div className="flex items-center justify-between border-b-2 border-[#1A1918] pb-3">
+            <h3 className="text-sm font-display font-black text-[#1A1918] uppercase tracking-wide">
               Fotos de Expediciones ({GALLERY_PHOTOS.length})
             </h3>
-            <span className="text-[10px] text-ash">Tomadas en ruta con GPS</span>
+            <span className="text-xs text-[#1A1918]/70 font-serif italic font-medium">Tomadas en ruta con GPS</span>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
             {GALLERY_PHOTOS.map((photo, idx) => (
               <div 
                 key={idx}
-                className="aspect-square bg-white/[0.04] overflow-hidden relative group cursor-pointer border border-white/5"
+                className="aspect-square bg-[#F4EEDB] overflow-hidden relative group cursor-pointer border-2 border-[#1A1918] rounded-2xl shadow-[3px_3px_0px_#1A1918] hover:shadow-[5px_5px_0px_#1A1918] transition"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img 
                   src={photo.url} 
                   alt={photo.caption}
-                  className="w-full h-full object-cover group-hover:scale-105 transition duration-300" 
+                  className="w-full h-full object-cover group-hover:scale-105 transition duration-500" 
                 />
-                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition p-2 flex items-end">
-                  <p className="text-[9px] text-white leading-tight font-sans line-clamp-2">
+                <div className="absolute inset-0 bg-[#1A1918]/80 opacity-0 group-hover:opacity-100 transition p-2.5 flex items-end">
+                  <p className="text-[10px] text-white leading-tight font-serif italic line-clamp-2">
                     {photo.caption}
                   </p>
                 </div>
@@ -386,45 +418,45 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
         <div className="space-y-6">
           
           {/* Menu list with chevrons */}
-          <div className="bg-[#0F0D0C] border border-white/10 divide-y divide-white/[0.06]">
+          <div className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[24px] divide-y-2 divide-[#1A1918] shadow-[5px_5px_0px_#1A1918] overflow-hidden">
             
             {/* Estadísticas anuales */}
-            <div className="p-4 flex items-center justify-between hover:bg-white/[0.02] transition cursor-pointer">
-              <div className="flex items-center gap-3">
-                <FileText className="w-4 h-4 text-earth" />
+            <div className="p-4 flex items-center justify-between hover:bg-[#F4EEDB] transition cursor-pointer">
+              <div className="flex items-center gap-3.5">
+                <FileText className="w-4 h-4 text-[#E6332A]" />
                 <div>
-                  <h4 className="text-xs font-bold text-white uppercase">Estadísticas</h4>
-                  <p className="text-[10px] text-ash">Este año: 2,450 km acumulados</p>
+                  <h4 className="text-xs font-display font-black text-[#1A1918] uppercase">Estadísticas Anuales</h4>
+                  <p className="text-[10px] text-[#1A1918]/70 font-serif italic font-medium">Este año: 2,450 km acumulados</p>
                 </div>
               </div>
-              <ChevronRight className="w-4 h-4 text-ash" />
+              <ChevronRight className="w-4 h-4 text-[#1A1918]" />
             </div>
 
             {/* Segmentos cronometrados */}
-            <div className="p-4 flex items-center justify-between hover:bg-white/[0.02] transition cursor-pointer">
-              <div className="flex items-center gap-3">
-                <MapPin className="w-4 h-4 text-earth" />
+            <div className="p-4 flex items-center justify-between hover:bg-[#F4EEDB] transition cursor-pointer">
+              <div className="flex items-center gap-3.5">
+                <MapPin className="w-4 h-4 text-[#E06423]" />
                 <div>
-                  <h4 className="text-xs font-bold text-white uppercase">Segmentos</h4>
-                  <p className="text-[10px] text-ash">6 tramos favoritos registrados</p>
+                  <h4 className="text-xs font-display font-black text-[#1A1918] uppercase">Segmentos</h4>
+                  <p className="text-[10px] text-[#1A1918]/70 font-serif italic font-medium">6 tramos favoritos registrados</p>
                 </div>
               </div>
-              <ChevronRight className="w-4 h-4 text-ash" />
+              <ChevronRight className="w-4 h-4 text-[#1A1918]" />
             </div>
 
             {/* Equipamiento / Hangar de Motos */}
             <div 
               onClick={() => setActiveNavTab('garaje')}
-              className="p-4 flex items-center justify-between hover:bg-white/[0.02] transition cursor-pointer"
+              className="p-4 flex items-center justify-between hover:bg-[#F4EEDB] transition cursor-pointer"
             >
-              <div className="flex items-center gap-3">
-                <Wrench className="w-4 h-4 text-earth" />
+              <div className="flex items-center gap-3.5">
+                <Wrench className="w-4 h-4 text-[#1A1918]" />
                 <div>
-                  <h4 className="text-xs font-bold text-white uppercase">Equipamiento / Garaje</h4>
-                  <p className="text-[10px] text-ash">{userBikes.length} máquinas en tu hangar</p>
+                  <h4 className="text-xs font-display font-black text-[#1A1918] uppercase">Equipamiento / Garaje</h4>
+                  <p className="text-[10px] text-[#1A1918]/70 font-serif italic font-medium">{userBikes.length} máquinas en tu taller</p>
                 </div>
               </div>
-              <span className="text-[10px] text-earth uppercase font-bold flex items-center gap-1">
+              <span className="text-[10px] text-[#E6332A] uppercase font-display font-black flex items-center gap-1">
                 Administrar <ChevronRight className="w-4 h-4" />
               </span>
             </div>
@@ -432,18 +464,18 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
           </div>
 
           {/* Vitrina de trofeos */}
-          <div className="bg-[#0F0D0C] border border-white/10 p-5 space-y-4">
-            <div className="flex items-center justify-between">
+          <div className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[24px] p-6 space-y-4 shadow-[5px_5px_0px_#1A1918]">
+            <div className="flex items-center justify-between border-b-2 border-[#1A1918] pb-3">
               <div className="flex items-center gap-2">
-                <Trophy className="w-4 h-4 text-amber-400" />
-                <h4 className="text-xs font-bold text-white uppercase tracking-wider">
+                <Trophy className="w-4 h-4 text-[#F7B32B]" />
+                <h4 className="text-xs font-display font-black text-[#1A1918] uppercase tracking-wider">
                   Vitrina de trofeos (6)
                 </h4>
               </div>
-              <span className="text-[10px] text-earth cursor-pointer hover:underline">Ver todos &gt;</span>
+              <span className="text-[10px] font-display font-black text-[#E6332A] uppercase cursor-pointer hover:underline">Ver todos &gt;</span>
             </div>
 
-            <div className="grid grid-cols-4 sm:grid-cols-6 gap-3">
+            <div className="grid grid-cols-4 sm:grid-cols-6 gap-3 pt-2">
               {[
                 { label: '30', desc: '30 rodadas' },
                 { label: '20', desc: '20 rodadas' },
@@ -452,11 +484,11 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
                 { label: '1K', desc: '1,000 km' },
                 { label: 'SR', desc: 'Sierra King' }
               ].map((badge, idx) => (
-                <div key={idx} className="flex flex-col items-center gap-1">
-                  <div className="w-12 h-12 bg-white/[0.04] border border-earth/40 hover:border-earth flex items-center justify-center text-sm font-bold text-earth hover:scale-105 transition cursor-pointer shadow-lg">
+                <div key={idx} className="flex flex-col items-center gap-1.5">
+                  <div className="w-12 h-12 bg-[#F4EEDB] border-2 border-[#1A1918] hover:bg-[#FAF6ED] rounded-xl flex items-center justify-center text-sm font-display font-black text-[#1A1918] hover:scale-105 transition cursor-pointer shadow-[2px_2px_0px_#1A1918]">
                     {badge.label}
                   </div>
-                  <span className="text-[8px] text-ash text-center uppercase tracking-tighter">
+                  <span className="text-[9px] text-[#1A1918]/80 text-center font-display uppercase tracking-tight font-black">
                     {badge.desc}
                   </span>
                 </div>

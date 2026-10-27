@@ -502,19 +502,19 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[200] bg-black/95 flex flex-col font-mono text-chalk overflow-hidden h-screen w-screen">
+    <div className="fixed inset-0 z-[200] bg-[#1A1918]/70 backdrop-blur-sm flex flex-col font-sans text-[#1A1918] overflow-hidden h-screen w-screen animate-fadeIn">
       
       {/* 1. TOP COCKPIT BAR */}
-      <header className="shrink-0 border-b border-white/[0.08] bg-[#0E0D0C] px-4 sm:px-8 py-3.5 flex items-center justify-between z-20">
+      <header className="shrink-0 border-b-2 border-[#1A1918] bg-[#F4EEDB] px-4 sm:px-8 py-3.5 flex items-center justify-between z-20">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2.5">
-            <span className={`w-2 h-2 rounded-full ${isRecording && !isPaused ? 'bg-earth animate-pulse' : 'bg-white/20'}`} />
-            <span className="font-display font-extrabold text-base sm:text-lg text-white uppercase tracking-wider">
+            <span className={`w-3 h-3 rounded-full border border-[#1A1918] ${isRecording && !isPaused ? 'bg-[#E6332A] animate-pulse' : 'bg-[#1A1918]/30'}`} />
+            <span className="font-display font-black text-base sm:text-lg text-[#1A1918] uppercase tracking-wide">
               {isRecording && !isPaused ? 'Telemetría GPS en Vivo' : isPaused ? 'Grabación en Pausa' : 'Instrumento GPS de Expedición'}
             </span>
           </div>
-          <span className="text-[9px] text-ash uppercase font-mono tracking-widest hidden md:inline">
-            // MOTO TELEMETRY
+          <span className="text-[10px] text-[#E6332A] uppercase font-mono font-black tracking-widest hidden md:inline">
+            ★ MOTO TELEMETRY ★
           </span>
         </div>
 
@@ -522,10 +522,10 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
           {/* Simulation toggle for desk testing */}
           <button
             onClick={() => setIsSimulating(!isSimulating)}
-            className={`px-2.5 py-1 text-[10px] uppercase font-bold tracking-wider border transition ${
+            className={`px-3 py-1.5 text-[10px] uppercase font-display font-black tracking-wider border-2 border-[#1A1918] rounded-xl transition shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${
               isSimulating 
-                ? 'bg-earth/15 border-earth text-earth' 
-                : 'border-white/10 text-ash hover:text-white'
+                ? 'bg-[#E6332A] text-white' 
+                : 'bg-[#FAF6ED] text-[#1A1918] hover:bg-[#F7B32B]'
             }`}
             title="Simula un trayecto real con curvas y altitud"
           >
@@ -534,7 +534,7 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
 
           <button
             onClick={handleCloseModal}
-            className="px-3 py-1 border border-white/20 hover:border-white text-ash hover:text-white transition flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider"
+            className="px-3.5 py-1.5 border-2 border-[#1A1918] bg-[#FAF6ED] hover:bg-[#E6332A] hover:text-white text-[#1A1918] transition flex items-center gap-1.5 text-xs font-display font-black uppercase tracking-wider rounded-xl shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
             title="Cerrar telemetría y volver"
           >
             <X className="w-4 h-4" />
@@ -547,24 +547,24 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
       <div className="flex-1 min-h-0 relative flex flex-col lg:flex-row overflow-hidden">
         
         {/* MAP CANVAS */}
-        <div className="flex-1 min-h-0 relative h-full w-full bg-[#060709] overflow-hidden">
+        <div className="flex-1 min-h-0 relative h-full w-full bg-[#FAF6ED] overflow-hidden">
           <div ref={mapContainerRef} className="w-full h-full min-h-[350px]" />
 
           {/* Map Layer Switcher (Top Left) */}
           <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
-            <div className="bg-[#0E0D0C]/90 backdrop-blur-md border border-white/15 p-1 flex items-center gap-1 text-[10px]">
+            <div className="bg-[#FAF6ED]/95 backdrop-blur-md border-2 border-[#1A1918] p-1 rounded-2xl shadow-[4px_4px_0px_#1A1918] flex items-center gap-1 text-[10px]">
               <button
                 onClick={() => handleLayerChange('satellite')}
-                className={`px-2 py-0.5 uppercase font-bold tracking-wider transition ${
-                  currentLayer === 'satellite' ? 'bg-earth text-white' : 'text-ash hover:text-white'
+                className={`px-3 py-1 uppercase font-display font-black tracking-wider rounded-xl border transition ${
+                  currentLayer === 'satellite' ? 'bg-[#1A1918] text-white border-[#1A1918]' : 'text-[#1A1918] border-transparent hover:bg-[#F4EEDB]'
                 }`}
               >
                 Satélite
               </button>
               <button
                 onClick={() => handleLayerChange('topo')}
-                className={`px-2 py-0.5 uppercase font-bold tracking-wider transition ${
-                  currentLayer === 'topo' ? 'bg-earth text-white' : 'text-ash hover:text-white'
+                className={`px-3 py-1 uppercase font-display font-black tracking-wider rounded-xl border transition ${
+                  currentLayer === 'topo' ? 'bg-[#1A1918] text-white border-[#1A1918]' : 'text-[#1A1918] border-transparent hover:bg-[#F4EEDB]'
                 }`}
               >
                 Topográfico
@@ -574,36 +574,36 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
 
           {/* Real-time Waypoint / POI Floating Quick-Buttons (Bottom Over Map) */}
           {isRecording && !isPaused && (
-            <div className="absolute bottom-6 left-4 right-4 sm:left-6 sm:right-auto z-10 flex flex-wrap items-center gap-2 bg-[#0E0D0C]/95 backdrop-blur-md border border-white/15 p-2 shadow-2xl">
-              <span className="text-[9px] text-ash uppercase font-bold pr-2 border-r border-white/10">
+            <div className="absolute bottom-6 left-4 right-4 sm:left-6 sm:right-auto z-10 flex flex-wrap items-center gap-2 bg-[#FAF6ED]/95 backdrop-blur-md border-2 border-[#1A1918] p-2 rounded-2xl shadow-[4px_4px_0px_#1A1918]">
+              <span className="text-[10px] text-[#E6332A] uppercase font-mono font-black pr-2 border-r-2 border-[#1A1918]">
                 Punto:
               </span>
               <button
                 onClick={() => handleAddManualWaypoint('fuel', 'Gasolinera', 'GAS')}
-                className="px-2.5 py-1 bg-white/[0.04] hover:bg-earth text-white border border-white/10 text-[10px] uppercase font-bold flex items-center gap-1.5 transition"
+                className="px-2.5 py-1 bg-[#F4EEDB] hover:bg-[#F7B32B] text-[#1A1918] border-2 border-[#1A1918] text-[10px] uppercase font-display font-black flex items-center gap-1.5 transition rounded-xl shadow-[1px_1px_0px_#1A1918]"
               >
-                <Fuel className="w-3 h-3 text-earth" />
+                <Fuel className="w-3 h-3 text-[#E6332A]" />
                 <span>Gas</span>
               </button>
               <button
                 onClick={() => handleAddManualWaypoint('scenic', 'Mirador', 'VISTA')}
-                className="px-2.5 py-1 bg-white/[0.04] hover:bg-earth text-white border border-white/10 text-[10px] uppercase font-bold flex items-center gap-1.5 transition"
+                className="px-2.5 py-1 bg-[#F4EEDB] hover:bg-[#F7B32B] text-[#1A1918] border-2 border-[#1A1918] text-[10px] uppercase font-display font-black flex items-center gap-1.5 transition rounded-xl shadow-[1px_1px_0px_#1A1918]"
               >
-                <Camera className="w-3 h-3 text-earth" />
+                <Camera className="w-3 h-3 text-[#1A1918]" />
                 <span>Mirador</span>
               </button>
               <button
                 onClick={() => handleAddManualWaypoint('dirt', 'Paso Técnico', 'TECNICO')}
-                className="px-2.5 py-1 bg-white/[0.04] hover:bg-earth text-white border border-white/10 text-[10px] uppercase font-bold flex items-center gap-1.5 transition"
+                className="px-2.5 py-1 bg-[#F4EEDB] hover:bg-[#F7B32B] text-[#1A1918] border-2 border-[#1A1918] text-[10px] uppercase font-display font-black flex items-center gap-1.5 transition rounded-xl shadow-[1px_1px_0px_#1A1918]"
               >
-                <AlertTriangle className="w-3 h-3 text-earth" />
+                <AlertTriangle className="w-3 h-3 text-[#E06423]" />
                 <span>Paso Técnico</span>
               </button>
               <button
                 onClick={() => handleAddManualWaypoint('camp', 'Descanso', 'DESCANSO')}
-                className="px-2.5 py-1 bg-white/[0.04] hover:bg-earth text-white border border-white/10 text-[10px] uppercase font-bold flex items-center gap-1.5 transition"
+                className="px-2.5 py-1 bg-[#F4EEDB] hover:bg-[#F7B32B] text-[#1A1918] border-2 border-[#1A1918] text-[10px] uppercase font-display font-black flex items-center gap-1.5 transition rounded-xl shadow-[1px_1px_0px_#1A1918]"
               >
-                <Coffee className="w-3 h-3 text-earth" />
+                <Coffee className="w-3 h-3 text-[#E6332A]" />
                 <span>Descanso</span>
               </button>
             </div>
@@ -611,87 +611,87 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
         </div>
 
         {/* TELEMETRY HUD SIDEBAR */}
-        <aside className="w-full lg:w-96 shrink-0 border-t lg:border-t-0 lg:border-l border-white/10 bg-[#0B0A09] flex flex-col h-full overflow-hidden">
+        <aside className="w-full lg:w-96 shrink-0 border-t-2 lg:border-t-0 lg:border-l-2 border-[#1A1918] bg-[#F4EEDB] flex flex-col h-full overflow-hidden text-[#1A1918]">
           
           <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-5 space-y-5">
             
             {/* Live Big Gauges */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2.5">
               
               {/* Chrono */}
-              <div className="p-3.5 bg-white/[0.02] border border-white/10 space-y-1">
-                <span className="text-[9px] text-ash uppercase tracking-wider flex items-center gap-1">
-                  <Clock className="w-3 h-3 text-earth" />
+              <div className="p-3.5 bg-[#FAF6ED] border-2 border-[#1A1918] rounded-2xl space-y-1 shadow-[3px_3px_0px_#1A1918]">
+                <span className="text-[10px] text-[#1A1918]/70 uppercase font-display font-black tracking-wider flex items-center gap-1">
+                  <Clock className="w-3 h-3 text-[#E6332A]" />
                   Tiempo Rodando
                 </span>
-                <p className="font-display font-extrabold text-2xl sm:text-3xl text-white tracking-tight">
+                <p className="font-display font-black text-2xl sm:text-3xl text-[#1A1918] tracking-tight">
                   {formatTime(elapsedSeconds)}
                 </p>
               </div>
 
               {/* Odometer */}
-              <div className="p-3.5 bg-white/[0.02] border border-white/10 space-y-1">
-                <span className="text-[9px] text-ash uppercase tracking-wider flex items-center gap-1">
-                  <Compass className="w-3 h-3 text-earth" />
+              <div className="p-3.5 bg-[#FAF6ED] border-2 border-[#1A1918] rounded-2xl space-y-1 shadow-[3px_3px_0px_#1A1918]">
+                <span className="text-[10px] text-[#1A1918]/70 uppercase font-display font-black tracking-wider flex items-center gap-1">
+                  <Compass className="w-3 h-3 text-[#E6332A]" />
                   Odómetro Vivo
                 </span>
-                <p className="font-display font-extrabold text-2xl sm:text-3xl text-white tracking-tight">
-                  {distanceKm} <span className="text-sm font-normal text-ash">km</span>
+                <p className="font-display font-black text-2xl sm:text-3xl text-[#1A1918] tracking-tight">
+                  {distanceKm} <span className="text-sm font-bold text-[#1A1918]/60">km</span>
                 </p>
               </div>
 
               {/* Speed */}
-              <div className="p-3.5 bg-white/[0.02] border border-white/10 space-y-1">
-                <span className="text-[9px] text-ash uppercase tracking-wider flex items-center gap-1">
-                  <Gauge className="w-3 h-3 text-earth" />
+              <div className="p-3.5 bg-[#FAF6ED] border-2 border-[#1A1918] rounded-2xl space-y-1 shadow-[3px_3px_0px_#1A1918]">
+                <span className="text-[10px] text-[#1A1918]/70 uppercase font-display font-black tracking-wider flex items-center gap-1">
+                  <Gauge className="w-3 h-3 text-[#E6332A]" />
                   Velocidad
                 </span>
-                <p className="font-display font-extrabold text-2xl text-emerald-400 tracking-tight">
-                  {currentSpeed} <span className="text-sm font-normal text-ash">km/h</span>
+                <p className="font-display font-black text-2xl text-[#1A1918] tracking-tight">
+                  {currentSpeed} <span className="text-sm font-bold text-[#1A1918]/60">km/h</span>
                 </p>
               </div>
 
               {/* Altitude */}
-              <div className="p-3.5 bg-white/[0.02] border border-white/10 space-y-1">
-                <span className="text-[9px] text-ash uppercase tracking-wider flex items-center gap-1">
-                  <Mountain className="w-3 h-3 text-earth" />
+              <div className="p-3.5 bg-[#FAF6ED] border-2 border-[#1A1918] rounded-2xl space-y-1 shadow-[3px_3px_0px_#1A1918]">
+                <span className="text-[10px] text-[#1A1918]/70 uppercase font-display font-black tracking-wider flex items-center gap-1">
+                  <Mountain className="w-3 h-3 text-[#E6332A]" />
                   Altitud GPS
                 </span>
-                <p className="font-display font-extrabold text-2xl text-white tracking-tight">
-                  {currentElevation} <span className="text-sm font-normal text-ash">m</span>
+                <p className="font-display font-black text-2xl text-[#1A1918] tracking-tight">
+                  {currentElevation} <span className="text-sm font-bold text-[#1A1918]/60">m</span>
                 </p>
               </div>
 
             </div>
 
             {/* Stops Detected Feed */}
-            <div className="space-y-2 border-t border-white/10 pt-4">
+            <div className="space-y-2 border-t-2 border-[#1A1918] pt-4">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-ash uppercase tracking-wider font-bold text-[10px]">
+                <span className="text-[#1A1918] uppercase font-display font-black text-[10px] tracking-wider">
                   Paradas & Puntos Clave ({recordedWaypoints.length})
                 </span>
                 {stoppedSeconds > 0 && (
-                  <span className="text-orange-400 text-[10px] animate-pulse">
+                  <span className="text-[#E6332A] text-[10px] font-mono font-black animate-pulse">
                     Detenido: {stoppedSeconds}s
                   </span>
                 )}
               </div>
 
-              <div className="max-h-40 overflow-y-auto space-y-2 pr-1 font-mono text-[11px]">
+              <div className="max-h-40 overflow-y-auto space-y-2 pr-1 text-xs">
                 {recordedWaypoints.length === 0 ? (
-                  <p className="text-ash text-[10px] italic py-2">
+                  <p className="text-[#1A1918]/60 text-[11px] font-serif italic py-2 font-medium">
                     Inicia la grabación para comenzar a registrar el recorrido y las paradas automáticamente...
                   </p>
                 ) : (
                   recordedWaypoints.map((wp, idx) => (
-                    <div key={wp.id} className="p-2 border border-white/10 bg-white/[0.02] flex items-center justify-between">
+                    <div key={wp.id} className="p-2.5 border-2 border-[#1A1918] bg-[#FAF6ED] rounded-xl flex items-center justify-between shadow-[2px_2px_0px_#1A1918]">
                       <div className="flex items-center gap-2 truncate">
-                        <span className="w-4 h-4 rounded-full bg-earth/20 border border-earth text-earth text-[9px] flex items-center justify-center font-bold">
+                        <span className="w-5 h-5 rounded-lg bg-[#1A1918] text-[#FAF6ED] text-[9px] flex items-center justify-center font-black font-mono">
                           {idx + 1}
                         </span>
-                        <span className="text-white font-bold truncate">{wp.name}</span>
+                        <span className="text-[#1A1918] font-display font-black truncate">{wp.name}</span>
                       </div>
-                      <span className="text-[9px] text-ash shrink-0 uppercase">
+                      <span className="text-[9px] text-[#1A1918]/70 shrink-0 uppercase font-mono font-black">
                         {wp.type}
                       </span>
                     </div>
@@ -703,13 +703,13 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
           </div>
 
           {/* MASTER ACTION CONTROLS (Sticky on mobile for rider convenience) */}
-          <div className="sticky bottom-0 bg-[#0B0A09] pt-3 pb-[env(safe-area-inset-bottom,8px)] border-t border-white/10 z-10">
+          <div className="sticky bottom-0 bg-[#F4EEDB] p-4 border-t-2 border-[#1A1918] z-10">
             {!isRecording ? (
               <button
                 onClick={handleStart}
-                className="w-full py-4 bg-earth hover:bg-earth-bright text-white uppercase font-bold text-sm tracking-wider flex items-center justify-center gap-2 transition shadow-[0_0_24px_rgba(200,125,85,0.4)] touch-manipulation active:scale-[0.98]"
+                className="w-full py-3.5 bg-[#E6332A] hover:bg-[#d02c24] text-white uppercase font-display font-black text-sm tracking-wider flex items-center justify-center gap-2 transition rounded-xl border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] touch-manipulation active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
               >
-                <Play className="w-5 h-5 fill-current" />
+                <Play className="w-5 h-5 fill-current text-[#F7B32B]" />
                 Iniciar Grabación GPS
               </button>
             ) : (
@@ -717,15 +717,15 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
                 {isPaused ? (
                   <button
                     onClick={handleResume}
-                    className="py-3.5 bg-emerald-500 hover:bg-emerald-400 text-obsidian uppercase font-bold text-xs tracking-wider flex items-center justify-center gap-2 transition touch-manipulation active:scale-95"
+                    className="py-3 bg-[#1D4477] hover:bg-[#15345b] text-white uppercase font-display font-black text-xs tracking-wider flex items-center justify-center gap-2 transition rounded-xl border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] touch-manipulation active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
                   >
-                    <Play className="w-4 h-4 fill-current" />
+                    <Play className="w-4 h-4 fill-current text-[#F7B32B]" />
                     Reanudar
                   </button>
                 ) : (
                   <button
                     onClick={handlePause}
-                    className="py-3.5 bg-white/10 hover:bg-white/20 text-white border border-white/20 uppercase font-bold text-xs tracking-wider flex items-center justify-center gap-2 transition touch-manipulation active:scale-95"
+                    className="py-3 bg-[#FAF6ED] border-2 border-[#1A1918] hover:bg-[#F4EEDB] text-[#1A1918] uppercase font-display font-black text-xs tracking-wider flex items-center justify-center gap-2 transition rounded-xl shadow-[3px_3px_0px_#1A1918] touch-manipulation active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
                   >
                     <Pause className="w-4 h-4" />
                     Pausar
@@ -734,7 +734,7 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
 
                 <button
                   onClick={handleOpenSaveDialog}
-                  className="py-3.5 bg-white hover:bg-earth text-obsidian hover:text-white uppercase font-bold text-xs tracking-wider flex items-center justify-center gap-2 transition touch-manipulation active:scale-95"
+                  className="py-3 bg-[#E6332A] hover:bg-[#d02c24] text-white uppercase font-display font-black text-xs tracking-wider flex items-center justify-center gap-2 transition rounded-xl border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] touch-manipulation active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
                 >
                   <Square className="w-4 h-4 fill-current" />
                   Finalizar & Guardar
@@ -745,7 +745,7 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
             {isRecording && isPaused && (
               <button
                 onClick={handleCloseModal}
-                className="w-full text-center text-[10px] text-ash hover:text-red-400 uppercase tracking-widest pt-2.5 pb-0.5 transition block"
+                className="w-full text-center text-[10px] text-[#1A1918]/60 hover:text-[#E6332A] uppercase font-display font-black tracking-widest pt-2.5 pb-0.5 transition block"
               >
                 Descartar Recorrido y Salir
               </button>
@@ -758,21 +758,21 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
 
       {/* 3. SAVE TO GROUP & GOOGLE MAPS MODAL */}
       {showSaveDialog && (
-        <div className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-          <div className="border border-white/20 bg-[#0E0D0C] max-w-xl w-full p-5 sm:p-8 space-y-6 my-auto max-h-[92vh] overflow-y-auto shadow-2xl relative text-chalk">
+        <div className="fixed inset-0 z-[9999] bg-[#1A1918]/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fadeIn">
+          <div className="border-2 border-[#1A1918] bg-[#FAF6ED] max-w-xl w-full p-6 sm:p-8 space-y-6 my-auto max-h-[92vh] overflow-y-auto shadow-[8px_8px_0px_#1A1918] relative text-[#1A1918] rounded-[28px] animate-scaleUp">
             
-            <div className="flex items-start justify-between border-b border-white/10 pb-4">
+            <div className="flex items-start justify-between border-b-2 border-[#1A1918] pb-4">
               <div>
-                <span className="font-mono text-[10px] text-earth uppercase tracking-widest font-bold">
-                  [ RECORRIDO CONCLUIDO ]
+                <span className="font-mono text-[10px] text-[#E6332A] uppercase tracking-widest font-black">
+                  ★ RECORRIDO CONCLUIDO ★
                 </span>
-                <h3 className="font-display font-extrabold text-2xl text-white uppercase mt-1">
+                <h3 className="font-display font-black text-2xl text-[#1A1918] uppercase mt-1">
                   Guardar Ruta en la Tribu
                 </h3>
               </div>
               <button 
                 onClick={() => setShowSaveDialog(false)}
-                className="p-1 border border-white/15 hover:border-white text-ash hover:text-white transition"
+                className="w-8 h-8 border-2 border-[#1A1918] bg-[#F4EEDB] hover:bg-[#E6332A] hover:text-white text-[#1A1918] rounded-xl transition shadow-[2px_2px_0px_#1A1918] flex items-center justify-center"
                 title="Cerrar ventana"
               >
                 <X className="w-5 h-5" />
@@ -780,35 +780,35 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
             </div>
 
             {/* Telemetry Summary */}
-            <div className="grid grid-cols-3 gap-2 p-3 bg-white/[0.02] border border-white/10 text-center font-mono">
+            <div className="grid grid-cols-3 gap-2.5 p-3.5 bg-[#F4EEDB] border-2 border-[#1A1918] text-center rounded-2xl shadow-[3px_3px_0px_#1A1918]">
               <div>
-                <span className="text-[9px] text-ash uppercase block">Distancia</span>
-                <span className="font-bold text-white text-base">{distanceKm} km</span>
+                <span className="text-[9px] text-[#1A1918]/70 uppercase font-display font-black block">Distancia</span>
+                <span className="font-display font-black text-[#1A1918] text-base">{distanceKm} km</span>
               </div>
               <div>
-                <span className="text-[9px] text-ash uppercase block">Tiempo</span>
-                <span className="font-bold text-white text-base">{formatTime(elapsedSeconds)}</span>
+                <span className="text-[9px] text-[#1A1918]/70 uppercase font-display font-black block">Tiempo</span>
+                <span className="font-display font-black text-[#1A1918] text-base">{formatTime(elapsedSeconds)}</span>
               </div>
               <div>
-                <span className="text-[9px] text-ash uppercase block">Paradas</span>
-                <span className="font-bold text-earth text-base">{recordedWaypoints.length} puntos</span>
+                <span className="text-[9px] text-[#1A1918]/70 uppercase font-display font-black block">Paradas</span>
+                <span className="font-display font-black text-[#E6332A] text-base">{recordedWaypoints.length} puntos</span>
               </div>
             </div>
 
             {!savedRouteUrl ? (
-              <div className="space-y-4 font-mono text-xs">
+              <div className="space-y-4 text-xs">
                 
                 <div>
-                  <label className="text-ash text-[10px] uppercase font-bold block mb-1">
+                  <label className="text-[#1A1918]/70 text-[10px] uppercase font-display font-black block mb-1">
                     Tribu / Grupo Destino:
                   </label>
                   <select
                     value={targetCrewId}
                     onChange={(e) => setTargetCrewId(e.target.value)}
-                    className="w-full bg-white/[0.03] border border-white/15 px-3 py-2 text-white text-xs focus:outline-none focus:border-earth"
+                    className="w-full bg-[#F4EEDB] border-2 border-[#1A1918] px-3.5 py-2.5 text-[#1A1918] text-xs focus:outline-none focus:border-[#E6332A] rounded-xl shadow-[2px_2px_0px_#1A1918] font-bold"
                   >
                     {crews.map(c => (
-                      <option key={c.id} value={c.id} className="bg-obsidian text-white">
+                      <option key={c.id} value={c.id} className="bg-[#FAF6ED] text-[#1A1918]">
                         {c.name} ({c.baseCity})
                       </option>
                     ))}
@@ -816,7 +816,7 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="text-ash text-[10px] uppercase font-bold block mb-1">
+                  <label className="text-[#1A1918]/70 text-[10px] uppercase font-display font-black block mb-1">
                     Título de la Ruta:
                   </label>
                   <input
@@ -824,47 +824,47 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
                     value={routeTitle}
                     onChange={(e) => setRouteTitle(e.target.value)}
                     placeholder="Ej. Brecha Cañón de las Manzanas"
-                    className="w-full bg-white/[0.03] border border-white/15 px-3 py-2 text-white text-xs focus:outline-none focus:border-earth font-bold"
+                    className="w-full bg-[#F4EEDB] border-2 border-[#1A1918] px-3.5 py-2.5 text-[#1A1918] text-xs focus:outline-none focus:border-[#E6332A] font-display font-black rounded-xl shadow-[2px_2px_0px_#1A1918]"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-ash text-[10px] uppercase font-bold block mb-1">
+                    <label className="text-[#1A1918]/70 text-[10px] uppercase font-display font-black block mb-1">
                       Dificultad Técnica:
                     </label>
                     <select
                       value={difficulty}
                       onChange={(e) => setDifficulty(e.target.value as any)}
-                      className="w-full bg-white/[0.03] border border-white/15 px-3 py-2 text-white text-xs focus:outline-none focus:border-earth"
+                      className="w-full bg-[#F4EEDB] border-2 border-[#1A1918] px-3.5 py-2.5 text-[#1A1918] text-xs focus:outline-none focus:border-[#E6332A] rounded-xl shadow-[2px_2px_0px_#1A1918] font-bold"
                     >
-                      <option value="Fácil (Fluida)" className="bg-obsidian">Fácil (Fluida)</option>
-                      <option value="Intermedio" className="bg-obsidian">Intermedio</option>
-                      <option value="Avanzado / Técnico" className="bg-obsidian">Avanzado / Técnico</option>
+                      <option value="Fácil (Fluida)">Fácil (Fluida)</option>
+                      <option value="Intermedio">Intermedio</option>
+                      <option value="Avanzado / Técnico">Avanzado / Técnico</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="text-ash text-[10px] uppercase font-bold block mb-1">
+                    <label className="text-[#1A1918]/70 text-[10px] uppercase font-display font-black block mb-1">
                       % Terracería Estimada:
                     </label>
                     <input
                       type="text"
                       defaultValue="65% brechas y piedras"
-                      className="w-full bg-white/[0.03] border border-white/15 px-3 py-2 text-white text-xs focus:outline-none focus:border-earth"
+                      className="w-full bg-[#F4EEDB] border-2 border-[#1A1918] px-3.5 py-2.5 text-[#1A1918] text-xs focus:outline-none focus:border-[#E6332A] rounded-xl shadow-[2px_2px_0px_#1A1918] font-bold"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-ash text-[10px] uppercase font-bold block mb-1">
+                  <label className="text-[#1A1918]/70 text-[10px] uppercase font-display font-black block mb-1">
                     Notas y Condiciones del Camino:
                   </label>
                   <textarea
                     rows={2}
                     value={routeDescription}
                     onChange={(e) => setRouteDescription(e.target.value)}
-                    className="w-full bg-white/[0.03] border border-white/15 px-3 py-2 text-white text-xs focus:outline-none focus:border-earth resize-none"
+                    className="w-full bg-[#F4EEDB] border-2 border-[#1A1918] px-3.5 py-2.5 text-[#1A1918] text-xs focus:outline-none focus:border-[#E6332A] resize-none rounded-xl shadow-[2px_2px_0px_#1A1918] font-medium"
                   />
                 </div>
 
@@ -872,29 +872,29 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
                   <button
                     type="button"
                     onClick={() => setShowSaveDialog(false)}
-                    className="sm:w-1/3 py-3 border border-white/20 hover:border-white text-ash hover:text-white uppercase font-bold text-xs tracking-wider transition touch-manipulation"
+                    className="sm:w-1/3 py-3 border-2 border-[#1A1918] bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] uppercase font-display font-black text-xs tracking-wider transition rounded-xl shadow-[3px_3px_0px_#1A1918] touch-manipulation active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
                   >
                     Volver al Mapa
                   </button>
                   <button
                     type="button"
                     onClick={handleSaveToGroup}
-                    className="sm:flex-1 py-3 bg-earth hover:bg-earth-bright text-white uppercase font-bold text-xs tracking-wider transition flex items-center justify-center gap-2 touch-manipulation shadow-lg"
+                    className="sm:flex-1 py-3 bg-[#E6332A] hover:bg-[#d02c24] text-white border-2 border-[#1A1918] uppercase font-display font-black text-xs tracking-wider transition flex items-center justify-center gap-2 rounded-xl shadow-[3px_3px_0px_#1A1918] touch-manipulation active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
                   >
-                    <CheckCircle className="w-4 h-4" />
+                    <CheckCircle className="w-4 h-4 text-[#F7B32B]" />
                     Publicar Ruta en la Tribu
                   </button>
                 </div>
 
               </div>
             ) : (
-              <div className="space-y-5 text-center font-mono py-4">
-                <CheckCircle className="w-12 h-12 text-emerald-400 mx-auto" />
+              <div className="space-y-5 text-center py-4">
+                <CheckCircle className="w-12 h-12 text-[#E6332A] mx-auto" />
                 <div className="space-y-1">
-                  <h4 className="font-display font-bold text-xl text-white uppercase">
+                  <h4 className="font-display font-black text-xl text-[#1A1918] uppercase">
                     ¡Ruta Guardada Exitosamente!
                   </h4>
-                  <p className="text-xs text-ash">
+                  <p className="text-xs text-[#1A1918]/70 font-serif italic font-medium">
                     La ruta ya está integrada en el grupo y todos los pilotos pueden verla, votarla y descargar su GPX.
                   </p>
                 </div>
@@ -904,9 +904,9 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
                     href={savedRouteUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 py-3 bg-white hover:bg-earth text-obsidian hover:text-white uppercase font-bold text-xs tracking-wider transition flex items-center justify-center gap-2"
+                    className="flex-1 py-3 bg-[#E6332A] hover:bg-[#d02c24] text-white border-2 border-[#1A1918] uppercase font-display font-black text-xs tracking-wider transition flex items-center justify-center gap-2 rounded-xl shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
                   >
-                    <Navigation className="w-4 h-4" />
+                    <Navigation className="w-4 h-4 text-[#F7B32B]" />
                     Abrir en Google Maps (Todas las Paradas)
                     <ExternalLink className="w-3.5 h-3.5" />
                   </a>
@@ -915,7 +915,7 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
                       setShowSaveDialog(false);
                       onClose();
                     }}
-                    className="px-6 py-3 border border-white/20 hover:border-white text-white uppercase font-bold text-xs tracking-wider transition"
+                    className="px-6 py-3 border-2 border-[#1A1918] bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] uppercase font-display font-black text-xs tracking-wider transition rounded-xl shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
                   >
                     Cerrar
                   </button>

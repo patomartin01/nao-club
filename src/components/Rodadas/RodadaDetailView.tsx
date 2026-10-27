@@ -155,81 +155,81 @@ ${gpxPoints}
   };
 
   return (
-    <div className="space-y-12 pb-32 text-chalk">
+    <div className="space-y-12 pb-32 text-[#1A1918] font-sans">
       
       {/* 00. CONTEXTUAL BREADCRUMB NAVIGATION */}
-      <div className="flex items-center justify-between border-b border-white/10 pb-4 font-mono text-xs">
+      <div className="flex items-center justify-between border-b-2 border-[#1A1918] pb-4 font-mono text-xs">
         <div className="flex items-center gap-3">
           <button 
             onClick={() => setActiveNavTab('crew')}
-            className="flex items-center gap-2 text-ash hover:text-white uppercase font-bold transition group"
+            className="flex items-center gap-2 text-[#1A1918] hover:text-[#E6332A] uppercase font-black transition group"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             <span>Volver a {currentCrew?.name || 'Grupo'}</span>
           </button>
-          <span className="text-white/20">/</span>
+          <span className="text-[#1A1918]/30 font-bold">/</span>
           <button 
             onClick={() => setActiveNavTab('home')}
-            className="text-ash hover:text-white uppercase transition"
+            className="text-[#1A1918]/70 hover:text-[#1A1918] uppercase transition font-bold"
           >
             Mis Grupos
           </button>
         </div>
 
-        <span className="text-[10px] uppercase text-earth tracking-widest font-bold hidden sm:inline">
+        <span className="border-2 border-[#1A1918] bg-[#FAF6ED] px-2.5 py-0.5 rounded-md text-[10px] uppercase text-[#E6332A] tracking-wider font-black shadow-[1px_1px_0px_#1A1918] hidden sm:inline">
           ESTADO: {currentRodada.status === 'votacion' ? 'VOTACIÓN DE RUTAS' : 'RUTA GANADORA FIJADA'}
         </span>
       </div>
 
       {/* 01. EXPEDITION EDITORIAL HERO & SPEC SHEET */}
-      <section className="border border-white/10 bg-[#0B0A09]">
+      <section className="border-2 border-[#1A1918] bg-[#FAF6ED] rounded-[28px] shadow-[6px_6px_0px_#1A1918] overflow-hidden">
         
         {/* Top Identification Row */}
-        <div className="grid grid-cols-12 border-b border-white/10">
-          <div className="col-span-12 md:col-span-8 p-6 sm:p-10 border-b md:border-b-0 md:border-r border-white/10">
-            <span className="font-mono text-[10px] text-earth uppercase tracking-widest font-bold block mb-2">
+        <div className="grid grid-cols-12 border-b-2 border-[#1A1918]">
+          <div className="col-span-12 md:col-span-8 p-6 sm:p-10 border-b-2 md:border-b-0 md:border-r-2 border-[#1A1918]">
+            <span className="font-mono text-[10px] text-[#E6332A] uppercase tracking-widest font-black block mb-2">
               [ {currentCrew?.name.toUpperCase() || 'TRIBU'} // {currentRodada.category.toUpperCase()} ]
             </span>
-            <h1 className="font-display font-extrabold text-3xl sm:text-5xl lg:text-6xl text-white tracking-tight uppercase leading-[0.95]">
+            <h1 className="font-display font-black text-3xl sm:text-5xl lg:text-6xl text-[#1A1918] tracking-tight uppercase leading-[0.95]">
               {currentRodada.title}
             </h1>
-            <p className="font-mono text-xs text-ash uppercase tracking-wider mt-4">
+            <p className="font-serif italic text-sm text-[#1A1918]/70 font-medium mt-3">
               {currentRodada.subtitle}
             </p>
           </div>
 
-          <div className="col-span-12 md:col-span-4 p-6 sm:p-8 flex flex-col justify-between bg-[#0E0C0A]">
-            <div className="space-y-2 font-mono text-xs">
-              <div className="flex justify-between text-ash border-b border-white/[0.06] pb-2">
-                <span>ESTADO:</span>
-                <span className={`font-bold uppercase ${isWinningRouteLocked ? 'text-earth' : 'text-emerald-400'}`}>
+          <div className="col-span-12 md:col-span-4 p-6 sm:p-8 flex flex-col justify-between bg-[#F4EEDB]">
+            <div className="space-y-2.5 font-mono text-xs">
+              <div className="flex justify-between text-[#1A1918]/80 border-b-2 border-[#1A1918] pb-2">
+                <span className="font-bold">ESTADO:</span>
+                <span className={`font-black uppercase ${isWinningRouteLocked ? 'text-[#E6332A]' : 'text-[#1D4477]'}`}>
                   {isWinningRouteLocked ? 'Ruta Fijada Oficial' : 'Consenso Abierto'}
                 </span>
               </div>
-              <div className="flex justify-between text-ash border-b border-white/[0.06] pb-2">
-                <span>VENTANA:</span>
-                <span className="text-white">{currentRodada.startDate} al {currentRodada.endDate}</span>
+              <div className="flex justify-between text-[#1A1918]/80 border-b-2 border-[#1A1918] pb-2">
+                <span className="font-bold">VENTANA:</span>
+                <span className="text-[#1A1918] font-bold">{currentRodada.startDate} al {currentRodada.endDate}</span>
               </div>
-              <div className="flex justify-between text-ash border-b border-white/[0.06] pb-2">
-                <span>BASECAMP:</span>
-                <span className="text-white">Corral de Piedra / Navana</span>
+              <div className="flex justify-between text-[#1A1918]/80 border-b-2 border-[#1A1918] pb-2">
+                <span className="font-bold">BASECAMP:</span>
+                <span className="text-[#1A1918] font-bold">Corral de Piedra / Navana</span>
               </div>
-              <div className="flex justify-between text-ash">
-                <span>FLOTILLA:</span>
-                <span className="text-earth font-bold">
+              <div className="flex justify-between text-[#1A1918]/80">
+                <span className="font-bold">FLOTILLA:</span>
+                <span className="text-[#E6332A] font-black">
                   {currentRodada.attendees.filter(a => a.status === 'confirmado').length} PILOTOS CONFIRMADOS
                 </span>
               </div>
             </div>
 
             {/* Voting & Lock Actions */}
-            <div className="pt-6 space-y-2">
+            <div className="pt-6 space-y-2.5">
               <button
                 onClick={handleVote}
-                className={`w-full py-3.5 px-4 font-mono text-xs uppercase font-bold tracking-widest border transition flex items-center justify-center gap-2 ${
+                className={`w-full py-3.5 px-4 font-display text-xs uppercase font-black tracking-widest border-2 border-[#1A1918] rounded-xl transition shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none flex items-center justify-center gap-2 ${
                   userHasVoted
-                    ? 'bg-earth text-white border-earth'
-                    : 'bg-white text-obsidian border-white hover:bg-earth hover:text-white hover:border-earth'
+                    ? 'bg-[#E6332A] text-white'
+                    : 'bg-[#F7B32B] hover:bg-[#e5a424] text-[#1A1918]'
                 }`}
               >
                 <ThumbsUp className="w-4 h-4" />
@@ -240,15 +240,15 @@ ${gpxPoints}
               {isWinningRouteLocked ? (
                 <button
                   onClick={() => unlockWinningRoute(currentRodada.id)}
-                  className="w-full py-2.5 px-3 border border-white/20 hover:border-white text-ash hover:text-white font-mono text-[10px] uppercase font-bold tracking-wider flex items-center justify-center gap-1.5 transition"
+                  className="w-full py-2.5 px-3 border-2 border-[#1A1918] bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] font-mono text-[10px] uppercase font-black tracking-wider flex items-center justify-center gap-1.5 transition rounded-xl shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
                 >
-                  <Unlock className="w-3.5 h-3.5 text-earth" />
+                  <Unlock className="w-3.5 h-3.5 text-[#E6332A]" />
                   <span>Reabrir Consenso de Rutas</span>
                 </button>
               ) : (
                 <button
                   onClick={() => lockWinningRoute(currentRodada.id, activeRoute.id)}
-                  className="w-full py-2.5 px-3 border border-earth/40 hover:border-earth text-earth hover:bg-earth/10 font-mono text-[10px] uppercase font-bold tracking-wider flex items-center justify-center gap-1.5 transition"
+                  className="w-full py-2.5 px-3 border-2 border-[#1A1918] bg-[#FAF6ED] hover:bg-[#1D4477] hover:text-white text-[#1D4477] font-mono text-[10px] uppercase font-black tracking-wider flex items-center justify-center gap-1.5 transition rounded-xl shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
                 >
                   <Lock className="w-3.5 h-3.5" />
                   <span>Fijar como Ruta Ganadora</span>
@@ -259,52 +259,52 @@ ${gpxPoints}
         </div>
 
         {/* Hero Atmospheric Image */}
-        <div className="relative h-72 sm:h-[400px] w-full overflow-hidden border-b border-white/10">
+        <div className="relative h-72 sm:h-[400px] w-full overflow-hidden border-b-2 border-[#1A1918]">
           <img 
             src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&q=80&w=1800" 
             alt="Corral de Piedra Amanalco" 
-            className="w-full h-full object-cover filter brightness-75 contrast-110"
+            className="w-full h-full object-cover filter contrast-105"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0B0A09] via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#1A1918]/60 via-transparent to-transparent" />
           
-          <div className="absolute bottom-6 left-6 font-mono text-xs text-white/80 bg-black/70 backdrop-blur-md px-3.5 py-1.5 border border-white/20">
+          <div className="absolute bottom-6 left-6 font-mono text-xs font-black text-[#1A1918] bg-[#FAF6ED] px-3.5 py-1.5 border-2 border-[#1A1918] rounded-lg shadow-[3px_3px_0px_#1A1918]">
             COORDENADAS REFUGIO // 19°24&apos;02&quot;N 99°16&apos;54&quot;W
           </div>
         </div>
 
-        {/* Telemetry Cells (Strict 4-Column Swiss Grid) */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 font-mono text-xs divide-y lg:divide-y-0 lg:divide-x divide-white/10">
+        {/* Telemetry Cells (Strict 4-Column Matchbook Grid) */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 font-sans text-xs divide-y-2 lg:divide-y-0 lg:divide-x-2 divide-[#1A1918] bg-[#FAF6ED]">
           <div className="p-6">
-            <span className="text-[10px] text-ash uppercase tracking-wider block">01. Distancia Total</span>
-            <p className="font-display font-extrabold text-3xl text-white mt-1">{activeRoute.totalKm} KM</p>
-            <p className="text-[11px] text-ash mt-1">2h 30m asfalto + brecha libre</p>
+            <span className="text-[10px] text-[#1A1918]/70 uppercase tracking-wider block font-bold font-serif italic">01. Distancia Total</span>
+            <p className="font-display font-black text-3xl text-[#1A1918] mt-1">{activeRoute.totalKm} KM</p>
+            <p className="text-[11px] text-[#1A1918]/70 mt-1 font-medium font-serif italic">2h 30m asfalto + brecha libre</p>
           </div>
 
           <div className="p-6">
-            <span className="text-[10px] text-ash uppercase tracking-wider block">02. Terreno</span>
+            <span className="text-[10px] text-[#1A1918]/70 uppercase tracking-wider block font-bold font-serif italic">02. Terreno</span>
             <div className="flex items-center gap-3 mt-1.5">
-              <span className="flex items-center gap-1.5 font-display font-extrabold text-2xl text-earth" title="Montaña / Terracería">
-                <Mountain className="w-6 h-6 text-earth shrink-0" />
+              <span className="flex items-center gap-1.5 font-display font-black text-2xl text-[#E06423]" title="Montaña / Terracería">
+                <Mountain className="w-6 h-6 text-[#E06423] shrink-0" />
                 <span>{activeRoute.offroadPercentage}%</span>
               </span>
-              <span className="flex items-center gap-1.5 font-display font-extrabold text-2xl text-white" title="Carretera / Asfalto">
-                <RoadIcon className="w-6 h-6 text-white shrink-0" />
+              <span className="flex items-center gap-1.5 font-display font-black text-2xl text-[#1A1918]" title="Carretera / Asfalto">
+                <RoadIcon className="w-6 h-6 text-[#1A1918] shrink-0" />
                 <span>{activeRoute.asphaltPercentage || (100 - activeRoute.offroadPercentage)}%</span>
               </span>
             </div>
-            <p className="text-[11px] text-ash mt-1">Tierra compacta, pinocha y asfalto</p>
+            <p className="text-[11px] text-[#1A1918]/70 mt-1 font-medium font-serif italic">Tierra compacta, pinocha y asfalto</p>
           </div>
 
           <div className="p-6">
-            <span className="text-[10px] text-ash uppercase tracking-wider block">03. Altitud Refugio</span>
-            <p className="font-display font-extrabold text-3xl text-white mt-1">{activeRoute.campsite.elevationMeters} M</p>
-            <p className="text-[11px] text-ash mt-1">Reserva natural Amanalco</p>
+            <span className="text-[10px] text-[#1A1918]/70 uppercase tracking-wider block font-bold font-serif italic">03. Altitud Refugio</span>
+            <p className="font-display font-black text-3xl text-[#1A1918] mt-1">{activeRoute.campsite.elevationMeters} M</p>
+            <p className="text-[11px] text-[#1A1918]/70 mt-1 font-medium font-serif italic">Reserva natural Amanalco</p>
           </div>
 
           <div className="p-6">
-            <span className="text-[10px] text-ash uppercase tracking-wider block">04. Clima Nocturno</span>
-            <p className="font-display font-extrabold text-3xl text-cyan-300 mt-1">{activeRoute.campsite.minTempNight}</p>
-            <p className="text-[11px] text-ash mt-1">Sleeping 0°C recomendado</p>
+            <span className="text-[10px] text-[#1A1918]/70 uppercase tracking-wider block font-bold font-serif italic">04. Clima Nocturno</span>
+            <p className="font-display font-black text-3xl text-[#1D4477] mt-1">{activeRoute.campsite.minTempNight}</p>
+            <p className="text-[11px] text-[#1A1918]/70 mt-1 font-medium font-serif italic">Sleeping 0°C recomendado</p>
           </div>
         </div>
 
@@ -312,24 +312,24 @@ ${gpxPoints}
 
       {/* 02. PROPOSALS SELECTOR & CONSENSUS VOTING TABLE */}
       <section className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-white/10 pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b-2 border-[#1A1918] pb-4">
           <div>
-            <span className="font-mono text-[10px] text-earth uppercase tracking-widest font-bold">
-              [ 02 // EVALUACIÓN DE TRAZOS ]
+            <span className="font-mono text-[10px] text-[#E6332A] uppercase tracking-widest font-black">
+              ★ [ 02 // EVALUACIÓN DE TRAZOS ] ★
             </span>
-            <h2 className="font-display font-bold text-2xl sm:text-3xl text-white uppercase tracking-tight">
+            <h2 className="font-display font-black text-2xl sm:text-3xl text-[#1A1918] uppercase tracking-tight">
               Variantes Propuestas por la Flotilla ({currentRodadaRoutes.length})
             </h2>
-            <p className="text-xs text-ash font-light mt-0.5">
+            <p className="text-xs text-[#1A1918]/70 font-serif italic mt-0.5">
               Haz clic en cada propuesta para actualizar el mapa, la altimetría y registrar tu voto por consenso.
             </p>
           </div>
 
           <button
             onClick={onOpenProposeRoute}
-            className="px-4 py-2 border border-white/20 hover:border-earth bg-white/[0.02] text-white font-mono text-xs uppercase tracking-wider transition flex items-center gap-2"
+            className="px-4 py-2.5 border-2 border-[#1A1918] bg-[#F7B32B] hover:bg-[#e5a424] text-[#1A1918] font-display text-xs uppercase tracking-wider transition rounded-xl font-black shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none flex items-center gap-2"
           >
-            <Plus className="w-4 h-4 text-earth" />
+            <Plus className="w-4 h-4 text-[#1A1918]" />
             + Proponer Trazado Alternativo
           </button>
         </div>
@@ -345,46 +345,46 @@ ${gpxPoints}
               <div
                 key={route.id}
                 onClick={() => setSelectedRoute(route)}
-                className={`p-5 border cursor-pointer transition flex flex-col justify-between relative ${
+                className={`p-5 rounded-2xl border-2 cursor-pointer transition flex flex-col justify-between relative ${
                   isSelected 
-                    ? 'border-earth bg-white/[0.04]' 
-                    : 'border-white/10 bg-[#0B0A09] hover:border-white/30'
+                    ? 'border-[#1A1918] bg-[#FAF6ED] shadow-[5px_5px_0px_#1A1918] ring-2 ring-[#E6332A]' 
+                    : 'border-[#1A1918] bg-[#F4EEDB] hover:bg-[#FAF6ED] shadow-[3px_3px_0px_#1A1918]'
                 }`}
               >
                 {/* Header indicator */}
-                <div className="flex items-center justify-between font-mono text-[10px] text-ash mb-3">
+                <div className="flex items-center justify-between font-mono text-[10px] text-[#1A1918]/70 mb-3 font-bold">
                   <span>OPCIÓN 0{idx + 1}</span>
                   {isLeader && (
-                    <span className="px-1.5 py-0.5 bg-earth text-white font-bold uppercase tracking-wider">
+                    <span className="px-2 py-0.5 bg-[#E6332A] text-white font-black uppercase tracking-wider rounded-md border border-[#1A1918]">
                       Líder ({route.votes.length} VOTOS)
                     </span>
                   )}
                 </div>
 
-                <div className="space-y-2">
-                  <h3 className="font-display font-bold text-lg text-white leading-tight">
+                <div className="space-y-1.5">
+                  <h3 className="font-display font-black text-lg text-[#1A1918] leading-tight uppercase">
                     {route.title}
                   </h3>
-                  <p className="font-mono text-xs text-ash">
+                  <p className="font-serif italic text-xs text-[#1A1918]/70 font-medium">
                     {route.destination}, {route.state}
                   </p>
                 </div>
 
                 {/* Micro metrics */}
-                <div className="mt-5 pt-4 border-t border-white/10 grid grid-cols-2 gap-2 font-mono text-[11px]">
+                <div className="mt-5 pt-4 border-t-2 border-[#1A1918] grid grid-cols-2 gap-2 font-mono text-[11px]">
                   <div>
-                    <span className="text-[9px] text-ash block uppercase">Distancia</span>
-                    <span className="text-white font-bold">{route.totalKm} km</span>
+                    <span className="text-[9px] text-[#1A1918]/60 block uppercase font-bold">Distancia</span>
+                    <span className="text-[#1A1918] font-black">{route.totalKm} km</span>
                   </div>
                   <div>
-                    <span className="text-[9px] text-ash block uppercase">Terreno</span>
+                    <span className="text-[9px] text-[#1A1918]/60 block uppercase font-bold">Terreno</span>
                     <div className="flex items-center gap-1.5 mt-0.5">
-                      <span className="flex items-center gap-0.5 text-earth font-bold" title="Montaña / Terracería">
-                        <Mountain className="w-2.5 h-2.5 text-earth shrink-0" />
+                      <span className="flex items-center gap-0.5 text-[#E06423] font-black" title="Montaña / Terracería">
+                        <Mountain className="w-2.5 h-2.5 text-[#E06423] shrink-0" />
                         <span>{route.offroadPercentage}%</span>
                       </span>
-                      <span className="flex items-center gap-0.5 text-white font-bold" title="Carretera / Asfalto">
-                        <RoadIcon className="w-2.5 h-2.5 text-white shrink-0" />
+                      <span className="flex items-center gap-0.5 text-[#1A1918] font-black" title="Carretera / Asfalto">
+                        <RoadIcon className="w-2.5 h-2.5 text-[#1A1918] shrink-0" />
                         <span>{route.asphaltPercentage || (100 - route.offroadPercentage)}%</span>
                       </span>
                     </div>
@@ -392,8 +392,8 @@ ${gpxPoints}
                 </div>
 
                 {/* Vote CTA inside card */}
-                <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center justify-between font-mono text-[11px]">
-                  <span className="text-ash">{route.votes.length} votos</span>
+                <div className="mt-4 pt-3 border-t-2 border-[#1A1918] flex items-center justify-between font-mono text-[11px]">
+                  <span className="text-[#1A1918]/70 font-bold">{route.votes.length} votos</span>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -401,13 +401,13 @@ ${gpxPoints}
                       voteRoute(route.id);
                       confetti({ particleCount: 30, spread: 60 });
                     }}
-                    className={`px-2.5 py-1 text-[10px] uppercase font-bold tracking-wider transition ${
+                    className={`px-3 py-1 text-[10px] uppercase font-black tracking-wider transition rounded-lg border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${
                       hasVotedThis 
-                        ? 'bg-earth text-white' 
-                        : 'border border-white/20 text-white hover:bg-white hover:text-black'
+                        ? 'bg-[#E6332A] text-white' 
+                        : 'bg-[#F7B32B] hover:bg-[#e5a424] text-[#1A1918]'
                     }`}
                   >
-                    {hasVotedThis ? 'Votado' : 'Votar'}
+                    {hasVotedThis ? '✓ Votado' : 'Votar'}
                   </button>
                 </div>
               </div>
@@ -417,11 +417,11 @@ ${gpxPoints}
       </section>
 
       {/* 03. CARTOGRAFÍA TÁCTICA & WAYPOINTS (Leaflet Edge-to-Edge) */}
-      <section className="border border-white/10 bg-[#0B0A09]">
-        <div className="p-4 sm:p-6 border-b border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4 font-mono text-xs">
+      <section className="border-2 border-[#1A1918] bg-[#FAF6ED] rounded-[28px] overflow-hidden shadow-[6px_6px_0px_#1A1918]">
+        <div className="p-4 sm:p-6 border-b-2 border-[#1A1918] bg-[#F4EEDB] flex flex-col md:flex-row md:items-center justify-between gap-4 font-mono text-xs">
           <div className="flex items-center gap-3">
-            <span className="w-2.5 h-2.5 rounded-full bg-earth animate-pulse" />
-            <span className="text-white font-bold uppercase tracking-wider">
+            <span className="w-3 h-3 rounded-full bg-[#E6332A] border border-[#1A1918] animate-pulse" />
+            <span className="text-[#1A1918] font-black uppercase tracking-wider">
               CARTOGRAFÍA ACTIVA // {activeRoute.title}
             </span>
           </div>
@@ -429,14 +429,14 @@ ${gpxPoints}
           <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={handleOpenGoogleMaps}
-              className="px-3 py-1.5 border border-white/20 hover:border-earth bg-white/[0.03] text-white uppercase text-[10px] font-bold tracking-wider flex items-center gap-1.5 transition"
+              className="px-3.5 py-2 border-2 border-[#1A1918] bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] uppercase text-[10px] font-black tracking-wider flex items-center gap-1.5 transition rounded-xl shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
             >
-              <ExternalLink className="w-3.5 h-3.5 text-earth" />
+              <ExternalLink className="w-3.5 h-3.5 text-[#E6332A]" />
               <span>Abrir Google Maps</span>
             </button>
             <button
               onClick={handleDownloadGpx}
-              className="px-3 py-1.5 bg-white hover:bg-earth text-obsidian hover:text-white uppercase text-[10px] font-bold tracking-wider flex items-center gap-1.5 transition"
+              className="px-3.5 py-2 bg-[#E6332A] hover:bg-[#d02c24] text-white border-2 border-[#1A1918] uppercase text-[10px] font-black tracking-wider flex items-center gap-1.5 transition rounded-xl shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Exportar GPX</span>
@@ -445,7 +445,7 @@ ${gpxPoints}
         </div>
 
         {/* Map View Container */}
-        <div className="h-[460px] sm:h-[540px] w-full relative">
+        <div className="h-[460px] sm:h-[540px] w-full relative border-b-2 border-[#1A1918]">
           <RouteMap 
             route={activeRoute} 
             allRoutes={currentRodadaRoutes}
@@ -454,48 +454,48 @@ ${gpxPoints}
         </div>
 
         {/* Waypoints strip */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 font-mono text-xs divide-y sm:divide-y-0 sm:divide-x divide-white/10 border-t border-white/10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 font-sans text-xs divide-y-2 sm:divide-y-0 sm:divide-x-2 divide-[#1A1918] bg-[#FAF6ED]">
           {activeRoute.waypoints.map((wp, i) => (
             <div key={wp.id || i} className="p-4 space-y-1">
-              <span className="text-[10px] text-earth uppercase tracking-widest font-bold">
+              <span className="text-[10px] text-[#E6332A] uppercase tracking-widest font-black block">
                 PUNTO 0{i + 1} // {wp.type.toUpperCase()}
               </span>
-              <p className="font-bold text-white">{wp.name}</p>
-              <p className="text-[11px] text-ash font-light">{wp.notes || 'Punto de reagrupación'}</p>
+              <p className="font-display font-black text-[#1A1918] uppercase text-sm">{wp.name}</p>
+              <p className="text-[11px] text-[#1A1918]/70 font-serif italic">{wp.notes || 'Punto de reagrupación'}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* 04. BASECAMP CONCEPT VS NOMADIC FATIGUE */}
-      <section className="border border-white/10 bg-[#0B0A09] p-6 sm:p-10 space-y-6">
-        <div className="border-b border-white/10 pb-4">
-          <span className="font-mono text-[10px] text-earth uppercase tracking-widest font-bold">
-            [ 04 // ESTRATEGIA DE EXPEDICIÓN ]
+      <section className="border-2 border-[#1A1918] bg-[#FAF6ED] rounded-[28px] p-6 sm:p-10 space-y-6 shadow-[6px_6px_0px_#1A1918]">
+        <div className="border-b-2 border-[#1A1918] pb-4">
+          <span className="font-mono text-[10px] text-[#E6332A] uppercase tracking-widest font-black">
+            ★ [ 04 // ESTRATEGIA DE EXPEDICIÓN ] ★
           </span>
-          <h2 className="font-display font-bold text-2xl sm:text-3xl text-white uppercase tracking-tight mt-1">
+          <h2 className="font-display font-black text-2xl sm:text-3xl text-[#1A1918] uppercase tracking-tight mt-1">
             Por Qué Establecer Basecamp (Y No Mudar Tienda Cada Noche)
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 font-mono text-xs">
-          <div className="p-5 border border-white/10 bg-white/[0.02] space-y-2">
-            <span className="text-earth font-bold text-sm block">01 // SEGURIDAD & AGILIDAD OFF-ROAD</span>
-            <p className="text-ash leading-relaxed">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 font-sans text-xs">
+          <div className="p-5 border-2 border-[#1A1918] bg-[#F4EEDB] rounded-2xl shadow-[3px_3px_0px_#1A1918] space-y-2">
+            <span className="text-[#E6332A] font-display font-black text-sm block uppercase">01 // SEGURIDAD & AGILIDAD OFF-ROAD</span>
+            <p className="text-[#1A1918]/80 leading-relaxed font-serif italic font-medium">
               Rodar en terracería con 25 kg de equipaje alto y bolsas inestables multiplica el riesgo de caída en curvas con grava. Al montar basecamp en Corral de Piedra, las motos salen completamente ligeras para curvear con libertad.
             </p>
           </div>
 
-          <div className="p-5 border border-white/10 bg-white/[0.02] space-y-2">
-            <span className="text-earth font-bold text-sm block">02 // REFUGIO TÉRMICO & DESCANSO</span>
-            <p className="text-ash leading-relaxed">
+          <div className="p-5 border-2 border-[#1A1918] bg-[#F4EEDB] rounded-2xl shadow-[3px_3px_0px_#1A1918] space-y-2">
+            <span className="text-[#E06423] font-display font-black text-sm block uppercase">02 // REFUGIO TÉRMICO & DESCANSO</span>
+            <p className="text-[#1A1918]/80 leading-relaxed font-serif italic font-medium">
               En noviembre la temperatura cae a 3°C a 3,000 msnm. Empacar lonas mojadas con escarcha a las 7:00 AM destruye la moral del grupo. Con basecamp fijo, desayunamos con calma y cerramos la tarde alrededor de la fogata con buena comida.
             </p>
           </div>
 
-          <div className="p-5 border border-white/10 bg-white/[0.02] space-y-2">
-            <span className="text-earth font-bold text-sm block">03 // RUTAS CIRCULARES EN TRÉBOL</span>
-            <p className="text-ash leading-relaxed">
+          <div className="p-5 border-2 border-[#1A1918] bg-[#F4EEDB] rounded-2xl shadow-[3px_3px_0px_#1A1918] space-y-2">
+            <span className="text-[#1D4477] font-display font-black text-sm block uppercase">03 // RUTAS CIRCULARES EN TRÉBOL</span>
+            <p className="text-[#1A1918]/80 leading-relaxed font-serif italic font-medium">
               La base nos permite hacer bucles: Día 1 subida por brechas hacia Amanalco, Día 2 bucle hacia Valle de Bravo y faldas del Nevado, Día 3 retorno técnico sin cargar bultos pesados.
             </p>
           </div>
@@ -506,13 +506,13 @@ ${gpxPoints}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         {/* Left: Dynamic Attendees List */}
-        <section className="lg:col-span-7 border border-white/10 bg-[#0B0A09] p-6 sm:p-8 space-y-6">
-          <div className="border-b border-white/10 pb-4 flex items-center justify-between">
+        <section className="lg:col-span-7 border-2 border-[#1A1918] bg-[#FAF6ED] rounded-[28px] p-6 sm:p-8 space-y-6 shadow-[6px_6px_0px_#1A1918]">
+          <div className="border-b-2 border-[#1A1918] pb-4 flex items-center justify-between">
             <div>
-              <span className="font-mono text-[10px] text-earth uppercase tracking-widest font-bold">
+              <span className="font-mono text-[10px] text-[#E6332A] uppercase tracking-widest font-black">
                 [ FLOTILLA ACTIVA ]
               </span>
-              <h3 className="font-display font-bold text-xl text-white uppercase">
+              <h3 className="font-display font-black text-xl text-[#1A1918] uppercase">
                 Pilotos Confirmados ({currentRodada.attendees.length})
               </h3>
             </div>
@@ -520,48 +520,48 @@ ${gpxPoints}
             {/* Interactive RSVP Action */}
             <button
               onClick={handleToggleRsvp}
-              className={`px-4 py-2 font-mono text-xs uppercase font-bold tracking-wider transition border ${
+              className={`px-4 py-2 font-display text-xs uppercase font-black tracking-wider transition border-2 border-[#1A1918] rounded-xl shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${
                 isUserConfirmed
-                  ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500'
-                  : 'bg-earth text-white border-earth hover:bg-earth-bright'
+                  ? 'bg-[#1D4477] text-white hover:bg-[#E6332A]'
+                  : 'bg-[#F7B32B] hover:bg-[#e5a424] text-[#1A1918]'
               }`}
             >
-              {isUserConfirmed ? 'Asistencia Confirmada' : '+ Confirmar Asistencia'}
+              {isUserConfirmed ? '✓ Asistencia Confirmada' : '+ Confirmar Asistencia'}
             </button>
           </div>
 
-          <div className="space-y-3 font-mono text-xs">
+          <div className="space-y-3 font-sans text-xs">
             {currentRodada.attendees.map((attendee) => {
               const user = users.find(u => u.id === attendee.userId) || (attendee.userId === currentUser.id ? currentUser : null);
               const bike = motorcycles.find(m => m.id === attendee.motorcycleId) || (attendee.userId === currentUser.id ? primaryBike : null);
               const isLead = attendee.userId === currentUser.id;
 
               return (
-                <div key={attendee.userId} className="p-4 border border-white/10 bg-white/[0.01] flex items-center justify-between">
+                <div key={attendee.userId} className="p-4 border-2 border-[#1A1918] bg-[#F4EEDB] rounded-2xl flex items-center justify-between shadow-[2px_2px_0px_#1A1918]">
                   <div className="flex items-center gap-3">
                     <img 
                       src={user?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200'} 
                       alt={user?.name || 'Piloto'} 
-                      className="w-10 h-10 object-cover border border-white/20"
+                      className="w-11 h-11 object-cover rounded-xl border-2 border-[#1A1918]"
                     />
                     <div>
                       <div className="flex items-center gap-2">
-                        <p className="font-bold text-white uppercase">{user?.name || 'Piloto'}</p>
+                        <p className="font-display font-black text-[#1A1918] uppercase">{user?.name || 'Piloto'}</p>
                         {isLead && (
-                          <span className="px-1.5 py-0.2 bg-earth/20 border border-earth text-earth text-[9px] uppercase font-bold">
+                          <span className="px-1.5 py-0.2 bg-[#E6332A] text-white text-[9px] uppercase font-black rounded border border-[#1A1918]">
                             Tú
                           </span>
                         )}
                       </div>
-                      <p className="text-ash text-[11px]">
+                      <p className="text-[#1A1918]/70 text-[11px] font-serif italic">
                         {bike ? `${bike.brand} ${bike.model}` : 'Doble Propósito'} · {bike?.tires || 'Llantas 50/50'}
                       </p>
                     </div>
                   </div>
-                  <span className={`px-2 py-1 text-[10px] uppercase font-bold border ${
+                  <span className={`px-2.5 py-1 text-[10px] uppercase font-black border-2 border-[#1A1918] rounded-lg shadow-[1px_1px_0px_#1A1918] ${
                     attendee.status === 'confirmado' 
-                      ? 'bg-emerald-400/10 text-emerald-400 border-emerald-400/30' 
-                      : 'bg-white/[0.05] text-ash border-white/10'
+                      ? 'bg-[#1D4477] text-white' 
+                      : 'bg-[#FAF6ED] text-[#1A1918]/70'
                   }`}>
                     {attendee.status}
                   </span>
@@ -572,34 +572,34 @@ ${gpxPoints}
         </section>
 
         {/* Right: Interactive Packing Checklist with Real Add Item */}
-        <section className="lg:col-span-5 border border-white/10 bg-[#0B0A09] p-6 sm:p-8 space-y-6 flex flex-col justify-between">
+        <section className="lg:col-span-5 border-2 border-[#1A1918] bg-[#FAF6ED] rounded-[28px] p-6 sm:p-8 space-y-6 flex flex-col justify-between shadow-[6px_6px_0px_#1A1918]">
           <div>
-            <div className="border-b border-white/10 pb-4">
-              <span className="font-mono text-[10px] text-earth uppercase tracking-widest font-bold">
+            <div className="border-b-2 border-[#1A1918] pb-4">
+              <span className="font-mono text-[10px] text-[#E6332A] uppercase tracking-widest font-black">
                 [ EQUIPO OBLIGATORIO // CLIMA 4°C ]
               </span>
-              <h3 className="font-display font-bold text-xl text-white uppercase">
+              <h3 className="font-display font-black text-xl text-[#1A1918] uppercase">
                 Checklist de Basecamp
               </h3>
             </div>
 
-            <div className="space-y-2.5 font-mono text-xs pt-4">
+            <div className="space-y-2.5 font-sans text-xs pt-4">
               {(currentRodada.packingList || []).map((item) => (
                 <div
                   key={item.id}
                   onClick={() => togglePackingItem(currentRodada.id, item.id)}
-                  className="flex items-center gap-3 p-3 border border-white/[0.06] hover:border-white/20 cursor-pointer transition select-none bg-white/[0.01]"
+                  className="flex items-center gap-3 p-3 border-2 border-[#1A1918] bg-[#F4EEDB] hover:bg-[#FAF6ED] rounded-xl cursor-pointer transition select-none shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
                 >
                   {item.isDone ? (
-                    <CheckSquare className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <CheckSquare className="w-4 h-4 text-[#E6332A] shrink-0" />
                   ) : (
-                    <Square className="w-4 h-4 text-ash shrink-0" />
+                    <Square className="w-4 h-4 text-[#1A1918]/50 shrink-0" />
                   )}
-                  <span className={item.isDone ? 'line-through text-ash' : 'text-chalk'}>
+                  <span className={`font-bold ${item.isDone ? 'line-through text-[#1A1918]/50' : 'text-[#1A1918]'}`}>
                     {item.item}
                   </span>
                   {item.assignedToName && (
-                    <span className="ml-auto text-[10px] text-earth font-bold">
+                    <span className="ml-auto text-[10px] text-[#E6332A] font-black uppercase">
                       [{item.assignedToName.split(' ')[0]}]
                     </span>
                   )}
@@ -609,17 +609,17 @@ ${gpxPoints}
           </div>
 
           {/* Quick Add Gear Input */}
-          <form onSubmit={handleAddPackingItem} className="pt-4 border-t border-white/10 flex gap-2">
+          <form onSubmit={handleAddPackingItem} className="pt-4 border-t-2 border-[#1A1918] flex gap-2">
             <input 
               type="text"
               value={newPackingText}
               onChange={(e) => setNewPackingText(e.target.value)}
-              placeholder="+ Añadir equipo (ej. Compresor, botiquín)..."
-              className="flex-1 bg-white/[0.03] border border-white/15 px-3 py-2.5 font-mono text-xs text-white placeholder-ash focus:outline-none focus:border-earth"
+              placeholder="+ Añadir equipo (ej. Compresor)..."
+              className="flex-1 bg-[#F4EEDB] border-2 border-[#1A1918] rounded-xl px-3 py-2.5 font-sans text-xs text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none font-bold"
             />
             <button 
               type="submit"
-              className="px-4 py-2.5 bg-white hover:bg-earth text-obsidian hover:text-white font-mono text-xs uppercase font-bold tracking-wider transition"
+              className="px-4 py-2.5 bg-[#E6332A] hover:bg-[#d02c24] text-white border-2 border-[#1A1918] rounded-xl font-display text-xs uppercase font-black tracking-wider transition shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
             >
               + Agregar
             </button>
@@ -629,31 +629,31 @@ ${gpxPoints}
       </div>
 
       {/* 06. LIVE EXPEDITION DISCUSSION LOG */}
-      <section className="border border-white/10 bg-[#0B0A09] p-6 sm:p-10 space-y-6">
-        <div className="border-b border-white/10 pb-4 flex items-center justify-between">
+      <section className="border-2 border-[#1A1918] bg-[#FAF6ED] rounded-[28px] p-6 sm:p-10 space-y-6 shadow-[6px_6px_0px_#1A1918]">
+        <div className="border-b-2 border-[#1A1918] pb-4 flex items-center justify-between">
           <div>
-            <span className="font-mono text-[10px] text-earth uppercase tracking-widest font-bold">
-              [ 06 // BITÁCORA DE DISCUSIÓN ]
+            <span className="font-mono text-[10px] text-[#E6332A] uppercase tracking-widest font-black">
+              ★ [ 06 // BITÁCORA DE DISCUSIÓN ] ★
             </span>
-            <h3 className="font-display font-bold text-2xl text-white uppercase">
+            <h3 className="font-display font-black text-2xl text-[#1A1918] uppercase">
               Comentarios del Trazo ({activeRoute.comments.length})
             </h3>
           </div>
         </div>
 
         {/* Messages */}
-        <div className="space-y-3 font-mono text-xs">
+        <div className="space-y-3 font-sans text-xs">
           {activeRoute.comments.map((comment) => (
-            <div key={comment.id} className="p-4 border border-white/10 bg-white/[0.02] space-y-1">
-              <div className="flex items-center justify-between text-[11px] text-ash">
-                <span className="text-white font-bold">{comment.userName}</span>
+            <div key={comment.id} className="p-4 border-2 border-[#1A1918] bg-[#F4EEDB] rounded-2xl space-y-1 shadow-[2px_2px_0px_#1A1918]">
+              <div className="flex items-center justify-between text-[11px] text-[#1A1918]/60 font-bold">
+                <span className="text-[#1A1918] font-black uppercase">{comment.userName}</span>
                 <span>
                   {isNaN(Date.parse(comment.createdAt))
                     ? comment.createdAt
                     : new Date(comment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </span>
               </div>
-              <p className="text-chalk font-light pt-1">{comment.text}</p>
+              <p className="text-[#1A1918] font-serif italic pt-1 font-medium">{comment.text}</p>
             </div>
           ))}
         </div>
@@ -665,11 +665,11 @@ ${gpxPoints}
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
             placeholder="Aporta detalles sobre el estado de la brecha, presiones o clima..."
-            className="flex-1 bg-white/[0.03] border border-white/15 px-4 py-3 font-mono text-xs text-white placeholder-ash focus:outline-none focus:border-earth"
+            className="flex-1 bg-[#F4EEDB] border-2 border-[#1A1918] rounded-xl px-4 py-3 font-sans text-xs text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none font-bold"
           />
           <button
             type="submit"
-            className="px-6 py-3 bg-white hover:bg-earth text-obsidian hover:text-white font-mono text-xs uppercase font-bold tracking-widest transition"
+            className="px-6 py-3 bg-[#E6332A] hover:bg-[#d02c24] text-white border-2 border-[#1A1918] rounded-xl font-display text-xs uppercase font-black tracking-widest transition shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
           >
             Publicar
           </button>

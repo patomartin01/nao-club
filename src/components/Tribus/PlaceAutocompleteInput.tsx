@@ -195,14 +195,14 @@ export const PlaceAutocompleteInput: React.FC<PlaceAutocompleteInputProps> = ({
           }}
           placeholder={placeholder}
           autoFocus={autoFocus}
-          className={`w-full bg-black/70 border border-white/20 hover:border-white/35 focus:border-earth px-3 py-2 text-xs text-white placeholder-ash/60 focus:outline-none transition ${className}`}
+          className={`w-full bg-white border border-[#DDD7CB] hover:border-[#141312] focus:border-[#141312] px-3.5 py-2.5 text-xs text-[#141312] placeholder-stone-400 focus:outline-none transition rounded-xl shadow-xs ${className}`}
         />
         {loading ? (
-          <div className="absolute right-2.5 text-earth animate-spin pointer-events-none">
+          <div className="absolute right-3 text-[#C84B31] animate-spin pointer-events-none">
             <Loader2 className="w-3.5 h-3.5" />
           </div>
         ) : (
-          <div className="absolute right-2.5 text-ash/40 pointer-events-none">
+          <div className="absolute right-3 text-stone-400 pointer-events-none">
             <Search className="w-3.5 h-3.5" />
           </div>
         )}
@@ -213,7 +213,7 @@ export const PlaceAutocompleteInput: React.FC<PlaceAutocompleteInputProps> = ({
         <div 
           className={`absolute left-0 right-0 ${
             openUpward ? 'bottom-full mb-1.5' : 'top-full mt-1.5'
-          } z-[100] bg-[#14110F] border border-earth/50 shadow-2xl max-h-56 overflow-y-auto divide-y divide-white/5 font-mono`}
+          } z-[100] bg-white border border-[#E5DFD5] shadow-2xl rounded-xl max-h-56 overflow-y-auto divide-y divide-[#F0EDE8] font-sans`}
         >
           {suggestions.map((item, idx) => {
             const showAddress = item.address && 
@@ -226,15 +226,15 @@ export const PlaceAutocompleteInput: React.FC<PlaceAutocompleteInputProps> = ({
                 key={`${item.name}-${idx}`}
                 type="button"
                 onClick={() => handleSelect(item)}
-                className="w-full text-left px-3 py-2.5 hover:bg-earth/20 hover:border-l-2 hover:border-earth text-xs transition flex items-center gap-2.5 group cursor-pointer"
+                className="w-full text-left px-3.5 py-2.5 hover:bg-[#FAF8F5] text-xs transition flex items-center gap-2.5 group cursor-pointer"
               >
-                <MapPin className="w-3.5 h-3.5 text-ash group-hover:text-earth shrink-0" />
+                <MapPin className="w-3.5 h-3.5 text-stone-400 group-hover:text-[#C84B31] shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <div className="text-chalk font-semibold truncate group-hover:text-white">
+                  <div className="text-[#141312] font-display font-bold uppercase truncate">
                     {item.name}
                   </div>
                   {showAddress && (
-                    <div className="text-[10px] text-ash truncate mt-0.5">
+                    <div className="text-[10px] text-stone-500 font-serif italic truncate mt-0.5">
                       {item.address}
                     </div>
                   )}

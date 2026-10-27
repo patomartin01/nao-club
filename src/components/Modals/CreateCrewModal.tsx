@@ -99,36 +99,12 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
 
   const handlePasteWhatsapp = async () => {
     try {
-      if (typeof navigator !== 'undefined' && navigator.clipboard) {
-        const text = await navigator.clipboard.readText();
-        if (text) {
-          setWhatsappGroupUrl(text.trim());
-        }
+      const text = await navigator.clipboard.readText();
+      if (text) {
+        setWhatsappGroupUrl(text.trim());
       }
-    } catch {
-      // Browser permission denied or not supported
-    }
-  };
-
-  const handleCopyCode = () => {
-    if (!createdCrew) return;
-    if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      navigator.clipboard.writeText(createdCrew.inviteCode);
-      setCopiedCode(true);
-      setTimeout(() => setCopiedCode(false), 2500);
-    }
-  };
-
-  const handleCopyNaoShareLink = () => {
-    if (!createdCrew) return;
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://nao-club-three.vercel.app';
-    const link = `${origin}/?tab=tribus&tribu=${createdCrew.id}&code=${createdCrew.inviteCode}`;
-    const textToCopy = `🏍️ Únete a nuestra tribu "${createdCrew.name}" en NAO\n🔑 Clave de acceso: ${createdCrew.inviteCode}\n🔗 Enlace oficial: ${link}`;
-
-    if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      navigator.clipboard.writeText(textToCopy);
-      setCopiedNaoLink(true);
-      setTimeout(() => setCopiedNaoLink(false), 3000);
+    } catch (e) {
+      console.warn('Clipboard read error', e);
     }
   };
 
@@ -138,15 +114,30 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
 
     const newCrew = createCrew({
       name: name.trim(),
-      tagline: tagline.trim() || 'Tribu de motos trail y doble propósito.',
-      description: description.trim() || 'Comunidad para organizar rodadas de fin de semana y expediciones.',
-      baseCity: baseCity.trim() || 'México',
-      coverImage: coverImage.trim() || COVER_PRESETS[0].url,
-      whatsappGroupUrl: whatsappGroupUrl.trim() || undefined
+      tagline: tagline.trim(),
+      description: description.trim() || tagline.trim(),
+      baseCity: baseCity.trim(),
+      coverImage: coverImage,
+      whatsappGroupUrl: whatsappGroupUrl.trim() || undefined,
     });
 
-    confetti({ particleCount: 75, spread: 70, origin: { y: 0.6 } });
     setCreatedCrew(newCrew);
+    confetti({ particleCount: 75, spread: 70 });
+  };
+
+  const handleCopyCode = () => {
+    if (!createdCrew) return;
+    navigator.clipboard?.writeText(createdCrew.inviteCode);
+    setCopiedCode(true);
+    setTimeout(() => setCopiedCode(false), 2000);
+  };
+
+  const handleCopyNaoShareLink = () => {
+    if (!createdCrew) return;
+    const shareText = `🏍️ Únete a nuestra Tribu en NAO: "${createdCrew.name}"\n\n📍 Base: ${createdCrew.baseCity}\n🔑 Clave de entrada: ${createdCrew.inviteCode}\n\nIngresa aquí: ${window.location.origin}`;
+    navigator.clipboard?.writeText(shareText);
+    setCopiedNaoLink(true);
+    setTimeout(() => setCopiedNaoLink(false), 2000);
   };
 
   const handleFinishAndEnterCrew = () => {
@@ -158,81 +149,78 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-2.5 sm:p-4 overflow-y-auto">
-      <div className="border border-white/20 bg-[#12100E] max-w-xl w-full p-4 sm:p-7 space-y-5 my-auto max-h-[94vh] overflow-y-auto font-mono text-chalk shadow-2xl relative">
+    <div className="fixed inset-0 z-50 bg-[#1A1918]/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fadeIn">
+      <div className="border-2 border-[#1A1918] bg-[#FAF6ED] max-w-xl w-full p-6 sm:p-8 space-y-6 my-auto max-h-[94vh] overflow-y-auto font-sans text-[#1A1918] shadow-[8px_8px_0px_#1A1918] relative rounded-[28px] animate-scaleUp">
         
-        {/* Tick-mark top ruler accent */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-earth to-transparent opacity-80" />
-
         {/* ============================================================== */}
         {/* SUCCESS VIEW: POST-CREATION TWO-WAY BRIDGE                    */}
         {/* ============================================================== */}
         {createdCrew ? (
-          <div className="space-y-5 py-2 animate-in fade-in zoom-in-95 duration-200">
+          <div className="space-y-6 py-2 animate-in fade-in zoom-in-95 duration-200">
             {/* Header */}
-            <div className="text-center space-y-1.5">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">
-                <Sparkles className="w-3 h-3 text-emerald-400" />
-                Tribu Fundada con Éxito
+            <div className="text-center space-y-2">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-display font-black uppercase tracking-widest bg-[#F7B32B] border-2 border-[#1A1918] text-[#1A1918] shadow-[2px_2px_0px_#1A1918]">
+                <Sparkles className="w-3.5 h-3.5 text-[#1A1918]" />
+                Club Fundado con Éxito
               </span>
-              <h3 className="font-display font-black text-2xl sm:text-3xl text-white uppercase tracking-tight">
+              <h3 className="font-display font-black text-2xl sm:text-3xl text-[#1A1918] uppercase tracking-wide">
                 {createdCrew.name}
               </h3>
-              <p className="text-xs text-ash max-w-md mx-auto">
+              <p className="text-xs text-[#1A1918]/70 font-serif italic max-w-md mx-auto font-medium">
                 Comparte la clave o el enlace con tus pilotos para que entren a la tribu.
               </p>
             </div>
 
             {/* Crew Identity Card */}
-            <div className="border border-white/10 bg-black/40 rounded-xl p-3.5 space-y-3">
-              <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
+            <div className="border-2 border-[#1A1918] bg-[#F4EEDB] rounded-2xl p-4 space-y-3.5 shadow-[4px_4px_0px_#1A1918]">
+              <div className="flex items-center justify-between border-b-2 border-[#1A1918] pb-2.5">
                 <div className="flex items-center gap-2">
-                  <Shield className="w-4 h-4 text-earth" />
-                  <span className="text-xs font-bold text-white uppercase">{createdCrew.baseCity}</span>
+                  <Shield className="w-4 h-4 text-[#E6332A]" />
+                  <span className="text-xs font-display font-black text-[#1A1918] uppercase">{createdCrew.baseCity}</span>
                 </div>
-                <span className="text-[10px] font-mono text-ash">
+                <span className="text-[10px] font-display font-black text-[#1A1918]/70 uppercase">
                   1 Piloto (Admin)
                 </span>
               </div>
 
               {/* Clave de Acceso */}
-              <div className="bg-white/[0.03] border border-white/10 rounded-lg p-2.5 flex items-center justify-between gap-3">
+              <div className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-xl p-3 flex items-center justify-between gap-3 shadow-[2px_2px_0px_#1A1918]">
                 <div>
-                  <span className="text-[9px] uppercase tracking-wider text-ash block">Clave del Club</span>
-                  <span className="text-base font-display font-black text-earth tracking-widest">{createdCrew.inviteCode}</span>
+                  <span className="text-[9px] uppercase tracking-wider text-[#1A1918]/60 block font-display font-black">Clave del Club</span>
+                  <span className="text-xl font-display font-black text-[#1A1918] tracking-widest">{createdCrew.inviteCode}</span>
                 </div>
                 <button
                   type="button"
                   onClick={handleCopyCode}
-                  className="px-3 py-1.5 rounded-md border border-white/15 bg-white/5 hover:bg-white/10 text-white text-[11px] font-bold uppercase flex items-center gap-1.5 transition cursor-pointer"
+                  className="px-3.5 py-2 rounded-xl border-2 border-[#1A1918] bg-[#F7B32B] hover:bg-[#e5a424] text-[#1A1918] text-xs font-display font-black uppercase flex items-center gap-1.5 transition cursor-pointer shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
                 >
                   {copiedCode ? (
                     <>
-                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      <Check className="w-3.5 h-3.5 text-[#1A1918]" />
                       <span>Copiado</span>
                     </>
                   ) : (
                     <>
-                      <Copy className="w-3.5 h-3.5 text-ash" />
+                      <Copy className="w-3.5 h-3.5 text-[#1A1918]" />
                       <span>Copiar Clave</span>
                     </>
                   )}
                 </button>
               </div>
 
-              {/* Puente WhatsApp: Enlace para pegar en WhatsApp */}
-              <div className="bg-emerald-950/20 border border-emerald-500/30 rounded-lg p-3 space-y-2">
-                <div className="flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase">
-                  <WhatsAppIcon className="w-4 h-4" />
+              {/* Puente WhatsApp */}
+              <div className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-xl p-3.5 space-y-2 shadow-[2px_2px_0px_#1A1918]">
+                <div className="flex items-center gap-2 text-[#1A1918] text-xs font-display font-black uppercase">
+                  <WhatsAppIcon className="w-4 h-4 text-[#1D4477]" />
                   <span>Enlace para WhatsApp</span>
                 </div>
-                <p className="text-[11px] text-ash leading-relaxed">
+                <p className="text-[11px] text-[#1A1918]/80 leading-relaxed font-serif italic">
                   Pégalo en la <strong>descripción de tu grupo de WhatsApp</strong>:
                 </p>
                 <button
                   type="button"
                   onClick={handleCopyNaoShareLink}
-                  className="w-full py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition shadow cursor-pointer"
+                  className="w-full py-2.5 px-3 rounded-xl bg-[#1D4477] hover:bg-[#15345b] text-white border-2 border-[#1A1918] font-display font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition shadow-[3px_3px_0px_#1A1918] cursor-pointer active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
                 >
                   {copiedNaoLink ? (
                     <>
@@ -254,104 +242,104 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
               <button
                 type="button"
                 onClick={handleFinishAndEnterCrew}
-                className="w-full py-3 bg-earth hover:bg-earth-bright text-white uppercase font-display font-black text-xs tracking-widest transition flex items-center justify-center gap-2 cursor-pointer shadow-lg"
+                className="w-full py-3.5 bg-[#E6332A] hover:bg-[#d02c24] text-white uppercase font-display font-black text-xs tracking-widest transition flex items-center justify-center gap-2 cursor-pointer border-2 border-[#1A1918] shadow-[4px_4px_0px_#1A1918] rounded-xl active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
               >
                 <span>Entrar a la Tribu</span>
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4 text-[#F7B32B]" />
               </button>
             </div>
           </div>
         ) : (
           /* ============================================================== */
-          /* FORM VIEW: POLISHED OUTDOOR CREATION WIZARD                    */
+          /* FORM VIEW: POLISHED MATCHBOOK CREATION WIZARD                  */
           /* ============================================================== */
           <>
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-white/10 pb-2.5 gap-3">
+            <div className="flex items-center justify-between border-b-2 border-[#1A1918] pb-3 gap-3">
               <div>
-                <span className="font-mono text-[9px] text-earth uppercase tracking-widest font-bold block">
-                  NUEVA TRIBU
+                <span className="font-display text-[10px] text-[#E6332A] uppercase tracking-[0.2em] font-black block">
+                  ★ NUEVA COMUNIDAD ★
                 </span>
-                <h3 className="font-display font-black text-xl text-white uppercase tracking-tight">
-                  Fundar Tribu
+                <h3 className="font-display font-black text-2xl text-[#1A1918] uppercase tracking-wide">
+                  Fundar Club
                 </h3>
               </div>
               <button 
                 onClick={onClose} 
-                className="text-ash hover:text-white p-1.5 border border-white/10 hover:border-white/30 transition shrink-0 cursor-pointer"
+                className="w-8 h-8 rounded-xl bg-[#F4EEDB] border-2 border-[#1A1918] text-[#1A1918] hover:bg-[#E6332A] hover:text-white flex items-center justify-center transition shadow-[2px_2px_0px_#1A1918]"
                 title="Cerrar"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* LIVE CARD PREVIEW (Diseño Táctico Inspiracional) */}
-            <div className="border border-white/15 bg-black/60 rounded-xl overflow-hidden relative group">
-              <div className="relative h-16 sm:h-20 w-full overflow-hidden">
+            {/* LIVE CARD PREVIEW */}
+            <div className="border-2 border-[#1A1918] bg-[#F4EEDB] rounded-2xl overflow-hidden relative group shadow-[4px_4px_0px_#1A1918]">
+              <div className="relative h-20 sm:h-24 w-full overflow-hidden">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img 
                   src={coverImage} 
                   alt="Cover Preview" 
-                  className="w-full h-full object-cover opacity-45 group-hover:scale-105 transition-all duration-500"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#12100E] via-[#12100E]/70 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1A1918]/80 via-[#1A1918]/30 to-transparent" />
                 
                 {/* Badges en la portada */}
                 <div className="absolute top-2 left-2.5 right-2.5 flex items-center justify-between text-[10px]">
-                  <span className="bg-black/70 border border-white/20 text-white px-1.5 py-0.5 font-bold uppercase flex items-center gap-1">
-                    <Shield className="w-3 h-3 text-earth" />
+                  <span className="bg-[#FAF6ED] border-2 border-[#1A1918] text-[#1A1918] px-2 py-0.5 font-display font-black uppercase flex items-center gap-1 rounded-lg shadow-[1px_1px_0px_#1A1918]">
+                    <Shield className="w-3 h-3 text-[#E6332A]" />
                     <span>{currentUser.name.split(' ')[0]}</span>
                   </span>
                   {isWhatsappValid ? (
-                    <span className="bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 px-1.5 py-0.5 font-bold flex items-center gap-1">
-                      <WhatsAppIcon className="w-3 h-3 text-emerald-400" />
+                    <span className="bg-[#1D4477] text-white border-2 border-[#1A1918] px-2 py-0.5 font-display font-black text-[9px] uppercase flex items-center gap-1 rounded-lg shadow-[1px_1px_0px_#1A1918]">
+                      <WhatsAppIcon className="w-3 h-3 text-white" />
                       <span>WhatsApp Conectado</span>
                     </span>
                   ) : (
-                    <span className="bg-black/60 border border-white/10 text-ash px-1.5 py-0.5">
+                    <span className="bg-[#1A1918]/80 text-[#FAF6ED] border border-[#1A1918] px-2 py-0.5 text-[9px] font-display font-black uppercase rounded-lg">
                       Sin WhatsApp
                     </span>
                   )}
                 </div>
 
                 {/* Título en la tarjeta */}
-                <div className="absolute bottom-1.5 left-2.5 right-2.5">
-                  <h4 className="font-display font-black text-sm sm:text-base text-white uppercase tracking-tight truncate">
+                <div className="absolute bottom-2 left-3 right-3 text-white">
+                  <h4 className="font-display font-black text-base text-white uppercase tracking-wide truncate drop-shadow-sm">
                     {name.trim() || 'Nombre de tu Tribu'}
                   </h4>
-                  <p className="text-[10px] text-ash truncate">
+                  <p className="text-[10px] text-stone-200 font-serif italic truncate font-bold">
                     {baseCity}
                   </p>
                 </div>
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4 font-mono text-xs">
+            <form onSubmit={handleSubmit} className="space-y-4 text-xs font-sans">
               
               {/* Campo 1: Nombre */}
               <div>
-                <label className="text-ash uppercase text-[10px] font-bold block mb-1">
-                  Nombre de la Tribu <span className="text-earth">*</span>
+                <label className="text-[#1A1918]/70 uppercase text-[10px] font-display font-black block mb-1">
+                  Nombre de la Tribu <span className="text-[#E6332A]">*</span>
                 </label>
                 <input
                   type="text"
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Ej. Nao Off-Road Squad / Sierra Brava MC"
-                  className="w-full bg-white/[0.04] border border-white/15 px-3 py-2.5 text-white placeholder-ash/50 focus:outline-none focus:border-earth text-xs font-bold uppercase tracking-wider"
+                  placeholder="Ej. Sierra Brava MC / Nao Dual-Sport"
+                  className="w-full bg-[#F4EEDB] border-2 border-[#1A1918] px-3.5 py-2.5 text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:border-[#E6332A] text-xs font-display font-black uppercase tracking-wider rounded-xl shadow-[2px_2px_0px_#1A1918]"
                 />
                 
                 {/* Sugerencias de Nombre */}
                 {!name && (
-                  <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                    <span className="text-[9px] text-ash/60">Sugerencias:</span>
+                  <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                    <span className="text-[10px] text-[#1A1918]/60 font-serif italic font-bold">Sugerencias:</span>
                     {['Paso de Cortés Dual-Sport', 'Enduro Nevado Club', 'Brecha Brava MC'].map((sug) => (
                       <button
                         key={sug}
                         type="button"
                         onClick={() => setName(sug)}
-                        className="text-[9px] text-ash hover:text-earth border border-white/10 hover:border-earth/30 px-1.5 py-0.5 transition cursor-pointer"
+                        className="text-[10px] text-[#1A1918] hover:bg-[#F7B32B] border-2 border-[#1A1918] bg-[#FAF6ED] px-2 py-0.5 rounded-lg font-display font-black transition cursor-pointer shadow-[1px_1px_0px_#1A1918]"
                       >
                         +{sug}
                       </button>
@@ -362,28 +350,28 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
 
               {/* Campo 2: Estilo / Tagline */}
               <div>
-                <label className="text-ash uppercase text-[10px] font-bold block mb-1">
-                  Vibe
+                <label className="text-[#1A1918]/70 uppercase text-[10px] font-display font-black block mb-1">
+                  Estilo &amp; Propósito
                 </label>
                 <input
                   type="text"
                   value={tagline}
                   onChange={(e) => setTagline(e.target.value)}
                   placeholder="Ej. Terracería y campamentos"
-                  className="w-full bg-white/[0.04] border border-white/15 px-3 py-2 text-white placeholder-ash/50 focus:outline-none focus:border-earth text-xs"
+                  className="w-full bg-[#F4EEDB] border-2 border-[#1A1918] px-3.5 py-2 text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:border-[#E6332A] text-xs rounded-xl shadow-[2px_2px_0px_#1A1918] font-medium"
                 />
                 
                 {/* Chips de Vibe */}
-                <div className="grid grid-cols-2 gap-1.5 mt-1.5">
+                <div className="grid grid-cols-2 gap-1.5 mt-2">
                   {VIBE_PRESETS.map((vp) => (
                     <button
                       key={vp.label}
                       type="button"
                       onClick={() => setTagline(vp.tagline)}
-                      className={`text-[10px] text-left px-2 py-1 border transition truncate cursor-pointer ${
+                      className={`text-[10px] text-left px-2.5 py-1.5 border-2 rounded-xl transition truncate cursor-pointer shadow-[1px_1px_0px_#1A1918] ${
                         tagline === vp.tagline 
-                          ? 'border-earth text-earth bg-earth/10 font-bold' 
-                          : 'border-white/10 text-ash hover:text-white hover:bg-white/5'
+                          ? 'border-[#1A1918] text-[#1A1918] bg-[#F7B32B] font-display font-black' 
+                          : 'border-[#1A1918] text-[#1A1918] hover:bg-[#F4EEDB] bg-[#FAF6ED] font-bold'
                       }`}
                     >
                       {vp.label}
@@ -394,30 +382,30 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
 
               {/* Campo 3: Ciudad Base */}
               <div>
-                <label className="text-ash uppercase text-[10px] font-bold block mb-1">
+                <label className="text-[#1A1918]/70 uppercase text-[10px] font-display font-black block mb-1">
                   Ciudad Base
                 </label>
                 <div className="relative">
-                  <MapPin className="w-3.5 h-3.5 text-earth absolute left-3 top-1/2 -translate-y-1/2" />
+                  <MapPin className="w-3.5 h-3.5 text-[#E6332A] absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
                     value={baseCity}
                     onChange={(e) => setBaseCity(e.target.value)}
                     placeholder="Ej. Interlomas / Valle de Bravo"
-                    className="w-full bg-white/[0.04] border border-white/15 pl-8 pr-3 py-2 text-white placeholder-ash/50 focus:outline-none focus:border-earth text-xs"
+                    className="w-full bg-[#F4EEDB] border-2 border-[#1A1918] pl-8 pr-3 py-2 text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:border-[#E6332A] text-xs rounded-xl shadow-[2px_2px_0px_#1A1918] font-bold"
                   />
                 </div>
                 {/* Chips de ciudades */}
-                <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                   {CITY_PRESETS.map((cp) => (
                     <button
                       key={cp}
                       type="button"
                       onClick={() => setBaseCity(cp)}
-                      className={`text-[9px] px-2 py-0.5 border transition cursor-pointer ${
+                      className={`text-[10px] px-2.5 py-0.5 border-2 rounded-lg transition cursor-pointer font-display shadow-[1px_1px_0px_#1A1918] ${
                         baseCity === cp
-                          ? 'border-earth text-earth bg-earth/10 font-bold'
-                          : 'border-white/10 text-ash hover:text-white hover:bg-white/5'
+                          ? 'border-[#1A1918] text-[#1A1918] bg-[#F7B32B] font-black'
+                          : 'border-[#1A1918] text-[#1A1918] hover:bg-[#F4EEDB] bg-[#FAF6ED] font-bold'
                       }`}
                     >
                       {cp}
@@ -428,8 +416,8 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
 
               {/* Campo 4: Portada */}
               <div>
-                <label className="text-ash uppercase text-[10px] font-bold block mb-1">
-                  Portada
+                <label className="text-[#1A1918]/70 uppercase text-[10px] font-display font-black block mb-1">
+                  Fotografía de Portada
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {COVER_PRESETS.map((preset) => {
@@ -439,13 +427,13 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
                         key={preset.id}
                         type="button"
                         onClick={() => setCoverImage(preset.url)}
-                        className={`p-1.5 rounded-lg border text-left transition flex flex-col gap-1 cursor-pointer ${
+                        className={`p-1.5 rounded-xl border-2 text-left transition flex flex-col gap-1 cursor-pointer shadow-[2px_2px_0px_#1A1918] ${
                           isSelected 
-                            ? 'border-earth bg-earth/10 ring-1 ring-earth' 
-                            : 'border-white/10 bg-white/[0.02] hover:bg-white/[0.05]'
+                            ? 'border-[#1A1918] ring-2 ring-[#E6332A] bg-[#FAF6ED]' 
+                            : 'border-[#1A1918] bg-[#F4EEDB] hover:bg-[#FAF6ED]'
                         }`}
                       >
-                        <div className="h-10 w-full rounded overflow-hidden">
+                        <div className="h-10 w-full rounded-lg overflow-hidden border border-[#1A1918]">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img 
                             src={preset.url} 
@@ -453,10 +441,10 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
                             className="w-full h-full object-cover" 
                           />
                         </div>
-                        <span className={`text-[10px] font-bold truncate ${isSelected ? 'text-earth' : 'text-white'}`}>
+                        <span className={`text-[10px] font-display font-black uppercase truncate ${isSelected ? 'text-[#E6332A]' : 'text-[#1A1918]'}`}>
                           {preset.name}
                         </span>
-                        <span className="text-[8px] text-ash truncate -mt-0.5">
+                        <span className="text-[8px] text-[#1A1918]/60 font-serif italic truncate -mt-0.5 font-bold">
                           {preset.tone}
                         </span>
                       </button>
@@ -466,18 +454,18 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
               </div>
 
               {/* Campo 5: El Puente WhatsApp */}
-              <div className="p-3 bg-emerald-950/15 border border-emerald-500/25 rounded-xl space-y-2">
+              <div className="p-3.5 bg-[#F4EEDB] border-2 border-[#1A1918] rounded-2xl space-y-2 shadow-[2px_2px_0px_#1A1918]">
                 <div className="flex items-center justify-between">
-                  <label className="text-emerald-400 uppercase text-[10px] font-bold flex items-center gap-1.5">
-                    <WhatsAppIcon className="w-3.5 h-3.5 text-emerald-400" />
+                  <label className="text-[#1D4477] uppercase text-[10px] font-display font-black flex items-center gap-1.5">
+                    <WhatsAppIcon className="w-3.5 h-3.5 text-[#1D4477]" />
                     <span>WhatsApp (Opcional)</span>
                   </label>
                   <button
                     type="button"
                     onClick={() => setShowWhatsappHelp(prev => !prev)}
-                    className="text-ash hover:text-white flex items-center gap-1 text-[9px] transition cursor-pointer"
+                    className="text-[#1A1918]/70 hover:text-[#1A1918] flex items-center gap-1 text-[10px] font-display font-black transition cursor-pointer"
                   >
-                    <HelpCircle className="w-3 h-3 text-emerald-400" />
+                    <HelpCircle className="w-3.5 h-3.5 text-[#1D4477]" />
                     <span>{showWhatsappHelp ? 'Ocultar' : '¿Cómo obtenerlo?'}</span>
                   </button>
                 </div>
@@ -488,36 +476,36 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
                     value={whatsappGroupUrl}
                     onChange={(e) => setWhatsappGroupUrl(e.target.value)}
                     placeholder="https://chat.whatsapp.com/..."
-                    className="flex-1 bg-black/60 border border-white/15 px-3 py-2 text-white placeholder-ash/40 focus:outline-none focus:border-emerald-500 text-xs font-mono"
+                    className="flex-1 bg-[#FAF6ED] border-2 border-[#1A1918] px-3 py-2 text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:border-[#E6332A] text-xs rounded-xl shadow-[2px_2px_0px_#1A1918] font-bold"
                   />
                   <button
                     type="button"
                     onClick={handlePasteWhatsapp}
                     title="Pegar enlace del portapapeles"
-                    className="px-2.5 py-2 bg-white/5 hover:bg-white/10 border border-white/15 text-ash hover:text-white text-[10px] font-bold uppercase transition flex items-center gap-1 cursor-pointer shrink-0"
+                    className="px-3 py-2 bg-[#FAF6ED] hover:bg-[#F7B32B] border-2 border-[#1A1918] text-[#1A1918] text-[10px] font-display font-black uppercase transition flex items-center gap-1 cursor-pointer shrink-0 rounded-xl shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
                   >
-                    <ClipboardPaste className="w-3.5 h-3.5" />
+                    <ClipboardPaste className="w-3.5 h-3.5 text-[#1A1918]" />
                     <span>Pegar</span>
                   </button>
                 </div>
 
                 {/* Estado de validación */}
                 {isWhatsappValid ? (
-                  <div className="flex items-center gap-1.5 text-emerald-400 text-[10px] font-bold">
-                    <Check className="w-3 h-3 text-emerald-400" />
+                  <div className="flex items-center gap-1.5 text-[#1D4477] text-[10px] font-display font-black">
+                    <Check className="w-3.5 h-3.5 text-[#1D4477]" />
                     <span>WhatsApp verificado</span>
                   </div>
                 ) : (
-                  <span className="text-[10px] text-ash/70 block">
+                  <span className="text-[10px] text-[#1A1918]/60 font-serif italic block font-medium">
                     Opcional. Puedes añadirlo después.
                   </span>
                 )}
 
                 {/* Guía interactiva paso a paso */}
                 {showWhatsappHelp && (
-                  <div className="mt-2 p-2.5 bg-black/50 border border-white/10 text-[10px] text-ash space-y-1.5 rounded">
-                    <p className="font-bold text-white">¿Cómo sacar el enlace de tu grupo de WhatsApp?</p>
-                    <ol className="list-decimal list-inside space-y-0.5 text-chalk/80">
+                  <div className="mt-2 p-3 bg-[#FAF6ED] border-2 border-[#1A1918] text-[10px] text-[#1A1918] space-y-1.5 rounded-xl shadow-[2px_2px_0px_#1A1918]">
+                    <p className="font-display font-black text-[#1A1918] uppercase">¿Cómo sacar el enlace de tu grupo de WhatsApp?</p>
+                    <ol className="list-decimal list-inside space-y-1 font-serif italic text-[#1A1918]/80 font-medium">
                       <li>Abre tu grupo en WhatsApp y toca el nombre arriba.</li>
                       <li>Desplázate hasta <strong>&quot;Enlace de invitación al grupo&quot;</strong>.</li>
                       <li>Toca <strong>&quot;Copiar enlace&quot;</strong> y pégalo aquí.</li>
@@ -527,21 +515,21 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
               </div>
 
               {/* Botones de acción */}
-              <div className="pt-3 border-t border-white/10 flex gap-3">
+              <div className="pt-3 border-t-2 border-[#1A1918] flex gap-3">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="w-1/3 py-2.5 border border-white/20 text-ash uppercase font-bold tracking-wider hover:text-white transition cursor-pointer text-xs"
+                  className="w-1/3 py-3 border-2 border-[#1A1918] bg-[#FAF6ED] text-[#1A1918] uppercase font-display font-black tracking-wider hover:bg-[#F4EEDB] transition cursor-pointer text-xs rounded-xl shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={!name.trim()}
-                  className="w-2/3 py-2.5 bg-earth hover:bg-earth-bright disabled:opacity-50 disabled:cursor-not-allowed text-white uppercase font-display font-bold text-xs tracking-widest transition flex items-center justify-center gap-2 cursor-pointer shadow-md"
+                  className="w-2/3 py-3 bg-[#E6332A] hover:bg-[#d02c24] disabled:opacity-50 disabled:cursor-not-allowed text-white border-2 border-[#1A1918] uppercase font-display font-black text-xs tracking-widest transition flex items-center justify-center gap-2 cursor-pointer shadow-[3px_3px_0px_#1A1918] rounded-xl active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
                 >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>Crear Tribu</span>
+                  <Sparkles className="w-3.5 h-3.5 text-[#F7B32B]" />
+                  <span>Crear Club</span>
                 </button>
               </div>
             </form>

@@ -3,43 +3,49 @@
 @tailwind utilities;
 
 :root {
-  --background: #060709;
-  --foreground: #F2F4F7;
-  --accent-copper: #C87D55;
+  --background: #F4EEDB;
+  --foreground: #1A1918;
+  --vermillion: #E6332A;
+  --mustard: #F7B32B;
+  --terracotta: #E06423;
+  --cobalt: #1D4477;
+  --carbon: #1A1918;
+  --paper-card: #FAF6ED;
+  --paper-border: #1A1918;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
-  letter-spacing: -0.01em;
+  -moz-osx-font-smoothing: grayscale;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
-}
-
-/* Subtle architectural grid pattern */
-.bg-grid-subtle {
-  background-size: 48px 48px;
+  background-color: #F4EEDB;
+  /* Authentic unbleached paper grain & stipple */
   background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    radial-gradient(rgba(26, 25, 24, 0.055) 1px, transparent 1px),
+    radial-gradient(rgba(224, 100, 35, 0.025) 1px, transparent 1px);
+  background-size: 16px 16px, 32px 32px;
+  background-position: 0 0, 8px 8px;
 }
 
-/* Custom minimal scrollbar */
+/* Custom Risograph / Matchbook scrollbar */
 ::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #060709;
+  background: #F4EEDB;
 }
 ::-webkit-scrollbar-thumb {
-  background: #20242C;
+  background: #1A1918;
+  border-radius: 9999px;
+  border: 1px solid #FAF6ED;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #C87D55;
+  background: #E6332A;
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -50,24 +56,175 @@ body {
   scrollbar-width: none;
 }
 
-/* Leaflet dark styling */
+/* ========================================================= */
+/* RISOGRAPH, BAUHAUS & MATCHBOOK ART UI UTILITIES           */
+/* ========================================================= */
+
+/* Matchbook & Poster Containers */
+.matchbook-card {
+  background-color: #FAF6ED;
+  border: 2px solid #1A1918;
+  box-shadow: 4px 4px 0px #1A1918;
+  border-radius: 24px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.matchbook-card:hover {
+  box-shadow: 6px 6px 0px #1A1918;
+  transform: translate(-1px, -1px);
+}
+
+.matchbook-card-static {
+  background-color: #FAF6ED;
+  border: 2px solid #1A1918;
+  box-shadow: 4px 4px 0px #1A1918;
+  border-radius: 24px;
+}
+
+/* Mechanical High-Contrast Pressed Buttons */
+.btn-vermillion {
+  background-color: #E6332A;
+  color: #FFFFFF;
+  border: 2px solid #1A1918;
+  box-shadow: 3px 3px 0px #1A1918;
+  font-family: var(--font-display, 'Oswald', sans-serif);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  transition: all 0.12s ease-in-out;
+}
+.btn-vermillion:hover {
+  background-color: #D3271E;
+  box-shadow: 4px 4px 0px #1A1918;
+  transform: translate(-1px, -1px);
+}
+.btn-vermillion:active {
+  box-shadow: 0px 0px 0px #1A1918;
+  transform: translate(3px, 3px);
+}
+
+.btn-mustard {
+  background-color: #F7B32B;
+  color: #1A1918;
+  border: 2px solid #1A1918;
+  box-shadow: 3px 3px 0px #1A1918;
+  font-family: var(--font-display, 'Oswald', sans-serif);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  transition: all 0.12s ease-in-out;
+}
+.btn-mustard:hover {
+  background-color: #EFA619;
+  box-shadow: 4px 4px 0px #1A1918;
+  transform: translate(-1px, -1px);
+}
+.btn-mustard:active {
+  box-shadow: 0px 0px 0px #1A1918;
+  transform: translate(3px, 3px);
+}
+
+.btn-cobalt {
+  background-color: #1D4477;
+  color: #FFFFFF;
+  border: 2px solid #1A1918;
+  box-shadow: 3px 3px 0px #1A1918;
+  font-family: var(--font-display, 'Oswald', sans-serif);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  transition: all 0.12s ease-in-out;
+}
+.btn-cobalt:hover {
+  background-color: #163660;
+  box-shadow: 4px 4px 0px #1A1918;
+  transform: translate(-1px, -1px);
+}
+.btn-cobalt:active {
+  box-shadow: 0px 0px 0px #1A1918;
+  transform: translate(3px, 3px);
+}
+
+.btn-carbon {
+  background-color: #1A1918;
+  color: #FFFFFF;
+  border: 2px solid #1A1918;
+  box-shadow: 3px 3px 0px #1A1918;
+  font-family: var(--font-display, 'Oswald', sans-serif);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  transition: all 0.12s ease-in-out;
+}
+.btn-carbon:hover {
+  background-color: #2D2B29;
+  box-shadow: 4px 4px 0px #1A1918;
+  transform: translate(-1px, -1px);
+}
+.btn-carbon:active {
+  box-shadow: 0px 0px 0px #1A1918;
+  transform: translate(3px, 3px);
+}
+
+/* Stamped Industrial & Risograph Badges */
+.stamp-badge {
+  border: 1.5px solid #1A1918;
+  background-color: #FAF6ED;
+  box-shadow: 2px 2px 0px #1A1918;
+}
+
+.stamp-dashed {
+  border: 1.5px dashed #1A1918;
+  background-color: #FAF6ED;
+}
+
+/* Vintage Perforated Ticket Divider */
+.ticket-perforation {
+  border-top: 2px dashed #1A1918;
+  position: relative;
+}
+.ticket-perforation::before,
+.ticket-perforation::after {
+  content: '';
+  position: absolute;
+  top: -8px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: #F4EEDB;
+  border: 2px solid #1A1918;
+}
+.ticket-perforation::before {
+  left: -10px;
+}
+.ticket-perforation::after {
+  right: -10px;
+}
+
+/* 3D Extrusion Shadows for Big Sign-Painting Poster Headings */
+.text-shadow-retro {
+  text-shadow: 2px 2px 0px #1A1918;
+}
+.text-shadow-retro-lg {
+  text-shadow: 3px 3px 0px #1A1918;
+}
+.text-shadow-white {
+  text-shadow: 2px 2px 0px #FAF6ED;
+}
+
+/* Leaflet map custom risograph paper styling */
 .leaflet-container {
-  background-color: #060709 !important;
+  background-color: #F4EEDB !important;
   font-family: inherit !important;
 }
 
 .leaflet-bar a {
-  background-color: #0D0F13 !important;
-  border-bottom: 1px solid #1E222B !important;
-  color: #F2F4F7 !important;
+  background-color: #FAF6ED !important;
+  border-bottom: 2px solid #1A1918 !important;
+  color: #1A1918 !important;
 }
 
 .leaflet-bar a:hover {
-  background-color: #1E222B !important;
-  color: #C87D55 !important;
-}
-
-.custom-leaflet-marker {
-  background: transparent;
-  border: none;
+  background-color: #F7B32B !important;
+  color: #1A1918 !important;
 }

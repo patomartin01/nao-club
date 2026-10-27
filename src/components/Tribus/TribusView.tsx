@@ -180,8 +180,10 @@ export const TribusView: React.FC<TribusViewProps> = ({
   const [showWhatsappMissingNotice, setShowWhatsappMissingNotice] = useState<boolean>(false);
   const [copiedCrewShare, setCopiedCrewShare] = useState<boolean>(false);
 
-  // Search query for Tribus list
+  // Search query & filter for Tribus directory
   const [searchTribuQuery, setSearchTribuQuery] = useState('');
+  const [tribuFilterTab, setTribuFilterTab] = useState<'all' | 'admin' | 'confirmed'>('all');
+  const [copiedCodeCrewId, setCopiedCodeCrewId] = useState<string | null>(null);
 
   // Search & filter for Pilots tab
   const [pilotSearchQuery, setPilotSearchQuery] = useState('');
@@ -194,6 +196,9 @@ export const TribusView: React.FC<TribusViewProps> = ({
   // Detailed Plan Card Modal state (tarjetita del plan)
   const [showPlanCardModal, setShowPlanCardModal] = useState<boolean>(false);
   const [selectedConfirmedRodadaForPlan, setSelectedConfirmedRodadaForPlan] = useState<Rodada | null>(null);
+  
+  // Tactical RSVP Dropdown popover state
+  const [rsvpDropdownOpenRodadaId, setRsvpDropdownOpenRodadaId] = useState<string | null>(null);
 
   // Interactive Route Proposal Modal state (multistop Google Maps route planner)
   const [showInteractiveProposeModal, setShowInteractiveProposeModal] = useState<boolean>(false);
@@ -529,70 +534,147 @@ export const TribusView: React.FC<TribusViewProps> = ({
 
   // Filtered tribus for the directory
   const filteredCrews = crews.filter(c => {
-    if (!searchTribuQuery.trim()) return true;
-    const q = searchTribuQuery.toLowerCase();
-    return c.name.toLowerCase().includes(q) || c.baseCity.toLowerCase().includes(q);
+    // 1. Search filter
+    if (searchTribuQuery.trim()) {
+      const q = searchTribuQuery.toLowerCase();
+      const match = c.name.toLowerCase().includes(q) || c.baseCity.toLowerCase().includes(q) || c.inviteCode.toLowerCase().includes(q);
+      if (!match) return false;
+    }
+
+    // 2. Tab filter
+    if (tribuFilterTab === 'admin') {
+      return c.creatorId === currentUser.id;
+    }
+    if (tribuFilterTab === 'confirmed') {
+      const crewRides = rodadas.filter(r => r.crewId === c.id);
+      return crewRides.some(r => r.status === 'fijada' || Boolean(r.winningRouteId));
+    }
+
+    return true;
   });
 
+  // Network stats
+  const allNetworkPilotIds = new Set<string>();
+  crews.forEach(c => c.members.forEach(m => allNetworkPilotIds.add(m.userId)));
+  const totalNetworkPilotsCount = allNetworkPilotIds.size;
+
+  const totalConfirmedRidesCount = rodadas.filter(
+    r => (r.status === 'fijada' || Boolean(r.winningRouteId)) && crews.some(c => c.id === r.crewId)
+  ).length;
+
   // =========================================================================
-  // VIEW 1: DIRECTORIO DE TRIBUS (COMPACTO, ELEGANTE Y ESCALABLE)
+  // VIEW 1: DIRECTORIO DE TRIBUS (PANORÁMICO, TÁCTICO Y BIKER AUTHENTIC)
   // =========================================================================
   if (!activeTribu) {
     return (
-      <div className="max-w-[1200px] w-full mx-auto pb-28 px-4 sm:px-6 font-mono">
+      <div className="max-w-[1240px] w-full mx-auto pb-28 px-4 sm:px-6 font-sans">
         
-        {/* Top Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-white/10 pb-5 pt-3 gap-4">
+        {/* Top Header: Risograph Motorcycle Chapters Editorial */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between border-b-2 border-[#1A1918] pb-6 pt-3 gap-5">
           <div>
-            <span className="text-[10px] font-mono tracking-widest text-earth uppercase font-bold block mb-1">
-              [ RED DE COMUNIDADES ]
-            </span>
-            <h1 className="font-display font-black text-2xl sm:text-3xl text-white uppercase tracking-tight">
-              Tribus
+            <div className="flex items-center gap-2 mb-2">
+              <span className="px-3.5 py-1 bg-[#E6332A] text-white border-2 border-[#1A1918] text-[10px] font-display font-black uppercase tracking-widest rounded-lg shadow-[2px_2px_0px_#1A1918]">
+                ★ MOTORCYCLE GUILDS &amp; FELLOWSHIPS ★
+              </span>
+              <span className="w-2 h-2 rounded-full bg-[#F7B32B] animate-pulse" />
+            </div>
+            <h1 className="font-display font-black text-3xl sm:text-5xl text-[#1A1918] uppercase tracking-wide">
+              Clubs &amp; Tribus
             </h1>
-            <p className="text-xs text-ash mt-1 max-w-xl">
-              Flotillas privadas de pilotos, garajes compartidos y votación de rodadas en consenso colaborativo.
+            <p className="text-xs sm:text-sm font-serif italic text-[#1A1918]/80 mt-1 max-w-xl leading-relaxed font-medium">
+              &quot;The Emporium of Two-Wheeled Escapes — Private brotherhoods, shared custom stables &amp; roadbook expeditions in consensus.&quot;
             </p>
+
+            {/* Quick Metrics in Vintage Plaque Style */}
+            <div className="flex items-center gap-4 text-xs font-sans text-[#1A1918] mt-3.5 flex-wrap font-bold">
+              <span className="text-[#1A1918] font-bold flex items-center gap-1.5 bg-[#FAF6ED] px-2.5 py-1 border border-[#1A1918] rounded-md shadow-[1px_1px_0px_#1A1918]">
+                <Shield className="w-3.5 h-3.5 text-[#E6332A]" /> {crews.length} {crews.length === 1 ? 'Club Activo' : 'Clubs Activos'}
+              </span>
+              <span className="text-[#1A1918]/30">•</span>
+              <span className="text-[#1A1918] flex items-center gap-1.5 bg-[#FAF6ED] px-2.5 py-1 border border-[#1A1918] rounded-md shadow-[1px_1px_0px_#1A1918]">
+                <Users className="w-3.5 h-3.5 text-[#1A1918]/70" /> {totalNetworkPilotsCount} Pilotos en tu red
+              </span>
+              <span className="text-[#1A1918]/30">•</span>
+              <span className="text-[#E06423] font-black flex items-center gap-1.5 bg-[#FAF6ED] px-2.5 py-1 border border-[#1A1918] rounded-md shadow-[1px_1px_0px_#1A1918]">
+                <Calendar className="w-3.5 h-3.5 text-[#E06423]" /> {totalConfirmedRidesCount} {totalConfirmedRidesCount === 1 ? 'Expedición en puerta' : 'Expediciones en puerta'}
+              </span>
+            </div>
           </div>
 
-          {/* Action buttons with authentic NAO brand styling */}
-          <div className="flex items-center gap-3 shrink-0">
+          {/* Action buttons with mechanical press Risograph styling */}
+          <div className="flex items-center gap-3 shrink-0 flex-wrap">
             <button
               onClick={onOpenJoinCrew}
-              className="px-3.5 py-2 border border-white/15 bg-white/[0.03] hover:bg-white/[0.08] text-chalk text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition"
+              className="btn-mustard px-4 py-3 rounded-xl text-xs flex items-center gap-2"
             >
-              <Key className="w-3.5 h-3.5 text-ash" />
-              <span>Unirse con Clave</span>
+              <Key className="w-3.5 h-3.5 text-[#1A1918]" />
+              <span>Clave de Club #</span>
             </button>
             <button
               onClick={onOpenCreateCrew}
-              className="px-4 py-2 bg-earth hover:bg-earth-bright text-white text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition border border-earth/30 shadow-sm"
+              className="btn-vermillion px-5 py-3 rounded-xl text-xs flex items-center gap-2"
             >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Crear Tribu</span>
+              <Plus className="w-3.5 h-3.5 text-white" />
+              <span>Fundar Club</span>
             </button>
           </div>
         </div>
 
-        {/* Directory Controls: Search and Count */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-4 border-b border-white/[0.06]">
-          <div className="relative flex-1 max-w-md">
-            <Search className="w-3.5 h-3.5 text-ash absolute left-3 top-1/2 -translate-y-1/2" />
+        {/* Directory Controls: Search and Filter Pills (Risograph Matchbook Style) */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 py-4 border-b-2 border-[#1A1918]">
+          {/* Filter Pills */}
+          <div className="inline-flex gap-2 p-1.5 bg-[#FAF6ED] border-2 border-[#1A1918] rounded-2xl shadow-[3px_3px_0px_#1A1918] overflow-x-auto">
+            <button
+              type="button"
+              onClick={() => setTribuFilterTab('all')}
+              className={`px-3.5 py-1.5 font-display text-xs uppercase tracking-widest font-black transition rounded-xl border-2 shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${
+                tribuFilterTab === 'all'
+                  ? 'bg-[#1A1918] text-white border-[#1A1918]'
+                  : 'bg-[#FAF6ED] text-[#1A1918] border-[#1A1918] hover:bg-[#F7B32B]'
+              }`}
+            >
+              Todos ({crews.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setTribuFilterTab('admin')}
+              className={`px-3.5 py-1.5 font-display text-xs uppercase tracking-widest font-black transition rounded-xl border-2 shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${
+                tribuFilterTab === 'admin'
+                  ? 'bg-[#1A1918] text-white border-[#1A1918]'
+                  : 'bg-[#FAF6ED] text-[#1A1918] border-[#1A1918] hover:bg-[#F7B32B]'
+              }`}
+            >
+              Donde soy Admin
+            </button>
+            <button
+              type="button"
+              onClick={() => setTribuFilterTab('confirmed')}
+              className={`px-3.5 py-1.5 font-display text-xs uppercase tracking-widest font-black transition rounded-xl border-2 shadow-[2px_2px_0px_#1A1918] flex items-center gap-1.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${
+                tribuFilterTab === 'confirmed'
+                  ? 'bg-[#E6332A] text-white border-[#1A1918]'
+                  : 'bg-[#FAF6ED] text-[#1A1918] border-[#1A1918] hover:bg-[#F7B32B]'
+              }`}
+            >
+              <Check className="w-3 h-3 text-[#F7B32B]" />
+              Con Rodada Confirmada
+            </button>
+          </div>
+
+          {/* Search Bar */}
+          <div className="relative sm:w-72">
+            <Search className="w-3.5 h-3.5 text-[#1A1918]/60 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input 
               type="text"
               value={searchTribuQuery}
               onChange={(e) => setSearchTribuQuery(e.target.value)}
-              placeholder="Buscar tribu por nombre o ciudad..."
-              className="w-full bg-[#12100E] border border-white/10 pl-8 pr-3 py-1.5 text-xs text-white placeholder-ash/50 focus:outline-none focus:border-earth"
+              placeholder="Buscar por nombre, clave o ciudad..."
+              className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] pl-9 pr-3 py-2 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none focus:ring-1 focus:ring-[#1A1918] font-sans font-semibold rounded-xl shadow-[2px_2px_0px_#1A1918]"
             />
           </div>
-          <span className="text-[10px] text-ash uppercase tracking-wider">
-            {filteredCrews.length} {filteredCrews.length === 1 ? 'Tribu Activa' : 'Tribus Activas'}
-          </span>
         </div>
 
-        {/* Compact, Sensible Directory List (Scales cleanly to 10+ Tribus) */}
-        <div className="divide-y divide-white/[0.06] border border-white/10 bg-[#0D0B0A] mt-4">
+        {/* Tactical 2-Column Tribus Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 mt-5">
           {filteredCrews.map((crew) => {
             const isUserAdmin = crew.creatorId === currentUser.id;
             const crewRides = rodadas.filter(r => r.crewId === crew.id);
@@ -603,6 +685,11 @@ export const TribusView: React.FC<TribusViewProps> = ({
               .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
             const nextConfirmedRide = confirmedRides[0] || null;
             const otherConfirmedCount = Math.max(0, confirmedRides.length - 1);
+
+            const winningRoute = nextConfirmedRide 
+              ? routeProposals.find(p => p.rodadaId === nextConfirmedRide.id && p.id === nextConfirmedRide.winningRouteId)
+                || routeProposals.find(p => p.rodadaId === nextConfirmedRide.id)
+              : null;
 
             // 2. Fechas abiertas convocadas pendientes de tu voto
             const openVotingRides = crewRides.filter(r => r.status === 'votacion');
@@ -629,10 +716,14 @@ export const TribusView: React.FC<TribusViewProps> = ({
 
             // 4. Si hay rodada confirmada y el usuario aún no ha respondido o está en 'por confirmar'
             const userAttendeeForRide = nextConfirmedRide?.attendees.find(a => a.userId === currentUser.id);
-            const hasPendingRsvp = Boolean(nextConfirmedRide && !userAttendeeForRide);
-            const isUserUndecided = Boolean(
-              nextConfirmedRide && userAttendeeForRide && (userAttendeeForRide.status === 'por_confirmar' || userAttendeeForRide.status === 'interesado')
-            );
+
+            // 5. Garaje: Motos de los miembros
+            const memberIds = crew.members.map(m => m.userId);
+            const crewBikes = (motorcycles || []).filter(m => memberIds.includes(m.userId));
+            const garageBrands = Array.from(new Set(crewBikes.map(b => b.brand))).slice(0, 3);
+
+            // 6. Preview de miembros (primeros 4)
+            const previewMembers = crew.members.slice(0, 4).map(m => users.find(u => u.id === m.userId));
 
             return (
               <div
@@ -641,94 +732,202 @@ export const TribusView: React.FC<TribusViewProps> = ({
                   setSelectedTribuId(crew.id);
                   setCurrentCrew(crew);
                 }}
-                className="group p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-white/[0.03] transition cursor-pointer"
+                className="group bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[24px] shadow-[4px_4px_0px_#1A1918] hover:shadow-[7px_7px_0px_#1A1918] transition-all duration-300 overflow-hidden cursor-pointer flex flex-col justify-between relative"
               >
-                {/* Left: Tribu Identity */}
-                <div className="flex items-start sm:items-center gap-3.5 min-w-0">
-                  {/* Foto de la Tribu / Portada o Monograma si no tiene */}
-                  <div className="w-12 h-12 rounded-xl overflow-hidden border border-white/15 bg-black/40 flex items-center justify-center shrink-0 group-hover:border-earth/50 transition shadow-sm">
-                    {crew.coverImage ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img 
-                        src={crew.coverImage} 
-                        alt={crew.name} 
-                        className="w-full h-full object-cover group-hover:scale-105 transition duration-300" 
-                      />
+                {/* 1. Panoramic Cover Image Banner (Risograph Poster Header) */}
+                <div className="h-32 sm:h-36 w-full relative overflow-hidden bg-[#F4EEDB] border-b-2 border-[#1A1918]">
+                  {crew.coverImage ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img 
+                      src={crew.coverImage} 
+                      alt={crew.name} 
+                      className="w-full h-full object-cover group-hover:scale-105 transition duration-700 opacity-90"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-[#F4EEDB] flex items-center justify-center">
+                      <span className="font-display font-black text-5xl text-[#1A1918]/10 uppercase tracking-widest">
+                        {crew.name.slice(0, 4)}
+                      </span>
+                    </div>
+                  )}
+                  {/* Subtle warm vignette gradient overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#FAF6ED] via-[#FAF6ED]/30 to-transparent" />
+
+                  {/* Overlaid Badges on Top Right */}
+                  <div className="absolute top-3 right-3 flex items-center gap-2 z-10">
+                    {/* Clave de Invitación con Copia 1-Click */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigator.clipboard.writeText(crew.inviteCode);
+                        setCopiedCodeCrewId(crew.id);
+                        setTimeout(() => setCopiedCodeCrewId(null), 2000);
+                      }}
+                      className="px-2.5 py-1 bg-[#FAF6ED] border-2 border-[#1A1918] text-[#1A1918] text-[10px] font-mono flex items-center gap-1.5 transition active:scale-95 shadow-[2px_2px_0px_#1A1918] font-bold rounded-lg"
+                      title="Copiar clave de invitación de la tribu"
+                    >
+                      <Key className="w-3 h-3 text-[#E6332A]" />
+                      <span>{copiedCodeCrewId === crew.id ? '¡Copiada!' : crew.inviteCode}</span>
+                      <Copy className="w-2.5 h-2.5 text-[#1A1918]/60" />
+                    </button>
+
+                    {/* Role Pill */}
+                    {isUserAdmin ? (
+                      <span className="px-2.5 py-1 text-[9px] font-display uppercase tracking-widest font-black bg-[#E6332A] text-white border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] rounded-lg flex items-center gap-1">
+                        <Shield className="w-3 h-3" />
+                        <span>Admin</span>
+                      </span>
                     ) : (
-                      <span className="text-earth font-display font-bold text-sm">
-                        {crew.name.slice(0, 2).toUpperCase()}
+                      <span className="px-2.5 py-1 text-[9px] font-display uppercase tracking-widest font-black bg-[#1A1918] text-white border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] rounded-lg">
+                        Miembro
                       </span>
                     )}
-                  </div>
-
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-display font-bold text-sm sm:text-base text-white uppercase group-hover:text-earth transition truncate">
-                        {crew.name}
-                      </h3>
-                      {isUserAdmin ? (
-                        <span className="text-[9px] font-mono uppercase font-bold px-1.5 py-0.5 bg-earth/15 border border-earth/40 text-earth">
-                          Admin
-                        </span>
-                      ) : (
-                        <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 bg-white/[0.04] border border-white/10 text-ash">
-                          Miembro
-                        </span>
-                      )}
-                    </div>
-                    
-                    <div className="flex items-center gap-3 text-[11px] text-ash mt-1 flex-wrap">
-                      <span className="flex items-center gap-1 text-chalk/80">
-                        <MapPin className="w-3 h-3 text-earth shrink-0" />
-                        {crew.baseCity}
-                      </span>
-                      <span>•</span>
-                      <span className="flex items-center gap-1">
-                        <Users className="w-3 h-3 text-ash shrink-0" />
-                        {crew.members.length} {crew.members.length === 1 ? 'piloto' : 'pilotos'}
-                      </span>
-                      <span>•</span>
-                      <span className="text-[10px] text-ash/80">Clave: {crew.inviteCode}</span>
-                    </div>
                   </div>
                 </div>
 
-                {/* Center / Right: Siguiente ruta confirmada (solo si hay) + Notificaciones */}
-                <div className="flex items-center justify-between md:justify-end gap-4 shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-white/[0.04]">
-                  <div className="text-left md:text-right space-y-1.5">
-                    {nextConfirmedRide ? (
-                      <div>
-                        <span className="text-[9px] text-ash uppercase tracking-wider block font-bold">
-                          Próxima Ruta Confirmada
-                        </span>
-                        <div className="flex items-center gap-2 mt-0.5 md:justify-end">
-                          <Calendar className="w-3 h-3 text-emerald-400 shrink-0" />
-                          <span className="text-xs text-chalk font-bold truncate max-w-[200px] sm:max-w-[260px]">
-                            {formatHumanDate(nextConfirmedRide.startDate, nextConfirmedRide.endDate)} • {nextConfirmedRide.title}
-                          </span>
-                          <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 font-bold flex items-center gap-1 shrink-0">
-                            <Check className="w-2.5 h-2.5" />
-                            <span>Confirmada</span>
-                          </span>
+                {/* 2. Card Content & Identity */}
+                <div className="px-5 pb-5 -mt-9 relative z-10 flex-1 flex flex-col justify-between">
+                  <div>
+                    {/* Avatar + Title + City */}
+                    <div className="flex items-start gap-3.5">
+                      {/* Emblem / Avatar */}
+                      <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-[#1A1918] bg-[#FAF6ED] shadow-[3px_3px_0px_#1A1918] shrink-0 group-hover:ring-2 group-hover:ring-[#E6332A] transition duration-300">
+                        {crew.coverImage ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={crew.coverImage} alt={crew.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center font-display font-black text-base text-[#1A1918] bg-[#F4EEDB]">
+                            {crew.name.slice(0, 2).toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Title & Location */}
+                      <div className="min-w-0 flex-1 pt-1.5">
+                        <h3 className="font-display font-black text-lg sm:text-xl text-[#1A1918] uppercase group-hover:text-[#E6332A] transition truncate tracking-wide leading-tight">
+                          {crew.name}
+                        </h3>
+                        <div className="flex items-center gap-1.5 text-xs font-serif italic text-[#1A1918]/70 mt-0.5 font-medium">
+                          <MapPin className="w-3.5 h-3.5 text-[#E6332A] shrink-0" />
+                          <span className="truncate">{crew.baseCity}</span>
                         </div>
                       </div>
-                    ) : (
-                      <div className="md:text-right">
-                        <span className="text-[10px] text-ash/60 font-mono italic block">
-                          Sin ruta confirmada aún
-                        </span>
-                      </div>
+                    </div>
+
+                    {/* Tagline / Subtitle */}
+                    {crew.tagline && (
+                      <p className="text-xs font-serif italic text-[#1A1918]/80 mt-2.5 line-clamp-2 leading-relaxed font-medium">
+                        &quot;{crew.tagline}&quot;
+                      </p>
                     )}
 
-                    {/* Notificaciones de fechas por votar, nuevas propuestas u otras confirmadas */}
-                    {(unvotedDatesCount > 0 || newProposalsCount > 0 || otherConfirmedCount > 0 || hasPendingRsvp) && (
-                      <div className="flex items-center gap-1.5 flex-wrap md:justify-end pt-0.5">
+                    {/* Pilots Stack & Garage Brands */}
+                    <div className="mt-3.5 pt-3 border-t-2 border-[#1A1918] flex items-center justify-between text-xs">
+                      {/* Member Avatars */}
+                      <div className="flex items-center gap-2">
+                        <div className="flex -space-x-1.5 overflow-hidden">
+                          {previewMembers.map((u, idx) => (
+                            <div 
+                              key={u?.id || idx}
+                              className="inline-block w-6 h-6 rounded-lg ring-1 ring-[#1A1918] bg-[#FAF6ED] overflow-hidden shadow-xs"
+                            >
+                              {u?.avatar ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img src={u.avatar} alt={u.name} className="w-full h-full object-cover" />
+                              ) : (
+                                <span className="w-full h-full flex items-center justify-center text-[9px] font-bold text-[#1A1918]">
+                                  {u?.name?.slice(0, 1) || 'P'}
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                        <span className="text-[11px] font-display uppercase tracking-wider text-[#1A1918] font-black">
+                          {crew.members.length} {crew.members.length === 1 ? 'piloto' : 'pilotos'}
+                        </span>
+                      </div>
+
+                      {/* Garage Brands preview */}
+                      {garageBrands.length > 0 && (
+                        <div className="flex items-center gap-1 text-[11px] font-sans text-[#1A1918]/70 font-semibold truncate">
+                          <Bike className="w-3.5 h-3.5 text-[#E06423] shrink-0" />
+                          <span className="truncate">{garageBrands.join(' • ')}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Next Confirmed Ride Box (Matchbook Expedition Roadbook Card) */}
+                    <div className="mt-3.5">
+                      {nextConfirmedRide ? (
+                        <div className="p-3.5 bg-[#F4EEDB] border-2 border-[#1A1918] rounded-xl group-hover:border-[#E6332A] transition shadow-[2px_2px_0px_#1A1918]">
+                          <div className="flex items-center justify-between gap-2 mb-1.5 border-b border-[#1A1918]/20 pb-1.5">
+                            <span className="text-[10px] font-display uppercase tracking-widest text-[#E06423] font-black flex items-center gap-1">
+                              <Check className="w-3 h-3 text-[#E06423]" />
+                              <span>Salida Confirmada</span>
+                            </span>
+
+                            {/* User's RSVP state in this ride */}
+                            {userAttendeeForRide?.status === 'confirmado' ? (
+                              <span className="text-[9px] font-display uppercase tracking-wider text-white bg-[#1A1918] px-2 py-0.5 border border-[#1A1918] font-black flex items-center gap-1 shadow-sm rounded">
+                                <CheckCircle2 className="w-3 h-3 text-[#F7B32B]" />
+                                <span>Asistirás</span>
+                              </span>
+                            ) : userAttendeeForRide?.status === 'por_confirmar' || userAttendeeForRide?.status === 'interesado' ? (
+                              <span className="text-[9px] font-display uppercase tracking-wider text-[#1A1918] bg-[#F7B32B] px-2 py-0.5 border border-[#1A1918] font-black flex items-center gap-1 shadow-sm rounded">
+                                <HelpCircle className="w-3 h-3 text-[#1A1918]" />
+                                <span>Por confirmar</span>
+                              </span>
+                            ) : userAttendeeForRide?.status === 'no_asistire' ? (
+                              <span className="text-[9px] font-display uppercase tracking-wider text-white bg-[#E6332A] px-2 py-0.5 border border-[#1A1918] font-black flex items-center gap-1 shadow-sm rounded">
+                                <XCircle className="w-3 h-3 text-white" />
+                                <span>No asistes</span>
+                              </span>
+                            ) : (
+                              <span className="text-[9px] font-display uppercase tracking-wider text-[#1A1918] font-black flex items-center gap-1 bg-[#F7B32B] px-2 py-0.5 border border-[#1A1918] shadow-sm rounded">
+                                <AlertCircle className="w-3 h-3 text-[#1A1918]" />
+                                <span>RSVP Pendiente</span>
+                              </span>
+                            )}
+                          </div>
+
+                          <h4 className="text-sm font-display font-black text-[#1A1918] truncate uppercase tracking-wide">
+                            {winningRoute ? winningRoute.destination : nextConfirmedRide.title}
+                          </h4>
+
+                          <div className="flex items-center gap-2 text-xs font-sans text-[#1A1918]/80 mt-1 flex-wrap font-medium">
+                            <span className="text-[#1A1918] flex items-center gap-1 font-bold">
+                              <Calendar className="w-3.5 h-3.5 text-[#E6332A]" />
+                              {formatHumanDate(nextConfirmedRide.startDate, nextConfirmedRide.endDate)}
+                            </span>
+                            {winningRoute && (
+                              <>
+                                <span className="text-[#1A1918]/30">•</span>
+                                <span className="font-mono font-bold text-[#1A1918]">{winningRoute.totalKm} km</span>
+                                <span className="text-[#1A1918]/30">•</span>
+                                <span className="text-[#E06423] font-bold">{winningRoute.offroadPercentage}% tierra</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="p-3 bg-[#F4EEDB] border-2 border-dashed border-[#1A1918]/40 rounded-xl text-center">
+                          <span className="text-[11px] text-[#1A1918]/70 font-serif italic block font-medium">
+                            Sin fecha confirmada en el calendario
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Notifications & Activity Chips */}
+                    {(unvotedDatesCount > 0 || newProposalsCount > 0 || otherConfirmedCount > 0) && (
+                      <div className="flex items-center gap-1.5 flex-wrap mt-2.5">
                         {unvotedDatesCount > 0 && (
                           <span 
                             title="Fechas abiertas convocadas pendientes de tu voto"
-                            className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-300 font-bold flex items-center gap-1"
+                            className="text-[9px] font-display uppercase tracking-wider px-2 py-0.5 bg-[#FAF6ED] border-2 border-[#1A1918] text-[#1A1918] font-black flex items-center gap-1 shadow-[1px_1px_0px_#1A1918] rounded"
                           >
-                            <Vote className="w-2.5 h-2.5 text-amber-400" />
+                            <Vote className="w-2.5 h-2.5 text-[#E06423]" />
                             <span>{unvotedDatesCount} {unvotedDatesCount === 1 ? 'fecha por votar' : 'fechas por votar'}</span>
                           </span>
                         )}
@@ -736,9 +935,9 @@ export const TribusView: React.FC<TribusViewProps> = ({
                         {newProposalsCount > 0 && (
                           <span 
                             title="Nuevas propuestas de ruta en el grupo"
-                            className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-earth/15 border border-earth/40 text-earth font-bold flex items-center gap-1"
+                            className="text-[9px] font-display uppercase tracking-wider px-2 py-0.5 bg-[#FAF6ED] border-2 border-[#1A1918] text-[#E6332A] font-black flex items-center gap-1 shadow-[1px_1px_0px_#1A1918] rounded"
                           >
-                            <Sparkles className="w-2.5 h-2.5 text-earth" />
+                            <Sparkles className="w-2.5 h-2.5 text-[#E6332A]" />
                             <span>{newProposalsCount} {newProposalsCount === 1 ? 'nueva propuesta' : 'nuevas propuestas'}</span>
                           </span>
                         )}
@@ -746,59 +945,56 @@ export const TribusView: React.FC<TribusViewProps> = ({
                         {otherConfirmedCount > 0 && (
                           <span 
                             title="Otras fechas confirmadas en el calendario"
-                            className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-white/[0.04] border border-white/15 text-ash font-bold flex items-center gap-1"
+                            className="text-[9px] font-display uppercase tracking-wider px-2 py-0.5 bg-[#FAF6ED] border-2 border-[#1A1918] text-[#1A1918]/70 font-black flex items-center gap-1 shadow-[1px_1px_0px_#1A1918] rounded"
                           >
-                            <Calendar className="w-2.5 h-2.5 text-ash" />
+                            <Calendar className="w-2.5 h-2.5 text-[#1A1918]/60" />
                             <span>+{otherConfirmedCount} confirmada</span>
-                          </span>
-                        )}
-
-                        {hasPendingRsvp && (
-                          <span 
-                            title="Confirma tu asistencia en la rodada confirmada"
-                            className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-rose-500/15 border border-rose-500/40 text-rose-300 font-bold flex items-center gap-1"
-                          >
-                            <AlertCircle className="w-2.5 h-2.5 text-rose-400" />
-                            <span>RSVP pendiente</span>
-                          </span>
-                        )}
-
-                        {isUserUndecided && (
-                          <span 
-                            title="Marcaste tu asistencia como 'por confirmar'"
-                            className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-300 font-bold flex items-center gap-1"
-                          >
-                            <HelpCircle className="w-2.5 h-2.5 text-amber-400" />
-                            <span>Por confirmar</span>
                           </span>
                         )}
                       </div>
                     )}
                   </div>
 
-                  <div className="flex items-center gap-1 text-ash group-hover:text-white transition pl-2 shrink-0">
-                    <span className="text-[10px] uppercase font-bold tracking-wider hidden sm:inline group-hover:text-earth">
-                      Entrar
+                  {/* Card Action Footer */}
+                  <div className="mt-4 pt-3 border-t-2 border-[#1A1918] flex items-center justify-between text-xs">
+                    <span className="text-[#1A1918]/70 transition text-[11px] font-serif italic font-medium">
+                      {crew.whatsappGroupUrl ? '💬 WhatsApp conectado' : '🛡️ Cuartel Privado'}
                     </span>
-                    <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                    <span className="text-[#1A1918] group-hover:text-[#E6332A] font-display font-black uppercase tracking-widest text-xs flex items-center gap-1 transition-transform group-hover:translate-x-1">
+                      <span>Entrar al Club</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </span>
                   </div>
                 </div>
               </div>
             );
           })}
+        </div>
 
-          {filteredCrews.length === 0 && (
-            <div className="p-8 text-center text-ash text-xs space-y-3">
-              <p>No se encontraron tribus con ese criterio.</p>
+        {filteredCrews.length === 0 && (
+          <div className="p-12 text-center text-ash text-xs space-y-3 bg-[#0F0C0A] border border-white/10 rounded-2xl mt-5">
+            <p className="font-mono text-white text-sm">No se encontraron tribus con ese criterio.</p>
+            <p className="text-ash/70 text-xs max-w-sm mx-auto">Prueba con otro término de búsqueda o cambia el filtro seleccionado.</p>
+            <div className="flex items-center justify-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchTribuQuery('');
+                  setTribuFilterTab('all');
+                }}
+                className="px-3.5 py-1.5 border border-white/15 text-ash hover:text-white font-mono text-xs rounded-lg transition"
+              >
+                Limpiar filtros
+              </button>
               <button
                 onClick={onOpenCreateCrew}
-                className="px-4 py-2 bg-earth text-white font-bold uppercase text-xs"
+                className="px-4 py-1.5 bg-earth hover:bg-earth-bright text-white font-bold uppercase text-xs rounded-lg transition"
               >
                 Crear una Nueva Tribu
               </button>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -807,21 +1003,21 @@ export const TribusView: React.FC<TribusViewProps> = ({
   // VIEW 2: DENTRO DE LA TRIBU (VISTA SUTIL SUPERIOR + BOARD ESTILO AIRBNB)
   // =========================================================================
   return (
-    <div className="max-w-[1300px] w-full mx-auto pb-28 px-4 sm:px-6 font-mono space-y-6">
+    <div className="max-w-[1300px] w-full mx-auto pb-28 px-4 sm:px-6 font-sans space-y-6">
       
-      {/* App Header (Responsive & Mobile-Native) */}
-      <div className="relative border-b border-white/10 pb-3 pt-1 space-y-2.5">
+      {/* App Header (Deus Lookbook Masthead) */}
+      <div className="relative border-b border-[#E5DFD5] pb-4 pt-1 space-y-3">
         
         {/* Row 1: Back + Tribe Selector + Clean Icon Actions */}
         <div className="flex items-center justify-between gap-2">
           {/* Izquierda: Volver al directorio */}
           <button
             onClick={() => setSelectedTribuId(null)}
-            className="p-1.5 -ml-1 text-ash hover:text-white transition group flex items-center gap-1 text-xs uppercase shrink-0"
+            className="p-2 -ml-1 text-stone-500 hover:text-[#141312] transition group flex items-center gap-1.5 text-xs font-display font-bold uppercase tracking-wider shrink-0 bg-white border border-[#E5DFD5] rounded-xl shadow-xs hover:border-[#141312]"
             title="Ver todas las tribus"
           >
-            <ArrowLeft className="w-4 h-4 text-earth group-hover:-translate-x-0.5 transition-transform" />
-            <span className="hidden sm:inline font-bold">Tribus</span>
+            <ArrowLeft className="w-3.5 h-3.5 text-[#C84B31] group-hover:-translate-x-0.5 transition-transform" />
+            <span className="hidden sm:inline">Tribus</span>
           </button>
 
           {/* Centro: Selector de Grupo */}
@@ -829,12 +1025,12 @@ export const TribusView: React.FC<TribusViewProps> = ({
             <button
               type="button"
               onClick={() => setShowCrewDropdown(prev => !prev)}
-              className={`px-2 sm:px-3 py-1 rounded-xl transition-all flex items-center gap-2 group max-w-[200px] sm:max-w-md mx-auto active:scale-95 ${
-                showCrewDropdown ? 'bg-white/10 ring-1 ring-white/10' : 'hover:bg-white/5'
+              className={`px-3 py-1.5 rounded-xl border transition-all flex items-center gap-2.5 group max-w-[220px] sm:max-w-md mx-auto active:scale-95 shadow-xs ${
+                showCrewDropdown ? 'bg-white border-[#141312] shadow-sm' : 'bg-white border-[#E5DFD5] hover:border-[#141312]'
               }`}
             >
               {activeTribu.coverImage && (
-                <div className="w-5 h-5 rounded-md overflow-hidden border border-white/20 shrink-0">
+                <div className="w-5 h-5 rounded-md overflow-hidden border border-[#E5DFD5] shrink-0">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img 
                     src={activeTribu.coverImage} 
@@ -843,10 +1039,10 @@ export const TribusView: React.FC<TribusViewProps> = ({
                   />
                 </div>
               )}
-              <span className="font-display font-black text-sm sm:text-base text-white uppercase tracking-tight truncate">
+              <span className="font-display font-black text-sm sm:text-base text-[#141312] uppercase tracking-wide truncate">
                 {activeTribu.name}
               </span>
-              <ChevronDown className={`w-3.5 h-3.5 text-earth shrink-0 transition-transform duration-200 ${showCrewDropdown ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`w-3.5 h-3.5 text-[#C84B31] shrink-0 transition-transform duration-200 ${showCrewDropdown ? 'rotate-180' : ''}`} />
             </button>
 
             {/* Dropdown selector de Tribus */}
@@ -856,18 +1052,18 @@ export const TribusView: React.FC<TribusViewProps> = ({
                   className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px] transition-opacity" 
                   onClick={() => setShowCrewDropdown(false)} 
                 />
-                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-80 sm:w-96 bg-[#161311]/98 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.85)] ring-1 ring-white/5 z-50 p-3 space-y-2 animate-in fade-in zoom-in-95 duration-150">
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-80 sm:w-96 bg-white border border-[#E5DFD5] rounded-2xl shadow-2xl z-50 p-4 space-y-3 animate-in fade-in zoom-in-95 duration-150">
                   
                   {/* Notch pointer */}
-                  <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 bg-[#161311] border-t border-l border-white/10" />
+                  <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 bg-white border-t border-l border-[#E5DFD5]" />
                   
                   {/* Header */}
-                  <div className="px-2 py-1 flex items-center justify-between border-b border-white/5 pb-2">
+                  <div className="px-1 flex items-center justify-between border-b border-[#E5DFD5] pb-2.5">
                     <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4 text-earth" />
-                      <span className="text-xs font-semibold text-white/90">Tus Grupos</span>
+                      <Users className="w-4 h-4 text-[#C84B31]" />
+                      <span className="text-xs font-display font-black text-[#141312] uppercase tracking-wider">Tus Clubs &amp; Tribus</span>
                     </div>
-                    <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-white/5 text-ash border border-white/10">
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#FAF8F5] text-stone-600 border border-[#E5DFD5] font-bold">
                       {crews.length} {crews.length === 1 ? 'grupo' : 'grupos'}
                     </span>
                   </div>
@@ -893,14 +1089,14 @@ export const TribusView: React.FC<TribusViewProps> = ({
                           }}
                           className={`w-full text-left p-2.5 rounded-xl transition-all flex items-center gap-3 ${
                             isCurrent 
-                              ? 'bg-earth/15 border border-earth/40 text-white shadow-sm' 
-                              : 'hover:bg-white/5 text-ash hover:text-white border border-transparent'
+                              ? 'bg-[#FAF8F5] border border-[#141312] text-[#141312] shadow-xs' 
+                              : 'hover:bg-[#FAF8F5] text-stone-600 hover:text-[#141312] border border-transparent'
                           }`}
                         >
                           <div className={`w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center shrink-0 border transition ${
                             isCurrent 
-                              ? 'border-earth ring-1 ring-earth/50 shadow-md' 
-                              : 'border-white/10 bg-white/5'
+                              ? 'border-[#141312] ring-1 ring-[#141312] shadow-xs' 
+                              : 'border-[#E5DFD5] bg-[#FAF8F5]'
                           }`}>
                             {c.coverImage ? (
                               // eslint-disable-next-line @next/next/no-img-element
@@ -910,25 +1106,25 @@ export const TribusView: React.FC<TribusViewProps> = ({
                                 className="w-full h-full object-cover" 
                               />
                             ) : (
-                              <span className={`font-bold text-xs ${isCurrent ? 'text-earth' : 'text-ash'}`}>
+                              <span className={`font-display font-bold text-xs ${isCurrent ? 'text-[#C84B31]' : 'text-stone-500'}`}>
                                 {initials || 'TR'}
                               </span>
                             )}
                           </div>
 
                           <div className="flex-1 min-w-0">
-                            <p className="font-bold text-sm text-white truncate">{c.name}</p>
-                            <p className="text-xs text-ash/90 truncate mt-0.5">
+                            <p className="font-display font-bold text-sm text-[#141312] uppercase tracking-wide truncate">{c.name}</p>
+                            <p className="text-xs font-serif italic text-stone-500 truncate mt-0.5">
                               {c.baseCity} • {c.members.length} {c.members.length === 1 ? 'piloto' : 'pilotos'}
                             </p>
                           </div>
 
                           {isCurrent ? (
-                            <div className="w-5 h-5 rounded-full bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center shrink-0">
-                              <Check className="w-3 h-3 text-emerald-400" />
+                            <div className="w-5 h-5 rounded-full bg-[#141312] flex items-center justify-center shrink-0 shadow-xs">
+                              <Check className="w-3 h-3 text-white stroke-[3]" />
                             </div>
                           ) : (
-                            <span className="text-xs text-ash/40">Entrar</span>
+                            <span className="text-[11px] font-display font-bold text-stone-400 uppercase">Entrar</span>
                           )}
                         </button>
                       );
@@ -936,15 +1132,15 @@ export const TribusView: React.FC<TribusViewProps> = ({
                   </div>
 
                   {/* Actions */}
-                  <div className="pt-2 border-t border-white/5 space-y-1">
+                  <div className="pt-2 border-t border-[#E5DFD5] space-y-1">
                     {activeTribu.whatsappGroupUrl ? (
                       <a
                         href={activeTribu.whatsappGroupUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-emerald-400 hover:bg-emerald-500/10 flex items-center gap-2.5 transition"
+                        className="w-full text-left px-3 py-2 rounded-xl text-xs font-display font-bold uppercase tracking-wider text-[#25D366] hover:bg-[#25D366]/10 flex items-center gap-2.5 transition"
                       >
-                        <WhatsAppIcon className="w-3.5 h-3.5 text-emerald-400" />
+                        <WhatsAppIcon className="w-3.5 h-3.5 text-[#25D366]" />
                         <span>Abrir grupo de WhatsApp</span>
                       </a>
                     ) : (
@@ -953,9 +1149,9 @@ export const TribusView: React.FC<TribusViewProps> = ({
                           setShowCrewDropdown(false);
                           handleOpenEditCrew();
                         }}
-                        className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-emerald-400 hover:bg-emerald-500/10 flex items-center gap-2.5 transition"
+                        className="w-full text-left px-3 py-2 rounded-xl text-xs font-display font-bold uppercase tracking-wider text-[#25D366] hover:bg-[#25D366]/10 flex items-center gap-2.5 transition"
                       >
-                        <WhatsAppIcon className="w-3.5 h-3.5 text-emerald-400" />
+                        <WhatsAppIcon className="w-3.5 h-3.5 text-[#25D366]" />
                         <span>Conectar grupo de WhatsApp</span>
                       </button>
                     )}
@@ -964,9 +1160,9 @@ export const TribusView: React.FC<TribusViewProps> = ({
                         setShowCrewDropdown(false);
                         handleOpenEditCrew();
                       }}
-                      className="w-full text-left px-3 py-2 rounded-lg text-xs text-ash hover:text-white hover:bg-white/5 flex items-center gap-2.5 transition cursor-pointer"
+                      className="w-full text-left px-3 py-2 rounded-xl text-xs text-stone-600 hover:text-[#141312] hover:bg-[#FAF8F5] flex items-center gap-2.5 transition cursor-pointer font-display font-bold uppercase tracking-wider"
                     >
-                      <Pencil className="w-3.5 h-3.5 text-earth" />
+                      <Pencil className="w-3.5 h-3.5 text-[#C84B31]" />
                       <span>Editar grupo</span>
                     </button>
                     <button
@@ -974,9 +1170,9 @@ export const TribusView: React.FC<TribusViewProps> = ({
                         setShowCrewDropdown(false);
                         handleShareCrewWithCode();
                       }}
-                      className="w-full text-left px-3 py-2 rounded-lg text-xs text-ash hover:text-white hover:bg-white/5 flex items-center gap-2.5 transition cursor-pointer"
+                      className="w-full text-left px-3 py-2 rounded-xl text-xs text-stone-600 hover:text-[#141312] hover:bg-[#FAF8F5] flex items-center gap-2.5 transition cursor-pointer font-display font-bold uppercase tracking-wider"
                     >
-                      <Share2 className="w-3.5 h-3.5 text-earth" />
+                      <Share2 className="w-3.5 h-3.5 text-[#C84B31]" />
                       <span>Compartir clave ({activeTribu.inviteCode})</span>
                     </button>
                     <button
@@ -984,9 +1180,9 @@ export const TribusView: React.FC<TribusViewProps> = ({
                         setShowCrewDropdown(false);
                         onOpenCreateCrew();
                       }}
-                      className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-chalk hover:text-white hover:bg-white/5 flex items-center gap-2.5 transition"
+                      className="w-full text-left px-3 py-2 rounded-xl text-xs font-display font-bold uppercase tracking-wider text-[#141312] hover:bg-[#FAF8F5] flex items-center gap-2.5 transition"
                     >
-                      <Plus className="w-3.5 h-3.5 text-earth" />
+                      <Plus className="w-3.5 h-3.5 text-[#C84B31]" />
                       <span>Crear nuevo grupo</span>
                     </button>
                   </div>
@@ -995,14 +1191,14 @@ export const TribusView: React.FC<TribusViewProps> = ({
             )}
           </div>
 
-          {/* Derecha: Acciones Compactas (KISS: iconos limpios) */}
-          <div className="relative flex items-center gap-1 shrink-0">
+          {/* Derecha: Acciones Compactas */}
+          <div className="relative flex items-center gap-1.5 shrink-0">
             {/* Editar grupo */}
             <button
               type="button"
               onClick={handleOpenEditCrew}
               title="Editar grupo"
-              className="p-1.5 rounded-lg text-ash hover:text-earth hover:bg-white/5 transition shrink-0 cursor-pointer active:scale-90"
+              className="p-2 rounded-xl border border-[#E5DFD5] bg-white text-stone-600 hover:text-[#141312] hover:border-[#141312] transition shrink-0 cursor-pointer shadow-xs active:scale-90"
             >
               <Pencil className="w-4 h-4" />
             </button>
@@ -1012,14 +1208,14 @@ export const TribusView: React.FC<TribusViewProps> = ({
               type="button"
               onClick={handleShareCrewWithCode}
               title={`Compartir clave ${activeTribu.inviteCode}`}
-              className={`p-1.5 rounded-lg transition shrink-0 cursor-pointer active:scale-90 ${
+              className={`p-2 rounded-xl border transition shrink-0 cursor-pointer shadow-xs active:scale-90 ${
                 copiedCrewShare 
-                  ? 'text-emerald-400 bg-emerald-500/10' 
-                  : 'text-ash hover:text-earth hover:bg-white/5'
+                  ? 'text-emerald-700 bg-emerald-50 border-emerald-300' 
+                  : 'text-stone-600 hover:text-[#141312] bg-white border-[#E5DFD5] hover:border-[#141312]'
               }`}
             >
               {copiedCrewShare ? (
-                <Check className="w-4 h-4 text-emerald-400" />
+                <Check className="w-4 h-4 text-emerald-600" />
               ) : (
                 <Share2 className="w-4 h-4" />
               )}
@@ -1029,31 +1225,31 @@ export const TribusView: React.FC<TribusViewProps> = ({
             <button
               type="button"
               onClick={handleWhatsAppHeaderClick}
-              className={`p-1.5 rounded-lg border transition shrink-0 cursor-pointer shadow-sm active:scale-90 relative ${
+              className={`p-2 rounded-xl border transition shrink-0 cursor-pointer shadow-xs active:scale-90 relative ${
                 activeTribu.whatsappGroupUrl
-                  ? 'bg-[#25D366]/15 hover:bg-[#25D366]/25 border-[#25D366]/40 text-[#25D366]'
-                  : 'bg-white/[0.04] hover:bg-white/[0.08] border-white/15 text-ash hover:text-white'
+                  ? 'bg-[#25D366]/10 hover:bg-[#25D366]/20 border-[#25D366]/40 text-[#25D366]'
+                  : 'bg-white hover:bg-[#FAF8F5] border-[#E5DFD5] text-stone-400 hover:text-stone-600'
               }`}
               title={activeTribu.whatsappGroupUrl ? 'Abrir grupo de WhatsApp' : 'Sin enlace de WhatsApp'}
             >
-              <WhatsAppIcon className={`w-4 h-4 ${activeTribu.whatsappGroupUrl ? 'text-[#25D366]' : 'text-ash'}`} />
+              <WhatsAppIcon className={`w-4 h-4 ${activeTribu.whatsappGroupUrl ? 'text-[#25D366]' : 'text-stone-400'}`} />
               {activeTribu.whatsappGroupUrl && (
-                <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[#25D366] animate-pulse" />
+                <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-[#25D366] animate-pulse" />
               )}
             </button>
 
             {/* Mini Aviso: Sin enlace de WhatsApp vinculado */}
             {showWhatsappMissingNotice && (
-              <div className="absolute top-full right-0 mt-2 z-50 w-72 p-3 bg-[#141210] border border-white/20 rounded-xl shadow-2xl animate-in fade-in slide-in-from-top-1 duration-150">
-                <div className="flex items-start gap-2.5">
-                  <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0 mt-0.5">
-                    <WhatsAppIcon className="w-3.5 h-3.5 text-ash" />
+              <div className="absolute top-full right-0 mt-2 z-50 w-72 p-4 bg-white border border-[#E5DFD5] rounded-2xl shadow-2xl animate-in fade-in slide-in-from-top-1 duration-150">
+                <div className="flex items-start gap-3">
+                  <div className="w-7 h-7 rounded-full bg-[#FAF8F5] border border-[#E5DFD5] flex items-center justify-center shrink-0 mt-0.5">
+                    <WhatsAppIcon className="w-3.5 h-3.5 text-stone-400" />
                   </div>
                   <div className="space-y-1 min-w-0 flex-1 text-left">
-                    <h5 className="text-xs font-bold text-white uppercase tracking-wider font-mono">
+                    <h5 className="text-xs font-display font-black text-[#141312] uppercase tracking-wider">
                       Sin WhatsApp
                     </h5>
-                    <p className="text-[11px] text-ash leading-relaxed">
+                    <p className="text-xs text-stone-500 font-serif italic leading-relaxed">
                       Este grupo aún no tiene enlace de WhatsApp vinculado.
                     </p>
                     <button
@@ -1062,7 +1258,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                         setShowWhatsappMissingNotice(false);
                         handleOpenEditCrew();
                       }}
-                      className="text-[11px] font-bold text-earth hover:text-earth-bright underline pt-0.5 block cursor-pointer"
+                      className="text-xs font-display font-bold text-[#C84B31] hover:underline pt-0.5 block cursor-pointer uppercase tracking-wider"
                     >
                       Vincular en Ajustes ✏️ →
                     </button>
@@ -1070,7 +1266,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                   <button
                     type="button"
                     onClick={() => setShowWhatsappMissingNotice(false)}
-                    className="text-ash/60 hover:text-white p-0.5 cursor-pointer"
+                    className="text-stone-400 hover:text-[#141312] p-0.5 cursor-pointer"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
@@ -1080,25 +1276,25 @@ export const TribusView: React.FC<TribusViewProps> = ({
           </div>
         </div>
 
-        {/* Row 2: Segmented Tabs (Clean, Full-Width on Mobile, Touch-Friendly) */}
-        <div className="flex items-center justify-center pt-0.5">
-          <div className="w-full sm:w-auto inline-flex p-1 bg-black/60 border border-white/10 rounded-xl">
+        {/* Row 2: Segmented Tabs (Deus Lookbook Tabs) */}
+        <div className="flex items-center justify-center pt-2">
+          <div className="w-full sm:w-auto inline-flex p-1.5 bg-[#FAF8F5] border border-[#DDD7CB] rounded-2xl gap-2 shadow-xs">
             <button
               onClick={() => setActiveTribuTab('rodadas')}
-              className={`flex-1 sm:flex-initial px-6 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition ${
+              className={`flex-1 sm:flex-initial px-8 py-2.5 text-xs font-display font-black uppercase tracking-widest transition rounded-xl ${
                 activeTribuTab === 'rodadas'
-                  ? 'bg-earth text-white shadow-sm'
-                  : 'text-ash hover:text-white'
+                  ? 'bg-[#141312] text-white shadow-md'
+                  : 'text-stone-600 hover:text-[#141312] hover:bg-[#F2EDE4]'
               }`}
             >
-              Rodadas
+              Expediciones &amp; Rutas
             </button>
             <button
               onClick={() => setActiveTribuTab('miembros')}
-              className={`flex-1 sm:flex-initial px-6 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition ${
+              className={`flex-1 sm:flex-initial px-8 py-2.5 text-xs font-display font-black uppercase tracking-widest transition rounded-xl ${
                 activeTribuTab === 'miembros'
-                  ? 'bg-earth text-white shadow-sm'
-                  : 'text-ash hover:text-white'
+                  ? 'bg-[#141312] text-white shadow-md'
+                  : 'text-stone-600 hover:text-[#141312] hover:bg-[#F2EDE4]'
               }`}
             >
               Pilotos ({activeTribu.members.length})
@@ -1138,64 +1334,55 @@ export const TribusView: React.FC<TribusViewProps> = ({
                 setSelectedConfirmedRodadaForPlan(confRodada);
                 setShowPlanCardModal(true);
               }}
-              className="group relative overflow-hidden border border-earth/40 hover:border-earth bg-[#0D0B0A] transition-all duration-300 cursor-pointer shadow-lg p-3 sm:p-4"
+              className="group relative overflow-hidden border-2 border-[#1A1918] bg-[#FAF6ED] transition-all duration-300 cursor-pointer shadow-[6px_6px_0px_#1A1918] hover:shadow-[9px_9px_0px_#1A1918] p-6 sm:p-7 rounded-[28px]"
               title="Click para ver el plan completo de la rodada"
             >
-              {/* Background Tactical Topographic & GPS Vector Pattern */}
-              <div className="absolute inset-0 z-0 pointer-events-none opacity-25 group-hover:opacity-40 transition-opacity duration-500 overflow-hidden">
-                {confWinning && (
-                  <RouteTacticalMapCard
-                    proposal={confWinning}
-                    isWinner={true}
-                    className="w-full h-full scale-110 pointer-events-none"
-                  />
-                )}
-                <div className="absolute inset-0 bg-gradient-to-r from-[#0D0B0A] via-[#0D0B0A]/85 to-transparent" />
-              </div>
+              {/* Ticket Top Strip Accent */}
+              <div className="absolute top-0 left-0 right-0 h-2 bg-[#E6332A] border-b-2 border-[#1A1918]" />
 
-              {/* Content Container: Compact Layout */}
-              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-3">
+              {/* Content Container: Editorial Risograph Ticket Layout */}
+              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5 pt-2">
                 
                 {/* Left side: Badge + Destination + Metrics */}
-                <div className="space-y-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="flex items-center gap-1.5 text-[9px] font-mono uppercase font-black px-2 py-0.5 bg-emerald-500/20 border border-emerald-500/50 text-emerald-300">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <div className="space-y-2.5 min-w-0">
+                  <div className="flex items-center gap-2.5 flex-wrap">
+                    <span className="flex items-center gap-1.5 text-[10px] font-display uppercase font-black px-3 py-1 bg-[#1A1918] text-[#FAF6ED] border border-[#1A1918] tracking-widest rounded-lg shadow-[2px_2px_0px_#1A1918]">
+                      <span className="w-2 h-2 rounded-full bg-[#F7B32B] animate-pulse" />
                       Ruta Confirmada
                     </span>
 
-                    <span className="text-[11px] font-mono text-ash font-bold flex items-center gap-1 bg-black/60 px-2 py-0.5 border border-white/10">
-                      <Calendar className="w-3 h-3 text-earth" />
-                      <span className="text-white">{formatHumanDate(confRodada.startDate, confRodada.endDate, true)}</span>
+                    <span className="text-xs font-mono text-[#1A1918] font-bold flex items-center gap-1.5 bg-[#FAF6ED] px-3 py-1 border-2 border-[#1A1918] rounded-lg shadow-[2px_2px_0px_#1A1918]">
+                      <Calendar className="w-3.5 h-3.5 text-[#E6332A]" />
+                      <span className="text-[#1A1918] font-bold">{formatHumanDate(confRodada.startDate, confRodada.endDate, true)}</span>
                     </span>
                   </div>
 
                   <div className="flex items-baseline gap-2 pt-0.5">
-                    <MapPin className="w-3.5 h-3.5 text-earth shrink-0 self-center" />
-                    <h3 className="text-sm sm:text-base font-display font-black text-white uppercase truncate group-hover:text-chalk transition tracking-tight">
+                    <MapPin className="w-4 h-4 text-[#E6332A] shrink-0 self-center" />
+                    <h3 className="text-xl sm:text-3xl font-display font-black text-[#1A1918] uppercase truncate group-hover:text-[#E6332A] transition tracking-tight">
                       {confWinning ? confWinning.destination : confRodada.title}
                     </h3>
-                    <span className="text-white/20 hidden md:inline">•</span>
-                    <span className="text-xs text-ash truncate hidden md:inline">
+                    <span className="text-[#1A1918]/30 hidden md:inline">•</span>
+                    <span className="text-xs sm:text-sm font-serif italic text-[#1A1918]/70 truncate hidden md:inline font-medium">
                       {confWinning?.title || confRodada.subtitle}
                     </span>
                   </div>
 
                   {/* Compact Metrics Row */}
-                  <div className="flex items-center gap-1.5 text-[10px] font-mono flex-wrap pt-0.5">
+                  <div className="flex items-center gap-2 text-xs font-display font-black flex-wrap pt-0.5">
                     {confWinning && (
-                      <span className="px-2 py-0.5 bg-black/60 border border-white/10 text-white font-bold">
+                      <span className="px-3 py-1 bg-[#F4EEDB] border-2 border-[#1A1918] text-[#1A1918] font-mono rounded-lg shadow-[1px_1px_0px_#1A1918]">
                         {confWinning.totalKm} km
                       </span>
                     )}
                     {confWinning && (
-                      <span className="px-2 py-0.5 bg-earth/15 border border-earth/30 text-earth font-bold flex items-center gap-1">
-                        <Mountain className="w-3 h-3 text-earth shrink-0" />
+                      <span className="px-3 py-1 bg-[#F4EEDB] border-2 border-[#1A1918] text-[#E06423] flex items-center gap-1 rounded-lg shadow-[1px_1px_0px_#1A1918]">
+                        <Mountain className="w-3.5 h-3.5 text-[#E06423] shrink-0" />
                         <span>{confWinning.offroadPercentage}% tierra</span>
                       </span>
                     )}
                     {confWinning?.difficulty && (
-                      <span className="px-2 py-0.5 bg-white/5 border border-white/10 text-ash uppercase">
+                      <span className="px-3 py-1 bg-[#FAF6ED] border-2 border-[#1A1918] text-[#1A1918] uppercase rounded-lg shadow-[1px_1px_0px_#1A1918]">
                         {confWinning.difficulty}
                       </span>
                     )}
@@ -1203,9 +1390,9 @@ export const TribusView: React.FC<TribusViewProps> = ({
                 </div>
 
                 {/* Right side: Pilots + Action Buttons */}
-                <div className="flex items-center gap-2.5 shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-white/10 justify-between md:justify-end">
+                <div className="flex items-center gap-3.5 shrink-0 pt-4 md:pt-0 border-t-2 md:border-t-0 border-[#1A1918] justify-between md:justify-end">
                   {/* Attendees */}
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-2.5">
                     <div className="flex -space-x-1.5 overflow-hidden">
                       {confAttendees.slice(0, 4).map((att, i) => (
                         <img 
@@ -1213,93 +1400,202 @@ export const TribusView: React.FC<TribusViewProps> = ({
                           src={att.userAvatar} 
                           alt={att.userName} 
                           title={att.userName}
-                          className="w-5 h-5 rounded-full border border-black object-cover" 
+                          className="w-7 h-7 rounded-lg border border-[#1A1918] object-cover shadow-xs" 
                         />
                       ))}
                     </div>
-                    <span className="text-[11px] font-mono text-ash">
-                      <strong className="text-white">{confCount}</strong>
+                    <span className="text-xs font-sans text-[#1A1918] font-medium">
+                      <strong className="text-[#1A1918] font-mono font-bold">{confCount}</strong> pilotos
                     </span>
                   </div>
 
-                  {/* 3-way RSVP selector: Asistiré, Por confirmar, No asistiré */}
-                  <div 
-                    onClick={(e) => e.stopPropagation()} 
-                    className="inline-flex rounded-lg border border-white/15 bg-black/70 p-0.5 text-[11px] font-mono gap-0.5"
-                  >
+                  {/* Tactical Matchbook RSVP Dropdown */}
+                  <div className="relative" onClick={(e) => e.stopPropagation()}>
+                    {/* Trigger Button Pill */}
                     <button
                       type="button"
                       onClick={() => {
-                        rsvpRodada(
-                          confRodada.id, 
-                          userBikes[0]?.id || 'moto-default', 
-                          'confirmado'
-                        );
-                        if (userRsvpStatus !== 'confirmado') {
-                          confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
-                        }
+                        setRsvpDropdownOpenRodadaId(prev => prev === confRodada.id ? null : confRodada.id);
                       }}
-                      className={`px-2 sm:px-2.5 py-1 rounded font-bold uppercase transition flex items-center gap-1 ${
+                      className={`px-4 py-2.5 font-display uppercase tracking-wider text-xs font-black transition rounded-xl flex items-center gap-2 border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${
                         userRsvpStatus === 'confirmado'
-                          ? 'bg-emerald-500/25 border border-emerald-500/60 text-emerald-300 shadow'
-                          : 'text-ash hover:text-white border border-transparent'
+                          ? 'bg-[#1A1918] text-[#FAF6ED] hover:bg-black'
+                          : userRsvpStatus === 'por_confirmar' || userRsvpStatus === 'interesado'
+                          ? 'bg-[#F7B32B] text-[#1A1918]'
+                          : userRsvpStatus === 'no_asistire'
+                          ? 'bg-[#E6332A] text-white'
+                          : 'bg-[#F7B32B] text-[#1A1918]'
                       }`}
-                      title="Confirmar que asistirás"
+                      title="Cambiar tu estatus de asistencia"
                     >
-                      <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
-                      <span>Asistiré</span>
+                      {userRsvpStatus === 'confirmado' ? (
+                        <>
+                          <CheckCircle2 className="w-3.5 h-3.5 text-[#F7B32B] shrink-0" />
+                          <span>Asistiré</span>
+                        </>
+                      ) : userRsvpStatus === 'por_confirmar' || userRsvpStatus === 'interesado' ? (
+                        <>
+                          <HelpCircle className="w-3.5 h-3.5 text-[#1A1918] shrink-0" />
+                          <span>Por confirmar</span>
+                        </>
+                      ) : userRsvpStatus === 'no_asistire' ? (
+                        <>
+                          <XCircle className="w-3.5 h-3.5 text-white shrink-0" />
+                          <span>No asistiré</span>
+                        </>
+                      ) : (
+                        <>
+                          <AlertCircle className="w-3.5 h-3.5 text-[#1A1918] shrink-0" />
+                          <span>¿Asistirás?</span>
+                        </>
+                      )}
+                      <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${rsvpDropdownOpenRodadaId === confRodada.id ? 'rotate-180' : ''}`} />
                     </button>
 
-                    <button
-                      type="button"
-                      onClick={() => {
-                        rsvpRodada(
-                          confRodada.id, 
-                          userBikes[0]?.id || 'moto-default', 
-                          'por_confirmar'
-                        );
-                      }}
-                      className={`px-2 sm:px-2.5 py-1 rounded font-bold uppercase transition flex items-center gap-1 ${
-                        userRsvpStatus === 'por_confirmar' || userRsvpStatus === 'interesado'
-                          ? 'bg-amber-500/25 border border-amber-500/60 text-amber-300 shadow'
-                          : 'text-ash hover:text-white border border-transparent'
-                      }`}
-                      title="Por confirmar tu asistencia"
-                    >
-                      <HelpCircle className="w-3 h-3 text-amber-400 shrink-0" />
-                      <span className="hidden sm:inline">Por confirmar</span>
-                      <span className="sm:hidden">Duda</span>
-                    </button>
+                    {/* Popover Dropdown Menu */}
+                    {rsvpDropdownOpenRodadaId === confRodada.id && (
+                      <>
+                        {/* Backdrop to catch clicks outside and close */}
+                        <div 
+                          className="fixed inset-0 z-40" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setRsvpDropdownOpenRodadaId(null);
+                          }} 
+                        />
 
-                    <button
-                      type="button"
-                      onClick={() => {
-                        rsvpRodada(
-                          confRodada.id, 
-                          userBikes[0]?.id || 'moto-default', 
-                          'no_asistire'
-                        );
-                      }}
-                      className={`px-2 sm:px-2.5 py-1 rounded font-bold uppercase transition flex items-center gap-1 ${
-                        userRsvpStatus === 'no_asistire'
-                          ? 'bg-rose-500/25 border border-rose-500/60 text-rose-300 shadow'
-                          : 'text-ash hover:text-white border border-transparent'
-                      }`}
-                      title="No podrás asistir"
-                    >
-                      <XCircle className="w-3 h-3 text-rose-400 shrink-0" />
-                      <span className="hidden sm:inline">No asistiré</span>
-                      <span className="sm:hidden">No voy</span>
-                    </button>
+                        {/* Floating Menu */}
+                        <div className="absolute right-0 top-full mt-2 z-50 w-64 bg-[#FAF6ED] border-2 border-[#1A1918] rounded-2xl shadow-[6px_6px_0px_#1A1918] p-3 animate-in fade-in-0 zoom-in-95">
+                          <div className="px-3 py-2 border-b-2 border-[#1A1918] mb-2">
+                            <span className="text-[10px] font-display uppercase tracking-widest text-[#1A1918]/60 font-black block">
+                              Tu Asistencia a la Rodada
+                            </span>
+                            <span className="text-xs font-display font-black text-[#1A1918] uppercase truncate block mt-0.5">
+                              {confWinning ? confWinning.destination : confRodada.title}
+                            </span>
+                          </div>
+
+                          <div className="space-y-1.5">
+                            {/* Option 1: Asistiré */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                rsvpRodada(confRodada.id, userBikes[0]?.id || 'moto-default', 'confirmado');
+                                if (userRsvpStatus !== 'confirmado') {
+                                  confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
+                                }
+                                setRsvpDropdownOpenRodadaId(null);
+                              }}
+                              className={`w-full p-2.5 text-left transition rounded-xl flex items-start gap-2.5 border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${
+                                userRsvpStatus === 'confirmado'
+                                  ? 'bg-[#1A1918] text-[#FAF6ED]'
+                                  : 'bg-[#F4EEDB] hover:bg-[#FAF6ED] text-[#1A1918]'
+                              }`}
+                            >
+                              <div className={`w-6 h-6 flex items-center justify-center shrink-0 mt-0.5 ${
+                                userRsvpStatus === 'confirmado' ? 'text-[#F7B32B]' : 'text-[#1A1918]'
+                              }`}>
+                                <CheckCircle2 className="w-4 h-4" />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center justify-between">
+                                  <span className={`text-xs font-display font-black uppercase ${
+                                    userRsvpStatus === 'confirmado' ? 'text-[#FAF6ED]' : 'text-[#1A1918]'
+                                  }`}>
+                                    Asistiré
+                                  </span>
+                                  {userRsvpStatus === 'confirmado' && (
+                                    <span className="text-[9px] font-display font-black text-[#F7B32B] uppercase">Activo</span>
+                                  )}
+                                </div>
+                                <span className={`text-[11px] block leading-tight mt-0.5 font-sans ${
+                                  userRsvpStatus === 'confirmado' ? 'text-[#FAF6ED]/70' : 'text-[#1A1918]/70'
+                                }`}>
+                                  Confirmado en el convoy de ruta
+                                </span>
+                              </div>
+                            </button>
+
+                            {/* Option 2: Por confirmar */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                rsvpRodada(confRodada.id, userBikes[0]?.id || 'moto-default', 'por_confirmar');
+                                setRsvpDropdownOpenRodadaId(null);
+                              }}
+                              className={`w-full p-2.5 text-left transition rounded-xl flex items-start gap-2.5 border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${
+                                userRsvpStatus === 'por_confirmar' || userRsvpStatus === 'interesado'
+                                  ? 'bg-[#F7B32B] text-[#1A1918]'
+                                  : 'bg-[#F4EEDB] hover:bg-[#FAF6ED] text-[#1A1918]'
+                              }`}
+                            >
+                              <div className="w-6 h-6 flex items-center justify-center shrink-0 mt-0.5 text-[#1A1918]">
+                                <HelpCircle className="w-4 h-4" />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-xs font-display font-black uppercase text-[#1A1918]">
+                                    Por confirmar
+                                  </span>
+                                  {(userRsvpStatus === 'por_confirmar' || userRsvpStatus === 'interesado') && (
+                                    <span className="text-[9px] font-display font-black text-[#1A1918] uppercase">Activo</span>
+                                  )}
+                                </div>
+                                <span className="text-[11px] text-[#1A1918]/70 block leading-tight mt-0.5 font-sans">
+                                  Interesado, pendiente de agenda o clima
+                                </span>
+                              </div>
+                            </button>
+
+                            {/* Option 3: No asistiré */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                rsvpRodada(confRodada.id, userBikes[0]?.id || 'moto-default', 'no_asistire');
+                                setRsvpDropdownOpenRodadaId(null);
+                              }}
+                              className={`w-full p-2.5 text-left transition rounded-xl flex items-start gap-2.5 border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${
+                                userRsvpStatus === 'no_asistire'
+                                  ? 'bg-[#E6332A] text-white'
+                                  : 'bg-[#F4EEDB] hover:bg-[#FAF6ED] text-[#1A1918]'
+                              }`}
+                            >
+                              <div className={`w-6 h-6 flex items-center justify-center shrink-0 mt-0.5 ${
+                                userRsvpStatus === 'no_asistire' ? 'text-white' : 'text-[#E6332A]'
+                              }`}>
+                                <XCircle className="w-4 h-4" />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center justify-between">
+                                  <span className={`text-xs font-display font-black uppercase ${
+                                    userRsvpStatus === 'no_asistire' ? 'text-white' : 'text-[#1A1918]'
+                                  }`}>
+                                    No asistiré
+                                  </span>
+                                  {userRsvpStatus === 'no_asistire' && (
+                                    <span className="text-[9px] font-display font-black text-white uppercase">Activo</span>
+                                  )}
+                                </div>
+                                <span className={`text-[11px] block leading-tight mt-0.5 font-sans ${
+                                  userRsvpStatus === 'no_asistire' ? 'text-white/80' : 'text-[#1A1918]/70'
+                                }`}>
+                                  No puedo acompañarlos esta vez
+                                </span>
+                              </div>
+                            </button>
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
 
                   {/* Ver Plan */}
                   <button
                     type="button"
-                    className="flex items-center gap-1 text-xs font-mono text-earth font-bold uppercase tracking-wider px-2.5 py-1.5 bg-black/60 border border-earth/30 group-hover:border-earth group-hover:bg-earth group-hover:text-white transition-all"
+                    className="flex items-center gap-1.5 text-xs font-display font-black text-[#1A1918] uppercase tracking-wider px-4 py-2.5 bg-[#FAF6ED] border-2 border-[#1A1918] hover:bg-[#1A1918] hover:text-[#FAF6ED] transition-all rounded-xl shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
                   >
                     <span>Plan</span>
-                    <ChevronRight className="w-3.5 h-3.5 text-current" />
+                    <ChevronRight className="w-3.5 h-3.5" />
                   </button>
 
                   {isCreatorOrAdmin && (
@@ -1309,13 +1605,14 @@ export const TribusView: React.FC<TribusViewProps> = ({
                         e.stopPropagation();
                         unlockWinningRoute(confRodada.id);
                       }}
-                      className="text-[10px] font-mono text-ash/60 hover:text-white uppercase px-1"
+                      className="text-[10px] font-display font-bold text-stone-400 hover:text-[#C84B31] uppercase px-1 transition"
                       title="Reabrir debate"
                     >
                       Reabrir
                     </button>
                   )}
                 </div>
+
               </div>
             </div>
           );
@@ -1345,50 +1642,50 @@ export const TribusView: React.FC<TribusViewProps> = ({
                     setSelectedConfirmedRodadaForPlan(rodada);
                     setShowPlanCardModal(true);
                   }}
-                  className="group relative overflow-hidden bg-[#0D0B0A] border border-earth/30 hover:border-earth p-4 transition-all duration-300 cursor-pointer flex flex-col justify-between space-y-3 shadow-lg"
+                  className="group relative overflow-hidden bg-[#FAF6ED] border-2 border-[#1A1918] rounded-2xl p-4 transition-all duration-200 cursor-pointer flex flex-col justify-between space-y-3 shadow-[4px_4px_0px_#1A1918] hover:shadow-[6px_6px_0px_#1A1918] hover:-translate-y-0.5"
                   title="Click para ver la tarjeta del plan"
                 >
                   {/* Background Tactical Topographic & GPS Vector Pattern */}
                   {winning && (
-                    <div className="absolute inset-0 z-0 pointer-events-none opacity-20 group-hover:opacity-35 transition-opacity duration-500 overflow-hidden">
+                    <div className="absolute inset-0 z-0 pointer-events-none opacity-25 group-hover:opacity-40 transition-opacity duration-300 overflow-hidden">
                       <RouteTacticalMapCard
                         proposal={winning}
                         isWinner={true}
                         className="w-full h-full scale-110 pointer-events-none"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#0D0B0A] via-[#0D0B0A]/80 to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#FAF6ED] via-[#FAF6ED]/70 to-transparent" />
                     </div>
                   )}
 
                   <div className="relative z-10 space-y-2">
                     {/* Fecha + Badge */}
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-xs font-mono font-bold text-white group-hover:text-chalk transition">
+                      <span className="text-xs font-mono font-black text-[#1A1918]">
                         {formatHumanDate(rodada.startDate, rodada.endDate, true)}
                       </span>
-                      <span className="text-[8px] font-mono uppercase font-black px-1.5 py-0.5 bg-emerald-500/20 border border-emerald-500/40 text-emerald-300">
+                      <span className="text-[9px] font-mono uppercase font-black px-2 py-0.5 bg-emerald-100 border border-[#1A1918] text-emerald-900 rounded shadow-[1px_1px_0px_#1A1918]">
                         Confirmada
                       </span>
                     </div>
 
                     {/* Destino */}
                     <div className="flex items-center gap-1.5 pt-1">
-                      <MapPin className="w-4 h-4 text-earth shrink-0" />
-                      <h4 className="text-base font-display font-black text-white uppercase truncate group-hover:text-chalk transition">
+                      <MapPin className="w-4 h-4 text-[#E6332A] shrink-0" />
+                      <h4 className="text-base font-display font-black text-[#1A1918] uppercase truncate group-hover:text-[#E6332A] transition-colors">
                         {winning ? winning.destination : rodada.title}
                       </h4>
                     </div>
                   </div>
 
                   {/* Asistentes & Ver Plan */}
-                  <div className="relative z-10 flex items-center justify-between pt-2.5 border-t border-white/10 text-[11px] font-mono">
-                    <div className="flex items-center gap-1.5 text-ash">
-                      <Users className="w-3.5 h-3.5 text-earth" />
-                      <span className="text-white font-bold">{attendees.length}</span>
+                  <div className="relative z-10 flex items-center justify-between pt-2.5 border-t-2 border-[#1A1918]/15 text-xs font-mono">
+                    <div className="flex items-center gap-1.5 text-[#1A1918]/80 font-bold">
+                      <Users className="w-3.5 h-3.5 text-[#E6332A]" />
+                      <span className="text-[#1A1918] font-black">{attendees.length}</span>
                       <span>{attendees.length === 1 ? 'asistente' : 'asistentes'}</span>
                     </div>
-                    <span className="text-earth text-[10px] uppercase font-bold tracking-wider group-hover:translate-x-0.5 transition-transform flex items-center gap-0.5">
-                      Ver Plan <ChevronRight className="w-3 h-3" />
+                    <span className="text-[#1A1918] text-[11px] font-display font-black uppercase tracking-wider group-hover:text-[#E6332A] group-hover:translate-x-0.5 transition-all flex items-center gap-0.5">
+                      Ver Plan <ChevronRight className="w-3.5 h-3.5" />
                     </span>
                   </div>
                 </div>
@@ -1424,28 +1721,33 @@ export const TribusView: React.FC<TribusViewProps> = ({
         });
 
         return (
-          <div className="space-y-4">
-            {/* Header & Quick Action Toolbar */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-3">
+          <div className="space-y-4 font-sans">
+            {/* Header & Quick Action Toolbar (Deus Paddock Look) */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
               <div>
-                <h3 className="font-display font-bold text-base text-white uppercase flex items-center gap-2">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-[10px] font-mono tracking-[0.2em] text-[#C25434] uppercase font-bold">
+                    ★ PADDOCK &amp; ESCUDERÍA ★
+                  </span>
+                </div>
+                <h3 className="font-display font-black text-xl sm:text-2xl text-bone uppercase tracking-wider flex items-center gap-2.5">
                   <span>Roster de Pilotos</span>
-                  <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-white/10 text-ash">
+                  <span className="text-xs font-mono font-bold px-2 py-0.5 bg-[#121110] border border-white/15 text-ochre">
                     {activeTribu.members.length}
                   </span>
                 </h3>
-                <p className="text-[11px] text-ash font-mono mt-0.5">
-                  {captainsCount} {captainsCount === 1 ? 'Capitán' : 'Capitanes'} • {sweepersCount} {sweepersCount === 1 ? 'Barrendero' : 'Barrenderos'} • {ridersCount} Riders
+                <p className="text-xs font-serif italic text-ash mt-0.5">
+                  {captainsCount} {captainsCount === 1 ? 'Capitán' : 'Capitanes'} • {sweepersCount} {sweepersCount === 1 ? 'Barrendero' : 'Barrenderos'} • {ridersCount} Riders en filas
                 </p>
               </div>
 
-              <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-2.5 flex-wrap">
                 {activeTribu.whatsappGroupUrl ? (
                   <a
                     href={activeTribu.whatsappGroupUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-3 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-400 text-xs font-mono font-bold flex items-center gap-1.5 transition"
+                    className="px-3 py-1.5 bg-[#181614] hover:bg-[#1E1B18] border border-emerald-500/40 text-emerald-400 text-xs font-display uppercase tracking-wider font-bold flex items-center gap-1.5 transition shadow-sm"
                     title="Abrir chat grupal en WhatsApp"
                   >
                     <WhatsAppIcon className="w-3.5 h-3.5 text-emerald-400" />
@@ -1455,8 +1757,8 @@ export const TribusView: React.FC<TribusViewProps> = ({
                 ) : (
                   <button
                     onClick={handleOpenEditCrew}
-                    className="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/15 text-ash hover:text-white text-xs font-mono flex items-center gap-1.5 transition"
-                    title="Vincular grupo de WhatsApp de la tribu"
+                    className="px-3 py-1.5 bg-[#181614] hover:bg-bone hover:text-[#121110] border border-white/20 text-ash hover:border-bone text-xs font-display uppercase tracking-wider font-bold flex items-center gap-1.5 transition shadow-sm"
+                    title="Vincular grupo de WhatsApp del club"
                   >
                     <WhatsAppIcon className="w-3.5 h-3.5 text-emerald-400" />
                     <span>+ WhatsApp</span>
@@ -1466,34 +1768,34 @@ export const TribusView: React.FC<TribusViewProps> = ({
                 <button
                   type="button"
                   onClick={handleCopyNaoLink}
-                  className="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-ash hover:text-white text-xs font-mono transition flex items-center gap-1.5"
-                  title="Copiar link de invitación a la tribu"
+                  className="px-3 py-1.5 bg-[#181614] hover:bg-bone hover:text-[#121110] border border-white/20 text-ash hover:border-bone text-xs font-display uppercase tracking-wider font-bold transition flex items-center gap-1.5 shadow-sm"
+                  title="Copiar link de invitación al club"
                 >
                   <Copy className="w-3.5 h-3.5" />
-                  <span className="hidden md:inline">{copiedNaoLink ? 'Copiado' : 'Link Tribu'}</span>
+                  <span className="hidden md:inline">{copiedNaoLink ? 'Copiado' : 'Link Club'}</span>
                 </button>
 
                 <button
                   onClick={() => setShowAddPilotModal(true)}
-                  className="px-3.5 py-1.5 bg-earth hover:bg-earth-bright text-white text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition border border-earth/40 shadow-sm active:scale-95 rounded-lg"
+                  className="px-3.5 py-1.5 bg-bone hover:bg-white text-[#121110] text-xs font-display uppercase tracking-widest font-bold flex items-center gap-1.5 transition shadow-md active:scale-95"
                 >
                   <UserPlus className="w-3.5 h-3.5" />
-                  <span>+ Invitar Piloto</span>
+                  <span>+ Reclutar Piloto</span>
                 </button>
               </div>
             </div>
 
-            {/* Filter Pills & Search Input */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+            {/* Filter Pills & Search Input (Deus Style) */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
               {/* Role filter pills */}
-              <div className="inline-flex rounded-lg border border-white/10 bg-black/60 p-0.5 text-[11px] font-mono overflow-x-auto">
+              <div className="inline-flex gap-1 p-1 bg-[#121110] border border-white/10 overflow-x-auto">
                 <button
                   type="button"
                   onClick={() => setPilotRoleFilter('all')}
-                  className={`px-2.5 py-1 rounded font-bold uppercase transition ${
+                  className={`px-3 py-1 text-xs font-display uppercase tracking-widest font-bold transition ${
                     pilotRoleFilter === 'all'
-                      ? 'bg-earth text-white shadow-sm'
-                      : 'text-ash hover:text-white'
+                      ? 'bg-bone text-[#121110] shadow-sm'
+                      : 'text-ash hover:text-bone'
                   }`}
                 >
                   Todos ({activeTribu.members.length})
@@ -1501,34 +1803,34 @@ export const TribusView: React.FC<TribusViewProps> = ({
                 <button
                   type="button"
                   onClick={() => setPilotRoleFilter('capitan')}
-                  className={`px-2.5 py-1 rounded font-bold uppercase transition flex items-center gap-1 ${
+                  className={`px-3 py-1 text-xs font-display uppercase tracking-widest font-bold transition flex items-center gap-1 ${
                     pilotRoleFilter === 'capitan'
-                      ? 'bg-amber-500/25 border border-amber-500/60 text-amber-300 shadow-sm'
-                      : 'text-ash hover:text-white'
+                      ? 'bg-ochre text-[#121110] shadow-sm'
+                      : 'text-ash hover:text-bone'
                   }`}
                 >
-                  <Compass className="w-3 h-3 text-amber-400" />
+                  <Compass className="w-3 h-3 text-current" />
                   Capitanes ({captainsCount})
                 </button>
                 <button
                   type="button"
                   onClick={() => setPilotRoleFilter('barrendero')}
-                  className={`px-2.5 py-1 rounded font-bold uppercase transition flex items-center gap-1 ${
+                  className={`px-3 py-1 text-xs font-display uppercase tracking-widest font-bold transition flex items-center gap-1 ${
                     pilotRoleFilter === 'barrendero'
-                      ? 'bg-blue-500/25 border border-blue-500/60 text-blue-300 shadow-sm'
-                      : 'text-ash hover:text-white'
+                      ? 'bg-blue-400 text-[#121110] shadow-sm'
+                      : 'text-ash hover:text-bone'
                   }`}
                 >
-                  <Shield className="w-3 h-3 text-blue-400" />
+                  <Shield className="w-3 h-3 text-current" />
                   Barrenderos ({sweepersCount})
                 </button>
                 <button
                   type="button"
                   onClick={() => setPilotRoleFilter('rider')}
-                  className={`px-2.5 py-1 rounded font-bold uppercase transition ${
+                  className={`px-3 py-1 text-xs font-display uppercase tracking-widest font-bold transition ${
                     pilotRoleFilter === 'rider'
-                      ? 'bg-white/15 text-white border border-white/30 shadow-sm'
-                      : 'text-ash hover:text-white'
+                      ? 'bg-bone text-[#121110] shadow-sm'
+                      : 'text-ash hover:text-bone'
                   }`}
                 >
                   Riders ({ridersCount})
@@ -1542,13 +1844,13 @@ export const TribusView: React.FC<TribusViewProps> = ({
                   type="text"
                   value={pilotSearchQuery}
                   onChange={(e) => setPilotSearchQuery(e.target.value)}
-                  placeholder="Buscar piloto o moto..."
-                  className="w-full pl-8 pr-3 py-1.5 text-xs font-mono bg-black/50 border border-white/10 rounded-lg text-white placeholder-ash/60 focus:outline-none focus:border-earth"
+                  placeholder="Buscar piloto o máquina..."
+                  className="w-full pl-8 pr-3 py-1.5 text-xs font-mono bg-[#121110] border border-white/15 text-bone placeholder-ash/50 focus:outline-none focus:border-bone"
                 />
               </div>
             </div>
 
-            {/* Pilot Cards Grid */}
+            {/* Pilot Cards Grid (Vintage Paddock Cards) */}
             {filteredMembers.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
                 {filteredMembers.map(member => {
@@ -1565,72 +1867,66 @@ export const TribusView: React.FC<TribusViewProps> = ({
                     <div 
                       key={member.userId}
                       onClick={() => openPilotProfileById(member.userId)}
-                      className={`p-4 bg-[#0F0C0A] hover:bg-[#16120F] border transition-all cursor-pointer group flex flex-col justify-between relative overflow-hidden rounded-xl shadow-md ${
-                        isCaptain 
-                          ? 'border-amber-500/30 hover:border-amber-500/70' 
-                          : isSweeper 
-                          ? 'border-blue-500/30 hover:border-blue-500/70' 
-                          : 'border-white/10 hover:border-earth/60'
-                      }`}
+                      className="p-5 bg-white hover:border-[#141312] border border-[#E5DFD5] transition-all cursor-pointer group flex flex-col justify-between relative overflow-hidden shadow-sm hover:shadow-md"
                     >
                       {/* Top: Avatar + Identity + Role Badges */}
                       <div>
-                        <div className="flex items-start gap-3">
-                          {/* Avatar with role ring */}
-                          <div className={`w-12 h-12 rounded-xl overflow-hidden shrink-0 border-2 bg-black/60 relative ${
+                        <div className="flex items-start gap-3.5">
+                          {/* Avatar with Deus circular ring */}
+                          <div className={`w-12 h-12 rounded-full overflow-hidden shrink-0 border-2 bg-stone-100 relative shadow-sm ${
                             isCaptain 
-                              ? 'border-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.25)]' 
+                              ? 'border-[#141312] ring-2 ring-[#F2B705]' 
                               : isSweeper 
-                              ? 'border-blue-400 shadow-[0_0_12px_rgba(96,165,250,0.25)]' 
+                              ? 'border-[#141312] ring-2 ring-stone-400' 
                               : isCreator 
-                              ? 'border-earth shadow-[0_0_12px_rgba(230,81,0,0.2)]' 
-                              : 'border-white/20'
+                              ? 'border-[#141312] ring-2 ring-[#C84B31]' 
+                              : 'border-[#141312]'
                           }`}>
                             {avatar ? (
                               <img src={avatar} alt={displayName} className="w-full h-full object-cover" />
                             ) : (
-                              <div className="w-full h-full flex items-center justify-center font-bold text-white text-xs">
+                              <div className="w-full h-full flex items-center justify-center font-display font-black text-[#141312] text-xs bg-[#FAF8F5]">
                                 {member.userId.slice(0, 2).toUpperCase()}
                               </div>
                             )}
                           </div>
 
                           {/* Identity Info */}
-                          <div className="min-w-0 flex-1">
+                          <div className="min-w-0 flex-1 pt-0.5">
                             <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className="text-xs font-bold text-white uppercase group-hover:text-earth-bright transition truncate">
+                              <span className="font-display font-black text-sm text-[#141312] uppercase group-hover:text-[#C84B31] transition truncate tracking-wide">
                                 {displayName}
                               </span>
                               {isCreator && (
-                                <span className="text-[9px] font-mono uppercase font-bold text-earth border border-earth/40 bg-earth/10 px-1 py-0.2 rounded shrink-0">
+                                <span className="text-[9px] font-display uppercase tracking-widest font-black text-white bg-[#C84B31] px-1.5 py-0.2 shrink-0 shadow-xs">
                                   ADMIN
                                 </span>
                               )}
                             </div>
                             
-                            <span className="text-[11px] text-ash block truncate mt-0.5">
+                            <span className="text-xs font-serif italic text-stone-500 block truncate mt-0.5">
                               {u?.handle || '@piloto'} {u?.location ? `• ${u.location}` : ''}
                             </span>
 
-                            <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                            <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
                               {isCaptain ? (
-                                <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-amber-500/15 border border-amber-500/40 text-amber-300 flex items-center gap-1">
-                                  <Compass className="w-2.5 h-2.5 text-amber-400" />
-                                  Capitán de Ruta
+                                <span className="px-2 py-0.5 text-[9px] font-display uppercase tracking-wider font-bold bg-[#141312] text-[#F2B705] flex items-center gap-1 shadow-xs">
+                                  <Compass className="w-2.5 h-2.5 text-[#F2B705]" />
+                                  Capitán
                                 </span>
                               ) : isSweeper ? (
-                                <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-blue-500/15 border border-blue-500/40 text-blue-300 flex items-center gap-1">
-                                  <Shield className="w-2.5 h-2.5 text-blue-400" />
+                                <span className="px-2 py-0.5 text-[9px] font-display uppercase tracking-wider font-bold bg-[#141312] text-white flex items-center gap-1 shadow-xs">
+                                  <Shield className="w-2.5 h-2.5 text-stone-300" />
                                   Barrendero
                                 </span>
                               ) : (
-                                <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-white/5 border border-white/15 text-ash">
+                                <span className="px-2 py-0.5 text-[9px] font-display uppercase tracking-wider font-bold bg-[#FAF8F5] border border-[#DDD7CB] text-[#141312]">
                                   Rider
                                 </span>
                               )}
                               
                               {u?.ridingLevel && (
-                                <span className="text-[9px] font-mono text-ash/80 truncate">
+                                <span className="text-[10px] font-sans text-stone-500 truncate">
                                   • {u.ridingLevel}
                                 </span>
                               )}
@@ -1638,18 +1934,18 @@ export const TribusView: React.FC<TribusViewProps> = ({
                           </div>
                         </div>
 
-                        {/* Middle: Moto / Garaje Info */}
-                        <div className="mt-3 pt-2.5 border-t border-white/[0.08] flex items-center justify-between text-xs font-mono">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <div className="w-6 h-6 rounded bg-white/5 flex items-center justify-center shrink-0 border border-white/10">
-                              <Bike className="w-3.5 h-3.5 text-earth" />
+                        {/* Middle: Moto / Workshop plaque */}
+                        <div className="mt-3.5 pt-2.5 border-t border-[#E5DFD5] flex items-center justify-between text-xs">
+                          <div className="flex items-center gap-2.5 min-w-0 bg-[#FAF8F5] border border-[#E5DFD5] p-2.5 w-full shadow-xs">
+                            <div className="w-7 h-7 rounded-sm bg-white flex items-center justify-center shrink-0 border border-[#E5DFD5]">
+                              <Bike className="w-3.5 h-3.5 text-[#D49B35]" />
                             </div>
-                            <div className="min-w-0">
-                              <span className="text-white font-bold block truncate text-xs">
-                                {bike ? `${bike.brand} ${bike.model}` : 'Sin moto registrada'}
+                            <div className="min-w-0 flex-1">
+                              <span className="font-display font-black text-[#141312] block truncate text-xs uppercase tracking-wide">
+                                {bike ? `${bike.brand} ${bike.model}` : 'Sin máquina registrada'}
                               </span>
                               {bike?.displacementCc ? (
-                                <span className="text-[10px] text-ash block truncate">
+                                <span className="text-[10px] font-mono text-stone-500 block truncate">
                                   {bike.displacementCc} cc {bike.type ? `• ${bike.type}` : ''}
                                 </span>
                               ) : null}
@@ -1659,34 +1955,34 @@ export const TribusView: React.FC<TribusViewProps> = ({
                       </div>
 
                       {/* Bottom: Next Rodada RSVP Status & Profile Action */}
-                      <div className="mt-3 pt-2 border-t border-white/[0.06] flex items-center justify-between text-[11px] font-mono">
+                      <div className="mt-3 pt-2.5 border-t border-[#E5DFD5] flex items-center justify-between text-xs">
                         {nextConfirmedRide ? (
                           <div className="flex items-center gap-1.5">
                             {memberRsvp?.status === 'confirmado' ? (
-                              <span className="text-emerald-400 font-bold flex items-center gap-1 text-[10px]">
-                                <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
+                              <span className="text-[#141312] font-display uppercase tracking-wider font-bold flex items-center gap-1 text-[10px]">
+                                <CheckCircle2 className="w-3 h-3 text-[#141312] shrink-0" />
                                 <span>Asistirá</span>
                               </span>
                             ) : memberRsvp?.status === 'por_confirmar' || memberRsvp?.status === 'interesado' ? (
-                              <span className="text-amber-300 font-bold flex items-center gap-1 text-[10px]">
-                                <HelpCircle className="w-3 h-3 text-amber-400 shrink-0" />
+                              <span className="text-[#D49B35] font-display uppercase tracking-wider font-bold flex items-center gap-1 text-[10px]">
+                                <HelpCircle className="w-3 h-3 text-[#D49B35] shrink-0" />
                                 <span>Por confirmar</span>
                               </span>
                             ) : memberRsvp?.status === 'no_asistire' ? (
-                              <span className="text-rose-400 font-bold flex items-center gap-1 text-[10px]">
-                                <XCircle className="w-3 h-3 text-rose-400 shrink-0" />
+                              <span className="text-[#C84B31] font-display uppercase tracking-wider font-bold flex items-center gap-1 text-[10px]">
+                                <XCircle className="w-3 h-3 text-[#C84B31] shrink-0" />
                                 <span>No asistirá</span>
                               </span>
                             ) : (
-                              <span className="text-ash/60 text-[10px]">Sin confirmar</span>
+                              <span className="text-stone-400 text-[10px] font-serif italic">Sin confirmar</span>
                             )}
                           </div>
                         ) : (
-                          <span className="text-ash/60 text-[10px]">Miembro activo</span>
+                          <span className="text-stone-400 text-[10px] font-serif italic">Miembro activo</span>
                         )}
 
-                        <span className="text-ash group-hover:text-white text-[10px] font-mono flex items-center gap-0.5 ml-auto transition-transform group-hover:translate-x-0.5">
-                          Ver Perfil →
+                        <span className="font-display uppercase tracking-widest text-[10px] text-[#141312] group-hover:text-[#C84B31] flex items-center gap-1 ml-auto transition-transform group-hover:translate-x-0.5 font-black">
+                          Dossier →
                         </span>
                       </div>
                     </div>
@@ -1694,15 +1990,15 @@ export const TribusView: React.FC<TribusViewProps> = ({
                 })}
               </div>
             ) : (
-              <div className="p-8 border border-dashed border-white/10 bg-black/20 text-center rounded-xl space-y-2">
-                <p className="text-ash text-xs font-mono">No se encontraron pilotos con ese filtro.</p>
+              <div className="p-8 border border-dashed border-white/10 bg-[#121110] text-center space-y-2">
+                <p className="text-ash font-serif italic text-xs">No se encontraron pilotos con ese filtro de búsqueda.</p>
                 <button
                   type="button"
                   onClick={() => {
                     setPilotSearchQuery('');
                     setPilotRoleFilter('all');
                   }}
-                  className="text-xs font-mono text-earth hover:text-earth-bright underline"
+                  className="text-xs font-display uppercase tracking-wider text-[#C25434] hover:underline font-bold"
                 >
                   Limpiar filtros
                 </button>
@@ -1718,23 +2014,26 @@ export const TribusView: React.FC<TribusViewProps> = ({
       {activeTribuTab === 'rodadas' && (
         <div className="space-y-5">
           
-          {/* Header limpio de convocatorias */}
-          <div className="flex items-center justify-between gap-3 pb-2.5 border-b border-white/10">
-            <h2 className="font-display font-black text-lg sm:text-xl text-white uppercase tracking-tight">
-              Convocatorias
-            </h2>
+          {/* Header de convocatorias estilo editorial */}
+          <div className="flex items-center justify-between gap-3 pb-3 border-b-2 border-[#1A1918]">
+            <div className="flex items-center gap-2.5">
+              <span className="w-3 h-3 bg-[#E6332A] border-2 border-[#1A1918] shadow-[1px_1px_0px_#1A1918]" />
+              <h2 className="font-display font-black text-xl sm:text-2xl text-[#1A1918] uppercase tracking-wide">
+                Convocatorias &amp; Calendario
+              </h2>
+            </div>
 
             <button
               onClick={() => setShowConvokeModal(true)}
-              className="px-3 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] text-chalk hover:text-white border border-white/15 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition shrink-0 active:scale-95"
+              className="px-4 py-2 bg-[#F7B32B] hover:bg-[#e0a020] text-[#1A1918] border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] text-xs font-display font-black uppercase tracking-wider rounded-xl flex items-center gap-1.5 transition active:translate-x-0.5 active:translate-y-0.5 active:shadow-none shrink-0"
             >
-              <Plus className="w-3.5 h-3.5 text-earth" />
-              <span>+ Convocar</span>
+              <Plus className="w-4 h-4 stroke-[3]" />
+              <span>+ Convocar Rodada</span>
             </button>
           </div>
 
-          {/* Selector de Fechas Convocadas (Pills compactas y claras con scroll touch) */}
-          <div className="flex items-stretch gap-2 overflow-x-auto pb-1 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0">
+          {/* Selector de Fechas Convocadas (Plaquitas mecánicas coleccionables) */}
+          <div className="flex items-stretch gap-2.5 overflow-x-auto pb-2 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0">
             {tribuRodadas.map((rodada) => {
               const isSelected = activeRodada?.id === rodada.id;
               const rodadaProposals = routeProposals.filter(p => p.rodadaId === rodada.id);
@@ -1744,30 +2043,40 @@ export const TribusView: React.FC<TribusViewProps> = ({
                 <button
                   key={rodada.id}
                   onClick={() => setSelectedRodadaId(rodada.id)}
-                  className={`text-left px-3 py-2 border transition flex items-center gap-2.5 shrink-0 active:scale-95 ${
+                  className={`text-left px-4 py-3 border-2 border-[#1A1918] rounded-2xl transition-all duration-150 flex items-center gap-3 shrink-0 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${
                     isSelected
-                      ? 'border-earth bg-earth/15 text-white shadow-sm ring-1 ring-earth/40'
-                      : 'border-white/10 bg-black/40 text-ash hover:border-white/25 hover:text-white'
+                      ? 'bg-[#E6332A] text-white shadow-[4px_4px_0px_#1A1918]'
+                      : 'bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] shadow-[2px_2px_0px_#1A1918]'
                   }`}
                 >
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className={`text-xs font-mono font-bold tracking-wider uppercase ${
-                        isSelected ? 'text-earth' : 'text-chalk'
+                      <span className={`text-xs font-mono font-black tracking-wider uppercase ${
+                        isSelected ? 'text-white' : 'text-[#1A1918]'
                       }`}>
                         {formatHumanDate(rodada.startDate, rodada.endDate, true)}
                       </span>
                       {isConfirmed ? (
-                        <span className="text-[8px] font-mono uppercase font-bold px-1.5 py-0.2 bg-emerald-500/15 border border-emerald-500/40 text-emerald-300">
+                        <span className={`text-[9px] font-mono uppercase font-black px-1.5 py-0.5 rounded border ${
+                          isSelected 
+                            ? 'bg-white/25 border-white text-white' 
+                            : 'bg-emerald-100 border-[#1A1918] text-emerald-900'
+                        }`}>
                           Confirmada
                         </span>
                       ) : (
-                        <span className="text-[8px] font-mono uppercase font-bold px-1.5 py-0.2 bg-amber-500/10 border border-amber-500/30 text-amber-300">
+                        <span className={`text-[9px] font-mono uppercase font-black px-1.5 py-0.5 rounded border ${
+                          isSelected 
+                            ? 'bg-white/20 border-white text-white' 
+                            : 'bg-[#F7B32B] border-[#1A1918] text-[#1A1918]'
+                        }`}>
                           {rodadaProposals.length} {rodadaProposals.length === 1 ? 'ruta' : 'rutas'}
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-white/90 font-bold uppercase line-clamp-1 mt-0.5">
+                    <p className={`text-xs font-display font-black uppercase line-clamp-1 mt-1 tracking-wide ${
+                      isSelected ? 'text-white' : 'text-[#1A1918]'
+                    }`}>
                       {rodada.title}
                     </p>
                   </div>
@@ -1778,228 +2087,236 @@ export const TribusView: React.FC<TribusViewProps> = ({
 
           {/* Opciones para la Fecha Seleccionada */}
           {activeRodada && (
-            <div className="space-y-3.5 pt-1">
+            <div className="space-y-4 pt-2">
               
-              {/* Header directo y sin redundancias */}
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-display font-black text-base sm:text-lg text-white uppercase tracking-tight">
+              {/* Header de Propuestas estilo Cartel Serigráfico */}
+              <div className="flex items-center justify-between gap-3 pb-3 border-b-2 border-[#1A1918]">
+                <div className="flex items-center gap-2.5">
+                  <h3 className="font-display font-black text-xl sm:text-2xl text-[#1A1918] uppercase tracking-wide">
                     Propuestas
                   </h3>
-                  <span className="text-xs font-mono font-bold text-earth bg-earth/10 border border-earth/25 px-1.5 py-0.5">
-                    {activeProposals.length}
+                  <span className="text-xs font-mono font-black text-[#1A1918] bg-[#F7B32B] border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] px-2.5 py-0.5 rounded-lg">
+                    {activeProposals.length} {activeProposals.length === 1 ? 'OPCIÓN' : 'OPCIONES'}
                   </span>
                 </div>
 
                 <button
                   onClick={() => setShowInteractiveProposeModal(true)}
-                  className="px-3 py-1.5 bg-earth hover:bg-earth-bright text-white text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition shrink-0 shadow border border-earth/40 active:scale-95"
+                  className="px-4 py-2 bg-[#E6332A] hover:bg-[#d02c24] text-white border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] text-xs font-display font-black uppercase tracking-wider rounded-xl flex items-center gap-1.5 transition active:translate-x-0.5 active:translate-y-0.5 active:shadow-none shrink-0"
                 >
-                  <Plus className="w-3.5 h-3.5" />
+                  <Plus className="w-4 h-4 stroke-[3]" />
                   <span>+ Proponer</span>
                 </button>
               </div>
 
-          {/* Proposals Grid: Airbnb style cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {sortedProposals.map((proposal, index) => {
-              const upvotesCount = proposal.votes?.length || 0;
-              const downvotesCount = proposal.downvotes?.length || 0;
-              const netScore = upvotesCount - downvotesCount;
-              const hasUpvoted = proposal.votes?.includes(currentUser.id);
-              const hasDownvoted = proposal.downvotes?.includes(currentUser.id);
-              const isLeader = index === 0 && netScore > 0;
-              const isWinner = activeRodada.winningRouteId === proposal.id;
+              {/* Proposals Grid: Cartas Editoriales Risograph sobre Papel Cálido */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {sortedProposals.map((proposal, index) => {
+                  const upvotesCount = proposal.votes?.length || 0;
+                  const downvotesCount = proposal.downvotes?.length || 0;
+                  const netScore = upvotesCount - downvotesCount;
+                  const hasUpvoted = proposal.votes?.includes(currentUser.id);
+                  const hasDownvoted = proposal.downvotes?.includes(currentUser.id);
+                  const isLeader = index === 0 && netScore > 0;
+                  const isWinner = activeRodada.winningRouteId === proposal.id;
 
-              return (
-                <div
-                  key={proposal.id}
-                  className={`bg-[#0D0B0A] border transition flex flex-col justify-between group ${
-                    isWinner 
-                      ? 'border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.1)]'
-                      : isLeader
-                      ? 'border-earth/50 shadow-[0_0_15px_rgba(200,125,85,0.08)]'
-                      : 'border-white/10 hover:border-white/25'
-                  }`}
-                >
-                  <div>
-                    {/* Tactical Map Header with Topo Contours & GPS Vector Track */}
-                    <div 
-                      onClick={() => setDetailProposalId(proposal.id)}
-                      className="cursor-pointer group/map"
+                  return (
+                    <div
+                      key={proposal.id}
+                      className={`bg-[#FAF6ED] border-2 border-[#1A1918] rounded-2xl transition-all duration-200 flex flex-col justify-between overflow-hidden group ${
+                        isWinner 
+                          ? 'shadow-[6px_6px_0px_#E6332A] ring-2 ring-[#E6332A]'
+                          : isLeader
+                          ? 'shadow-[5px_5px_0px_#F7B32B] hover:shadow-[7px_7px_0px_#F7B32B]'
+                          : 'shadow-[4px_4px_0px_#1A1918] hover:shadow-[6px_6px_0px_#1A1918]'
+                      }`}
                     >
-                      <RouteTacticalMapCard
-                        proposal={proposal}
-                        heightClass="h-44"
-                        isWinner={isWinner}
-                        isLeader={isLeader}
-                        optionIndex={index}
-                        showOverlayBadges={true}
-                      />
-                    </div>
-
-                    {/* Card Body */}
-                    <div className="p-4 space-y-3">
                       <div>
-                        <h3 
+                        {/* Tactical Map Header with Topo Contours & GPS Vector Track */}
+                        <div 
                           onClick={() => setDetailProposalId(proposal.id)}
-                          className="font-display font-bold text-base text-white uppercase group-hover:text-earth transition cursor-pointer truncate"
+                          className="cursor-pointer group/map overflow-hidden"
                         >
-                          {proposal.title}
-                        </h3>
-                        <p className="text-xs text-ash line-clamp-2 mt-1 leading-relaxed">
-                          {proposal.description}
-                        </p>
-                      </div>
-
-                      {/* Proposer row */}
-                      <div className="flex items-center justify-between text-[11px] text-ash border-y border-white/[0.06] py-2">
-                        <div className="flex items-center gap-1.5 truncate">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={proposal.proposedByAvatar}
-                            alt={proposal.proposedByName}
-                            className="w-4 h-4 rounded-full object-cover shrink-0"
+                          <RouteTacticalMapCard
+                            proposal={proposal}
+                            heightClass="h-44"
+                            isWinner={isWinner}
+                            isLeader={isLeader}
+                            optionIndex={index}
+                            showOverlayBadges={true}
                           />
-                          <span className="truncate">Por {proposal.proposedByName}</span>
                         </div>
-                        <span className="text-chalk/80 shrink-0 font-medium">{proposal.estimatedHours} est.</span>
+
+                        {/* Card Body */}
+                        <div className="p-4 space-y-3">
+                          <div>
+                            <h3 
+                              onClick={() => setDetailProposalId(proposal.id)}
+                              className="font-display font-black text-lg text-[#1A1918] uppercase tracking-wide group-hover:text-[#E6332A] transition-colors cursor-pointer leading-snug line-clamp-1"
+                              title={proposal.title}
+                            >
+                              {proposal.title}
+                            </h3>
+                            <p className="text-xs text-[#1A1918]/80 line-clamp-2 mt-1 leading-relaxed font-sans font-medium">
+                              {proposal.description}
+                            </p>
+                          </div>
+
+                          {/* Proposer row */}
+                          <div className="flex items-center justify-between text-xs text-[#1A1918]/80 border-y-2 border-[#1A1918]/15 py-2 font-mono">
+                            <div className="flex items-center gap-2 truncate">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={proposal.proposedByAvatar}
+                                alt={proposal.proposedByName}
+                                className="w-5 h-5 rounded-full object-cover border border-[#1A1918] shrink-0 bg-[#F4EEDB]"
+                              />
+                              <span className="truncate font-bold text-[#1A1918]">Por {proposal.proposedByName}</span>
+                            </div>
+                            <span className="text-[#1A1918] shrink-0 font-bold bg-[#F4EEDB] px-2 py-0.5 border border-[#1A1918]/40 rounded text-[10px]">
+                              {proposal.estimatedHours} est.
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Card Bottom: Collaborative Voting Toolbar */}
+                      <div className="p-3 bg-[#F4EEDB] border-t-2 border-[#1A1918] flex items-center justify-between gap-2">
+                        
+                        {/* Thumbs Up & Thumbs Down Buttons */}
+                        <div className="flex items-center gap-1.5">
+                          {/* Upvote button */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              voteRoute(proposal.id);
+                            }}
+                            className={`px-3 py-1.5 border-2 border-[#1A1918] rounded-xl text-xs font-mono font-black flex items-center gap-1.5 transition-all ${
+                              hasUpvoted
+                                ? 'bg-[#F7B32B] text-[#1A1918] shadow-none translate-x-0.5 translate-y-0.5'
+                                : 'bg-[#FAF6ED] text-[#1A1918] shadow-[2px_2px_0px_#1A1918] hover:bg-[#F7B32B] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none'
+                            }`}
+                            title="Votar a favor (Manita arriba)"
+                          >
+                            <ThumbsUp className={`w-3.5 h-3.5 ${hasUpvoted ? 'fill-[#1A1918]' : ''}`} />
+                            <span>{upvotesCount}</span>
+                          </button>
+
+                          {/* Downvote button */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              downvoteRoute(proposal.id);
+                            }}
+                            className={`px-2.5 py-1.5 border-2 border-[#1A1918] rounded-xl text-xs font-mono font-black flex items-center gap-1 transition-all ${
+                              hasDownvoted
+                                ? 'bg-[#E6332A] text-white shadow-none translate-x-0.5 translate-y-0.5'
+                                : 'bg-[#FAF6ED] text-[#1A1918] shadow-[2px_2px_0px_#1A1918] hover:bg-[#E6332A] hover:text-white active:translate-x-0.5 active:translate-y-0.5 active:shadow-none'
+                            }`}
+                            title="Votar en contra (Manita abajo)"
+                          >
+                            <ThumbsDown className={`w-3.5 h-3.5 ${hasDownvoted ? 'fill-white' : ''}`} />
+                            <span>{downvotesCount}</span>
+                          </button>
+
+                          {/* Net score */}
+                          <span className={`text-xs font-mono font-black px-2 py-1 rounded-md border border-[#1A1918] ${
+                            netScore > 0 
+                              ? 'bg-[#FAF6ED] text-[#E06423] shadow-[1px_1px_0px_#1A1918]' 
+                              : netScore < 0 
+                              ? 'bg-[#FAF6ED] text-[#E6332A] shadow-[1px_1px_0px_#1A1918]' 
+                              : 'bg-[#FAF6ED] text-[#1A1918]/60'
+                          }`}>
+                            {netScore > 0 ? `+${netScore}` : netScore}
+                          </span>
+                        </div>
+
+                        {/* View Detail & Comments Button */}
+                        <button
+                          onClick={() => setDetailProposalId(proposal.id)}
+                          className="px-3 py-1.5 bg-[#FAF6ED] hover:bg-[#FAF6ED] text-[#1A1918] border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] rounded-xl text-xs font-mono font-bold flex items-center gap-1.5 transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                          title="Ver detalle y comentarios"
+                        >
+                          <MessageSquare className="w-3.5 h-3.5 text-[#1A1918]" />
+                          <span>{proposal.comments?.length || 0}</span>
+                        </button>
                       </div>
                     </div>
-                  </div>
-
-                  {/* Card Bottom: Collaborative Voting Toolbar (Airbnb Thumbs Up / Down) */}
-                  <div className="p-3 bg-black/30 border-t border-white/[0.06] flex items-center justify-between gap-2">
-                    
-                    {/* Thumbs Up & Thumbs Down Buttons */}
-                    <div className="flex items-center gap-1.5">
-                      {/* Upvote button */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          voteRoute(proposal.id);
-                        }}
-                        className={`px-2.5 py-1.5 border text-xs font-bold flex items-center gap-1.5 transition ${
-                          hasUpvoted
-                            ? 'bg-earth/20 border-earth text-earth'
-                            : 'bg-white/[0.03] border-white/10 text-ash hover:text-white hover:border-white/20'
-                        }`}
-                        title="Votar a favor (Manita arriba)"
-                      >
-                        <ThumbsUp className={`w-3.5 h-3.5 ${hasUpvoted ? 'text-earth' : ''}`} />
-                        <span>{upvotesCount}</span>
-                      </button>
-
-                      {/* Downvote button */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          downvoteRoute(proposal.id);
-                        }}
-                        className={`px-2.5 py-1.5 border text-xs font-bold flex items-center gap-1.5 transition ${
-                          hasDownvoted
-                            ? 'bg-rose-500/20 border-rose-500 text-rose-300'
-                            : 'bg-white/[0.03] border-white/10 text-ash hover:text-white hover:border-white/20'
-                        }`}
-                        title="Votar en contra (Manita abajo)"
-                      >
-                        <ThumbsDown className={`w-3.5 h-3.5 ${hasDownvoted ? 'text-rose-400' : ''}`} />
-                        <span>{downvotesCount}</span>
-                      </button>
-
-                      {/* Net score */}
-                      <span className={`text-xs font-mono font-bold ml-1 ${
-                        netScore > 0 ? 'text-earth' : netScore < 0 ? 'text-rose-400' : 'text-ash'
-                      }`}>
-                        {netScore > 0 ? `+${netScore}` : netScore}
-                      </span>
-                    </div>
-
-                    {/* View Detail & Comments Button */}
-                    <button
-                      onClick={() => setDetailProposalId(proposal.id)}
-                      className="px-2.5 py-1.5 text-xs text-ash hover:text-white flex items-center gap-1 transition"
-                      title="Ver detalle y comentarios"
-                    >
-                      <MessageSquare className="w-3.5 h-3.5" />
-                      <span>{proposal.comments?.length || 0}</span>
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Si solo hay 1 opción, invitar a proponer alternativas */}
-          {activeProposals.length === 1 && (
-            <div className="p-4 border border-white/10 bg-[#0B0908] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-              <div className="flex items-center gap-3">
-                <span className="p-2 bg-white/[0.04] text-earth border border-white/10 shrink-0">
-                  <Plus className="w-4 h-4" />
-                </span>
-                <div>
-                  <h4 className="font-bold text-white uppercase text-xs">¿Tienes otra ruta en mente para esta fecha?</h4>
-                  <p className="text-ash text-[11px] mt-0.5">
-                    Puedes proponer un trazado alternativo para que los pilotos elijan entre ambas opciones antes de la rodada.
-                  </p>
-                </div>
+                  );
+                })}
               </div>
-              <button
-                onClick={() => setShowInteractiveProposeModal(true)}
-                className="px-3.5 py-2 border border-earth/40 hover:bg-earth/10 text-earth font-bold uppercase text-[11px] tracking-wider shrink-0 transition"
-              >
-                + Proponer Alternativa
-              </button>
-            </div>
-          )}
 
-          {activeProposals.length === 0 && (
-            <div className="p-8 border border-white/10 bg-[#0D0B0A] text-center space-y-3">
-              <Compass className="w-8 h-8 text-ash mx-auto" />
-              <p className="text-xs text-ash">Aún no hay opciones de ruta propuestas para esta fecha.</p>
-              <button
-                onClick={() => setShowInteractiveProposeModal(true)}
-                className="px-4 py-2 bg-earth text-white font-bold uppercase text-xs"
-              >
-                Proponer la Primera Opción
-              </button>
-            </div>
-          )}
+              {/* Si solo hay 1 opción, invitar a proponer alternativas */}
+              {activeProposals.length === 1 && (
+                <div className="p-5 border-2 border-[#1A1918] bg-[#F4EEDB] rounded-2xl shadow-[4px_4px_0px_#1A1918] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <span className="p-2.5 bg-[#FAF6ED] text-[#E6332A] border-2 border-[#1A1918] rounded-xl shadow-[2px_2px_0px_#1A1918] shrink-0">
+                      <Plus className="w-5 h-5 stroke-[2.5]" />
+                    </span>
+                    <div>
+                      <h4 className="font-display font-black text-sm text-[#1A1918] uppercase">¿Tienes otra ruta en mente para esta fecha?</h4>
+                      <p className="text-[#1A1918]/80 text-xs mt-0.5 font-sans">
+                        Propón un trazado alternativo para que la tribu debata y vote antes de rodar.
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowInteractiveProposeModal(true)}
+                    className="px-4 py-2.5 bg-[#F7B32B] hover:bg-[#e0a020] text-[#1A1918] border-2 border-[#1A1918] font-display font-black uppercase text-xs tracking-wider rounded-xl shadow-[2px_2px_0px_#1A1918] shrink-0 transition active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                  >
+                    + Proponer Alternativa
+                  </button>
+                </div>
+              )}
+
+              {activeProposals.length === 0 && (
+                <div className="p-10 border-2 border-[#1A1918] bg-[#FAF6ED] rounded-2xl shadow-[4px_4px_0px_#1A1918] text-center space-y-4">
+                  <Compass className="w-10 h-10 text-[#E6332A] mx-auto animate-spin-slow" />
+                  <p className="text-sm font-sans font-bold text-[#1A1918]">Aún no hay opciones de ruta propuestas para esta fecha.</p>
+                  <button
+                    onClick={() => setShowInteractiveProposeModal(true)}
+                    className="px-5 py-2.5 bg-[#E6332A] text-white border-2 border-[#1A1918] font-display font-black uppercase text-xs rounded-xl shadow-[3px_3px_0px_#1A1918]"
+                  >
+                    Proponer la Primera Opción
+                  </button>
+                </div>
+              )}
               </div>
             )}
         </div>
       )}
 
       {/* =================================================================== */}
-      {/* 4. MODAL: DETALLE DE RUTA + VOTACIÓN + COMENTARIOS (AIRBNB STYLE)    */}
+      {/* 4. MODAL: DETALLE DE RUTA + VOTACIÓN + COMENTARIOS (RISOGRAPH)      */}
       {/* =================================================================== */}
       {selectedProposalForDetail && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-          <div className="border border-white/20 bg-[#0E0C0A] max-w-2xl w-full p-5 sm:p-6 space-y-5 my-auto max-h-[92vh] overflow-y-auto font-mono">
+        <div className="fixed inset-0 z-50 bg-[#1A1918]/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="border-2 border-[#1A1918] bg-[#FAF6ED] rounded-[28px] max-w-2xl w-full p-5 sm:p-6 space-y-5 my-auto max-h-[92vh] overflow-y-auto font-sans text-[#1A1918] shadow-[6px_6px_0px_#1A1918]">
             
             {/* Modal Header */}
-            <div className="flex items-start justify-between border-b border-white/10 pb-4 gap-3">
+            <div className="flex items-start justify-between border-b-2 border-[#1A1918] pb-4 gap-3">
               <div>
-                <span className="text-[10px] font-mono text-earth uppercase font-bold tracking-widest block mb-1">
-                  [ DETALLE DE RUTA PROPUESTA ]
+                <span className="text-[10px] font-mono text-[#E6332A] uppercase font-black tracking-widest block mb-1">
+                  ★ DETALLE DE RUTA • PROPUESTA ★
                 </span>
-                <h3 className="font-display font-bold text-xl text-white uppercase">
+                <h3 className="font-display font-black text-2xl sm:text-3xl text-[#1A1918] uppercase tracking-wide leading-tight">
                   {selectedProposalForDetail.title}
                 </h3>
-                <p className="text-xs text-ash mt-0.5">
+                <p className="text-xs font-mono font-bold text-[#1A1918]/70 mt-1">
                   Propuesta por {selectedProposalForDetail.proposedByName} para {selectedProposalForDetail.destination}
                 </p>
               </div>
               <button
                 onClick={() => setDetailProposalId(null)}
-                className="text-ash hover:text-white p-1"
+                className="p-2 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border-2 border-[#1A1918] rounded-xl shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition shrink-0"
+                title="Cerrar modal"
               >
-                <X className="w-5 h-5" />
+                <X className="w-5 h-5 stroke-[2.5]" />
               </button>
             </div>
 
             {/* Tactical Topo Map & Quick Metrics in Detail Modal */}
-            <div className="border border-white/10 overflow-hidden">
+            <div className="border-2 border-[#1A1918] rounded-2xl overflow-hidden shadow-[3px_3px_0px_#1A1918]">
               <RouteTacticalMapCard
                 proposal={selectedProposalForDetail}
                 heightClass="h-52"
@@ -2007,28 +2324,28 @@ export const TribusView: React.FC<TribusViewProps> = ({
               />
             </div>
 
-            {/* Voting Bar in Detail Modal - Pure KISS */}
-            <div className="bg-black/40 border border-white/10 p-3 sm:p-3.5 flex items-center justify-between gap-3 font-mono">
+            {/* Voting Bar in Detail Modal */}
+            <div className="bg-[#F4EEDB] border-2 border-[#1A1918] rounded-2xl p-3 sm:p-3.5 flex items-center justify-between gap-3 shadow-[2px_2px_0px_#1A1918] flex-wrap sm:flex-nowrap">
               <div className="flex items-center gap-3">
-                <span className={`text-base font-bold font-mono ${
+                <span className={`text-base font-mono font-black px-2.5 py-1 rounded-xl border-2 border-[#1A1918] bg-[#FAF6ED] shadow-[1px_1px_0px_#1A1918] ${
                   ((selectedProposalForDetail.votes?.length || 0) - (selectedProposalForDetail.downvotes?.length || 0)) > 0
-                    ? 'text-earth'
+                    ? 'text-[#E06423]'
                     : ((selectedProposalForDetail.votes?.length || 0) - (selectedProposalForDetail.downvotes?.length || 0)) < 0
-                    ? 'text-rose-400'
-                    : 'text-white'
+                    ? 'text-[#E6332A]'
+                    : 'text-[#1A1918]'
                 }`}>
                   {((selectedProposalForDetail.votes?.length || 0) - (selectedProposalForDetail.downvotes?.length || 0)) > 0 
                     ? `+${(selectedProposalForDetail.votes?.length || 0) - (selectedProposalForDetail.downvotes?.length || 0)}`
                     : (selectedProposalForDetail.votes?.length || 0) - (selectedProposalForDetail.downvotes?.length || 0)}
                 </span>
 
-                <div className="flex items-center gap-3 text-xs border-l border-white/10 pl-3">
-                  <span className="text-emerald-400 flex items-center gap-1 font-bold" title="Votos a favor">
-                    <ThumbsUp className="w-3.5 h-3.5" />
+                <div className="flex items-center gap-3 text-xs font-mono font-black border-l-2 border-[#1A1918]/20 pl-3">
+                  <span className="text-emerald-800 flex items-center gap-1" title="Votos a favor">
+                    <ThumbsUp className="w-3.5 h-3.5 stroke-[2.5]" />
                     <span>{selectedProposalForDetail.votes?.length || 0}</span>
                   </span>
-                  <span className="text-rose-400 flex items-center gap-1 font-bold" title="Votos en contra">
-                    <ThumbsDown className="w-3.5 h-3.5" />
+                  <span className="text-[#E6332A] flex items-center gap-1" title="Votos en contra">
+                    <ThumbsDown className="w-3.5 h-3.5 stroke-[2.5]" />
                     <span>{selectedProposalForDetail.downvotes?.length || 0}</span>
                   </span>
                 </div>
@@ -2039,10 +2356,10 @@ export const TribusView: React.FC<TribusViewProps> = ({
                   type="button"
                   onClick={() => voteRoute(selectedProposalForDetail.id)}
                   title="Votar a favor"
-                  className={`p-2 sm:px-3 sm:py-2 border text-xs font-bold flex items-center justify-center transition cursor-pointer ${
+                  className={`p-2 sm:px-3 sm:py-2 border-2 border-[#1A1918] rounded-xl text-xs font-mono font-black flex items-center justify-center transition cursor-pointer active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${
                     selectedProposalForDetail.votes?.includes(currentUser.id)
-                      ? 'bg-earth/20 border-earth text-earth'
-                      : 'bg-white/[0.03] border-white/15 text-ash hover:text-white hover:border-white/30'
+                      ? 'bg-[#F7B32B] text-[#1A1918] shadow-none translate-x-0.5 translate-y-0.5'
+                      : 'bg-[#FAF6ED] text-[#1A1918] shadow-[2px_2px_0px_#1A1918] hover:bg-[#F7B32B]'
                   }`}
                 >
                   <ThumbsUp className="w-4 h-4" />
@@ -2052,10 +2369,10 @@ export const TribusView: React.FC<TribusViewProps> = ({
                   type="button"
                   onClick={() => downvoteRoute(selectedProposalForDetail.id)}
                   title="Votar en contra"
-                  className={`p-2 sm:px-3 sm:py-2 border text-xs font-bold flex items-center justify-center transition cursor-pointer ${
+                  className={`p-2 sm:px-3 sm:py-2 border-2 border-[#1A1918] rounded-xl text-xs font-mono font-black flex items-center justify-center transition cursor-pointer active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${
                     selectedProposalForDetail.downvotes?.includes(currentUser.id)
-                      ? 'bg-rose-500/20 border-rose-500 text-rose-300'
-                      : 'bg-white/[0.03] border-white/15 text-ash hover:text-white hover:border-white/30'
+                      ? 'bg-[#E6332A] text-white shadow-none translate-x-0.5 translate-y-0.5'
+                      : 'bg-[#FAF6ED] text-[#1A1918] shadow-[2px_2px_0px_#1A1918] hover:bg-[#E6332A] hover:text-white'
                   }`}
                 >
                   <ThumbsDown className="w-4 h-4" />
@@ -2068,7 +2385,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                       handleLockRoute(selectedProposalForDetail.id);
                       setDetailProposalId(null);
                     }}
-                    className="px-3 py-1.5 bg-earth hover:bg-earth-bright text-white text-xs font-bold uppercase tracking-wider border border-earth/30 transition"
+                    className="px-4 py-2 bg-[#E6332A] hover:bg-[#d02c24] text-white text-xs font-display font-black uppercase tracking-wider border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] rounded-xl transition active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
                   >
                     Confirmar como Oficial
                   </button>
@@ -2078,43 +2395,43 @@ export const TribusView: React.FC<TribusViewProps> = ({
 
             {/* Description & Technical Itinerary */}
             <div className="space-y-2 text-xs">
-              <span className="text-[10px] text-ash uppercase tracking-wider block font-bold">
-                Descripción & Plan de Ruta
+              <span className="text-[11px] font-mono text-[#1A1918] uppercase tracking-wider block font-black">
+                Descripción &amp; Plan de Ruta
               </span>
-              <p className="text-chalk leading-relaxed bg-white/[0.02] border border-white/[0.06] p-3">
+              <p className="text-[#1A1918] leading-relaxed bg-[#FAF6ED] border-2 border-[#1A1918] rounded-2xl p-4 font-sans font-medium shadow-[2px_2px_0px_#1A1918]">
                 {selectedProposalForDetail.description}
               </p>
               {selectedProposalForDetail.itinerary && selectedProposalForDetail.itinerary[0] && (
-                <div className="text-[11px] text-ash bg-white/[0.02] border border-white/[0.06] p-3 space-y-1">
-                  <p><strong className="text-white">Terreno:</strong> {selectedProposalForDetail.itinerary[0].terrainType}</p>
-                  <p><strong className="text-white">Itinerario:</strong> {selectedProposalForDetail.itinerary[0].description}</p>
+                <div className="text-xs text-[#1A1918] bg-[#F4EEDB] border-2 border-[#1A1918] rounded-2xl p-4 space-y-1.5 shadow-[2px_2px_0px_#1A1918] font-sans">
+                  <p><strong className="font-display font-black uppercase tracking-wide text-[#1A1918]">Terreno:</strong> {selectedProposalForDetail.itinerary[0].terrainType}</p>
+                  <p><strong className="font-display font-black uppercase tracking-wide text-[#1A1918]">Itinerario:</strong> {selectedProposalForDetail.itinerary[0].description}</p>
                 </div>
               )}
             </div>
 
-            {/* Collaborative Comments Section (Airbnb style) */}
-            <div className="border-t border-white/10 pt-4 space-y-3">
+            {/* Collaborative Comments Section */}
+            <div className="border-t-2 border-[#1A1918] pt-4 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] text-ash uppercase tracking-wider font-bold">
+                <span className="text-xs font-mono text-[#1A1918] uppercase tracking-wider font-black">
                   Comentarios del Grupo ({selectedProposalForDetail.comments?.length || 0})
                 </span>
-                <span className="text-[10px] text-ash">Notas breves sobre esta opción</span>
+                <span className="text-[11px] font-mono text-[#1A1918]/60 font-bold">Notas breves sobre esta opción</span>
               </div>
 
               {/* Comments List */}
-              <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+              <div className="space-y-2.5 max-h-48 overflow-y-auto pr-1">
                 {selectedProposalForDetail.comments && selectedProposalForDetail.comments.length > 0 ? (
                   selectedProposalForDetail.comments.map(c => (
-                    <div key={c.id} className="p-2.5 bg-white/[0.02] border border-white/[0.06] text-xs space-y-1">
-                      <div className="flex items-center justify-between text-[10px] text-ash">
-                        <span className="font-bold text-chalk">{c.userName}</span>
-                        <span>{c.createdAt}</span>
+                    <div key={c.id} className="p-3 bg-[#FAF6ED] border-2 border-[#1A1918] rounded-xl text-xs space-y-1 shadow-[2px_2px_0px_#1A1918]">
+                      <div className="flex items-center justify-between text-[11px] font-mono">
+                        <span className="font-black text-[#1A1918]">{c.userName}</span>
+                        <span className="text-[#1A1918]/60 font-bold">{c.createdAt}</span>
                       </div>
-                      <p className="text-chalk/90 leading-normal">{c.text}</p>
+                      <p className="text-[#1A1918]/90 font-sans leading-normal font-medium">{c.text}</p>
                     </div>
                   ))
                 ) : (
-                  <p className="text-xs text-ash/60 italic py-2">
+                  <p className="text-xs text-[#1A1918]/60 font-serif italic py-2">
                     Aún no hay comentarios sobre esta ruta. Sé el primero en dejar una sugerencia o nota.
                   </p>
                 )}
@@ -2133,25 +2450,25 @@ export const TribusView: React.FC<TribusViewProps> = ({
                     }
                   }}
                   placeholder="Añade un comentario sobre esta opción..."
-                  className="flex-1 bg-white/[0.03] border border-white/15 px-3 py-2 text-xs text-white placeholder-ash/50 focus:outline-none focus:border-earth"
+                  className="flex-1 bg-[#FAF6ED] border-2 border-[#1A1918] rounded-xl px-3.5 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:border-[#E6332A] font-sans font-medium"
                 />
                 <button
                   type="button"
                   onClick={handleSendComment}
                   disabled={!commentInput.trim()}
-                  className="px-3.5 py-2 bg-earth hover:bg-earth-bright disabled:opacity-40 text-white text-xs font-bold uppercase transition"
+                  className="px-4 py-2.5 bg-[#E6332A] hover:bg-[#d02c24] disabled:opacity-40 text-white text-xs font-bold uppercase transition border-2 border-[#1A1918] rounded-xl shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none shrink-0"
                 >
-                  <Send className="w-3.5 h-3.5" />
+                  <Send className="w-4 h-4 stroke-[2.5]" />
                 </button>
               </div>
             </div>
 
             {/* Modal Footer */}
-            <div className="border-t border-white/10 pt-3 flex justify-end">
+            <div className="border-t-2 border-[#1A1918] pt-3 flex justify-end">
               <button
                 type="button"
                 onClick={() => setDetailProposalId(null)}
-                className="px-4 py-2 border border-white/20 text-ash hover:text-white uppercase text-xs font-bold"
+                className="px-5 py-2 bg-[#FAF6ED] hover:bg-[#F4EEDB] border-2 border-[#1A1918] rounded-xl text-[#1A1918] uppercase text-xs font-display font-black shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition"
               >
                 Cerrar
               </button>
@@ -2164,129 +2481,132 @@ export const TribusView: React.FC<TribusViewProps> = ({
       {/* 5. MODAL: PROPUESTA RÁPIDA DE RUTA ALTERNATIVA                    */}
       {/* =================================================================== */}
       {showProposeModal && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-          <div className="border border-white/20 bg-[#0E0C0A] max-w-lg w-full p-5 sm:p-6 space-y-4 my-auto max-h-[92vh] overflow-y-auto font-mono">
+        <div className="fixed inset-0 z-50 bg-[#1A1918]/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="border-2 border-[#1A1918] bg-[#FAF6ED] rounded-[28px] max-w-lg w-full p-5 sm:p-6 space-y-4 my-auto max-h-[92vh] overflow-y-auto font-sans text-[#1A1918] shadow-[6px_6px_0px_#1A1918]">
             
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+            <div className="flex items-center justify-between border-b-2 border-[#1A1918] pb-3">
               <div>
-                <span className="font-mono text-[10px] text-earth uppercase tracking-widest font-bold flex items-center gap-1.5">
-                  <Bell className="w-3 h-3" />
-                  [ PROPONER RUTA ALTERNATIVA ]
+                <span className="font-mono text-[10px] text-[#E6332A] uppercase tracking-widest font-black flex items-center gap-1.5">
+                  <Bell className="w-3.5 h-3.5" />
+                  ★ PROPONER RUTA ALTERNATIVA ★
                 </span>
-                <h3 className="font-display font-bold text-lg text-white uppercase">
+                <h3 className="font-display font-black text-xl text-[#1A1918] uppercase tracking-wide mt-0.5">
                   Alternativa para el {formatHumanDate(activeRodada.startDate, activeRodada.endDate, true)}
                 </h3>
-                <p className="text-[11px] text-ash mt-0.5">
+                <p className="text-xs font-serif italic text-[#1A1918]/70 mt-0.5 font-medium">
                   Al enviar tu propuesta, se notificará a los celulares de los pilotos de la tribu para que voten entre las opciones.
                 </p>
               </div>
-              <button onClick={() => setShowProposeModal(false)} className="text-ash hover:text-white p-1">
-                <X className="w-4 h-4" />
+              <button 
+                onClick={() => setShowProposeModal(false)} 
+                className="p-1.5 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border-2 border-[#1A1918] rounded-xl shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition shrink-0"
+              >
+                <X className="w-4 h-4 stroke-[2.5]" />
               </button>
             </div>
 
-            <form onSubmit={handleQuickProposeSubmit} className="space-y-3 text-xs">
+            <form onSubmit={handleQuickProposeSubmit} className="space-y-3.5 text-xs">
               <div>
-                <label className="text-ash uppercase text-[10px] block mb-1">Título de la Ruta</label>
+                <label className="text-[#1A1918] uppercase text-[10px] font-mono font-black block mb-1">Título de la Ruta</label>
                 <input
                   type="text"
                   required
                   value={propTitle}
                   onChange={(e) => setPropTitle(e.target.value)}
                   placeholder="Ej. Brecha de los Volcanes & Paso de Cortés"
-                  className="w-full bg-white/[0.03] border border-white/15 px-3 py-2 text-white placeholder-ash/50 focus:outline-none focus:border-earth"
+                  className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] rounded-xl px-3.5 py-2.5 text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:border-[#E6332A] font-sans font-medium"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-ash uppercase text-[10px] block mb-1">Destino Principal</label>
+                  <label className="text-[#1A1918] uppercase text-[10px] font-mono font-black block mb-1">Destino Principal</label>
                   <input
                     type="text"
                     required
                     value={propDestination}
                     onChange={(e) => setPropDestination(e.target.value)}
                     placeholder="Ej. Paso de Cortés"
-                    className="w-full bg-white/[0.03] border border-white/15 px-3 py-2 text-white focus:outline-none focus:border-earth"
+                    className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] rounded-xl px-3.5 py-2.5 text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:border-[#E6332A] font-sans font-medium"
                   />
                 </div>
                 <div>
-                  <label className="text-ash uppercase text-[10px] block mb-1">Estado</label>
+                  <label className="text-[#1A1918] uppercase text-[10px] font-mono font-black block mb-1">Estado</label>
                   <input
                     type="text"
                     value={propState}
                     onChange={(e) => setPropState(e.target.value)}
-                    className="w-full bg-white/[0.03] border border-white/15 px-3 py-2 text-white focus:outline-none focus:border-earth"
+                    className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] rounded-xl px-3.5 py-2.5 text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:border-[#E6332A] font-sans font-medium"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-ash uppercase text-[10px] block mb-1">Distancia Total (km)</label>
+                  <label className="text-[#1A1918] uppercase text-[10px] font-mono font-black block mb-1">Distancia Total (km)</label>
                   <input
                     type="number"
                     value={propKm}
                     onChange={(e) => setPropKm(e.target.value)}
-                    className="w-full bg-white/[0.03] border border-white/15 px-3 py-2 text-white focus:outline-none focus:border-earth"
+                    className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] rounded-xl px-3.5 py-2.5 text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:border-[#E6332A] font-sans font-medium"
                   />
                 </div>
                 <div>
-                  <label className="text-ash uppercase text-[10px] block mb-1">% Terracería (Off-Road)</label>
+                  <label className="text-[#1A1918] uppercase text-[10px] font-mono font-black block mb-1">% Terracería (Off-Road)</label>
                   <input
                     type="number"
                     min="0"
                     max="100"
                     value={propOffroad}
                     onChange={(e) => setPropOffroad(e.target.value)}
-                    className="w-full bg-white/[0.03] border border-white/15 px-3 py-2 text-white focus:outline-none focus:border-earth"
+                    className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] rounded-xl px-3.5 py-2.5 text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:border-[#E6332A] font-sans font-medium"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-ash uppercase text-[10px] block mb-1">Hora de Salida</label>
+                  <label className="text-[#1A1918] uppercase text-[10px] font-mono font-black block mb-1">Hora de Salida</label>
                   <input
                     type="text"
                     value={propMeetingTime}
                     onChange={(e) => setPropMeetingTime(e.target.value)}
-                    className="w-full bg-white/[0.03] border border-white/15 px-3 py-2 text-white focus:outline-none focus:border-earth"
+                    className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] rounded-xl px-3.5 py-2.5 text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:border-[#E6332A] font-sans font-medium"
                   />
                 </div>
                 <div>
-                  <label className="text-ash uppercase text-[10px] block mb-1">Punto de Encuentro</label>
+                  <label className="text-[#1A1918] uppercase text-[10px] font-mono font-black block mb-1">Punto de Encuentro</label>
                   <input
                     type="text"
                     value={propMeetingPoint}
                     onChange={(e) => setPropMeetingPoint(e.target.value)}
-                    className="w-full bg-white/[0.03] border border-white/15 px-3 py-2 text-white focus:outline-none focus:border-earth"
+                    className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] rounded-xl px-3.5 py-2.5 text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:border-[#E6332A] font-sans font-medium"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-ash uppercase text-[10px] block mb-1">Plan / Resumen de la Ruta</label>
+                <label className="text-[#1A1918] uppercase text-[10px] font-mono font-black block mb-1">Plan / Resumen de la Ruta</label>
                 <textarea
                   rows={2}
                   value={propPlan}
                   onChange={(e) => setPropPlan(e.target.value)}
                   placeholder="Por qué propones esta ruta, tipo de motos y parada a comer..."
-                  className="w-full bg-white/[0.03] border border-white/15 px-3 py-2 text-white focus:outline-none focus:border-earth"
+                  className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] rounded-xl p-3 text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:border-[#E6332A] font-sans font-medium resize-none"
                 />
               </div>
 
-              <div className="pt-3 border-t border-white/10 flex gap-3">
+              <div className="pt-3 border-t-2 border-[#1A1918] flex gap-3">
                 <button
                   type="button"
                   onClick={() => setShowProposeModal(false)}
-                  className="w-1/2 py-2.5 border border-white/20 text-ash uppercase font-bold tracking-wider hover:text-white"
+                  className="w-1/2 py-2.5 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border-2 border-[#1A1918] rounded-xl font-display font-black uppercase text-xs tracking-wider shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="w-1/2 py-2.5 bg-earth hover:bg-earth-bright text-white font-bold uppercase tracking-wider transition border border-earth/30"
+                  className="w-1/2 py-2.5 bg-[#E6332A] hover:bg-[#d02c24] text-white border-2 border-[#1A1918] rounded-xl font-display font-black uppercase text-xs tracking-wider shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition"
                 >
                   Proponer a la Tribu
                 </button>
@@ -2356,56 +2676,56 @@ export const TribusView: React.FC<TribusViewProps> = ({
       {/* 9. MODAL: AÑADIR O INVITAR PILOTOS A LA TRIBU                       */}
       {/* =================================================================== */}
       {showAddPilotModal && activeTribu && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-          <div className="border border-white/20 bg-[#0E0C0A] max-w-lg w-full p-5 sm:p-6 space-y-5 my-auto max-h-[92vh] overflow-y-auto font-mono">
+        <div className="fixed inset-0 z-50 bg-[#1A1918]/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="border-2 border-[#1A1918] bg-[#FAF6ED] rounded-[28px] max-w-lg w-full p-5 sm:p-6 space-y-5 my-auto max-h-[92vh] overflow-y-auto font-sans text-[#1A1918] shadow-[6px_6px_0px_#1A1918]">
             {/* Header */}
-            <div className="flex items-start justify-between border-b border-white/10 pb-4 gap-3">
+            <div className="flex items-start justify-between border-b-2 border-[#1A1918] pb-4 gap-3">
               <div>
-                <span className="text-[10px] font-mono text-earth uppercase font-bold tracking-widest block mb-1">
-                  [ AÑADIR O INVITAR PILOTOS ]
+                <span className="text-[10px] font-mono text-[#E6332A] uppercase font-black tracking-widest block mb-1">
+                  ★ AÑADIR O INVITAR PILOTOS ★
                 </span>
-                <h3 className="font-display font-bold text-lg text-white uppercase">
+                <h3 className="font-display font-black text-xl text-[#1A1918] uppercase tracking-wide">
                   Añadir Piloto a {activeTribu.name}
                 </h3>
-                <p className="text-xs text-ash mt-0.5">
+                <p className="text-xs font-serif italic text-[#1A1918]/70 mt-0.5 font-medium">
                   Los nuevos pilotos se reflejarán de inmediato en los posts y rodadas de la tribu.
                 </p>
               </div>
               <button
                 onClick={() => setShowAddPilotModal(false)}
-                className="text-ash hover:text-white p-1"
+                className="p-1.5 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border-2 border-[#1A1918] rounded-xl shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition shrink-0"
                 title="Cerrar"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4 stroke-[2.5]" />
               </button>
             </div>
 
             {/* Invite code quick copy */}
-            <div className="p-3 bg-white/[0.03] border border-white/10 flex items-center justify-between gap-3">
+            <div className="p-3.5 bg-[#F4EEDB] border-2 border-[#1A1918] rounded-xl flex items-center justify-between gap-3 shadow-[2px_2px_0px_#1A1918]">
               <div>
-                <span className="text-[10px] text-ash uppercase block">Clave de Invitación de la Tribu</span>
-                <span className="text-sm font-bold text-white tracking-wider font-mono">{activeTribu.inviteCode}</span>
+                <span className="text-[10px] font-mono text-[#1A1918]/70 uppercase block font-black">Clave de Invitación de la Tribu</span>
+                <span className="text-sm font-black text-[#1A1918] tracking-wider font-mono">{activeTribu.inviteCode}</span>
               </div>
               <button
                 onClick={() => handleCopyCode(activeTribu.inviteCode)}
-                className="px-3 py-1.5 bg-earth/20 border border-earth/40 hover:bg-earth text-earth hover:text-white text-xs font-bold transition flex items-center gap-1.5 shrink-0"
+                className="px-3 py-1.5 bg-[#F7B32B] hover:bg-[#e0a020] text-[#1A1918] border-2 border-[#1A1918] rounded-lg shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none text-xs font-mono font-black transition flex items-center gap-1.5 shrink-0"
               >
-                <Key className="w-3.5 h-3.5" />
+                <Key className="w-3.5 h-3.5 text-[#1A1918]" />
                 <span>Copiar Clave</span>
               </button>
             </div>
 
             {/* Available community riders */}
             <div className="space-y-3">
-              <span className="text-[10px] text-earth uppercase font-bold tracking-wider block">
-                Pilotos disponibles en MotoMami ({users.filter(u => !activeTribu.members.some(m => m.userId === u.id)).length})
+              <span className="text-[11px] font-mono text-[#1A1918] uppercase font-black tracking-wider block">
+                Pilotos disponibles en NAO ({users.filter(u => !activeTribu.members.some(m => m.userId === u.id)).length})
               </span>
 
               {(() => {
                 const available = users.filter(u => !activeTribu.members.some(m => m.userId === u.id));
                 if (available.length === 0) {
                   return (
-                    <div className="p-4 text-center border border-dashed border-white/10 text-xs text-ash">
+                    <div className="p-4 text-center border-2 border-dashed border-[#1A1918]/30 rounded-xl text-xs text-[#1A1918]/70 font-sans font-medium">
                       Todos los pilotos registrados ya forman parte de esta tribu.
                     </div>
                   );
@@ -2418,18 +2738,18 @@ export const TribusView: React.FC<TribusViewProps> = ({
                       return (
                         <div 
                           key={u.id}
-                          className="p-2.5 bg-black/40 border border-white/10 flex items-center justify-between gap-3 hover:border-white/20 transition"
+                          className="p-3 bg-[#FAF6ED] border-2 border-[#1A1918] rounded-xl flex items-center justify-between gap-3 shadow-[2px_2px_0px_#1A1918] hover:bg-[#F4EEDB] transition"
                         >
                           <div className="flex items-center gap-2.5 min-w-0">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img 
                               src={u.avatar} 
                               alt={u.name} 
-                              className="w-9 h-9 rounded-full object-cover border border-white/15 shrink-0" 
+                              className="w-9 h-9 rounded-full object-cover border-2 border-[#1A1918] shrink-0" 
                             />
                             <div className="min-w-0">
-                              <p className="text-xs font-bold text-white uppercase truncate">{u.name}</p>
-                              <p className="text-[10px] text-ash truncate">
+                              <p className="text-xs font-display font-black text-[#1A1918] uppercase truncate">{u.name}</p>
+                              <p className="text-[10px] font-mono text-[#1A1918]/70 truncate font-bold">
                                 {bike ? `${bike.brand} ${bike.model}` : u.handle}
                               </p>
                             </div>
@@ -2443,9 +2763,9 @@ export const TribusView: React.FC<TribusViewProps> = ({
                                 confetti({ particleCount: 25, spread: 60 });
                               } catch {}
                             }}
-                            className="px-2.5 py-1.5 bg-earth hover:bg-earth-bright text-white text-[11px] font-bold uppercase transition flex items-center gap-1 shrink-0"
+                            className="px-3 py-1.5 bg-[#E6332A] hover:bg-[#d02c24] text-white border-2 border-[#1A1918] rounded-lg shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none text-[11px] font-display font-black uppercase transition flex items-center gap-1 shrink-0"
                           >
-                            <UserPlus className="w-3 h-3" />
+                            <UserPlus className="w-3 h-3 stroke-[2.5]" />
                             <span>+ Añadir</span>
                           </button>
                         </div>
@@ -2457,10 +2777,10 @@ export const TribusView: React.FC<TribusViewProps> = ({
             </div>
 
             {/* Footer */}
-            <div className="border-t border-white/10 pt-4 flex justify-end">
+            <div className="border-t-2 border-[#1A1918] pt-4 flex justify-end">
               <button
                 onClick={() => setShowAddPilotModal(false)}
-                className="px-4 py-2 bg-white/10 hover:bg-white/15 text-white text-xs font-bold uppercase transition"
+                className="px-5 py-2 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border-2 border-[#1A1918] rounded-xl font-display font-black uppercase text-xs shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition"
               >
                 Listo
               </button>
@@ -2471,46 +2791,46 @@ export const TribusView: React.FC<TribusViewProps> = ({
 
       {/* MODAL: EDITAR NOMBRE Y FOTO DEL GRUPO */}
       {showEditCrewModal && activeTribu && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-md bg-[#141210] border border-white/10 rounded-2xl shadow-2xl p-5 sm:p-6 space-y-5 animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#1A1918]/70 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-md bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[28px] shadow-[6px_6px_0px_#1A1918] p-5 sm:p-6 space-y-5 animate-in zoom-in-95 duration-200 font-sans text-[#1A1918]">
             
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+            <div className="flex items-center justify-between border-b-2 border-[#1A1918] pb-3">
               <div className="flex items-center gap-2">
-                <Pencil className="w-4 h-4 text-earth" />
-                <h3 className="text-base font-bold text-white uppercase tracking-wide">Editar Grupo</h3>
+                <Pencil className="w-4 h-4 text-[#E6332A]" />
+                <h3 className="text-base font-display font-black text-[#1A1918] uppercase tracking-wide">Editar Tribu</h3>
               </div>
               <button
                 type="button"
                 onClick={() => setShowEditCrewModal(false)}
-                className="text-ash hover:text-white transition p-1"
+                className="p-1.5 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border-2 border-[#1A1918] rounded-xl shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition"
               >
-                <X className="w-4 h-4" />
+                <X className="w-4 h-4 stroke-[2.5]" />
               </button>
             </div>
 
             <div className="space-y-4">
-              {/* Nombre del Grupo */}
+              {/* Nombre de la Tribu */}
               <div>
-                <label className="text-[11px] font-mono uppercase text-ash block mb-1.5 font-bold tracking-wider">
-                  Nombre del Grupo
+                <label className="text-[11px] font-mono uppercase text-[#1A1918] block mb-1.5 font-black tracking-wider">
+                  Nombre de la Tribu
                 </label>
                 <input
                   type="text"
                   value={editedCrewName}
                   onChange={(e) => setEditedCrewName(e.target.value)}
-                  placeholder="Ej. MotoMami Adventure Crew"
-                  className="w-full bg-black/60 border border-white/15 focus:border-white/40 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-ash/40 focus:outline-none transition font-sans"
+                  placeholder="Ej. NAO Adventure Crew"
+                  className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3.5 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium"
                 />
               </div>
 
-              {/* Portada del Grupo */}
+              {/* Portada de la Tribu */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-[11px] font-mono uppercase text-ash font-bold tracking-wider">
+                  <label className="text-[11px] font-mono uppercase text-[#1A1918] font-black tracking-wider">
                     Portada
                   </label>
-                  <label className="cursor-pointer text-[11px] font-bold text-ash hover:text-white transition flex items-center gap-1.5 px-2.5 py-1 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg">
-                    <Upload className="w-3 h-3 text-ash" />
+                  <label className="cursor-pointer text-[11px] font-display font-black uppercase text-[#1A1918] hover:bg-[#F4EEDB] transition flex items-center gap-1.5 px-2.5 py-1 bg-[#FAF6ED] border-2 border-[#1A1918] rounded-lg shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none">
+                    <Upload className="w-3 h-3 text-[#1A1918]" />
                     <span>Subir foto</span>
                     <input
                       type="file"
@@ -2533,7 +2853,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                 </div>
                 
                 {/* Banner Preview */}
-                <div className="relative h-24 w-full rounded-xl overflow-hidden border border-white/10 bg-black/40">
+                <div className="relative h-24 w-full rounded-xl overflow-hidden border-2 border-[#1A1918] bg-[#F4EEDB] shadow-[2px_2px_0px_#1A1918]">
                   {editedCrewCover ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img 
@@ -2542,17 +2862,16 @@ export const TribusView: React.FC<TribusViewProps> = ({
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-ash text-xs">
-                      <Camera className="w-5 h-5 mr-2 text-ash/40" />
+                    <div className="w-full h-full flex items-center justify-center text-[#1A1918]/60 text-xs font-serif italic">
+                      <Camera className="w-5 h-5 mr-2 text-[#1A1918]/40" />
                       <span>Sin imagen</span>
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                 </div>
 
-                {/* Presets discretos */}
+                {/* Presets */}
                 <div className="flex items-center gap-2 mt-2">
-                  <span className="text-[10px] font-mono text-ash/60 shrink-0">Presets:</span>
+                  <span className="text-[10px] font-mono text-[#1A1918]/70 font-bold shrink-0">Presets:</span>
                   <div className="flex items-center gap-2 overflow-x-auto pb-0.5">
                     {[
                       'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=800',
@@ -2566,10 +2885,10 @@ export const TribusView: React.FC<TribusViewProps> = ({
                           key={idx}
                           type="button"
                           onClick={() => setEditedCrewCover(imgUrl)}
-                          className={`relative w-12 h-8 rounded-lg overflow-hidden border transition shrink-0 cursor-pointer ${
+                          className={`relative w-12 h-8 rounded-lg overflow-hidden border-2 transition shrink-0 cursor-pointer ${
                             isSelected 
-                              ? 'border-earth ring-1 ring-earth' 
-                              : 'border-white/10 opacity-60 hover:opacity-100 hover:border-white/30'
+                              ? 'border-[#E6332A] ring-2 ring-[#E6332A]' 
+                              : 'border-[#1A1918] opacity-70 hover:opacity-100'
                           }`}
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -2585,11 +2904,11 @@ export const TribusView: React.FC<TribusViewProps> = ({
                 </div>
               </div>
 
-              {/* Vínculo de WhatsApp (Limpio, moderno, sin muros de texto) */}
-              <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/10 space-y-3">
+              {/* Vínculo de WhatsApp */}
+              <div className="p-3.5 rounded-xl bg-[#F4EEDB] border-2 border-[#1A1918] space-y-3 shadow-[2px_2px_0px_#1A1918]">
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-[11px] font-mono uppercase text-ash font-bold flex items-center gap-1.5">
+                    <label className="text-[11px] font-mono uppercase text-[#1A1918] font-black flex items-center gap-1.5">
                       <WhatsAppIcon className="w-3.5 h-3.5 text-[#25D366]" />
                       <span>Chat de WhatsApp</span>
                     </label>
@@ -2598,7 +2917,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                         href={editedCrewWhatsapp}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[10px] text-[#25D366] hover:underline font-mono"
+                        className="text-[10px] text-emerald-800 hover:underline font-mono font-bold"
                       >
                         Abrir enlace ↗
                       </a>
@@ -2609,24 +2928,24 @@ export const TribusView: React.FC<TribusViewProps> = ({
                     value={editedCrewWhatsapp}
                     onChange={(e) => setEditedCrewWhatsapp(e.target.value)}
                     placeholder="https://chat.whatsapp.com/..."
-                    className="w-full bg-black/60 border border-white/10 focus:border-white/30 rounded-lg px-3 py-2 text-xs text-white placeholder-ash/40 focus:outline-none transition font-mono"
+                    className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3 py-2 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-mono"
                   />
-                  <span className="text-[10px] text-ash/60 mt-1 block">
+                  <span className="text-[10px] text-[#1A1918]/60 mt-1 block font-sans">
                     Pega el enlace de invitación de tu grupo para que tus pilotos se unan con 1 toque.
                   </span>
                 </div>
 
-                <div className="pt-2.5 border-t border-white/5 flex items-center justify-between gap-3">
+                <div className="pt-2.5 border-t border-[#1A1918]/20 flex items-center justify-between gap-3">
                   <div className="min-w-0">
-                    <span className="text-xs text-white font-medium block">Link de NAO</span>
-                    <span className="text-[10px] text-ash/70 block">Pégalo en la descripción de tu WhatsApp</span>
+                    <span className="text-xs text-[#1A1918] font-bold block font-sans">Link de NAO</span>
+                    <span className="text-[10px] text-[#1A1918]/60 block font-sans">Pégalo en la descripción de tu WhatsApp</span>
                   </div>
                   <button
                     type="button"
                     onClick={handleCopyNaoLink}
-                    className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-mono transition shrink-0 flex items-center gap-1.5 cursor-pointer active:scale-95"
+                    className="px-3 py-1.5 rounded-lg bg-[#FAF6ED] hover:bg-[#F4EEDB] border-2 border-[#1A1918] text-[#1A1918] text-xs font-mono font-bold transition shrink-0 flex items-center gap-1.5 cursor-pointer shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
                   >
-                    <Copy className="w-3 h-3 text-ash" />
+                    <Copy className="w-3 h-3 text-[#1A1918]" />
                     <span>{copiedNaoLink ? '✓ Copiado' : 'Copiar link'}</span>
                   </button>
                 </div>
@@ -2634,11 +2953,11 @@ export const TribusView: React.FC<TribusViewProps> = ({
             </div>
 
             {/* Actions */}
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/10">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t-2 border-[#1A1918]">
               <button
                 type="button"
                 onClick={() => setShowEditCrewModal(false)}
-                className="px-4 py-2 rounded-xl text-xs font-mono uppercase text-ash hover:text-white transition"
+                className="px-4 py-2 rounded-xl text-xs font-display font-black uppercase text-[#1A1918] hover:bg-[#F4EEDB] border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition"
               >
                 Cancelar
               </button>
@@ -2646,9 +2965,9 @@ export const TribusView: React.FC<TribusViewProps> = ({
                 type="button"
                 onClick={handleSaveCrewDetails}
                 disabled={!editedCrewName.trim()}
-                className="px-4 py-2 rounded-xl bg-earth hover:bg-earth-bright disabled:opacity-50 text-white text-xs font-bold uppercase tracking-wider transition flex items-center gap-1.5 shadow"
+                className="px-5 py-2 rounded-xl bg-[#E6332A] hover:bg-[#d02c24] disabled:opacity-50 text-white text-xs font-display font-black uppercase tracking-wider transition flex items-center gap-1.5 border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
               >
-                <Check className="w-3.5 h-3.5" />
+                <Check className="w-3.5 h-3.5 stroke-[2.5]" />
                 <span>Guardar Cambios</span>
               </button>
             </div>

@@ -99,23 +99,9 @@ export const InteractiveRouteProposalModal: React.FC<InteractiveRouteProposalMod
       const destClean = destinationPoint || 'Destino';
       setRouteTitle(`Ruta ${stopsSummary}${destClean}`);
     }
-  }, [destinationPoint, intermediateStops]);
+  }, [intermediateStops, destinationPoint]);
 
-  // Auto-generate plan summary suggestion
-  useEffect(() => {
-    if (!planSummary) {
-      const stopsNames = intermediateStops.map(s => s.name).join(', ');
-      setPlanSummary(
-        `Salida puntual a las ${departureTime} desde ${originPoint}. Trayecto con paradas programadas en ${stopsNames || 'puntos escénicos'} y llegada a ${destinationPoint || 'destino'}. Nivel ${difficulty} con ${offroadPercentage}% de terracería.`
-      );
-    }
-  }, [originPoint, destinationPoint, departureTime, difficulty, offroadPercentage, intermediateStops]);
-
-  // Dynamic Google Maps URL
-  const gmapsWaypoints = intermediateStops.map(s => ({ name: s.name }));
-  const previewMapsUrl = buildDynamicRouteGoogleMapsUrl(originPoint, gmapsWaypoints, destinationPoint);
-
-  // Stop handlers
+  // Handlers for intermediate stops
   const handleAddStop = () => {
     const newStop: IntermediateStop = {
       id: `stop-${Date.now()}`,
@@ -126,25 +112,31 @@ export const InteractiveRouteProposalModal: React.FC<InteractiveRouteProposalMod
     setIntermediateStops(prev => [...prev, newStop]);
   };
 
-  const handleRemoveStop = (id: string) => {
-    setIntermediateStops(prev => prev.filter(s => s.id !== id));
-  };
-
   const handleUpdateStop = (id: string, updates: Partial<IntermediateStop>) => {
     setIntermediateStops(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
   };
 
-  const handleMoveStop = (index: number, direction: 'up' | 'down') => {
-    if (direction === 'up' && index === 0) return;
-    if (direction === 'down' && index === intermediateStops.length - 1) return;
-    const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    const copy = [...intermediateStops];
-    const [moved] = copy.splice(index, 1);
-    copy.splice(targetIndex, 0, moved);
-    setIntermediateStops(copy);
+  const handleRemoveStop = (id: string) => {
+    setIntermediateStops(prev => prev.filter(s => s.id !== id));
   };
 
-  // Submit Handler
+  const handleMoveStop = (index: number, direction: 'up' | 'down') => {
+    if ((direction === 'up' && index === 0) || (direction === 'down' && index === intermediateStops.length - 1)) return;
+    const newStops = [...intermediateStops];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    const temp = newStops[index];
+    newStops[index] = newStops[targetIndex];
+    newStops[targetIndex] = temp;
+    setIntermediateStops(newStops);
+  };
+
+  // Build live Google Maps preview link
+  const previewMapsUrl = buildDynamicRouteGoogleMapsUrl(
+    originPoint,
+    intermediateStops.map(s => ({ name: s.name })).filter(s => Boolean(s.name)),
+    destinationPoint
+  );
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -229,53 +221,36 @@ export const InteractiveRouteProposalModal: React.FC<InteractiveRouteProposalMod
     onSubmit(newProposal, dateConfig);
   };
 
-  const getStopTypeLabel = (type: WaypointType) => {
-    switch (type) {
-      case 'food':
-        return 'Comida / Restaurante';
-      case 'culture':
-        return 'Hacienda / Cultura';
-      case 'scenic':
-        return 'Mirador / Paisaje';
-      case 'fuel':
-        return 'Gasolinera';
-      case 'dirt':
-        return 'Entrada Terracería';
-      default:
-        return 'Punto de Interés';
-    }
-  };
-
   return (
-    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-      <div className="border border-white/20 bg-[#0E0C0A] max-w-2xl w-full p-5 sm:p-7 space-y-6 my-auto max-h-[92vh] overflow-y-auto font-mono text-chalk shadow-2xl">
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+      <div className="border border-[#E5DFD5] bg-white max-w-2xl w-full p-6 sm:p-8 space-y-6 my-auto max-h-[92vh] overflow-y-auto font-sans text-[#141312] shadow-2xl rounded-2xl">
         
         {/* Header con Indicador de Pasos */}
-        <div className="border-b border-white/10 pb-4">
+        <div className="border-b border-[#E5DFD5] pb-5">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <span className="font-mono text-[10px] text-earth uppercase tracking-widest font-bold flex items-center gap-1.5">
-                <Compass className="w-3.5 h-3.5" />
-                [ PROPOSICIÓN INTERACTIVA DE RUTA ]
+              <span className="font-display text-[10px] text-[#C84B31] uppercase tracking-[0.2em] font-black flex items-center gap-1.5">
+                <Compass className="w-3.5 h-3.5 text-[#C84B31]" />
+                ★ ALTERNATIVA INTERACTIVA ★
               </span>
-              <h2 className="font-display font-black text-xl sm:text-2xl text-white uppercase mt-0.5">
+              <h2 className="font-display font-black text-2xl sm:text-3xl text-[#141312] uppercase tracking-wide mt-0.5">
                 Diseñar Alternativa de Rodada
               </h2>
-              <p className="text-xs text-ash mt-0.5">
+              <p className="text-xs text-stone-500 mt-1 font-serif italic">
                 Configura fecha, puntos intermedios en Google Maps, nivel y plan de ruta.
               </p>
             </div>
             <button
               onClick={onClose}
-              className="text-ash hover:text-white p-1.5 border border-white/10 hover:border-white/30 transition shrink-0"
+              className="text-stone-400 hover:text-[#141312] p-2 rounded-full border border-[#E5DFD5] hover:border-[#141312] transition shrink-0 bg-[#FAF8F5]"
               title="Cerrar creador"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
           </div>
 
           {/* Stepper Progress Bar */}
-          <div className="grid grid-cols-4 gap-1.5 mt-5">
+          <div className="grid grid-cols-4 gap-2 mt-5">
             {[
               { num: 1, label: '1. FECHA' },
               { num: 2, label: '2. MAPS & RUTA' },
@@ -286,12 +261,12 @@ export const InteractiveRouteProposalModal: React.FC<InteractiveRouteProposalMod
                 key={step.num}
                 type="button"
                 onClick={() => setCurrentStep(step.num as any)}
-                className={`text-center py-2 px-1 border transition text-[10px] font-mono font-bold uppercase tracking-wider ${
+                className={`text-center py-2.5 px-1 border transition text-[10px] font-display uppercase tracking-wider rounded-xl ${
                   currentStep === step.num
-                    ? 'border-earth bg-earth/15 text-earth'
+                    ? 'border-[#141312] bg-[#FAF8F5] text-[#141312] font-black shadow-xs'
                     : currentStep > step.num
-                    ? 'border-white/20 bg-white/[0.03] text-chalk'
-                    : 'border-white/5 bg-transparent text-ash/60'
+                    ? 'border-[#E5DFD5] bg-white text-stone-700 font-bold'
+                    : 'border-[#E5DFD5] bg-white text-stone-400 font-bold'
                 }`}
               >
                 {step.label}
@@ -302,21 +277,19 @@ export const InteractiveRouteProposalModal: React.FC<InteractiveRouteProposalMod
 
         <form onSubmit={handleSubmit} className="space-y-6">
           
-          {/* =================================================================== */}
-          {/* PASO 1: SELECCIÓN DE FECHA                                          */}
-          {/* =================================================================== */}
+          {/* PASO 1: SELECCIÓN DE FECHA */}
           {currentStep === 1 && (
             <div className="space-y-4">
-              <div className="border border-white/10 bg-black/40 p-4 space-y-3">
-                <span className="text-[10px] font-mono text-earth uppercase font-bold tracking-wider block">
+              <div className="border border-[#E5DFD5] bg-[#FAF8F5] p-5 rounded-2xl space-y-3.5 shadow-xs">
+                <span className="text-[10px] font-display text-[#C84B31] uppercase font-black tracking-widest block">
                   Elige la Fecha para esta Alternativa:
                 </span>
 
-                {/* Opción A: Mantener la fecha actual de la convocatoria */}
-                <label className={`flex items-start gap-3 p-3.5 border cursor-pointer transition ${
+                {/* Opción A: Mantener la fecha actual */}
+                <label className={`flex items-start gap-3 p-4 border rounded-xl cursor-pointer transition shadow-xs ${
                   dateMode === 'current'
-                    ? 'border-earth bg-earth/10 text-white'
-                    : 'border-white/10 bg-white/[0.02] text-ash hover:border-white/20'
+                    ? 'border-[#141312] bg-white text-[#141312]'
+                    : 'border-[#E5DFD5] bg-white text-stone-600 hover:border-stone-400'
                 }`}>
                   <input
                     type="radio"
@@ -324,23 +297,23 @@ export const InteractiveRouteProposalModal: React.FC<InteractiveRouteProposalMod
                     value="current"
                     checked={dateMode === 'current'}
                     onChange={() => setDateMode('current')}
-                    className="mt-1 accent-[#C87D55]"
+                    className="mt-1 accent-[#141312]"
                   />
                   <div>
-                    <span className="text-xs font-bold text-white block uppercase">
+                    <span className="text-xs font-display font-black text-[#141312] block uppercase tracking-wide">
                       Usar la fecha de la convocatoria ({formatHumanDate(rodada.startDate, rodada.endDate, true)})
                     </span>
-                    <span className="text-[11px] text-ash block mt-0.5">
+                    <span className="text-[11px] text-stone-500 block mt-0.5 font-serif italic">
                       Competirás como alternativa directamente para la fecha fijada de la rodada.
                     </span>
                   </div>
                 </label>
 
-                {/* Opción B: Proponer otra fecha alternativa */}
-                <label className={`flex items-start gap-3 p-3.5 border cursor-pointer transition ${
+                {/* Opción B: Proponer otra fecha */}
+                <label className={`flex items-start gap-3 p-4 border rounded-xl cursor-pointer transition shadow-xs ${
                   dateMode === 'custom'
-                    ? 'border-earth bg-earth/10 text-white'
-                    : 'border-white/10 bg-white/[0.02] text-ash hover:border-white/20'
+                    ? 'border-[#141312] bg-white text-[#141312]'
+                    : 'border-[#E5DFD5] bg-white text-stone-600 hover:border-stone-400'
                 }`}>
                   <input
                     type="radio"
@@ -348,59 +321,59 @@ export const InteractiveRouteProposalModal: React.FC<InteractiveRouteProposalMod
                     value="custom"
                     checked={dateMode === 'custom'}
                     onChange={() => setDateMode('custom')}
-                    className="mt-1 accent-[#C87D55]"
+                    className="mt-1 accent-[#141312]"
                   />
                   <div className="w-full">
-                    <span className="text-xs font-bold text-white block uppercase">
+                    <span className="text-xs font-display font-black text-[#141312] block uppercase tracking-wide">
                       Proponer otra opción de fecha
                     </span>
-                    <span className="text-[11px] text-ash block mt-0.5">
+                    <span className="text-[11px] text-stone-500 block mt-0.5 font-serif italic">
                       Si crees que otra fecha es mejor para la tribu (ej. siguiente fin de semana).
                     </span>
 
                     {dateMode === 'custom' && (
-                      <div className="mt-3 pt-3 border-t border-white/10 space-y-3">
+                      <div className="mt-3 pt-3 border-t border-[#E5DFD5] space-y-3">
                         <div className="flex items-center gap-2">
                           <input
                             type="checkbox"
                             id="isMultiDay"
                             checked={isMultiDay}
                             onChange={(e) => setIsMultiDay(e.target.checked)}
-                            className="accent-[#C87D55]"
+                            className="accent-[#141312]"
                           />
-                          <label htmlFor="isMultiDay" className="text-xs text-chalk cursor-pointer">
+                          <label htmlFor="isMultiDay" className="text-xs text-stone-700 cursor-pointer font-serif italic">
                             ¿Es rodada de varios días / fin de semana?
                           </label>
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           <div>
-                            <label className="text-[10px] text-ash uppercase block mb-1">Fecha de Inicio</label>
+                            <label className="text-[10px] text-stone-500 font-display font-bold uppercase block mb-1">Fecha de Inicio</label>
                             <input
                               type="date"
                               required={dateMode === 'custom'}
                               value={customStartDate}
                               onChange={(e) => setCustomStartDate(e.target.value)}
-                              className="w-full bg-black/60 border border-white/20 px-3 py-2 text-white text-xs focus:outline-none focus:border-earth"
+                              className="w-full bg-[#FAF8F5] border border-[#DDD7CB] px-3 py-2 text-[#141312] text-xs focus:outline-none focus:border-[#141312] rounded-xl shadow-xs"
                             />
                           </div>
 
                           {isMultiDay && (
                             <div>
-                              <label className="text-[10px] text-ash uppercase block mb-1">Fecha de Fin</label>
+                              <label className="text-[10px] text-stone-500 font-display font-bold uppercase block mb-1">Fecha de Fin</label>
                               <input
                                 type="date"
                                 required={dateMode === 'custom' && isMultiDay}
                                 value={customEndDate}
                                 onChange={(e) => setCustomEndDate(e.target.value)}
-                                className="w-full bg-black/60 border border-white/20 px-3 py-2 text-white text-xs focus:outline-none focus:border-earth"
+                                className="w-full bg-[#FAF8F5] border border-[#DDD7CB] px-3 py-2 text-[#141312] text-xs focus:outline-none focus:border-[#141312] rounded-xl shadow-xs"
                               />
                             </div>
                           )}
                         </div>
 
                         {customStartDate && (
-                          <div className="p-2 border border-earth/30 bg-earth/5 text-[11px] text-earth">
+                          <div className="p-2.5 border border-[#E5DFD5] bg-white rounded-xl text-xs text-[#C84B31] font-display font-bold">
                             Fecha propuesta: {formatHumanDate(customStartDate, isMultiDay ? customEndDate : undefined, true)}
                           </div>
                         )}
@@ -410,10 +383,10 @@ export const InteractiveRouteProposalModal: React.FC<InteractiveRouteProposalMod
                 </label>
 
                 {/* Opción C: Fecha por definir */}
-                <label className={`flex items-start gap-3 p-3.5 border cursor-pointer transition ${
+                <label className={`flex items-start gap-3 p-4 border rounded-xl cursor-pointer transition shadow-xs ${
                   dateMode === 'tbd'
-                    ? 'border-earth bg-earth/10 text-white'
-                    : 'border-white/10 bg-white/[0.02] text-ash hover:border-white/20'
+                    ? 'border-[#141312] bg-white text-[#141312]'
+                    : 'border-[#E5DFD5] bg-white text-stone-600 hover:border-stone-400'
                 }`}>
                   <input
                     type="radio"
@@ -421,13 +394,13 @@ export const InteractiveRouteProposalModal: React.FC<InteractiveRouteProposalMod
                     value="tbd"
                     checked={dateMode === 'tbd'}
                     onChange={() => setDateMode('tbd')}
-                    className="mt-1 accent-[#C87D55]"
+                    className="mt-1 accent-[#141312]"
                   />
                   <div>
-                    <span className="text-xs font-bold text-white block uppercase">
+                    <span className="text-xs font-display font-black text-[#141312] block uppercase tracking-wide">
                       Fecha Por Definir / A Consenso
                     </span>
-                    <span className="text-[11px] text-ash block mt-0.5">
+                    <span className="text-[11px] text-stone-500 block mt-0.5 font-serif italic">
                       Proponer la ruta primero y decidir la fecha después en el chat de la tribu.
                     </span>
                   </div>
@@ -438,7 +411,7 @@ export const InteractiveRouteProposalModal: React.FC<InteractiveRouteProposalMod
                 <button
                   type="button"
                   onClick={() => setCurrentStep(2)}
-                  className="px-5 py-2.5 bg-earth hover:bg-earth-bright text-white text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition"
+                  className="px-6 py-2.5 bg-[#141312] hover:bg-black text-white text-xs font-display font-black uppercase tracking-wider flex items-center gap-2 rounded-xl transition shadow-sm active:scale-95"
                 >
                   <span>Continuar a Ruta & Maps</span>
                   <ChevronRight className="w-4 h-4" />
@@ -447,20 +420,18 @@ export const InteractiveRouteProposalModal: React.FC<InteractiveRouteProposalMod
             </div>
           )}
 
-          {/* =================================================================== */}
-          {/* PASO 2: MAPS & RUTA CONECTADA (INICIO, PUNTOS MEDIOS, FIN)          */}
-          {/* =================================================================== */}
+          {/* PASO 2: MAPS & RUTA CONECTADA */}
           {currentStep === 2 && (
             <div className="space-y-4">
               
               {/* Origen (Punto A) */}
-              <div className="border border-white/10 bg-black/40 p-4 space-y-2">
+              <div className="border border-[#E5DFD5] bg-[#FAF8F5] p-5 rounded-2xl space-y-2.5 shadow-xs">
                 <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-mono text-earth uppercase font-bold tracking-wider flex items-center gap-1.5">
-                    <Navigation className="w-3.5 h-3.5 text-white" />
+                  <label className="text-[10px] font-display text-[#C84B31] uppercase font-black tracking-widest flex items-center gap-1.5">
+                    <Navigation className="w-3.5 h-3.5 text-[#141312]" />
                     Punto de Salida / Origen (A)
                   </label>
-                  <span className="text-[10px] text-ash">Inicio de ruta</span>
+                  <span className="text-[10px] text-stone-400 font-serif italic">Inicio de ruta</span>
                 </div>
 
                 <input
@@ -469,18 +440,18 @@ export const InteractiveRouteProposalModal: React.FC<InteractiveRouteProposalMod
                   value={originPoint}
                   onChange={(e) => setOriginPoint(e.target.value)}
                   placeholder="Ej. Interlomas, Huixquilucan o Caseta Tlalpan"
-                  className="w-full bg-black/60 border border-white/20 px-3 py-2 text-white text-xs placeholder-ash/50 focus:outline-none focus:border-earth"
+                  className="w-full bg-white border border-[#DDD7CB] px-3.5 py-2.5 text-[#141312] text-xs placeholder-stone-400 focus:outline-none focus:border-[#141312] rounded-xl shadow-xs"
                 />
 
                 {/* Accesos rápidos comunes */}
                 <div className="flex items-center gap-1.5 flex-wrap pt-1">
-                  <span className="text-[10px] text-ash">Sugerencias:</span>
+                  <span className="text-[10px] text-stone-500 font-serif italic">Sugerencias:</span>
                   {['Interlomas', 'Caseta Tlalpan', 'Perisur', 'Santa Fe', 'Caseta Tepotzotlán'].map(sug => (
                     <button
                       key={sug}
                       type="button"
                       onClick={() => setOriginPoint(sug)}
-                      className="text-[10px] px-2 py-0.5 border border-white/10 hover:border-earth text-ash hover:text-white transition"
+                      className="text-[10px] px-2.5 py-1 rounded-lg border border-[#E5DFD5] bg-white hover:border-[#141312] text-stone-600 hover:text-[#141312] font-display font-bold uppercase transition shadow-xs"
                     >
                       {sug}
                     </button>
@@ -488,14 +459,14 @@ export const InteractiveRouteProposalModal: React.FC<InteractiveRouteProposalMod
                 </div>
               </div>
 
-              {/* Puntos Medios / Paradas en Ruta (B, C...) */}
-              <div className="border border-white/10 bg-black/40 p-4 space-y-3">
+              {/* Puntos Medios / Paradas en Ruta */}
+              <div className="border border-[#E5DFD5] bg-[#FAF8F5] p-5 rounded-2xl space-y-3.5 shadow-xs">
                 <div className="flex items-center justify-between">
                   <div>
-                    <label className="text-[10px] font-mono text-earth uppercase font-bold tracking-wider block">
+                    <label className="text-[10px] font-display text-[#C84B31] uppercase font-black tracking-widest block">
                       Paradas Intermedias & Puntos de Interés
                     </label>
-                    <p className="text-[11px] text-ash">
+                    <p className="text-[11px] text-stone-500 font-serif italic">
                       Añade haciendas, miradores, desayunos o paradas de gasolina en el camino.
                     </p>
                   </div>
@@ -503,7 +474,7 @@ export const InteractiveRouteProposalModal: React.FC<InteractiveRouteProposalMod
                   <button
                     type="button"
                     onClick={handleAddStop}
-                    className="px-3 py-1.5 border border-earth/40 hover:bg-earth/10 text-earth text-xs font-bold uppercase tracking-wider flex items-center gap-1 transition"
+                    className="px-3 py-1.5 border border-[#141312] bg-[#141312] text-white hover:bg-black text-xs font-display font-black uppercase tracking-wider flex items-center gap-1.5 rounded-xl transition shadow-xs"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Añadir Parada</span>
@@ -511,16 +482,16 @@ export const InteractiveRouteProposalModal: React.FC<InteractiveRouteProposalMod
                 </div>
 
                 {intermediateStops.length === 0 ? (
-                  <div className="p-4 border border-dashed border-white/15 text-center text-xs text-ash">
+                  <div className="p-4 border border-dashed border-[#DDD7CB] rounded-xl text-center text-xs text-stone-500 font-serif italic bg-white">
                     No has añadido paradas intermedias aún. Haz clic en &ldquo;Añadir Parada&rdquo; si harás escala a comer, ver haciendas o miradores.
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {intermediateStops.map((stop, index) => (
-                      <div key={stop.id} className="p-3 border border-white/15 bg-white/[0.02] space-y-2.5">
+                      <div key={stop.id} className="p-4 border border-[#E5DFD5] bg-white rounded-xl space-y-3 shadow-xs">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="text-[11px] font-bold text-white uppercase flex items-center gap-1.5">
-                            <span className="w-5 h-5 rounded bg-earth/20 border border-earth text-earth flex items-center justify-center text-[10px]">
+                          <span className="text-xs font-display font-black text-[#141312] uppercase tracking-wide flex items-center gap-2">
+                            <span className="w-6 h-6 rounded-md bg-[#FAF8F5] border border-[#DDD7CB] text-[#141312] flex items-center justify-center text-[10px] font-black">
                               {String.fromCharCode(66 + index)}
                             </span>
                             Parada {index + 1}
@@ -531,7 +502,7 @@ export const InteractiveRouteProposalModal: React.FC<InteractiveRouteProposalMod
                               type="button"
                               onClick={() => handleMoveStop(index, 'up')}
                               disabled={index === 0}
-                              className="p-1 text-ash hover:text-white disabled:opacity-30"
+                              className="p-1.5 text-stone-400 hover:text-[#141312] disabled:opacity-30 rounded-lg border border-transparent hover:border-[#E5DFD5]"
                               title="Mover antes"
                             >
                               <ArrowUp className="w-3.5 h-3.5" />
@@ -540,7 +511,7 @@ export const InteractiveRouteProposalModal: React.FC<InteractiveRouteProposalMod
                               type="button"
                               onClick={() => handleMoveStop(index, 'down')}
                               disabled={index === intermediateStops.length - 1}
-                              className="p-1 text-ash hover:text-white disabled:opacity-30"
+                              className="p-1.5 text-stone-400 hover:text-[#141312] disabled:opacity-30 rounded-lg border border-transparent hover:border-[#E5DFD5]"
                               title="Mover después"
                             >
                               <ArrowDown className="w-3.5 h-3.5" />
@@ -548,7 +519,7 @@ export const InteractiveRouteProposalModal: React.FC<InteractiveRouteProposalMod
                             <button
                               type="button"
                               onClick={() => handleRemoveStop(stop.id)}
-                              className="p-1 text-rose-400 hover:text-rose-300 ml-1"
+                              className="p-1.5 text-rose-500 hover:text-rose-700 ml-1 rounded-lg border border-transparent hover:border-rose-200"
                               title="Eliminar parada"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -557,25 +528,25 @@ export const InteractiveRouteProposalModal: React.FC<InteractiveRouteProposalMod
                         </div>
 
                         {/* Nombre del punto */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                           <div>
-                            <label className="text-[9px] text-ash uppercase block mb-1">Nombre del Lugar / Parada</label>
+                            <label className="text-[10px] text-stone-500 font-display font-bold uppercase block mb-1">Nombre del Lugar / Parada</label>
                             <input
                               type="text"
                               required
                               value={stop.name}
                               onChange={(e) => handleUpdateStop(stop.id, { name: e.target.value })}
                               placeholder="Ej. Hacienda Santa María Regla"
-                              className="w-full bg-black/60 border border-white/20 px-2.5 py-1.5 text-white text-xs focus:outline-none focus:border-earth"
+                              className="w-full bg-[#FAF8F5] border border-[#DDD7CB] px-3 py-2 text-[#141312] text-xs focus:outline-none focus:border-[#141312] rounded-xl shadow-xs"
                             />
                           </div>
 
                           <div>
-                            <label className="text-[9px] text-ash uppercase block mb-1">Tipo de Parada</label>
+                            <label className="text-[10px] text-stone-500 font-display font-bold uppercase block mb-1">Tipo de Parada</label>
                             <select
                               value={stop.type}
                               onChange={(e) => handleUpdateStop(stop.id, { type: e.target.value as WaypointType })}
-                              className="w-full bg-black/60 border border-white/20 px-2.5 py-1.5 text-white text-xs focus:outline-none focus:border-earth"
+                              className="w-full bg-[#FAF8F5] border border-[#DDD7CB] px-3 py-2 text-[#141312] text-xs focus:outline-none focus:border-[#141312] rounded-xl shadow-xs"
                             >
                               <option value="food">🍽️ Parar a Comer / Desayuno</option>
                               <option value="culture">🏛️ Ver Hacienda / Punto Cultural</option>
@@ -588,7 +559,7 @@ export const InteractiveRouteProposalModal: React.FC<InteractiveRouteProposalMod
 
                         {/* Breve descripción de la parada */}
                         <div>
-                          <label className="text-[9px] text-ash uppercase block mb-1">
+                          <label className="text-[10px] text-stone-500 font-display font-bold uppercase block mb-1">
                             Breve descripción de la parada (¿Qué se hace aquí?)
                           </label>
                           <input
@@ -596,7 +567,7 @@ export const InteractiveRouteProposalModal: React.FC<InteractiveRouteProposalMod
                             value={stop.description}
                             onChange={(e) => handleUpdateStop(stop.id, { description: e.target.value })}
                             placeholder="Ej. Parada a desayunar cecina y café de olla en el mercado"
-                            className="w-full bg-black/60 border border-white/20 px-2.5 py-1.5 text-white text-xs placeholder-ash/50 focus:outline-none focus:border-earth"
+                            className="w-full bg-[#FAF8F5] border border-[#DDD7CB] px-3 py-2 text-[#141312] text-xs placeholder-stone-400 focus:outline-none focus:border-[#141312] rounded-xl shadow-xs"
                           />
                         </div>
                       </div>
@@ -606,16 +577,16 @@ export const InteractiveRouteProposalModal: React.FC<InteractiveRouteProposalMod
               </div>
 
               {/* Destino Final (Punto Z) */}
-              <div className="border border-white/10 bg-black/40 p-4 space-y-2">
+              <div className="border border-[#E5DFD5] bg-[#FAF8F5] p-5 rounded-2xl space-y-2.5 shadow-xs">
                 <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-mono text-earth uppercase font-bold tracking-wider flex items-center gap-1.5">
-                    <Flag className="w-3.5 h-3.5 text-earth" />
+                  <label className="text-[10px] font-display text-[#C84B31] uppercase font-black tracking-widest flex items-center gap-1.5">
+                    <Flag className="w-3.5 h-3.5 text-[#C84B31]" />
                     Destino Final (Meta)
                   </label>
-                  <span className="text-[10px] text-ash">Fin de recorrido</span>
+                  <span className="text-[10px] text-stone-400 font-serif italic">Fin de recorrido</span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                   <div className="sm:col-span-2">
                     <input
                       type="text"
@@ -623,7 +594,7 @@ export const InteractiveRouteProposalModal: React.FC<InteractiveRouteProposalMod
                       value={destinationPoint}
                       onChange={(e) => setDestinationPoint(e.target.value)}
                       placeholder="Ej. Mineral del Chico o Valle de Bravo"
-                      className="w-full bg-black/60 border border-white/20 px-3 py-2 text-white text-xs focus:outline-none focus:border-earth"
+                      className="w-full bg-white border border-[#DDD7CB] px-3.5 py-2.5 text-[#141312] text-xs focus:outline-none focus:border-[#141312] rounded-xl shadow-xs"
                     />
                   </div>
                   <div>
@@ -632,20 +603,20 @@ export const InteractiveRouteProposalModal: React.FC<InteractiveRouteProposalMod
                       value={destinationState}
                       onChange={(e) => setDestinationState(e.target.value)}
                       placeholder="Estado (ej. Hidalgo)"
-                      className="w-full bg-black/60 border border-white/20 px-3 py-2 text-white text-xs focus:outline-none focus:border-earth"
+                      className="w-full bg-white border border-[#DDD7CB] px-3.5 py-2.5 text-[#141312] text-xs focus:outline-none focus:border-[#141312] rounded-xl shadow-xs"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Conexión en vivo con Google Maps Preview */}
-              <div className="p-3.5 border border-earth/40 bg-earth/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="p-4 border border-[#E5DFD5] bg-white rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
                 <div className="space-y-0.5">
-                  <span className="text-xs font-bold text-white uppercase flex items-center gap-1.5">
-                    <Compass className="w-4 h-4 text-earth" />
+                  <span className="text-xs font-display font-black text-[#141312] uppercase flex items-center gap-1.5 tracking-wide">
+                    <Compass className="w-4 h-4 text-[#C84B31]" />
                     Ruta Conectada en Google Maps
                   </span>
-                  <p className="text-[11px] text-ash">
+                  <p className="text-[11px] text-stone-500 font-serif italic">
                     Se generará el enlace secuencial con todas las paradas ordenadas (A &rarr; B &rarr; C &rarr; Z).
                   </p>
                 </div>
@@ -654,10 +625,10 @@ export const InteractiveRouteProposalModal: React.FC<InteractiveRouteProposalMod
                   href={previewMapsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-3.5 py-2 border border-earth bg-earth text-white hover:bg-earth-bright text-xs uppercase font-bold tracking-wider flex items-center gap-1.5 shrink-0 justify-center transition shadow"
+                  className="px-4 py-2 border border-[#141312] bg-[#141312] text-white hover:bg-black text-xs uppercase font-display font-black tracking-wider flex items-center gap-1.5 shrink-0 justify-center transition rounded-xl shadow-xs active:scale-95"
                 >
                   <span>Probar en Maps</span>
-                  <ExternalLink className="w-3.5 h-3.5" />
+                  <ExternalLink className="w-3.5 h-3.5 text-[#F2B705]" />
                 </a>
               </div>
 
@@ -665,7 +636,7 @@ export const InteractiveRouteProposalModal: React.FC<InteractiveRouteProposalMod
                 <button
                   type="button"
                   onClick={() => setCurrentStep(1)}
-                  className="px-4 py-2 border border-white/20 hover:border-white/40 text-ash hover:text-white text-xs font-bold uppercase tracking-wider flex items-center gap-1 transition"
+                  className="px-4 py-2 border border-[#E5DFD5] hover:border-[#141312] bg-white text-stone-600 hover:text-[#141312] text-xs font-display font-bold uppercase tracking-wider flex items-center gap-1 transition rounded-xl shadow-xs"
                 >
                   <ChevronLeft className="w-4 h-4" />
                   <span>Atrás</span>
@@ -674,7 +645,7 @@ export const InteractiveRouteProposalModal: React.FC<InteractiveRouteProposalMod
                 <button
                   type="button"
                   onClick={() => setCurrentStep(3)}
-                  className="px-5 py-2.5 bg-earth hover:bg-earth-bright text-white text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition"
+                  className="px-6 py-2.5 bg-[#141312] hover:bg-black text-white text-xs font-display font-black uppercase tracking-wider flex items-center gap-2 rounded-xl transition shadow-sm active:scale-95"
                 >
                   <span>Continuar a Logística</span>
                   <ChevronRight className="w-4 h-4" />
@@ -683,16 +654,14 @@ export const InteractiveRouteProposalModal: React.FC<InteractiveRouteProposalMod
             </div>
           )}
 
-          {/* =================================================================== */}
-          {/* PASO 3: LOGÍSTICA, DIFICULTAD & HORA                                */}
-          {/* =================================================================== */}
+          {/* PASO 3: LOGÍSTICA, DIFICULTAD & HORA */}
           {currentStep === 3 && (
             <div className="space-y-4">
               
               {/* Hora de salida & Distancia */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 border border-white/10 bg-black/40 p-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 border border-[#E5DFD5] bg-[#FAF8F5] p-5 rounded-2xl shadow-xs">
                 <div>
-                  <label className="text-[10px] font-mono text-earth uppercase font-bold tracking-wider block mb-1">
+                  <label className="text-[10px] font-display text-[#C84B31] uppercase font-black tracking-widest block mb-1">
                     Hora de Salida
                   </label>
                   <input
@@ -700,24 +669,24 @@ export const InteractiveRouteProposalModal: React.FC<InteractiveRouteProposalMod
                     value={departureTime}
                     onChange={(e) => setDepartureTime(e.target.value)}
                     placeholder="Ej. 07:30 AM"
-                    className="w-full bg-black/60 border border-white/20 px-3 py-2 text-white text-xs focus:outline-none focus:border-earth"
+                    className="w-full bg-white border border-[#DDD7CB] px-3.5 py-2 text-[#141312] text-xs focus:outline-none focus:border-[#141312] rounded-xl shadow-xs"
                   />
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-mono text-earth uppercase font-bold tracking-wider block mb-1">
+                  <label className="text-[10px] font-display text-[#C84B31] uppercase font-black tracking-widest block mb-1">
                     Distancia Total Aprox. (km)
                   </label>
                   <input
                     type="number"
                     value={totalKm}
                     onChange={(e) => setTotalKm(Number(e.target.value))}
-                    className="w-full bg-black/60 border border-white/20 px-3 py-2 text-white text-xs focus:outline-none focus:border-earth"
+                    className="w-full bg-white border border-[#DDD7CB] px-3.5 py-2 text-[#141312] text-xs focus:outline-none focus:border-[#141312] rounded-xl shadow-xs"
                   />
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-mono text-earth uppercase font-bold tracking-wider block mb-1">
+                  <label className="text-[10px] font-display text-[#C84B31] uppercase font-black tracking-widest block mb-1">
                     Tiempo Estimado
                   </label>
                   <input
@@ -725,14 +694,14 @@ export const InteractiveRouteProposalModal: React.FC<InteractiveRouteProposalMod
                     value={estimatedHours}
                     onChange={(e) => setEstimatedHours(e.target.value)}
                     placeholder="Ej. 4h 30m"
-                    className="w-full bg-black/60 border border-white/20 px-3 py-2 text-white text-xs focus:outline-none focus:border-earth"
+                    className="w-full bg-white border border-[#DDD7CB] px-3.5 py-2 text-[#141312] text-xs focus:outline-none focus:border-[#141312] rounded-xl shadow-xs"
                   />
                 </div>
               </div>
 
-              {/* Nivel de Dificultad (incluyendo 'Desconocido') */}
-              <div className="border border-white/10 bg-black/40 p-4 space-y-3">
-                <label className="text-[10px] font-mono text-earth uppercase font-bold tracking-wider block">
+              {/* Nivel de Dificultad */}
+              <div className="border border-[#E5DFD5] bg-[#FAF8F5] p-5 rounded-2xl space-y-3.5 shadow-xs">
+                <label className="text-[10px] font-display text-[#C84B31] uppercase font-black tracking-widest block">
                   Nivel de Dificultad del Trazado:
                 </label>
 
@@ -759,33 +728,33 @@ export const InteractiveRouteProposalModal: React.FC<InteractiveRouteProposalMod
                       key={item.lvl}
                       type="button"
                       onClick={() => setDifficulty(item.lvl as any)}
-                      className={`p-3 text-left border transition ${
+                      className={`p-3.5 text-left border rounded-xl transition shadow-xs ${
                         difficulty === item.lvl
-                          ? 'border-earth bg-earth/15 text-white'
-                          : 'border-white/10 bg-white/[0.02] text-ash hover:border-white/25 hover:text-chalk'
+                          ? 'border-[#141312] bg-white text-[#141312]'
+                          : 'border-[#E5DFD5] bg-white text-stone-600 hover:border-[#141312]'
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold uppercase">{item.lvl}</span>
+                        <span className="text-xs font-display font-black uppercase tracking-wide">{item.lvl}</span>
                         {item.lvl === 'Desconocido / Por explorar' && (
-                          <span className="text-[9px] font-mono uppercase bg-amber-500/20 text-amber-300 border border-amber-500/40 px-1.5 py-0.2">
+                          <span className="text-[9px] font-display uppercase font-black bg-[#FAF8F5] text-[#C84B31] border border-[#E5DFD5] px-2 py-0.5 rounded">
                             Exploración
                           </span>
                         )}
                       </div>
-                      <p className="text-[10px] text-ash mt-1">{item.desc}</p>
+                      <p className="text-[10px] text-stone-500 mt-1 font-serif italic">{item.desc}</p>
                     </button>
                   ))}
                 </div>
               </div>
 
               {/* Porcentaje de Terracería vs Asfalto */}
-              <div className="border border-white/10 bg-black/40 p-4 space-y-2">
+              <div className="border border-[#E5DFD5] bg-[#FAF8F5] p-5 rounded-2xl space-y-2.5 shadow-xs">
                 <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-mono text-earth uppercase font-bold tracking-wider block">
+                  <label className="text-[10px] font-display text-[#C84B31] uppercase font-black tracking-widest block">
                     Composición del Terreno
                   </label>
-                  <span className="text-xs font-bold text-white">
+                  <span className="text-xs font-mono font-bold text-[#141312]">
                     {offroadPercentage}% Terracería • {100 - offroadPercentage}% Asfalto
                   </span>
                 </div>
@@ -797,10 +766,10 @@ export const InteractiveRouteProposalModal: React.FC<InteractiveRouteProposalMod
                   step="5"
                   value={offroadPercentage}
                   onChange={(e) => setOffroadPercentage(Number(e.target.value))}
-                  className="w-full accent-[#C87D55] cursor-pointer"
+                  className="w-full accent-[#141312] cursor-pointer"
                 />
 
-                <div className="flex justify-between text-[10px] text-ash">
+                <div className="flex justify-between text-[10px] text-stone-500 font-serif italic">
                   <span>100% Carretera / Curvas</span>
                   <span>50 / 50 Mixto</span>
                   <span>100% Brecha Off-Road</span>
@@ -811,7 +780,7 @@ export const InteractiveRouteProposalModal: React.FC<InteractiveRouteProposalMod
                 <button
                   type="button"
                   onClick={() => setCurrentStep(2)}
-                  className="px-4 py-2 border border-white/20 hover:border-white/40 text-ash hover:text-white text-xs font-bold uppercase tracking-wider flex items-center gap-1 transition"
+                  className="px-4 py-2 border border-[#E5DFD5] hover:border-[#141312] bg-white text-stone-600 hover:text-[#141312] text-xs font-display font-bold uppercase tracking-wider flex items-center gap-1 transition rounded-xl shadow-xs"
                 >
                   <ChevronLeft className="w-4 h-4" />
                   <span>Atrás</span>
@@ -820,7 +789,7 @@ export const InteractiveRouteProposalModal: React.FC<InteractiveRouteProposalMod
                 <button
                   type="button"
                   onClick={() => setCurrentStep(4)}
-                  className="px-5 py-2.5 bg-earth hover:bg-earth-bright text-white text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition"
+                  className="px-6 py-2.5 bg-[#141312] hover:bg-black text-white text-xs font-display font-black uppercase tracking-wider flex items-center gap-2 rounded-xl transition shadow-sm active:scale-95"
                 >
                   <span>Continuar a Resumen</span>
                   <ChevronRight className="w-4 h-4" />
@@ -829,15 +798,13 @@ export const InteractiveRouteProposalModal: React.FC<InteractiveRouteProposalMod
             </div>
           )}
 
-          {/* =================================================================== */}
-          {/* PASO 4: PLAN, TÍTULO & CONFIRMACIÓN                                 */}
-          {/* =================================================================== */}
+          {/* PASO 4: PLAN, TÍTULO & CONFIRMACIÓN */}
           {currentStep === 4 && (
             <div className="space-y-4">
               
               {/* Título de la Ruta */}
-              <div className="border border-white/10 bg-black/40 p-4 space-y-2">
-                <label className="text-[10px] font-mono text-earth uppercase font-bold tracking-wider block">
+              <div className="border border-[#E5DFD5] bg-[#FAF8F5] p-5 rounded-2xl space-y-2 shadow-xs">
+                <label className="text-[10px] font-display text-[#C84B31] uppercase font-black tracking-widest block">
                   Título de la Ruta Propuesta
                 </label>
                 <input
@@ -846,13 +813,13 @@ export const InteractiveRouteProposalModal: React.FC<InteractiveRouteProposalMod
                   value={routeTitle}
                   onChange={(e) => setRouteTitle(e.target.value)}
                   placeholder="Ej. Ruta de las Haciendas & Paso de la Montaña"
-                  className="w-full bg-black/60 border border-white/20 px-3 py-2 text-white text-xs focus:outline-none focus:border-earth"
+                  className="w-full bg-white border border-[#DDD7CB] px-3.5 py-2.5 text-[#141312] text-xs focus:outline-none focus:border-[#141312] rounded-xl shadow-xs"
                 />
               </div>
 
               {/* Resumen del Plan */}
-              <div className="border border-white/10 bg-black/40 p-4 space-y-2">
-                <label className="text-[10px] font-mono text-earth uppercase font-bold tracking-wider block">
+              <div className="border border-[#E5DFD5] bg-[#FAF8F5] p-5 rounded-2xl space-y-2 shadow-xs">
+                <label className="text-[10px] font-display text-[#C84B31] uppercase font-black tracking-widest block">
                   Resumen o Descripción del Plan
                 </label>
                 <textarea
@@ -861,21 +828,21 @@ export const InteractiveRouteProposalModal: React.FC<InteractiveRouteProposalMod
                   value={planSummary}
                   onChange={(e) => setPlanSummary(e.target.value)}
                   placeholder="Explica el plan general: horarios, tipo de comida, paradas y equipo recomendado."
-                  className="w-full bg-black/60 border border-white/20 px-3 py-2 text-white text-xs placeholder-ash/50 focus:outline-none focus:border-earth"
+                  className="w-full bg-white border border-[#DDD7CB] px-3.5 py-2.5 text-[#141312] text-xs placeholder-stone-400 focus:outline-none focus:border-[#141312] rounded-xl shadow-xs"
                 />
               </div>
 
               {/* Notificación Preview a Celulares */}
-              <div className="p-3.5 border border-white/15 bg-white/[0.02] flex items-start gap-3">
-                <div className="p-2 bg-earth/20 border border-earth text-earth shrink-0 mt-0.5">
+              <div className="p-4 border border-[#E5DFD5] bg-[#FAF8F5] rounded-xl flex items-start gap-3 shadow-xs">
+                <div className="p-2 bg-white border border-[#E5DFD5] rounded-lg text-[#C84B31] shrink-0 mt-0.5 shadow-xs">
                   <Bell className="w-4 h-4" />
                 </div>
                 <div className="text-xs space-y-1">
-                  <span className="font-bold text-white uppercase block">
+                  <span className="font-display font-black text-[#141312] uppercase tracking-wide block">
                     Notificación que recibirán los integrantes en su celular:
                   </span>
-                  <p className="text-ash text-[11px]">
-                    &ldquo;{currentUser.name} ha propuesto una alternativa de ruta: <span className="text-chalk font-semibold">&lsquo;{routeTitle || 'Ruta Propuesta'}&rsquo;</span> para el {dateMode === 'current' ? formatHumanDate(rodada.startDate, rodada.endDate, true) : dateMode === 'custom' ? formatHumanDate(customStartDate, isMultiDay ? customEndDate : undefined, true) : 'Por Definir'}. Entra a votar manita arriba o abajo.&rdquo;
+                  <p className="text-stone-600 text-[11px] font-serif italic leading-relaxed">
+                    &ldquo;{currentUser.name} ha propuesto una alternativa de ruta: <strong className="not-italic text-[#141312] font-display font-bold">&lsquo;{routeTitle || 'Ruta Propuesta'}&rsquo;</strong> para el {dateMode === 'current' ? formatHumanDate(rodada.startDate, rodada.endDate, true) : dateMode === 'custom' ? formatHumanDate(customStartDate, isMultiDay ? customEndDate : undefined, true) : 'Por Definir'}. Entra a votar manita arriba o abajo.&rdquo;
                   </p>
                 </div>
               </div>
@@ -884,7 +851,7 @@ export const InteractiveRouteProposalModal: React.FC<InteractiveRouteProposalMod
                 <button
                   type="button"
                   onClick={() => setCurrentStep(3)}
-                  className="px-4 py-2 border border-white/20 hover:border-white/40 text-ash hover:text-white text-xs font-bold uppercase tracking-wider flex items-center gap-1 transition"
+                  className="px-4 py-2 border border-[#E5DFD5] hover:border-[#141312] bg-white text-stone-600 hover:text-[#141312] text-xs font-display font-bold uppercase tracking-wider flex items-center gap-1 transition rounded-xl shadow-xs"
                 >
                   <ChevronLeft className="w-4 h-4" />
                   <span>Atrás</span>
@@ -892,9 +859,9 @@ export const InteractiveRouteProposalModal: React.FC<InteractiveRouteProposalMod
 
                 <button
                   type="submit"
-                  className="px-6 py-2.5 bg-earth hover:bg-earth-bright text-white text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition shadow-lg"
+                  className="px-6 py-2.5 bg-[#141312] hover:bg-black text-white text-xs font-display font-black uppercase tracking-widest flex items-center gap-2 transition shadow-md rounded-xl active:scale-95"
                 >
-                  <Sparkles className="w-4 h-4" />
+                  <Sparkles className="w-4 h-4 text-[#F2B705]" />
                   <span>Publicar Alternativa & Notificar</span>
                 </button>
               </div>
