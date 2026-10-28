@@ -824,7 +824,7 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                     <div className="w-full h-full relative overflow-hidden bg-black">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img 
-                        src="https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=1200" 
+                        src="https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&q=80&w=1200" 
                         alt={act.title} 
                         className="w-full h-full object-cover opacity-80"
                       />

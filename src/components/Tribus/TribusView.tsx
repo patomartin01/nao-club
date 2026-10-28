@@ -1719,140 +1719,141 @@ export const TribusView: React.FC<TribusViewProps> = ({
           if (pilotRoleFilter === 'rider') return member.role !== 'Capitán de Ruta' && member.role !== 'Barrendero';
           return true;
         });
-
         return (
-          <div className="space-y-4 font-sans">
-            {/* Header & Quick Action Toolbar (Deus Paddock Look) */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-[10px] font-mono tracking-[0.2em] text-[#C25434] uppercase font-bold">
-                    ★ PADDOCK &amp; ESCUDERÍA ★
-                  </span>
+          <div className="space-y-6 font-sans">
+            {/* Header & Quick Action Toolbar (Risograph Paddock Look) */}
+            <div className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[26px] p-6 sm:p-7 shadow-[5px_5px_0px_#1A1918] space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-[#1A1918] pb-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[10px] font-mono tracking-[0.2em] text-[#E6332A] uppercase font-black">
+                      ★ PADDOCK &amp; ESCUDERÍA ★
+                    </span>
+                  </div>
+                  <h3 className="font-display font-black text-2xl sm:text-3xl text-[#1A1918] uppercase tracking-wide flex items-center gap-2.5">
+                    <span>Roster de Pilotos</span>
+                    <span className="text-xs font-mono font-black px-2.5 py-0.5 bg-[#F4EEDB] border-2 border-[#1A1918] text-[#1A1918] rounded-md shadow-[1px_1px_0px_#1A1918]">
+                      {activeTribu.members.length}
+                    </span>
+                  </h3>
+                  <p className="text-xs font-serif italic text-[#1A1918]/70 mt-0.5 font-medium">
+                    {captainsCount} {captainsCount === 1 ? 'Capitán' : 'Capitanes'} • {sweepersCount} {sweepersCount === 1 ? 'Barrendero' : 'Barrenderos'} • {ridersCount} Riders en filas
+                  </p>
                 </div>
-                <h3 className="font-display font-black text-xl sm:text-2xl text-bone uppercase tracking-wider flex items-center gap-2.5">
-                  <span>Roster de Pilotos</span>
-                  <span className="text-xs font-mono font-bold px-2 py-0.5 bg-[#121110] border border-white/15 text-ochre">
-                    {activeTribu.members.length}
-                  </span>
-                </h3>
-                <p className="text-xs font-serif italic text-ash mt-0.5">
-                  {captainsCount} {captainsCount === 1 ? 'Capitán' : 'Capitanes'} • {sweepersCount} {sweepersCount === 1 ? 'Barrendero' : 'Barrenderos'} • {ridersCount} Riders en filas
-                </p>
-              </div>
 
-              <div className="flex items-center gap-2.5 flex-wrap">
-                {activeTribu.whatsappGroupUrl ? (
-                  <a
-                    href={activeTribu.whatsappGroupUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-3 py-1.5 bg-[#181614] hover:bg-[#1E1B18] border border-emerald-500/40 text-emerald-400 text-xs font-display uppercase tracking-wider font-bold flex items-center gap-1.5 transition shadow-sm"
-                    title="Abrir chat grupal en WhatsApp"
-                  >
-                    <WhatsAppIcon className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>WhatsApp</span>
-                    <ExternalLink className="w-3 h-3 opacity-70" />
-                  </a>
-                ) : (
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  {activeTribu.whatsappGroupUrl ? (
+                    <a
+                      href={activeTribu.whatsappGroupUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3.5 py-2 bg-[#FAF6ED] hover:bg-[#F4EEDB] border-2 border-[#1A1918] text-emerald-700 text-xs font-display uppercase tracking-wider font-black flex items-center gap-1.5 transition rounded-xl shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                      title="Abrir chat grupal en WhatsApp"
+                    >
+                      <WhatsAppIcon className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>WhatsApp</span>
+                      <ExternalLink className="w-3 h-3 opacity-70" />
+                    </a>
+                  ) : (
+                    <button
+                      onClick={handleOpenEditCrew}
+                      className="px-3.5 py-2 bg-[#FAF6ED] hover:bg-[#F4EEDB] border-2 border-[#1A1918] text-[#1A1918] text-xs font-display uppercase tracking-wider font-black flex items-center gap-1.5 transition rounded-xl shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer"
+                      title="Vincular grupo de WhatsApp del club"
+                    >
+                      <WhatsAppIcon className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>+ WhatsApp</span>
+                    </button>
+                  )}
+
                   <button
-                    onClick={handleOpenEditCrew}
-                    className="px-3 py-1.5 bg-[#181614] hover:bg-bone hover:text-[#121110] border border-white/20 text-ash hover:border-bone text-xs font-display uppercase tracking-wider font-bold flex items-center gap-1.5 transition shadow-sm"
-                    title="Vincular grupo de WhatsApp del club"
+                    type="button"
+                    onClick={handleCopyNaoLink}
+                    className="px-3.5 py-2 bg-[#FAF6ED] hover:bg-[#F4EEDB] border-2 border-[#1A1918] text-[#1A1918] text-xs font-display uppercase tracking-wider font-black transition flex items-center gap-1.5 rounded-xl shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer"
+                    title="Copiar link de invitación al club"
                   >
-                    <WhatsAppIcon className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>+ WhatsApp</span>
+                    <Copy className="w-3.5 h-3.5" />
+                    <span className="hidden md:inline">{copiedNaoLink ? 'Copiado' : 'Link Club'}</span>
                   </button>
-                )}
 
-                <button
-                  type="button"
-                  onClick={handleCopyNaoLink}
-                  className="px-3 py-1.5 bg-[#181614] hover:bg-bone hover:text-[#121110] border border-white/20 text-ash hover:border-bone text-xs font-display uppercase tracking-wider font-bold transition flex items-center gap-1.5 shadow-sm"
-                  title="Copiar link de invitación al club"
-                >
-                  <Copy className="w-3.5 h-3.5" />
-                  <span className="hidden md:inline">{copiedNaoLink ? 'Copiado' : 'Link Club'}</span>
-                </button>
+                  <button
+                    onClick={() => setShowAddPilotModal(true)}
+                    className="px-4 py-2 bg-[#E6332A] hover:bg-[#d02c24] text-white text-xs font-display uppercase tracking-widest font-black flex items-center gap-1.5 transition rounded-xl border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer"
+                  >
+                    <UserPlus className="w-3.5 h-3.5" />
+                    <span>+ Reclutar Piloto</span>
+                  </button>
+                </div>
+              </div>
 
-                <button
-                  onClick={() => setShowAddPilotModal(true)}
-                  className="px-3.5 py-1.5 bg-bone hover:bg-white text-[#121110] text-xs font-display uppercase tracking-widest font-bold flex items-center gap-1.5 transition shadow-md active:scale-95"
-                >
-                  <UserPlus className="w-3.5 h-3.5" />
-                  <span>+ Reclutar Piloto</span>
-                </button>
+              {/* Filter Pills & Search Input (Risograph Matchbook) */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1">
+                {/* Role filter pills */}
+                <div className="inline-flex gap-1 p-1 bg-[#F4EEDB] border-2 border-[#1A1918] rounded-xl shadow-[2px_2px_0px_#1A1918] overflow-x-auto">
+                  <button
+                    type="button"
+                    onClick={() => setPilotRoleFilter('all')}
+                    className={`px-3 py-1.5 text-xs font-display uppercase tracking-wider rounded-lg transition cursor-pointer ${
+                      pilotRoleFilter === 'all'
+                        ? 'bg-[#1A1918] text-[#FAF6ED] font-black border border-[#1A1918]'
+                        : 'text-[#1A1918]/70 hover:text-[#1A1918] font-bold'
+                    }`}
+                  >
+                    Todos ({activeTribu.members.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPilotRoleFilter('capitan')}
+                    className={`px-3 py-1.5 text-xs font-display uppercase tracking-wider rounded-lg transition flex items-center gap-1 cursor-pointer ${
+                      pilotRoleFilter === 'capitan'
+                        ? 'bg-[#F7B32B] text-[#1A1918] font-black border border-[#1A1918]'
+                        : 'text-[#1A1918]/70 hover:text-[#1A1918] font-bold'
+                    }`}
+                  >
+                    <Compass className="w-3 h-3 text-current" />
+                    Capitanes ({captainsCount})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPilotRoleFilter('barrendero')}
+                    className={`px-3 py-1.5 text-xs font-display uppercase tracking-wider rounded-lg transition flex items-center gap-1 cursor-pointer ${
+                      pilotRoleFilter === 'barrendero'
+                        ? 'bg-[#FAF6ED] text-[#1A1918] font-black border border-[#1A1918]'
+                        : 'text-[#1A1918]/70 hover:text-[#1A1918] font-bold'
+                    }`}
+                  >
+                    <Shield className="w-3 h-3 text-current" />
+                    Barrenderos ({sweepersCount})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPilotRoleFilter('rider')}
+                    className={`px-3 py-1.5 text-xs font-display uppercase tracking-wider rounded-lg transition cursor-pointer ${
+                      pilotRoleFilter === 'rider'
+                        ? 'bg-[#1A1918] text-[#FAF6ED] font-black border border-[#1A1918]'
+                        : 'text-[#1A1918]/70 hover:text-[#1A1918] font-bold'
+                    }`}
+                  >
+                    Riders ({ridersCount})
+                  </button>
+                </div>
+
+                {/* Search input */}
+                <div className="relative sm:w-72">
+                  <Search className="w-3.5 h-3.5 text-[#1A1918]/50 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={pilotSearchQuery}
+                    onChange={(e) => setPilotSearchQuery(e.target.value)}
+                    placeholder="Buscar piloto o máquina..."
+                    className="w-full pl-9 pr-3 py-2 text-xs font-mono bg-[#FAF6ED] border-2 border-[#1A1918] text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none focus:border-[#E6332A] rounded-xl shadow-[2px_2px_0px_#1A1918]"
+                  />
+                </div>
               </div>
             </div>
 
-            {/* Filter Pills & Search Input (Deus Style) */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-              {/* Role filter pills */}
-              <div className="inline-flex gap-1 p-1 bg-[#121110] border border-white/10 overflow-x-auto">
-                <button
-                  type="button"
-                  onClick={() => setPilotRoleFilter('all')}
-                  className={`px-3 py-1 text-xs font-display uppercase tracking-widest font-bold transition ${
-                    pilotRoleFilter === 'all'
-                      ? 'bg-bone text-[#121110] shadow-sm'
-                      : 'text-ash hover:text-bone'
-                  }`}
-                >
-                  Todos ({activeTribu.members.length})
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPilotRoleFilter('capitan')}
-                  className={`px-3 py-1 text-xs font-display uppercase tracking-widest font-bold transition flex items-center gap-1 ${
-                    pilotRoleFilter === 'capitan'
-                      ? 'bg-ochre text-[#121110] shadow-sm'
-                      : 'text-ash hover:text-bone'
-                  }`}
-                >
-                  <Compass className="w-3 h-3 text-current" />
-                  Capitanes ({captainsCount})
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPilotRoleFilter('barrendero')}
-                  className={`px-3 py-1 text-xs font-display uppercase tracking-widest font-bold transition flex items-center gap-1 ${
-                    pilotRoleFilter === 'barrendero'
-                      ? 'bg-blue-400 text-[#121110] shadow-sm'
-                      : 'text-ash hover:text-bone'
-                  }`}
-                >
-                  <Shield className="w-3 h-3 text-current" />
-                  Barrenderos ({sweepersCount})
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPilotRoleFilter('rider')}
-                  className={`px-3 py-1 text-xs font-display uppercase tracking-widest font-bold transition ${
-                    pilotRoleFilter === 'rider'
-                      ? 'bg-bone text-[#121110] shadow-sm'
-                      : 'text-ash hover:text-bone'
-                  }`}
-                >
-                  Riders ({ridersCount})
-                </button>
-              </div>
-
-              {/* Search input */}
-              <div className="relative sm:w-64">
-                <Search className="w-3.5 h-3.5 text-ash absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                <input
-                  type="text"
-                  value={pilotSearchQuery}
-                  onChange={(e) => setPilotSearchQuery(e.target.value)}
-                  placeholder="Buscar piloto o máquina..."
-                  className="w-full pl-8 pr-3 py-1.5 text-xs font-mono bg-[#121110] border border-white/15 text-bone placeholder-ash/50 focus:outline-none focus:border-bone"
-                />
-              </div>
-            </div>
-
-            {/* Pilot Cards Grid (Vintage Paddock Cards) */}
+            {/* Pilot Cards Grid (Vintage Paddock Risograph Cards) */}
             {filteredMembers.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredMembers.map(member => {
                   const isCreator = member.userId === activeTribu.creatorId;
                   const u = users.find(user => user.id === member.userId);
@@ -1867,25 +1868,23 @@ export const TribusView: React.FC<TribusViewProps> = ({
                     <div 
                       key={member.userId}
                       onClick={() => openPilotProfileById(member.userId)}
-                      className="p-5 bg-white hover:border-[#141312] border border-[#E5DFD5] transition-all cursor-pointer group flex flex-col justify-between relative overflow-hidden shadow-sm hover:shadow-md"
+                      className="p-5 bg-[#FAF6ED] hover:bg-[#F4EEDB] border-2 border-[#1A1918] rounded-[24px] transition-all cursor-pointer group flex flex-col justify-between relative shadow-[4px_4px_0px_#1A1918] hover:shadow-[6px_6px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5"
                     >
                       {/* Top: Avatar + Identity + Role Badges */}
-                      <div>
+                      <div className="space-y-3.5">
                         <div className="flex items-start gap-3.5">
-                          {/* Avatar with Deus circular ring */}
-                          <div className={`w-12 h-12 rounded-full overflow-hidden shrink-0 border-2 bg-stone-100 relative shadow-sm ${
+                          {/* Avatar with Risograph border */}
+                          <div className={`w-14 h-14 rounded-2xl overflow-hidden shrink-0 border-2 border-[#1A1918] bg-[#F4EEDB] relative shadow-[2px_2px_0px_#1A1918] ${
                             isCaptain 
-                              ? 'border-[#141312] ring-2 ring-[#F2B705]' 
-                              : isSweeper 
-                              ? 'border-[#141312] ring-2 ring-stone-400' 
+                              ? 'ring-2 ring-[#F7B32B]' 
                               : isCreator 
-                              ? 'border-[#141312] ring-2 ring-[#C84B31]' 
-                              : 'border-[#141312]'
+                              ? 'ring-2 ring-[#E6332A]' 
+                              : ''
                           }`}>
                             {avatar ? (
                               <img src={avatar} alt={displayName} className="w-full h-full object-cover" />
                             ) : (
-                              <div className="w-full h-full flex items-center justify-center font-display font-black text-[#141312] text-xs bg-[#FAF8F5]">
+                              <div className="w-full h-full flex items-center justify-center font-display font-black text-[#1A1918] text-xs bg-[#F4EEDB]">
                                 {member.userId.slice(0, 2).toUpperCase()}
                               </div>
                             )}
@@ -1894,39 +1893,39 @@ export const TribusView: React.FC<TribusViewProps> = ({
                           {/* Identity Info */}
                           <div className="min-w-0 flex-1 pt-0.5">
                             <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className="font-display font-black text-sm text-[#141312] uppercase group-hover:text-[#C84B31] transition truncate tracking-wide">
+                              <span className="font-display font-black text-sm text-[#1A1918] uppercase group-hover:text-[#E6332A] transition truncate tracking-wide">
                                 {displayName}
                               </span>
                               {isCreator && (
-                                <span className="text-[9px] font-display uppercase tracking-widest font-black text-white bg-[#C84B31] px-1.5 py-0.2 shrink-0 shadow-xs">
+                                <span className="text-[9px] font-display uppercase tracking-widest font-black text-white bg-[#E6332A] px-1.5 py-0.5 rounded border border-[#1A1918] shadow-[1px_1px_0px_#1A1918]">
                                   ADMIN
                                 </span>
                               )}
                             </div>
                             
-                            <span className="text-xs font-serif italic text-stone-500 block truncate mt-0.5">
+                            <span className="text-xs font-serif italic text-[#1A1918]/70 block truncate mt-0.5 font-medium">
                               {u?.handle || '@piloto'} {u?.location ? `• ${u.location}` : ''}
                             </span>
 
-                            <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                            <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                               {isCaptain ? (
-                                <span className="px-2 py-0.5 text-[9px] font-display uppercase tracking-wider font-bold bg-[#141312] text-[#F2B705] flex items-center gap-1 shadow-xs">
-                                  <Compass className="w-2.5 h-2.5 text-[#F2B705]" />
+                                <span className="px-2 py-0.5 text-[9px] font-display uppercase tracking-wider font-black bg-[#F7B32B] text-[#1A1918] border border-[#1A1918] rounded flex items-center gap-1 shadow-[1px_1px_0px_#1A1918]">
+                                  <Compass className="w-2.5 h-2.5 text-[#1A1918]" />
                                   Capitán
                                 </span>
                               ) : isSweeper ? (
-                                <span className="px-2 py-0.5 text-[9px] font-display uppercase tracking-wider font-bold bg-[#141312] text-white flex items-center gap-1 shadow-xs">
-                                  <Shield className="w-2.5 h-2.5 text-stone-300" />
+                                <span className="px-2 py-0.5 text-[9px] font-display uppercase tracking-wider font-black bg-[#FAF6ED] text-[#1A1918] border border-[#1A1918] rounded flex items-center gap-1 shadow-[1px_1px_0px_#1A1918]">
+                                  <Shield className="w-2.5 h-2.5 text-[#1A1918]" />
                                   Barrendero
                                 </span>
                               ) : (
-                                <span className="px-2 py-0.5 text-[9px] font-display uppercase tracking-wider font-bold bg-[#FAF8F5] border border-[#DDD7CB] text-[#141312]">
+                                <span className="px-2 py-0.5 text-[9px] font-display uppercase tracking-wider font-bold bg-[#F4EEDB] border border-[#1A1918] text-[#1A1918] rounded">
                                   Rider
                                 </span>
                               )}
                               
                               {u?.ridingLevel && (
-                                <span className="text-[10px] font-sans text-stone-500 truncate">
+                                <span className="text-[10px] font-sans font-bold text-[#1A1918]/70 truncate">
                                   • {u.ridingLevel}
                                 </span>
                               )}
@@ -1935,53 +1934,51 @@ export const TribusView: React.FC<TribusViewProps> = ({
                         </div>
 
                         {/* Middle: Moto / Workshop plaque */}
-                        <div className="mt-3.5 pt-2.5 border-t border-[#E5DFD5] flex items-center justify-between text-xs">
-                          <div className="flex items-center gap-2.5 min-w-0 bg-[#FAF8F5] border border-[#E5DFD5] p-2.5 w-full shadow-xs">
-                            <div className="w-7 h-7 rounded-sm bg-white flex items-center justify-center shrink-0 border border-[#E5DFD5]">
-                              <Bike className="w-3.5 h-3.5 text-[#D49B35]" />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <span className="font-display font-black text-[#141312] block truncate text-xs uppercase tracking-wide">
-                                {bike ? `${bike.brand} ${bike.model}` : 'Sin máquina registrada'}
+                        <div className="bg-[#F4EEDB] border-2 border-[#1A1918] rounded-xl p-2.5 shadow-[2px_2px_0px_#1A1918] flex items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-lg bg-[#FAF6ED] flex items-center justify-center shrink-0 border border-[#1A1918]">
+                            <Bike className="w-4 h-4 text-[#E6332A]" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <span className="font-display font-black text-[#1A1918] block truncate text-xs uppercase tracking-wide">
+                              {bike ? `${bike.brand} ${bike.model}` : 'Sin máquina registrada'}
+                            </span>
+                            {bike?.displacementCc ? (
+                              <span className="text-[10px] font-mono text-[#1A1918]/70 block truncate font-bold">
+                                {bike.displacementCc} cc {bike.type ? `• ${bike.type}` : ''}
                               </span>
-                              {bike?.displacementCc ? (
-                                <span className="text-[10px] font-mono text-stone-500 block truncate">
-                                  {bike.displacementCc} cc {bike.type ? `• ${bike.type}` : ''}
-                                </span>
-                              ) : null}
-                            </div>
+                            ) : null}
                           </div>
                         </div>
                       </div>
 
                       {/* Bottom: Next Rodada RSVP Status & Profile Action */}
-                      <div className="mt-3 pt-2.5 border-t border-[#E5DFD5] flex items-center justify-between text-xs">
+                      <div className="mt-4 pt-3 border-t-2 border-[#1A1918] flex items-center justify-between text-xs">
                         {nextConfirmedRide ? (
                           <div className="flex items-center gap-1.5">
                             {memberRsvp?.status === 'confirmado' ? (
-                              <span className="text-[#141312] font-display uppercase tracking-wider font-bold flex items-center gap-1 text-[10px]">
-                                <CheckCircle2 className="w-3 h-3 text-[#141312] shrink-0" />
+                              <span className="text-emerald-700 font-display uppercase tracking-wider font-black flex items-center gap-1 text-[10px]">
+                                <CheckCircle2 className="w-3 h-3 text-emerald-700 shrink-0" />
                                 <span>Asistirá</span>
                               </span>
                             ) : memberRsvp?.status === 'por_confirmar' || memberRsvp?.status === 'interesado' ? (
-                              <span className="text-[#D49B35] font-display uppercase tracking-wider font-bold flex items-center gap-1 text-[10px]">
-                                <HelpCircle className="w-3 h-3 text-[#D49B35] shrink-0" />
+                              <span className="text-[#F7B32B] font-display uppercase tracking-wider font-black flex items-center gap-1 text-[10px]">
+                                <HelpCircle className="w-3 h-3 text-[#F7B32B] shrink-0" />
                                 <span>Por confirmar</span>
                               </span>
                             ) : memberRsvp?.status === 'no_asistire' ? (
-                              <span className="text-[#C84B31] font-display uppercase tracking-wider font-bold flex items-center gap-1 text-[10px]">
-                                <XCircle className="w-3 h-3 text-[#C84B31] shrink-0" />
+                              <span className="text-[#E6332A] font-display uppercase tracking-wider font-black flex items-center gap-1 text-[10px]">
+                                <XCircle className="w-3 h-3 text-[#E6332A] shrink-0" />
                                 <span>No asistirá</span>
                               </span>
                             ) : (
-                              <span className="text-stone-400 text-[10px] font-serif italic">Sin confirmar</span>
+                              <span className="text-[#1A1918]/50 text-[10px] font-serif italic font-medium">Sin confirmar</span>
                             )}
                           </div>
                         ) : (
-                          <span className="text-stone-400 text-[10px] font-serif italic">Miembro activo</span>
+                          <span className="text-[#1A1918]/60 text-[10px] font-serif italic font-medium">Miembro activo</span>
                         )}
 
-                        <span className="font-display uppercase tracking-widest text-[10px] text-[#141312] group-hover:text-[#C84B31] flex items-center gap-1 ml-auto transition-transform group-hover:translate-x-0.5 font-black">
+                        <span className="font-display uppercase tracking-widest text-[10px] text-[#1A1918] group-hover:text-[#E6332A] flex items-center gap-1 ml-auto transition-transform group-hover:translate-x-0.5 font-black">
                           Dossier →
                         </span>
                       </div>
@@ -1990,15 +1987,15 @@ export const TribusView: React.FC<TribusViewProps> = ({
                 })}
               </div>
             ) : (
-              <div className="p-8 border border-dashed border-white/10 bg-[#121110] text-center space-y-2">
-                <p className="text-ash font-serif italic text-xs">No se encontraron pilotos con ese filtro de búsqueda.</p>
+              <div className="p-8 border-2 border-dashed border-[#1A1918] bg-[#FAF6ED] rounded-[24px] text-center space-y-2">
+                <p className="text-[#1A1918]/70 font-serif italic text-xs font-medium">No se encontraron pilotos con ese filtro de búsqueda.</p>
                 <button
                   type="button"
                   onClick={() => {
                     setPilotSearchQuery('');
                     setPilotRoleFilter('all');
                   }}
-                  className="text-xs font-display uppercase tracking-wider text-[#C25434] hover:underline font-bold"
+                  className="text-xs font-display uppercase tracking-wider text-[#E6332A] hover:underline font-black cursor-pointer"
                 >
                   Limpiar filtros
                 </button>

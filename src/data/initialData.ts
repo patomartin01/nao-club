@@ -6,7 +6,7 @@ export const CURRENT_USER: User = {
   handle: '@patomartin',
   email: 'pmartin.v2001@gmail.com',
   avatar: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
-  bio: 'Piloto multidisciplinario y miembro de NAO Adventure Crew. Rodando carretera revirada, pistas y terracería. Salidas desde Interlomas.',
+  bio: 'Piloto multidisciplinario y miembro de MotoMami. Rodando carretera revirada, pistas y terracería. Salidas desde Interlomas.',
   location: 'Interlomas / CDMX',
   ridingLevel: 'Avanzado',
   emergencyContact: '+52 55 1234 5678 (Papá)',
@@ -28,7 +28,7 @@ export const INITIAL_USERS: User[] = [
     handle: '@manumartin_v',
     email: 'manu.vidal@nao.club',
     avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=250',
-    bio: 'BMW R 1250 GS. Rutas largas, curvas de montaña y terracería con NAO Adventure Crew.',
+    bio: 'BMW R 1250 GS. Rutas largas, curvas de montaña y terracería con MotoMami.',
     location: 'Interlomas, CDMX',
     ridingLevel: 'Avanzado',
     completedRouteIds: ['route-1', 'route-4', 'route-2'],
@@ -359,8 +359,8 @@ export const INITIAL_MOTORCYCLES: Motorcycle[] = [
 export const INITIAL_CREWS: Crew[] = [
   {
     id: 'crew-motomami',
-    name: 'NAO Adventure Crew',
-    slug: 'nao-adventure',
+    name: 'MotoMami',
+    slug: 'motomami',
     tagline: 'Terracería, sierra, fogatas y doble propósito sin drama.',
     description: 'Comunidad de amigos apasionados por las motos trail y doble propósito. Rodamos fines de semana y puentes buscando campamentos base remotos, brechas forestales y buena comida.',
     inviteCode: 'NAO-2026',
@@ -735,7 +735,7 @@ export const INITIAL_ROUTE_PROPOSALS: RouteProposal[] = [
     proposedByName: 'Manuel Martin Galindo',
     proposedByAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=250',
     description: 'Ruta matutina de un solo día. Curvas rápidas de pavimento frío, desvío por la brecha de terracería compacta bordeando la laguna y bajada a los puestos tradicionales de cecina.',
-    coverImage: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&q=80&w=1000',
+    coverImage: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=1000',
     totalKm: 98,
     estimatedHours: '3h 30m',
     offroadPercentage: 30,
@@ -1123,13 +1123,13 @@ export const INITIAL_ACTIVITIES: ActivityPost[] = [
     },
     photos: [
       'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&q=80&w=1200',
-      'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=800',
-      'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&q=80&w=800',
-      'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=800'
+      'https://images.unsplash.com/photo-1609630875171-b1321377ee65?auto=format&fit=crop&q=80&w=1200',
+      'https://images.unsplash.com/photo-1515777315835-281b94c9589f?auto=format&fit=crop&q=80&w=1200',
+      'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=1200'
     ],
     groupInfo: {
       crewId: 'crew-motomami',
-      crewName: 'NAO Adventure Crew',
+      crewName: 'MotoMami',
       rodadaTitle: 'Curvas Matutinas & Cañón de Zempoala',
       participants: [
         {
@@ -1215,8 +1215,8 @@ export const INITIAL_ACTIVITIES: ActivityPost[] = [
     },
     photos: [
       'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&q=80&w=1200',
-      'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=1200',
-      'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&q=80&w=1200'
+      'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=1200',
+      'https://images.unsplash.com/photo-1609630875171-b1321377ee65?auto=format&fit=crop&q=80&w=1200'
     ],
     groupInfo: {
       crewId: 'crew-sierrabrava',
@@ -1242,20 +1242,20 @@ export const INITIAL_ACTIVITIES: ActivityPost[] = [
   },
   {
     id: 'act-3',
-    pilotId: 'user-andrea',
-    pilotName: 'Andrea Reyes',
-    pilotHandle: '@andrea_track',
-    pilotAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=250',
+    pilotId: 'user-diego-terrazas',
+    pilotName: 'Diego Terrazas',
+    pilotHandle: '@diego_terrazas',
+    pilotAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=250',
     dateText: 'Ayer a las 6:52 a.m.',
-    device: '',
-    location: 'Circuito Amozoc / Puebla Track',
-    title: 'Sesión de Curvas y Crono en Circuito',
-    motoModel: 'Yamaha MT-09 SP',
-    discipline: 'Sport / Pista',
-    distanceKm: 58.4,
-    elevationGainM: 120,
-    durationText: '0h 48m',
-    avgSpeedKmh: 73.0,
+    device: 'NAO Cockpit GPS',
+    location: 'Zinacantepec & Nevado de Toluca, Edomex',
+    title: 'Travesía de Altura // Nevado de Toluca & Raíces',
+    motoModel: 'KTM 890 Adventure R',
+    discipline: 'Doble Propósito / Trail',
+    distanceKm: 68.4,
+    elevationGainM: 1850,
+    durationText: '2h 15m',
+    avgSpeedKmh: 38.0,
     trophiesCount: 4,
     kudosCount: 11,
     hasKudoed: false,
@@ -1264,29 +1264,30 @@ export const INITIAL_ACTIVITIES: ActivityPost[] = [
     ],
     commentsCount: 2,
     coordinates: [
-      [19.0400, -98.1800],
-      [19.0450, -98.1750],
-      [19.0420, -98.1700],
-      [19.0380, -98.1760]
+      [19.1200, -99.7800],
+      [19.1450, -99.7750],
+      [19.1620, -99.7700],
+      [19.1380, -99.7760]
     ],
     surfaceBreakdown: {
-      asphaltPercentage: 100,
-      dirtPercentage: 0,
+      asphaltPercentage: 30,
+      dirtPercentage: 70,
       curveDensity: 'Alta'
     },
     photos: [
-      'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=1200'
+      'https://images.unsplash.com/photo-1609630875171-b1321377ee65?auto=format&fit=crop&q=80&w=1200',
+      'https://images.unsplash.com/photo-1515777315835-281b94c9589f?auto=format&fit=crop&q=80&w=1200'
     ],
     groupInfo: {
       crewId: 'crew-motomami',
-      crewName: 'NAO Adventure Crew',
+      crewName: 'MotoMami',
       participants: [
         {
-          userId: 'user-andrea',
-          name: 'Andrea Reyes',
-          handle: '@andrea_track',
-          avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=250',
-          motoModel: 'Yamaha MT-09 SP'
+          userId: 'user-diego-terrazas',
+          name: 'Diego Terrazas',
+          handle: '@diego_terrazas',
+          avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=250',
+          motoModel: 'KTM 890 Adventure R'
         },
         {
           userId: 'user-manuel',

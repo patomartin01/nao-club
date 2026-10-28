@@ -103,6 +103,7 @@ interface AppContextType {
   signUp: (email: string, password: string, name: string, handle: string) => Promise<{ success: boolean; message: string }>;
   signIn: (email: string, password: string) => Promise<{ success: boolean; message: string }>;
   signOut: () => Promise<void>;
+  updateCurrentUserProfile: (updates: Partial<User>) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -294,6 +295,33 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } catch {}
   };
 
+  // Update Current User Profile
+  const updateCurrentUserProfile = async (updates: Partial<User>) => {
+    const updated: User = { ...currentUser, ...updates };
+    setCurrentUser(updated);
+    setUsers(prev => prev.map(u => u.id === updated.id ? updated : u));
+    try {
+      localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(updated));
+    } catch {}
+
+    if (isSupabaseConfigured() && currentUser.id) {
+      try {
+        await supabase.from('profiles').update({
+          name: updated.name,
+          handle: updated.handle,
+          bio: updated.bio,
+          location: updated.location,
+          riding_level: updated.ridingLevel,
+          phone: updated.phone,
+          emergency_contact: updated.emergencyContact,
+          avatar_url: updated.avatar
+        }).eq('id', currentUser.id);
+      } catch (err) {
+        console.error('Error updating Supabase profile:', err);
+      }
+    }
+  };
+
   // Moto Expeditions & Social state
   const [activities, setActivities] = useState<ActivityPost[]>(INITIAL_ACTIVITIES);
   const [challenges, setChallenges] = useState<Challenge[]>(INITIAL_CHALLENGES);
@@ -333,8 +361,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             });
             return {
               ...c,
-              name: 'NAO Adventure Crew',
-              inviteCode: 'NAO-2026',
+              name: 'MotoMami',
+              inviteCode: 'MAMI-2026',
               members: currentMembers,
               whatsappGroupUrl: 'https://chat.whatsapp.com/Jg1AKUEqoXF7nXZuAPJ588'
             };
@@ -1328,7 +1356,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         switchCurrentUser,
         signUp,
         signIn,
-        signOut
+        signOut,
+        updateCurrentUserProfile
       }}
     >
       {children}

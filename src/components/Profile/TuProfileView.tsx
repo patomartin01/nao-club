@@ -2,35 +2,36 @@
 
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { BikeType } from '../../types';
 import { 
   BarChart2, 
   FileText, 
   Grid, 
-  Menu, 
   Share2, 
   Edit3, 
   Search, 
-  Trophy, 
-  ChevronRight, 
   Wrench, 
   MapPin, 
-  Flame, 
-  TrendingUp, 
-  ShieldCheck,
-  Calendar,
-  Layers,
-  Clock,
   Navigation,
-  UserCheck
+  UserCheck,
+  Bike,
+  Plus,
+  Trash2,
+  X,
+  Check,
+  Sparkles,
+  Phone,
+  HeartPulse
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { EditProfileModal } from '../Modals/EditProfileModal';
 
 interface TuProfileViewProps {
   onOpenEditProfile?: () => void;
   onOpenGarage?: () => void;
 }
 
-type ProfileSubTab = 'progreso' | 'actividades' | 'galeria' | 'mas';
+type ProfileSubTab = 'hangar' | 'progreso' | 'actividades' | 'galeria';
 
 // Sample 12-week telemetry data for the chart
 const WEEKLY_DATA = [
@@ -60,6 +61,13 @@ const GALLERY_PHOTOS = [
   { url: 'https://images.unsplash.com/photo-1525160354320-d8e92641c563?auto=format&fit=crop&q=80&w=600', caption: 'Mecánica de ruta' }
 ];
 
+const PRESET_MOTO_PHOTOS = [
+  'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&q=80&w=800',
+  'https://images.unsplash.com/photo-1609630875171-b1321377ee65?auto=format&fit=crop&q=80&w=800',
+  'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=800',
+  'https://images.unsplash.com/photo-1515777315835-281b94c9589f?auto=format&fit=crop&q=80&w=800'
+];
+
 export const TuProfileView: React.FC<TuProfileViewProps> = ({
   onOpenEditProfile,
   onOpenGarage
@@ -67,16 +75,31 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
   const { 
     currentUser, 
     activities, 
-    userBikes, 
-    completedRouteIds, 
-    routeProposals, 
-    setActiveNavTab,
+    userBikes,
+    addMotorcycle,
+    deleteMotorcycle,
+    followingUserIds,
     setAuthModalOpen
   } = useApp();
 
-  const [activeSubTab, setActiveSubTab] = useState<ProfileSubTab>('progreso');
+  const [activeSubTab, setActiveSubTab] = useState<ProfileSubTab>('hangar');
   const [activitySearch, setActivitySearch] = useState('');
-  const [selectedDiscipline, setSelectedDiscipline] = useState('Todos');
+  const [selectedDiscipline, setSelectedDiscipline] = useState<string>('Todos los deportes');
+  
+  // Profile edit modal state
+  const [isEditProfileOpen, setEditProfileOpen] = useState(false);
+
+  // Add bike modal state
+  const [showAddBikeModal, setShowAddBikeModal] = useState(false);
+  const [bikeBrand, setBikeBrand] = useState('BMW');
+  const [bikeModel, setBikeModel] = useState('');
+  const [bikeYear, setBikeYear] = useState<number>(2023);
+  const [bikeCc, setBikeCc] = useState<number>(1250);
+  const [bikeType, setBikeType] = useState<BikeType>('Doble Propósito');
+  const [bikeNickname, setBikeNickname] = useState('');
+  const [bikePhotoUrl, setBikePhotoUrl] = useState(PRESET_MOTO_PHOTOS[0]);
+  const [bikeTires, setBikeTires] = useState('Continental TKC80 (50/50)');
+  const [bikeMods, setBikeMods] = useState('Skid plate de aluminio, Defensas de motor, Faros auxiliares');
 
   // Filter completed activities by user and search
   const userActivities = activities.filter(a => a.pilotId === currentUser.id || a.pilotName === currentUser.name);
@@ -90,7 +113,40 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
 
   const handleShareProfile = () => {
     navigator.clipboard?.writeText(window.location.href);
-    confetti({ particleCount: 20, spread: 50 });
+    try {
+      confetti({ particleCount: 20, spread: 50 });
+    } catch {}
+  };
+
+  const handleAddBikeSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!bikeModel.trim()) return;
+
+    const modsArray = bikeMods
+      .split(',')
+      .map(m => m.trim())
+      .filter(Boolean);
+
+    addMotorcycle({
+      userId: currentUser.id,
+      brand: bikeBrand,
+      model: bikeModel.trim(),
+      year: bikeYear,
+      displacementCc: bikeCc,
+      type: bikeType,
+      nickname: bikeNickname.trim() || undefined,
+      photoUrl: bikePhotoUrl.trim() || PRESET_MOTO_PHOTOS[0],
+      modifications: modsArray.length > 0 ? modsArray : ['Configuración estándar de fábrica'],
+      tires: bikeTires.trim() || 'Mixtas 70/30'
+    });
+
+    setBikeModel('');
+    setBikeNickname('');
+    setShowAddBikeModal(false);
+
+    try {
+      confetti({ particleCount: 30, spread: 60 });
+    } catch {}
   };
 
   const maxKmWeek = Math.max(...WEEKLY_DATA.map(d => d.km));
@@ -123,37 +179,65 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
           <div className="space-y-1.5 flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-display text-[10px] text-[#E6332A] uppercase tracking-[0.2em] font-black">
-                ★ CREDENCIAL DE PILOTO TITULAR ★
+                ★ CREDENCIAL DE PILOTO OFICIAL ★
               </span>
               <span className="text-[10px] font-mono text-[#1A1918] uppercase tracking-widest bg-[#FAF6ED] px-2.5 py-0.5 border-2 border-[#1A1918] rounded-md font-black shadow-[1px_1px_0px_#1A1918]">
-                MATRÍCULA #0419-CDMX
+                NIVEL: {currentUser.ridingLevel?.toUpperCase() || 'INTERMEDIO'}
               </span>
             </div>
 
             <h1 className="text-2xl sm:text-4xl font-display font-black text-[#1A1918] uppercase tracking-wide">
               {currentUser.name}
             </h1>
-            <p className="text-xs font-serif italic text-[#1A1918]/70 font-medium">
-              {currentUser.handle} • {currentUser.location}
+            
+            <p className="text-xs font-serif italic text-[#1A1918]/80 font-medium">
+              <span className="text-[#E6332A] font-bold not-italic font-mono">{currentUser.handle}</span> • {currentUser.location || 'México'} {currentUser.bio ? `— ${currentUser.bio}` : ''}
             </p>
-            <div className="flex items-center gap-3 pt-1 text-xs">
-              <span className="font-display font-black text-[#1A1918]">{currentUser.stats?.completedCount || 33}</span>
-              <span className="text-[#1A1918]/70 font-medium">salidas oficiales</span>
+
+            {/* Quick stats and primary bike summary */}
+            <div className="flex items-center gap-3 pt-2 text-xs flex-wrap">
+              <button 
+                onClick={() => setActiveSubTab('hangar')}
+                className="flex items-center gap-1.5 font-display font-black text-[#1A1918] bg-[#F4EEDB] hover:bg-[#EDE6D3] px-2.5 py-1 rounded-lg border border-[#1A1918] shadow-[1px_1px_0px_#1A1918] transition cursor-pointer"
+                title="Ver motos en el Hangar"
+              >
+                <Bike className="w-3.5 h-3.5 text-[#E6332A]" />
+                <span>{userBikes.length} {userBikes.length === 1 ? 'MOTO' : 'MOTOS'} EN HANGAR</span>
+              </button>
+
               <span className="text-[#1A1918]/30">•</span>
-              <span className="font-display font-black text-[#1A1918]">15</span>
-              <span className="text-[#1A1918]/70 font-medium">compañeros de ruta</span>
+              
+              <div className="flex items-center gap-1">
+                <span className="font-display font-black text-[#1A1918]">{currentUser.stats?.completedCount || userActivities.length || 12}</span>
+                <span className="text-[#1A1918]/70 font-medium">salidas</span>
+              </div>
+
               <span className="text-[#1A1918]/30">•</span>
-              <span className="font-display font-black text-[#1A1918]">11</span>
-              <span className="text-[#1A1918]/70 font-medium">siguiendo</span>
+
+              <div className="flex items-center gap-1">
+                <span className="font-display font-black text-[#1A1918]">{followingUserIds.length}</span>
+                <span className="text-[#1A1918]/70 font-medium">siguiendo</span>
+              </div>
             </div>
+
+            {/* Safety & SOS Indicator */}
+            {currentUser.emergencyContact && (
+              <div className="flex items-center gap-2 pt-1 text-[11px] text-[#1A1918]/70 font-mono">
+                <HeartPulse className="w-3 h-3 text-[#E6332A] shrink-0" />
+                <span>SOS: {currentUser.emergencyContact}</span>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Action Buttons: Editar Perfil / Compartir */}
-        <div className="flex items-center gap-3 pt-2 relative z-10">
+        {/* Action Buttons: Editar Perfil / Compartir / Gestionar Cuenta */}
+        <div className="flex items-center gap-3 pt-2 relative z-10 flex-wrap">
           <button
-            onClick={onOpenEditProfile}
-            className="flex-1 py-3 px-4 bg-[#1A1918] hover:bg-black text-[#FAF6ED] text-xs font-display font-black uppercase tracking-widest flex items-center justify-center gap-2 transition rounded-xl border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+            onClick={() => {
+              if (onOpenEditProfile) onOpenEditProfile();
+              setEditProfileOpen(true);
+            }}
+            className="flex-1 min-w-[130px] py-3 px-4 bg-[#1A1918] hover:bg-black text-[#FAF6ED] text-xs font-display font-black uppercase tracking-widest flex items-center justify-center gap-2 transition rounded-xl border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer"
           >
             <Edit3 className="w-3.5 h-3.5 text-[#F7B32B]" />
             <span>Editar perfil</span>
@@ -161,7 +245,7 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
 
           <button
             onClick={handleShareProfile}
-            className="flex-1 py-3 px-4 bg-[#F7B32B] hover:bg-[#e5a424] text-[#1A1918] text-xs font-display font-black uppercase tracking-widest flex items-center justify-center gap-2 transition rounded-xl border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+            className="flex-1 min-w-[130px] py-3 px-4 bg-[#F7B32B] hover:bg-[#e5a424] text-[#1A1918] text-xs font-display font-black uppercase tracking-widest flex items-center justify-center gap-2 transition rounded-xl border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer"
           >
             <Share2 className="w-3.5 h-3.5 text-[#1A1918]" />
             <span>Compartir</span>
@@ -169,20 +253,32 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
 
           <button
             onClick={() => setAuthModalOpen(true)}
-            className="py-3 px-3.5 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] text-xs font-display font-black uppercase tracking-widest flex items-center justify-center gap-2 transition rounded-xl border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+            className="py-3 px-4 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] text-xs font-display font-black uppercase tracking-widest flex items-center justify-center gap-2 transition rounded-xl border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer"
             title="Gestionar sesión o cambiar piloto"
           >
             <UserCheck className="w-3.5 h-3.5 text-[#E6332A]" />
-            <span className="hidden sm:inline">Cuenta</span>
+            <span>Cuenta</span>
           </button>
         </div>
       </div>
 
-      {/* 02. 4 SUB-TABS (PROGRESO, ACTIVIDADES, GALERÍA, MÁS) */}
-      <div className="p-1.5 bg-[#FAF6ED] border-2 border-[#1A1918] rounded-2xl flex gap-1.5 shadow-[3px_3px_0px_#1A1918]">
+      {/* 02. SUB-TABS (HANGAR / PROGRESO / ACTIVIDADES / GALERÍA) */}
+      <div className="p-1.5 bg-[#FAF6ED] border-2 border-[#1A1918] rounded-2xl flex gap-1.5 shadow-[3px_3px_0px_#1A1918] overflow-x-auto no-scrollbar">
+        <button
+          onClick={() => setActiveSubTab('hangar')}
+          className={`flex-1 min-w-[100px] py-3 flex items-center justify-center gap-2 uppercase tracking-wider font-display transition rounded-xl text-xs cursor-pointer ${
+            activeSubTab === 'hangar'
+              ? 'bg-[#1A1918] text-[#FAF6ED] font-black border border-[#1A1918] shadow-[2px_2px_0px_#1A1918]'
+              : 'text-[#1A1918]/70 hover:text-[#1A1918] font-bold'
+          }`}
+        >
+          <Bike className="w-4 h-4 text-[#F7B32B]" />
+          <span className="text-[10px] tracking-widest">Hangar ({userBikes.length})</span>
+        </button>
+
         <button
           onClick={() => setActiveSubTab('progreso')}
-          className={`flex-1 py-3 flex items-center justify-center gap-2 uppercase tracking-wider font-display transition rounded-xl text-xs ${
+          className={`flex-1 min-w-[100px] py-3 flex items-center justify-center gap-2 uppercase tracking-wider font-display transition rounded-xl text-xs cursor-pointer ${
             activeSubTab === 'progreso'
               ? 'bg-[#1A1918] text-[#FAF6ED] font-black border border-[#1A1918] shadow-[2px_2px_0px_#1A1918]'
               : 'text-[#1A1918]/70 hover:text-[#1A1918] font-bold'
@@ -194,7 +290,7 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
 
         <button
           onClick={() => setActiveSubTab('actividades')}
-          className={`flex-1 py-3 flex items-center justify-center gap-2 uppercase tracking-wider font-display transition rounded-xl text-xs ${
+          className={`flex-1 min-w-[100px] py-3 flex items-center justify-center gap-2 uppercase tracking-wider font-display transition rounded-xl text-xs cursor-pointer ${
             activeSubTab === 'actividades'
               ? 'bg-[#1A1918] text-[#FAF6ED] font-black border border-[#1A1918] shadow-[2px_2px_0px_#1A1918]'
               : 'text-[#1A1918]/70 hover:text-[#1A1918] font-bold'
@@ -206,7 +302,7 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
 
         <button
           onClick={() => setActiveSubTab('galeria')}
-          className={`flex-1 py-3 flex items-center justify-center gap-2 uppercase tracking-wider font-display transition rounded-xl text-xs ${
+          className={`flex-1 min-w-[100px] py-3 flex items-center justify-center gap-2 uppercase tracking-wider font-display transition rounded-xl text-xs cursor-pointer ${
             activeSubTab === 'galeria'
               ? 'bg-[#1A1918] text-[#FAF6ED] font-black border border-[#1A1918] shadow-[2px_2px_0px_#1A1918]'
               : 'text-[#1A1918]/70 hover:text-[#1A1918] font-bold'
@@ -215,22 +311,176 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
           <Grid className="w-4 h-4 text-[#F7B32B]" />
           <span className="text-[10px] tracking-widest">Galería</span>
         </button>
-
-        <button
-          onClick={() => setActiveSubTab('mas')}
-          className={`flex-1 py-3 flex items-center justify-center gap-2 uppercase tracking-wider font-display transition rounded-xl text-xs ${
-            activeSubTab === 'mas'
-              ? 'bg-[#1A1918] text-[#FAF6ED] font-black border border-[#1A1918] shadow-[2px_2px_0px_#1A1918]'
-              : 'text-[#1A1918]/70 hover:text-[#1A1918] font-bold'
-          }`}
-        >
-          <Menu className="w-4 h-4 text-[#F7B32B]" />
-          <span className="text-[10px] tracking-widest">Más</span>
-        </button>
       </div>
 
       {/* ========================================================= */}
-      {/* 03. SUB-TAB: PROGRESO (TELEMETRY CHARTS)                  */}
+      {/* 03. SUB-TAB: HANGAR DE MOTOS (MÁQUINAS DEL PILOTO)         */}
+      {/* ========================================================= */}
+      {activeSubTab === 'hangar' && (
+        <div className="space-y-6">
+          {/* Hangar Controls Bar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#F4EEDB] border-2 border-[#1A1918] p-5 rounded-[24px] shadow-[4px_4px_0px_#1A1918]">
+            <div>
+              <div className="flex items-center gap-2">
+                <Wrench className="w-4 h-4 text-[#E6332A]" />
+                <span className="text-[10px] font-mono uppercase font-black text-[#E6332A] tracking-wider">
+                  FLOTA DE EXPEDICIÓN // HANGAR PRIVADO
+                </span>
+              </div>
+              <h3 className="text-xl font-display font-black text-[#1A1918] uppercase tracking-wide mt-0.5">
+                Tus Máquinas de Ruta
+              </h3>
+              <p className="text-xs font-serif italic text-[#1A1918]/70">
+                Motos asignadas para rodadas, telemetría y credencial de piloto.
+              </p>
+            </div>
+
+            <button
+              onClick={() => setShowAddBikeModal(true)}
+              className="px-5 py-3 bg-[#E6332A] hover:bg-[#d02c24] text-white font-display font-black text-xs uppercase tracking-wider rounded-xl border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition flex items-center justify-center gap-2 shrink-0 cursor-pointer"
+            >
+              <Plus className="w-4 h-4 stroke-[3]" />
+              <span>Añadir Moto al Hangar</span>
+            </button>
+          </div>
+
+          {/* Motorcycles Grid */}
+          {userBikes.length === 0 ? (
+            <div className="bg-[#FAF6ED] border-2 border-dashed border-[#1A1918] rounded-[28px] p-8 sm:p-12 text-center space-y-4">
+              <div className="w-16 h-16 rounded-2xl bg-[#F4EEDB] border-2 border-[#1A1918] flex items-center justify-center mx-auto shadow-[3px_3px_0px_#1A1918]">
+                <Bike className="w-8 h-8 text-[#E6332A]" />
+              </div>
+              <div className="space-y-1">
+                <h4 className="font-display font-black text-xl text-[#1A1918] uppercase">
+                  Tu Hangar está Vacío
+                </h4>
+                <p className="text-xs font-serif italic text-[#1A1918]/70 max-w-md mx-auto">
+                  Aún no has registrado ninguna motocicleta en tu hangar. Añade tu moto para seleccionarla en expediciones y rodadas de tribu.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowAddBikeModal(true)}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-[#F7B32B] hover:bg-[#e5a424] text-[#1A1918] font-display font-black text-xs uppercase tracking-wider rounded-xl border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer"
+              >
+                <Plus className="w-4 h-4 stroke-[3]" />
+                <span>Registrar Mi Primera Moto</span>
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {userBikes.map((bike, index) => (
+                <div 
+                  key={bike.id}
+                  className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[26px] overflow-hidden shadow-[5px_5px_0px_#1A1918] hover:shadow-[7px_7px_0px_#1A1918] transition flex flex-col justify-between"
+                >
+                  {/* Photo Container with overlay tags */}
+                  <div className="h-56 bg-[#F4EEDB] border-b-2 border-[#1A1918] relative overflow-hidden group">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img 
+                      src={bike.photoUrl || PRESET_MOTO_PHOTOS[0]} 
+                      alt={`${bike.brand} ${bike.model}`} 
+                      className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                    />
+                    
+                    {/* Badge top-left */}
+                    <div className="absolute top-3 left-3 flex items-center gap-2">
+                      <span className="px-2.5 py-1 bg-[#1A1918] text-[#FAF6ED] text-[10px] font-mono font-black uppercase rounded-lg border border-[#FAF6ED]/30 shadow-[2px_2px_0px_#1A1918]">
+                        {bike.brand}
+                      </span>
+                      {index === 0 && (
+                        <span className="px-2.5 py-1 bg-[#F7B32B] text-[#1A1918] text-[10px] font-display font-black uppercase rounded-lg border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918]">
+                          ★ PRINCIPAL
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Tag bottom-right */}
+                    <div className="absolute bottom-3 right-3">
+                      <span className="px-2.5 py-1 bg-[#FAF6ED]/95 backdrop-blur-sm text-[#1A1918] text-[10px] font-mono font-black uppercase rounded-lg border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918]">
+                        {bike.displacementCc} CC • {bike.year}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Bike Info Body */}
+                  <div className="p-6 space-y-4 flex-1 flex flex-col justify-between">
+                    <div className="space-y-1.5">
+                      <div className="flex items-start justify-between gap-2">
+                        <h4 className="text-xl font-display font-black text-[#1A1918] uppercase tracking-wide">
+                          {bike.brand} {bike.model}
+                        </h4>
+                        <span className="text-[10px] font-mono uppercase bg-[#F4EEDB] text-[#1A1918] font-bold px-2 py-0.5 border border-[#1A1918] rounded">
+                          {bike.type}
+                        </span>
+                      </div>
+                      
+                      {bike.nickname && (
+                        <p className="text-xs font-serif italic text-[#E6332A] font-bold">
+                          &ldquo;{bike.nickname}&rdquo;
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Technical Specs Pill Box */}
+                    <div className="grid grid-cols-2 gap-2 bg-[#F4EEDB] border-2 border-[#1A1918] p-3 rounded-xl text-xs font-mono">
+                      <div>
+                        <span className="text-[9px] uppercase text-[#1A1918]/60 block font-bold">Neumáticos</span>
+                        <span className="text-[#1A1918] font-black truncate block">{bike.tires || '70/30 Mixtas'}</span>
+                      </div>
+                      <div>
+                        <span className="text-[9px] uppercase text-[#1A1918]/60 block font-bold">Cilindrada</span>
+                        <span className="text-[#1A1918] font-black">{bike.displacementCc} cc</span>
+                      </div>
+                    </div>
+
+                    {/* Modifications List */}
+                    {bike.modifications && bike.modifications.length > 0 && (
+                      <div className="space-y-1.5">
+                        <span className="text-[10px] font-mono uppercase font-black text-[#1A1918]/70 block">
+                          Modificaciones Técnicas:
+                        </span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {bike.modifications.map((mod, mIdx) => (
+                            <span 
+                              key={mIdx}
+                              className="text-[10px] px-2.5 py-1 bg-[#FAF6ED] text-[#1A1918] font-medium border border-[#1A1918] rounded-md shadow-[1px_1px_0px_#1A1918]"
+                            >
+                              {mod}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Actions Footer */}
+                    <div className="pt-3 border-t-2 border-[#1A1918] flex items-center justify-between">
+                      <span className="text-[10px] font-mono font-bold text-emerald-700 flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
+                        MÁQUINA LISTA
+                      </span>
+
+                      <button
+                        onClick={() => {
+                          if (confirm(`¿Eliminar la ${bike.brand} ${bike.model} de tu hangar?`)) {
+                            deleteMotorcycle(bike.id);
+                          }
+                        }}
+                        className="p-2 text-[#1A1918]/60 hover:text-[#E6332A] hover:bg-[#F4EEDB] rounded-lg transition border border-transparent hover:border-[#1A1918] cursor-pointer"
+                        title="Eliminar del Hangar"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* 04. SUB-TAB: PROGRESO (TELEMETRY CHARTS)                  */}
       {/* ========================================================= */}
       {activeSubTab === 'progreso' && (
         <div className="space-y-6">
@@ -240,7 +490,7 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
               <button
                 key={d}
                 onClick={() => setSelectedDiscipline(d)}
-                className={`px-4 py-2 text-[10px] uppercase tracking-wider font-display whitespace-nowrap rounded-xl border-2 transition shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${
+                className={`px-4 py-2 text-[10px] uppercase tracking-wider font-display whitespace-nowrap rounded-xl border-2 transition shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer ${
                   selectedDiscipline === d
                     ? 'bg-[#1A1918] text-[#FAF6ED] border-[#1A1918] font-black'
                     : 'bg-[#FAF6ED] text-[#1A1918] border-[#1A1918] hover:bg-[#F4EEDB] font-bold'
@@ -273,7 +523,7 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
             </div>
 
             <p className="text-xs text-[#1A1918]/70 border-t-2 border-[#1A1918] pt-3 font-serif italic font-medium">
-              +1 rodada más que la semana pasada a estas alturas. Máquina en óptimo desempeño.
+              Máquina en óptimo desempeño. Próxima revisión programada a los 5,000 km.
             </p>
           </div>
 
@@ -294,7 +544,6 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
 
                 return (
                   <div key={idx} className="flex-1 flex flex-col items-center gap-1 group relative">
-                    {/* Tooltip on hover */}
                     <div className="absolute -top-9 bg-[#1A1918] text-[#FAF6ED] text-[9px] px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap z-10 font-mono shadow-[2px_2px_0px_#1A1918] border border-[#FAF6ED]/20">
                       {item.km} km ({item.elev}m)
                     </div>
@@ -321,7 +570,7 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
       )}
 
       {/* ========================================================= */}
-      {/* 04. SUB-TAB: ACTIVIDADES (SEARCHABLE HISTORICAL LOG)      */}
+      {/* 05. SUB-TAB: ACTIVIDADES (SEARCHABLE HISTORICAL LOG)      */}
       {/* ========================================================= */}
       {activeSubTab === 'actividades' && (
         <div className="space-y-5">
@@ -377,7 +626,7 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
       )}
 
       {/* ========================================================= */}
-      {/* 05. SUB-TAB: GALERÍA (PHOTO GRID FROM TRAILS)             */}
+      {/* 06. SUB-TAB: GALERÍA (PHOTO GRID FROM TRAILS)             */}
       {/* ========================================================= */}
       {activeSubTab === 'galeria' && (
         <div className="space-y-4">
@@ -385,7 +634,7 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
             <h3 className="text-sm font-display font-black text-[#1A1918] uppercase tracking-wide">
               Fotos de Expediciones ({GALLERY_PHOTOS.length})
             </h3>
-            <span className="text-xs text-[#1A1918]/70 font-serif italic font-medium">Tomadas en ruta con GPS</span>
+            <span className="text-xs text-[#1A1918]/70 font-serif italic font-medium">Capturas en ruta con telemetría GPS</span>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
@@ -412,90 +661,230 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
       )}
 
       {/* ========================================================= */}
-      {/* 06. SUB-TAB: MÁS (CONFIG, GARAJE, ESTADÍSTICAS & TROFEOS) */}
+      {/* 07. MODAL: EDITAR PERFIL DE PILOTO                       */}
       {/* ========================================================= */}
-      {activeSubTab === 'mas' && (
-        <div className="space-y-6">
-          
-          {/* Menu list with chevrons */}
-          <div className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[24px] divide-y-2 divide-[#1A1918] shadow-[5px_5px_0px_#1A1918] overflow-hidden">
-            
-            {/* Estadísticas anuales */}
-            <div className="p-4 flex items-center justify-between hover:bg-[#F4EEDB] transition cursor-pointer">
-              <div className="flex items-center gap-3.5">
-                <FileText className="w-4 h-4 text-[#E6332A]" />
-                <div>
-                  <h4 className="text-xs font-display font-black text-[#1A1918] uppercase">Estadísticas Anuales</h4>
-                  <p className="text-[10px] text-[#1A1918]/70 font-serif italic font-medium">Este año: 2,450 km acumulados</p>
-                </div>
+      <EditProfileModal 
+        isOpen={isEditProfileOpen} 
+        onClose={() => setEditProfileOpen(false)} 
+      />
+
+      {/* ========================================================= */}
+      {/* 08. MODAL: AÑADIR MOTO AL HANGAR                         */}
+      {/* ========================================================= */}
+      {showAddBikeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#1A1918]/70 backdrop-blur-sm animate-fadeIn overflow-y-auto">
+          <div 
+            className="w-full max-w-xl bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[28px] shadow-[8px_8px_0px_#1A1918] my-auto max-h-[92vh] overflow-y-auto text-[#1A1918] font-sans animate-scaleUp p-5 sm:p-8 space-y-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b-2 border-[#1A1918] pb-4">
+              <div className="space-y-1">
+                <span className="text-[10px] font-mono uppercase font-black tracking-widest text-[#E6332A] flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-[#E6332A]" />
+                  HANGAR // REGISTRO DE MÁQUINA
+                </span>
+                <h2 className="text-xl sm:text-2xl font-display font-black text-[#1A1918] uppercase tracking-wide">
+                  Añadir Moto al Hangar
+                </h2>
               </div>
-              <ChevronRight className="w-4 h-4 text-[#1A1918]" />
+
+              <button
+                type="button"
+                onClick={() => setShowAddBikeModal(false)}
+                className="p-2 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border-2 border-[#1A1918] rounded-xl shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition"
+              >
+                <X className="w-4 h-4 stroke-[2.5]" />
+              </button>
             </div>
 
-            {/* Segmentos cronometrados */}
-            <div className="p-4 flex items-center justify-between hover:bg-[#F4EEDB] transition cursor-pointer">
-              <div className="flex items-center gap-3.5">
-                <MapPin className="w-4 h-4 text-[#E06423]" />
+            <form onSubmit={handleAddBikeSubmit} className="space-y-5">
+              
+              {/* Photo presets selector */}
+              <div className="space-y-2.5 bg-[#F4EEDB] border-2 border-[#1A1918] p-4 rounded-2xl shadow-[3px_3px_0px_#1A1918]">
+                <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block">
+                  Foto de la Máquina
+                </label>
+                
+                <div className="flex items-center gap-3 overflow-x-auto pb-1">
+                  {PRESET_MOTO_PHOTOS.map((url, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setBikePhotoUrl(url)}
+                      className={`w-20 h-14 rounded-xl overflow-hidden border-2 transition shrink-0 ${
+                        bikePhotoUrl === url 
+                          ? 'border-[#E6332A] scale-105 shadow-[2px_2px_0px_#E6332A]' 
+                          : 'border-[#1A1918] hover:opacity-80'
+                      }`}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={url} alt={`Preset ${idx}`} className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+
+                <input
+                  type="url"
+                  value={bikePhotoUrl}
+                  onChange={(e) => setBikePhotoUrl(e.target.value)}
+                  placeholder="O pega una URL de imagen de tu moto (https://...)"
+                  className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3 py-2 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition shadow-[2px_2px_0px_#1A1918]"
+                />
+              </div>
+
+              {/* Brand and Model */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <h4 className="text-xs font-display font-black text-[#1A1918] uppercase">Segmentos</h4>
-                  <p className="text-[10px] text-[#1A1918]/70 font-serif italic font-medium">6 tramos favoritos registrados</p>
+                  <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
+                    Marca *
+                  </label>
+                  <select
+                    value={bikeBrand}
+                    onChange={(e) => setBikeBrand(e.target.value)}
+                    className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3 py-2.5 text-xs text-[#1A1918] focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918] cursor-pointer"
+                  >
+                    {['BMW', 'KTM', 'Honda', 'Yamaha', 'Ducati', 'Triumph', 'Husqvarna', 'Royal Enfield', 'Suzuki', 'Kawasaki', 'Harley-Davidson', 'Moto Guzzi', 'Aprilia', 'Otro'].map(b => (
+                      <option key={b} value={b}>{b}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
+                    Modelo *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={bikeModel}
+                    onChange={(e) => setBikeModel(e.target.value)}
+                    placeholder="Ej. R 1250 GS Adventure"
+                    className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]"
+                  />
                 </div>
               </div>
-              <ChevronRight className="w-4 h-4 text-[#1A1918]" />
-            </div>
 
-            {/* Equipamiento / Hangar de Motos */}
-            <div 
-              onClick={() => setActiveNavTab('garaje')}
-              className="p-4 flex items-center justify-between hover:bg-[#F4EEDB] transition cursor-pointer"
-            >
-              <div className="flex items-center gap-3.5">
-                <Wrench className="w-4 h-4 text-[#1A1918]" />
-                <div>
-                  <h4 className="text-xs font-display font-black text-[#1A1918] uppercase">Equipamiento / Garaje</h4>
-                  <p className="text-[10px] text-[#1A1918]/70 font-serif italic font-medium">{userBikes.length} máquinas en tu taller</p>
+              {/* Nickname, Year, CC */}
+              <div className="grid grid-cols-3 gap-3">
+                <div className="col-span-1">
+                  <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
+                    Apodo (Opcional)
+                  </label>
+                  <input
+                    type="text"
+                    value={bikeNickname}
+                    onChange={(e) => setBikeNickname(e.target.value)}
+                    placeholder="Ej. La Bestia"
+                    className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]"
+                  />
+                </div>
+
+                <div className="col-span-1">
+                  <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
+                    Año
+                  </label>
+                  <input
+                    type="number"
+                    min="1970"
+                    max="2027"
+                    value={bikeYear}
+                    onChange={(e) => setBikeYear(Number(e.target.value))}
+                    className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3 py-2.5 text-xs text-[#1A1918] focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]"
+                  />
+                </div>
+
+                <div className="col-span-1">
+                  <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
+                    Cilindrada (cc)
+                  </label>
+                  <input
+                    type="number"
+                    min="50"
+                    max="2500"
+                    value={bikeCc}
+                    onChange={(e) => setBikeCc(Number(e.target.value))}
+                    className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3 py-2.5 text-xs text-[#1A1918] focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]"
+                  />
                 </div>
               </div>
-              <span className="text-[10px] text-[#E6332A] uppercase font-display font-black flex items-center gap-1">
-                Administrar <ChevronRight className="w-4 h-4" />
-              </span>
-            </div>
 
+              {/* Type and Tires */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
+                    Tipo de Moto
+                  </label>
+                  <select
+                    value={bikeType}
+                    onChange={(e) => setBikeType(e.target.value as BikeType)}
+                    className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3 py-2.5 text-xs text-[#1A1918] focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918] cursor-pointer"
+                  >
+                    {[
+                      'Doble Propósito', 
+                      'Adventure / Maxi-Trail', 
+                      'Enduro', 
+                      'Scrambler', 
+                      'Naked', 
+                      'Deportiva', 
+                      'Chopper / Cruiser', 
+                      'Touring', 
+                      'Cafe Racer',
+                      'Scooter'
+                    ].map(t => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
+                    Neumáticos Instalados
+                  </label>
+                  <input
+                    type="text"
+                    value={bikeTires}
+                    onChange={(e) => setBikeTires(e.target.value)}
+                    placeholder="Ej. Continental TKC80 (50/50)"
+                    className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]"
+                  />
+                </div>
+              </div>
+
+              {/* Modifications */}
+              <div>
+                <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
+                  Modificaciones Técnicas (Separadas por coma)
+                </label>
+                <textarea
+                  rows={2}
+                  value={bikeMods}
+                  onChange={(e) => setBikeMods(e.target.value)}
+                  placeholder="Ej. Skid plate de aluminio, Faros auxiliares LED, Defensas altas, Escape Akrapovič"
+                  className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl p-3 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]"
+                />
+              </div>
+
+              {/* Submit Buttons */}
+              <div className="flex items-center gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAddBikeModal(false)}
+                  className="flex-1 py-3 px-4 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border-2 border-[#1A1918] rounded-xl font-display font-black text-xs uppercase tracking-wider transition shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer"
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  type="submit"
+                  className="flex-2 py-3 px-6 bg-[#E6332A] hover:bg-[#d02c24] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none text-white border-2 border-[#1A1918] rounded-xl font-display font-black text-xs uppercase tracking-wider transition shadow-[3px_3px_0px_#1A1918] flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  <span>Guardar en Hangar</span>
+                </button>
+              </div>
+            </form>
           </div>
-
-          {/* Vitrina de trofeos */}
-          <div className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[24px] p-6 space-y-4 shadow-[5px_5px_0px_#1A1918]">
-            <div className="flex items-center justify-between border-b-2 border-[#1A1918] pb-3">
-              <div className="flex items-center gap-2">
-                <Trophy className="w-4 h-4 text-[#F7B32B]" />
-                <h4 className="text-xs font-display font-black text-[#1A1918] uppercase tracking-wider">
-                  Vitrina de trofeos (6)
-                </h4>
-              </div>
-              <span className="text-[10px] font-display font-black text-[#E6332A] uppercase cursor-pointer hover:underline">Ver todos &gt;</span>
-            </div>
-
-            <div className="grid grid-cols-4 sm:grid-cols-6 gap-3 pt-2">
-              {[
-                { label: '30', desc: '30 rodadas' },
-                { label: '20', desc: '20 rodadas' },
-                { label: '10', desc: '10 rodadas' },
-                { label: '5', desc: '5 rodadas' },
-                { label: '1K', desc: '1,000 km' },
-                { label: 'SR', desc: 'Sierra King' }
-              ].map((badge, idx) => (
-                <div key={idx} className="flex flex-col items-center gap-1.5">
-                  <div className="w-12 h-12 bg-[#F4EEDB] border-2 border-[#1A1918] hover:bg-[#FAF6ED] rounded-xl flex items-center justify-center text-sm font-display font-black text-[#1A1918] hover:scale-105 transition cursor-pointer shadow-[2px_2px_0px_#1A1918]">
-                    {badge.label}
-                  </div>
-                  <span className="text-[9px] text-[#1A1918]/80 text-center font-display uppercase tracking-tight font-black">
-                    {badge.desc}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
         </div>
       )}
 
