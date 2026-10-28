@@ -565,6 +565,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       id: `moto-${Date.now()}`
     };
     setMotorcycles(prev => [newBike, ...prev]);
+
+    if (isSupabaseConfigured() && currentUser.id && currentUser.id.length === 36) {
+      supabase.from('motorcycles').insert({
+        user_id: currentUser.id,
+        brand: bikeData.brand,
+        model: bikeData.model,
+        year: bikeData.year,
+        displacement_cc: bikeData.displacementCc,
+        nickname: bikeData.nickname || null,
+        image_url: bikeData.photoUrl || null,
+        tires: bikeData.tires || null
+      }).then(() => {});
+    }
   };
 
   const updateMotorcycle = (id: string, updates: Partial<Motorcycle>) => {
@@ -576,6 +589,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const deleteMotorcycle = (id: string) => {
     setMotorcycles(prev => prev.filter(m => m.id !== id));
+    if (isSupabaseConfigured()) {
+      supabase.from('motorcycles').delete().eq('id', id).then(() => {});
+    }
   };
 
   const createCrew = (data: { name: string; tagline: string; description: string; baseCity: string; coverImage: string; whatsappGroupUrl?: string }) => {
@@ -599,6 +615,30 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCrews(prev => [newCrew, ...prev]);
     setCurrentCrew(newCrew);
     setActiveNavTab('crew');
+
+    if (isSupabaseConfigured()) {
+      supabase.from('crews').insert({
+        id: newCrew.id,
+        name: newCrew.name,
+        slug: newCrew.slug,
+        tagline: newCrew.tagline,
+        description: newCrew.description,
+        invite_code: newCrew.inviteCode,
+        cover_image: newCrew.coverImage,
+        base_city: newCrew.baseCity,
+        creator_id: currentUser.id && currentUser.id.length === 36 ? currentUser.id : null,
+        whatsapp_group_url: newCrew.whatsappGroupUrl
+      }).then(() => {
+        if (currentUser.id && currentUser.id.length === 36) {
+          supabase.from('crew_members').insert({
+            crew_id: newCrew.id,
+            user_id: currentUser.id,
+            role: 'Capitán de Ruta'
+          }).then(() => {});
+        }
+      });
+    }
+
     return newCrew;
   };
 
@@ -672,6 +712,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       createdAt: new Date().toISOString()
     };
     setCrewMessages(prev => [...prev, newMsg]);
+
+    if (isSupabaseConfigured() && currentUser.id && currentUser.id.length === 36) {
+      supabase.from('crew_messages').insert({
+        crew_id: crewId,
+        user_id: currentUser.id,
+        user_name: currentUser.name,
+        user_avatar: currentUser.avatar,
+        content: text.trim()
+      }).then(() => {});
+    }
   };
 
   const addCrewMember = (crewId: string, userId: string, role: CrewMember['role'] = 'Rider') => {
@@ -699,6 +749,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       } catch {}
       return updatedList;
     });
+
+    if (isSupabaseConfigured() && userId && userId.length === 36) {
+      supabase.from('crew_members').insert({
+        crew_id: crewId,
+        user_id: userId,
+        role: role
+      }).then(() => {});
+    }
 
     setCurrentCrew(prev => {
       if (prev && prev.id === crewId) {
@@ -1223,7 +1281,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const toggleFollowUser = (userId: string) => {
     setFollowingUserIds(prev => {
       const exists = prev.includes(userId);
-      return exists ? prev.filter(id => id !== userId) : [...prev, userId];
+      const next = exists ? prev.filter(id => id !== userId) : [...prev, userId];
+
+      if (isSupabaseConfigured() && currentUser.id && currentUser.id.length === 36 && userId.length === 36) {
+        if (exists) {
+          supabase.from('follows').delete().match({ follower_id: currentUser.id, following_id: userId }).then(() => {});
+        } else {
+          supabase.from('follows').insert({ follower_id: currentUser.id, following_id: userId }).then(() => {});
+        }
+      }
+
+      return next;
     });
   };
 
