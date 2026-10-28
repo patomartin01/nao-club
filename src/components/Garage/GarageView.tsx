@@ -3,11 +3,13 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Motorcycle, BikeType, RidingLevel } from '../../types';
-import { Plus, Trash2, Shield, Gauge, Check, X, Bike } from 'lucide-react';
+import { Plus, Trash2, Shield, Gauge, Check, X, Bike, Wrench } from 'lucide-react';
+import { EditMotorcycleModal } from '../Modals/EditMotorcycleModal';
 
 export const GarageView: React.FC = () => {
-  const { currentUser, userBikes, addMotorcycle, deleteMotorcycle } = useApp();
+  const { currentUser, userBikes, addMotorcycle, updateMotorcycle, deleteMotorcycle } = useApp();
   const [showAddBikeModal, setShowAddBikeModal] = useState(false);
+  const [editingBike, setEditingBike] = useState<Motorcycle | null>(null);
 
   // New bike form state
   const [brand, setBrand] = useState('BMW');
@@ -176,6 +178,16 @@ export const GarageView: React.FC = () => {
                     &quot;{bike.nickname}&quot;
                   </div>
                 )}
+
+                {/* Quick Edit shortcut on photo */}
+                <button
+                  onClick={() => setEditingBike(bike)}
+                  className="absolute bottom-4 right-4 bg-[#FAF6ED] hover:bg-[#F7B32B] text-[#1A1918] px-2.5 py-1 font-display text-[10px] font-black uppercase tracking-wider shadow-[2px_2px_0px_#1A1918] border-2 border-[#1A1918] rounded-lg flex items-center gap-1 transition cursor-pointer"
+                  title="Editar ficha de la moto"
+                >
+                  <Wrench className="w-3 h-3 text-[#E6332A]" />
+                  <span>Editar</span>
+                </button>
               </div>
 
               <div className="p-6 sm:p-7 space-y-4">
@@ -204,17 +216,32 @@ export const GarageView: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="pt-3 border-t-2 border-[#1A1918] flex items-center justify-between">
-                  <span className="text-[10px] font-mono uppercase text-[#1A1918]/70 font-black">
-                    SERIE: #{bike.id.slice(0, 8)}
-                  </span>
+                <div className="pt-3 border-t-2 border-[#1A1918] flex items-center justify-between gap-2">
                   <button
-                    onClick={() => deleteMotorcycle(bike.id)}
-                    className="p-2 text-[#1A1918]/60 hover:text-white hover:bg-[#E6332A] rounded-lg transition border border-transparent hover:border-[#1A1918]"
-                    title="Dar de baja máquina"
+                    onClick={() => setEditingBike(bike)}
+                    className="px-3.5 py-1.5 bg-[#F4EEDB] hover:bg-[#F7B32B] text-[#1A1918] font-display font-black text-xs uppercase tracking-wider rounded-xl border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] flex items-center gap-1.5 transition active:translate-x-0.5 active:translate-y-0.5 cursor-pointer"
+                    title="Editar ficha técnica de la máquina"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Wrench className="w-3.5 h-3.5 text-[#E6332A]" />
+                    <span>Editar Ficha Moto</span>
                   </button>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono uppercase text-[#1A1918]/70 font-black">
+                      #{bike.id.slice(0, 8)}
+                    </span>
+                    <button
+                      onClick={() => {
+                        if (confirm(`¿Dar de baja la ${bike.brand} ${bike.model} de tu hangar?`)) {
+                          deleteMotorcycle(bike.id);
+                        }
+                      }}
+                      className="p-2 text-[#1A1918]/60 hover:text-white hover:bg-[#E6332A] rounded-lg transition border border-transparent hover:border-[#1A1918] cursor-pointer"
+                      title="Dar de baja máquina"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -341,6 +368,16 @@ export const GarageView: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* 04. EDIT BIKE MODAL */}
+      <EditMotorcycleModal
+        isOpen={!!editingBike}
+        onClose={() => setEditingBike(null)}
+        bike={editingBike}
+        onSave={(id, updates) => {
+          updateMotorcycle(id, updates);
+        }}
+      />
 
     </div>
   );

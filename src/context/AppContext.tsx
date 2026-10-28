@@ -40,6 +40,7 @@ interface AppContextType {
   motorcycles: Motorcycle[];
   userBikes: Motorcycle[];
   addMotorcycle: (bike: Omit<Motorcycle, 'id'>) => void;
+  updateMotorcycle: (id: string, updates: Partial<Motorcycle>) => void;
   deleteMotorcycle: (id: string) => void;
   crews: Crew[];
   currentCrew: Crew | null;
@@ -564,6 +565,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       id: `moto-${Date.now()}`
     };
     setMotorcycles(prev => [newBike, ...prev]);
+  };
+
+  const updateMotorcycle = (id: string, updates: Partial<Motorcycle>) => {
+    setMotorcycles(prev => prev.map(m => m.id === id ? { ...m, ...updates } : m));
+    if (supabase) {
+      supabase.from('motorcycles').update(updates).eq('id', id).then(() => {});
+    }
   };
 
   const deleteMotorcycle = (id: string) => {
@@ -1296,6 +1304,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         motorcycles,
         userBikes,
         addMotorcycle,
+        updateMotorcycle,
         deleteMotorcycle,
         crews,
         currentCrew,

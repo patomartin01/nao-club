@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { BikeType } from '../../types';
+import { BikeType, Motorcycle } from '../../types';
 import { 
   BarChart2, 
   FileText, 
@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { EditProfileModal } from '../Modals/EditProfileModal';
+import { EditMotorcycleModal } from '../Modals/EditMotorcycleModal';
 
 interface TuProfileViewProps {
   onOpenEditProfile?: () => void;
@@ -77,6 +78,7 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
     activities, 
     userBikes,
     addMotorcycle,
+    updateMotorcycle,
     deleteMotorcycle,
     followingUserIds,
     setAuthModalOpen
@@ -88,6 +90,9 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
   
   // Profile edit modal state
   const [isEditProfileOpen, setEditProfileOpen] = useState(false);
+
+  // Bike editing modal state
+  const [editingBike, setEditingBike] = useState<Motorcycle | null>(null);
 
   // Add bike modal state
   const [showAddBikeModal, setShowAddBikeModal] = useState(false);
@@ -231,6 +236,7 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
         </div>
 
         {/* Action Buttons: Editar Perfil / Compartir / Gestionar Cuenta */}
+        {/* Action Buttons: Editar Perfil / Editar Hangar / Compartir / Gestionar Cuenta */}
         <div className="flex items-center gap-3 pt-2 relative z-10 flex-wrap">
           <button
             onClick={() => {
@@ -244,11 +250,27 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
           </button>
 
           <button
+            onClick={() => {
+              setActiveSubTab('hangar');
+              if (userBikes.length > 0) {
+                setEditingBike(userBikes[0]);
+              } else {
+                setShowAddBikeModal(true);
+              }
+            }}
+            className="flex-1 min-w-[130px] py-3 px-4 bg-[#F4EEDB] hover:bg-[#EDE6D3] text-[#1A1918] text-xs font-display font-black uppercase tracking-widest flex items-center justify-center gap-2 transition rounded-xl border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer"
+            title="Editar ficha técnica de tu moto en el Hangar"
+          >
+            <Wrench className="w-3.5 h-3.5 text-[#E6332A]" />
+            <span>Editar Hangar</span>
+          </button>
+
+          <button
             onClick={handleShareProfile}
-            className="flex-1 min-w-[130px] py-3 px-4 bg-[#F7B32B] hover:bg-[#e5a424] text-[#1A1918] text-xs font-display font-black uppercase tracking-widest flex items-center justify-center gap-2 transition rounded-xl border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer"
+            className="py-3 px-4 bg-[#F7B32B] hover:bg-[#e5a424] text-[#1A1918] text-xs font-display font-black uppercase tracking-widest flex items-center justify-center gap-2 transition rounded-xl border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer"
           >
             <Share2 className="w-3.5 h-3.5 text-[#1A1918]" />
-            <span>Compartir</span>
+            <span className="hidden sm:inline">Compartir</span>
           </button>
 
           <button
@@ -394,12 +416,23 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
                       )}
                     </div>
 
-                    {/* Tag bottom-right */}
-                    <div className="absolute bottom-3 right-3">
+                    {/* Tag bottom-right & Edit button */}
+                    <div className="absolute bottom-3 right-3 flex items-center gap-2">
                       <span className="px-2.5 py-1 bg-[#FAF6ED]/95 backdrop-blur-sm text-[#1A1918] text-[10px] font-mono font-black uppercase rounded-lg border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918]">
                         {bike.displacementCc} CC • {bike.year}
                       </span>
                     </div>
+
+                    {/* Quick Edit button top-right on photo */}
+                    <button
+                      type="button"
+                      onClick={() => setEditingBike(bike)}
+                      className="absolute top-3 right-3 px-2.5 py-1 bg-[#FAF6ED] hover:bg-[#F7B32B] text-[#1A1918] text-[10px] font-display font-black uppercase tracking-wider rounded-lg border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] flex items-center gap-1.5 transition active:translate-x-0.5 active:translate-y-0.5 cursor-pointer"
+                      title="Editar especificaciones de la moto"
+                    >
+                      <Wrench className="w-3 h-3 text-[#E6332A]" />
+                      <span>Editar</span>
+                    </button>
                   </div>
 
                   {/* Bike Info Body */}
@@ -453,23 +486,35 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
                     )}
 
                     {/* Actions Footer */}
-                    <div className="pt-3 border-t-2 border-[#1A1918] flex items-center justify-between">
-                      <span className="text-[10px] font-mono font-bold text-emerald-700 flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
-                        MÁQUINA LISTA
-                      </span>
-
+                    <div className="pt-3 border-t-2 border-[#1A1918] flex items-center justify-between gap-2">
                       <button
-                        onClick={() => {
-                          if (confirm(`¿Eliminar la ${bike.brand} ${bike.model} de tu hangar?`)) {
-                            deleteMotorcycle(bike.id);
-                          }
-                        }}
-                        className="p-2 text-[#1A1918]/60 hover:text-[#E6332A] hover:bg-[#F4EEDB] rounded-lg transition border border-transparent hover:border-[#1A1918] cursor-pointer"
-                        title="Eliminar del Hangar"
+                        type="button"
+                        onClick={() => setEditingBike(bike)}
+                        className="px-3.5 py-1.5 bg-[#FAF6ED] hover:bg-[#F7B32B] text-[#1A1918] font-display font-black text-xs uppercase tracking-wider rounded-xl border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] flex items-center gap-1.5 transition active:translate-x-0.5 active:translate-y-0.5 cursor-pointer"
+                        title="Editar especificaciones de la moto"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Wrench className="w-3.5 h-3.5 text-[#E6332A]" />
+                        <span>Editar Ficha Moto</span>
                       </button>
+
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-mono font-bold text-emerald-700 hidden sm:flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
+                          MÁQUINA LISTA
+                        </span>
+
+                        <button
+                          onClick={() => {
+                            if (confirm(`¿Eliminar la ${bike.brand} ${bike.model} de tu hangar?`)) {
+                              deleteMotorcycle(bike.id);
+                            }
+                          }}
+                          className="p-2 text-[#1A1918]/60 hover:text-[#E6332A] hover:bg-[#F4EEDB] rounded-lg transition border border-transparent hover:border-[#1A1918] cursor-pointer"
+                          title="Eliminar del Hangar"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -887,6 +932,16 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
           </div>
         </div>
       )}
+
+      {/* Edit Motorcycle Modal */}
+      <EditMotorcycleModal
+        isOpen={!!editingBike}
+        onClose={() => setEditingBike(null)}
+        bike={editingBike}
+        onSave={(id, updates) => {
+          updateMotorcycle(id, updates);
+        }}
+      />
 
     </div>
   );

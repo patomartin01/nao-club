@@ -14,7 +14,8 @@ import {
   Camera, 
   Check, 
   Sparkles,
-  HeartPulse
+  HeartPulse,
+  Bike
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -307,6 +308,19 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                   placeholder="Ej. Sofía (Hermana): 55 9876 5432"
                   className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3 py-2 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition shadow-[2px_2px_0px_#1A1918]"
                 />
+              </div>
+            </div>
+          </div>
+
+          {/* Hangar Callout */}
+          <div className="p-3 bg-[#F4EEDB] border-2 border-[#1A1918] rounded-2xl flex items-center justify-between gap-3 shadow-[2px_2px_0px_#1A1918]">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-[#FAF6ED] border-2 border-[#1A1918] flex items-center justify-center text-[#E6332A] shrink-0">
+                <Bike className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="text-xs font-display font-black uppercase text-[#1A1918]">¿Deseas editar tus motocicletas?</p>
+                <p className="text-[10px] font-serif italic text-[#1A1918]/70">Ve a la pestaña &quot;Hangar&quot; de tu perfil o usa el botón &quot;Editar Hangar&quot;.</p>
               </div>
             </div>
           </div>
