@@ -18,6 +18,7 @@ import { PilotProfileModal } from '../components/Modals/PilotProfileModal';
 import { LiveRouteRecorderModal } from '../components/Modals/LiveRouteRecorderModal';
 import { AuthModal } from '../components/Modals/AuthModal';
 import { BottomBar } from '../components/Navigation/BottomBar';
+import { AdminDashboardView } from '../components/Admin/AdminDashboardView';
 
 export default function Home() {
   const { activeNavTab, setActiveNavTab } = useApp();
@@ -84,6 +85,11 @@ export default function Home() {
         {/* HANGAR / GARAJE TÉCNICO */}
         {activeNavTab === 'garaje' && (
           <GarageView />
+        )}
+
+        {/* ADMIN DASHBOARD (CONTROL DE USABILIDAD Y USUARIOS) */}
+        {activeNavTab === 'admin' && (
+          <AdminDashboardView />
         )}
       </main>
 

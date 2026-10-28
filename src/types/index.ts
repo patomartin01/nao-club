@@ -20,7 +20,7 @@ export type BikeType =
   | 'Sport Touring' 
   | 'Trail Ligera';
 
-export type NavTab = 'inicio' | 'mapas' | 'registrar' | 'tribus' | 'grupos' | 'tu' | 'crew' | 'rodada' | 'garaje' | 'home' | 'rutas';
+export type NavTab = 'inicio' | 'mapas' | 'registrar' | 'tribus' | 'grupos' | 'tu' | 'crew' | 'rodada' | 'garaje' | 'home' | 'rutas' | 'admin';
 
 export interface ActivityComment {
   id: string;

@@ -21,7 +21,9 @@ import {
   Check,
   Sparkles,
   Phone,
-  HeartPulse
+  HeartPulse,
+  ShieldCheck,
+  ShieldAlert
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { EditProfileModal } from '../Modals/EditProfileModal';
@@ -81,7 +83,8 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
     updateMotorcycle,
     deleteMotorcycle,
     followingUserIds,
-    setAuthModalOpen
+    setAuthModalOpen,
+    setActiveNavTab
   } = useApp();
 
   const [activeSubTab, setActiveSubTab] = useState<ProfileSubTab>('hangar');
@@ -281,6 +284,17 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
             <UserCheck className="w-3.5 h-3.5 text-[#E6332A]" />
             <span>Cuenta</span>
           </button>
+
+          {(currentUser.email?.toLowerCase() === 'pmartin.v2001@gmail.com' || currentUser.handle === '@patomartin' || currentUser.id === 'user-patricio') && (
+            <button
+              onClick={() => setActiveNavTab('admin')}
+              className="py-3 px-4 bg-[#1A1918] hover:bg-black text-[#F7B32B] text-xs font-display font-black uppercase tracking-widest flex items-center justify-center gap-2 transition rounded-xl border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer"
+              title="Panel Administrativo de Usabilidad y Control"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-[#F7B32B]" />
+              <span>Admin</span>
+            </button>
+          )}
         </div>
       </div>
 

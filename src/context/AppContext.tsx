@@ -103,6 +103,7 @@ interface AppContextType {
   switchCurrentUser: (userId: string) => void;
   signUp: (email: string, password: string, name: string, handle: string) => Promise<{ success: boolean; message: string }>;
   signIn: (email: string, password: string) => Promise<{ success: boolean; message: string }>;
+  signInWithGoogle: () => Promise<{ success: boolean; message: string }>;
   signOut: () => Promise<void>;
   updateCurrentUserProfile: (updates: Partial<User>) => Promise<void>;
 }
@@ -281,6 +282,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       } catch {}
       return { success: true, message: '¡Sesión iniciada!' };
     }
+  };
+
+  // Sign In with Google OAuth
+  const signInWithGoogle = async (): Promise<{ success: boolean; message: string }> => {
+    if (isSupabaseConfigured()) {
+      try {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: typeof window !== 'undefined' ? `${window.location.origin}` : undefined
+          }
+        });
+        if (error) {
+          return { success: false, message: error.message };
+        }
+        return { success: true, message: 'Redirigiendo a Google...' };
+      } catch (err: any) {
+        return { success: false, message: err.message || 'Error al conectar con Google' };
+      }
+    }
+    return { success: false, message: 'Supabase no está configurado para OAuth.' };
   };
 
   // Sign Out
@@ -506,6 +528,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setCrews(prev => {
           const cloudIds = new Set(mappedCrews.map(cr => cr.id));
           return [...mappedCrews, ...prev.filter(cr => !cloudIds.has(cr.id))];
+        });
+      }
+    });
+
+    // Hydrate motorcycles from cloud
+    supabase.from('motorcycles').select('*').then(({ data }) => {
+      if (data && data.length > 0) {
+        const mappedMotos: Motorcycle[] = data.map((m: any) => ({
+          id: m.id,
+          userId: m.user_id,
+          brand: m.brand,
+          model: m.model,
+          year: m.year || 2023,
+          displacementCc: m.displacement_cc || 500,
+          type: (m.type as any) || 'Doble Propósito',
+          nickname: m.nickname || '',
+          photoUrl: m.image_url || 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=800',
+          modifications: m.modifications || [],
+          tires: m.tires || ''
+        }));
+        setMotorcycles(prev => {
+          const cloudIds = new Set(mappedMotos.map(b => b.id));
+          return [...mappedMotos, ...prev.filter(b => !cloudIds.has(b.id))];
         });
       }
     });
@@ -1433,6 +1478,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         switchCurrentUser,
         signUp,
         signIn,
+        signInWithGoogle,
         signOut,
         updateCurrentUserProfile
       }}
