@@ -180,9 +180,8 @@ export const TribusView: React.FC<TribusViewProps> = ({
   const [showWhatsappMissingNotice, setShowWhatsappMissingNotice] = useState<boolean>(false);
   const [copiedCrewShare, setCopiedCrewShare] = useState<boolean>(false);
 
-  // Search query & filter for Tribus directory
+  // Search query for Tribus directory
   const [searchTribuQuery, setSearchTribuQuery] = useState('');
-  const [tribuFilterTab, setTribuFilterTab] = useState<'all' | 'admin' | 'confirmed'>('all');
   const [copiedCodeCrewId, setCopiedCodeCrewId] = useState<string | null>(null);
 
   // Search & filter for Pilots tab
@@ -534,20 +533,11 @@ export const TribusView: React.FC<TribusViewProps> = ({
 
   // Filtered tribus for the directory
   const filteredCrews = crews.filter(c => {
-    // 1. Search filter
+    // Search filter
     if (searchTribuQuery.trim()) {
       const q = searchTribuQuery.toLowerCase();
       const match = c.name.toLowerCase().includes(q) || c.baseCity.toLowerCase().includes(q) || c.inviteCode.toLowerCase().includes(q);
       if (!match) return false;
-    }
-
-    // 2. Tab filter
-    if (tribuFilterTab === 'admin') {
-      return c.creatorId === currentUser.id;
-    }
-    if (tribuFilterTab === 'confirmed') {
-      const crewRides = rodadas.filter(r => r.crewId === c.id);
-      return crewRides.some(r => r.status === 'fijada' || Boolean(r.winningRouteId));
     }
 
     return true;
@@ -620,48 +610,16 @@ export const TribusView: React.FC<TribusViewProps> = ({
           </div>
         </div>
 
-        {/* Directory Controls: Search and Filter Pills (Risograph Matchbook Style) */}
+        {/* Directory Controls: Search Bar */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 py-4 border-b-2 border-[#1A1918]">
-          {/* Filter Pills */}
-          <div className="inline-flex gap-2 p-1.5 bg-[#FAF6ED] border-2 border-[#1A1918] rounded-2xl shadow-[3px_3px_0px_#1A1918] overflow-x-auto">
-            <button
-              type="button"
-              onClick={() => setTribuFilterTab('all')}
-              className={`px-3.5 py-1.5 font-display text-xs uppercase tracking-widest font-black transition rounded-xl border-2 shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${
-                tribuFilterTab === 'all'
-                  ? 'bg-[#1A1918] text-white border-[#1A1918]'
-                  : 'bg-[#FAF6ED] text-[#1A1918] border-[#1A1918] hover:bg-[#F7B32B]'
-              }`}
-            >
-              Todos ({crews.length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setTribuFilterTab('admin')}
-              className={`px-3.5 py-1.5 font-display text-xs uppercase tracking-widest font-black transition rounded-xl border-2 shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${
-                tribuFilterTab === 'admin'
-                  ? 'bg-[#1A1918] text-white border-[#1A1918]'
-                  : 'bg-[#FAF6ED] text-[#1A1918] border-[#1A1918] hover:bg-[#F7B32B]'
-              }`}
-            >
-              Donde soy Admin
-            </button>
-            <button
-              type="button"
-              onClick={() => setTribuFilterTab('confirmed')}
-              className={`px-3.5 py-1.5 font-display text-xs uppercase tracking-widest font-black transition rounded-xl border-2 shadow-[2px_2px_0px_#1A1918] flex items-center gap-1.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${
-                tribuFilterTab === 'confirmed'
-                  ? 'bg-[#E6332A] text-white border-[#1A1918]'
-                  : 'bg-[#FAF6ED] text-[#1A1918] border-[#1A1918] hover:bg-[#F7B32B]'
-              }`}
-            >
-              <Check className="w-3 h-3 text-[#F7B32B]" />
-              Con Rodada Confirmada
-            </button>
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-[10px] text-[#E6332A] uppercase tracking-[0.2em] font-black">
+              ★ DIRECTORIO OFICIAL // MOTOCLUBS ({crews.length}) ★
+            </span>
           </div>
 
           {/* Search Bar */}
-          <div className="relative sm:w-72">
+          <div className="relative w-full sm:w-80">
             <Search className="w-3.5 h-3.5 text-[#1A1918]/60 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input 
               type="text"
@@ -972,25 +930,22 @@ export const TribusView: React.FC<TribusViewProps> = ({
         </div>
 
         {filteredCrews.length === 0 && (
-          <div className="p-12 text-center text-ash text-xs space-y-3 bg-[#0F0C0A] border border-white/10 rounded-2xl mt-5">
-            <p className="font-mono text-white text-sm">No se encontraron tribus con ese criterio.</p>
-            <p className="text-ash/70 text-xs max-w-sm mx-auto">Prueba con otro término de búsqueda o cambia el filtro seleccionado.</p>
+          <div className="p-12 text-center text-[#1A1918] text-xs space-y-3 bg-[#FAF6ED] border-2 border-[#1A1918] rounded-2xl mt-5 shadow-[4px_4px_0px_#1A1918]">
+            <p className="font-display font-black text-[#1A1918] text-base uppercase">No se encontraron motoclubs con ese criterio.</p>
+            <p className="font-serif italic text-[#1A1918]/70 text-xs max-w-sm mx-auto">Prueba con otro término de búsqueda por nombre, clave o ciudad base.</p>
             <div className="flex items-center justify-center gap-3 pt-2">
               <button
                 type="button"
-                onClick={() => {
-                  setSearchTribuQuery('');
-                  setTribuFilterTab('all');
-                }}
-                className="px-3.5 py-1.5 border border-white/15 text-ash hover:text-white font-mono text-xs rounded-lg transition"
+                onClick={() => setSearchTribuQuery('')}
+                className="px-4 py-2 border-2 border-[#1A1918] bg-[#F4EEDB] text-[#1A1918] hover:bg-[#F7B32B] font-display font-black text-xs uppercase tracking-wider rounded-xl transition shadow-[2px_2px_0px_#1A1918] cursor-pointer"
               >
-                Limpiar filtros
+                Limpiar búsqueda
               </button>
               <button
                 onClick={onOpenCreateCrew}
-                className="px-4 py-1.5 bg-earth hover:bg-earth-bright text-white font-bold uppercase text-xs rounded-lg transition"
+                className="btn-vermillion px-5 py-2 rounded-xl text-xs flex items-center gap-2"
               >
-                Crear una Nueva Tribu
+                Fundar Club
               </button>
             </div>
           </div>
