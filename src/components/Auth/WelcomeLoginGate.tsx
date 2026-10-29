@@ -145,9 +145,17 @@ export const WelcomeLoginGate: React.FC = () => {
             onClick={async () => {
               setErrorMessage(null);
               setGoogleLoading(true);
-              const res = await signInWithGoogle();
-              if (!res.success) {
-                setErrorMessage(res.message);
+              try {
+                const res = await signInWithGoogle();
+                if (!res.success) {
+                  setErrorMessage(res.message);
+                  setGoogleLoading(false);
+                } else {
+                  // Fallback: If user cancels popup or doesn't navigate within 6s, unlock button
+                  setTimeout(() => setGoogleLoading(false), 6000);
+                }
+              } catch (e: any) {
+                setErrorMessage(e.message || 'Error con Google');
                 setGoogleLoading(false);
               }
             }}
