@@ -78,21 +78,8 @@ export const WelcomeLoginGate: React.FC = () => {
         NAO
       </div>
 
-      {/* Top Header Badge */}
-      <header className="w-full max-w-5xl mx-auto px-4 pt-6 pb-2 flex items-center justify-between relative z-10">
-        <div className="flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-[#E6332A] animate-pulse" />
-          <span className="font-mono text-[10px] uppercase font-black tracking-widest text-[#1A1918]/70">
-            PLATAFORMA PRIVADA PARA PILOTOS
-          </span>
-        </div>
-        <div className="px-2.5 py-1 bg-[#FAF6ED] border-2 border-[#1A1918] rounded-lg font-mono text-[10px] font-bold text-[#1A1918] shadow-[1px_1px_0px_#1A1918]">
-          v2.0 OFICIAL
-        </div>
-      </header>
-
       {/* Center Auth Card */}
-      <div className="w-full max-w-md mx-auto px-4 py-6 relative z-10">
+      <div className="w-full max-w-md mx-auto px-4 py-8 relative z-10 my-auto">
         <div className="bg-[#FAF6ED] border-3 border-[#1A1918] rounded-[28px] p-6 sm:p-8 space-y-6 shadow-[8px_8px_0px_#1A1918] relative">
           
           {/* Brand Header */}
@@ -288,13 +275,6 @@ export const WelcomeLoginGate: React.FC = () => {
 
         </div>
       </div>
-
-      {/* Footer Branding */}
-      <footer className="w-full max-w-5xl mx-auto px-4 py-4 text-center relative z-10">
-        <p className="text-[10px] font-mono uppercase tracking-widest text-[#1A1918]/60">
-          NAO MOTORCYCLE CLUB • PRIVACIDAD Y SEGURIDAD GARANTIZADA
-        </p>
-      </footer>
     </div>
   );
 };
