@@ -770,9 +770,9 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
       {/* 08. MODAL: AÑADIR MOTO AL HANGAR                         */}
       {/* ========================================================= */}
       {showAddBikeModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#1A1918]/70 backdrop-blur-sm animate-fadeIn overflow-y-auto">
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 bg-[#1A1918]/80 backdrop-blur-sm animate-fadeIn overflow-y-auto">
           <div 
-            className="w-full max-w-xl bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[28px] shadow-[8px_8px_0px_#1A1918] my-auto max-h-[92vh] overflow-y-auto text-[#1A1918] font-sans animate-scaleUp p-5 sm:p-8 space-y-6"
+            className="w-full max-w-xl bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[28px] shadow-[8px_8px_0px_#1A1918] my-auto max-h-[88vh] overflow-y-auto overscroll-contain text-[#1A1918] font-sans animate-scaleUp p-5 sm:p-7 space-y-5 pb-8"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
@@ -882,8 +882,8 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
               </div>
 
               {/* Nickname, Year, CC */}
-              <div className="grid grid-cols-3 gap-3">
-                <div className="col-span-1">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                <div>
                   <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
                     Apodo (Opcional)
                   </label>
@@ -896,34 +896,36 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
                   />
                 </div>
 
-                <div className="col-span-1">
-                  <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
-                    Año
-                  </label>
-                  <input
-                    type="number"
-                    min="1970"
-                    max="2027"
-                    value={bikeYear}
-                    onChange={(e) => setBikeYear(e.target.value === '' ? '' : Number(e.target.value))}
-                    placeholder="2024"
-                    className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3 py-2.5 text-xs text-[#1A1918] focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]"
-                  />
-                </div>
+                <div className="grid grid-cols-2 sm:contents gap-3">
+                  <div>
+                    <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
+                      Año *
+                    </label>
+                    <input
+                      type="number"
+                      min="1970"
+                      max="2027"
+                      value={bikeYear}
+                      onChange={(e) => setBikeYear(e.target.value === '' ? '' : Number(e.target.value))}
+                      placeholder="2024"
+                      className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3 py-2.5 text-xs text-[#1A1918] focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]"
+                    />
+                  </div>
 
-                <div className="col-span-1">
-                  <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
-                    Cilindrada (cc)
-                  </label>
-                  <input
-                    type="number"
-                    min="50"
-                    max="2500"
-                    value={bikeCc}
-                    onChange={(e) => setBikeCc(e.target.value === '' ? '' : Number(e.target.value))}
-                    placeholder="Ej. 411"
-                    className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3 py-2.5 text-xs text-[#1A1918] focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]"
-                  />
+                  <div>
+                    <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
+                      Cilindrada (cc) *
+                    </label>
+                    <input
+                      type="number"
+                      min="50"
+                      max="2500"
+                      value={bikeCc}
+                      onChange={(e) => setBikeCc(e.target.value === '' ? '' : Number(e.target.value))}
+                      placeholder="Ej. 411"
+                      className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3 py-2.5 text-xs text-[#1A1918] focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]"
+                    />
+                  </div>
                 </div>
               </div>
 

@@ -166,7 +166,7 @@ export const InitialOnboardingModal: React.FC = () => {
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center p-3 sm:p-4 bg-[#1A1918]/85 backdrop-blur-md animate-fadeIn overflow-y-auto">
       <div 
-        className="w-full max-w-xl bg-[#FAF6ED] border-3 border-[#1A1918] rounded-[32px] shadow-[10px_10px_0px_#1A1918] my-auto max-h-[94vh] overflow-y-auto text-[#1A1918] font-sans animate-scaleUp p-6 sm:p-8 space-y-6"
+        className="w-full max-w-xl bg-[#FAF6ED] border-3 border-[#1A1918] rounded-[32px] shadow-[10px_10px_0px_#1A1918] my-auto max-h-[88vh] overflow-y-auto overscroll-contain text-[#1A1918] font-sans animate-scaleUp p-5 sm:p-8 space-y-6 pb-8"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Progress Step Indicator */}
@@ -399,16 +399,7 @@ export const InitialOnboardingModal: React.FC = () => {
                   )}
                 </div>
 
-                <div className="flex-1 space-y-2 text-center sm:text-left">
-                  <div>
-                    <h4 className="text-xs font-display font-black text-[#1A1918] uppercase tracking-wide">
-                      Foto de tu Moto (Galería / Cámara)
-                    </h4>
-                    <p className="text-[11px] font-serif italic text-[#1A1918]/70">
-                      Sube una foto de tu propia moto directamente desde tu teléfono o computadora.
-                    </p>
-                  </div>
-
+                <div className="flex-1 text-center sm:text-left">
                   <button
                     type="button"
                     onClick={() => bikeFileInputRef.current?.click()}
@@ -454,7 +445,7 @@ export const InitialOnboardingModal: React.FC = () => {
             </div>
 
             {/* Nickname, Year, CC */}
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
               <div>
                 <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
                   Apodo (Opcional)
@@ -468,34 +459,36 @@ export const InitialOnboardingModal: React.FC = () => {
                 />
               </div>
 
-              <div>
-                <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
-                  Año
-                </label>
-                <input
-                  type="number"
-                  min="1970"
-                  max="2027"
-                  value={bikeYear}
-                  onChange={(e) => setBikeYear(e.target.value === '' ? '' : Number(e.target.value))}
-                  placeholder="2024"
-                  className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3 py-2.5 text-xs text-[#1A1918] focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]"
-                />
-              </div>
+              <div className="grid grid-cols-2 sm:contents gap-3">
+                <div>
+                  <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
+                    Año *
+                  </label>
+                  <input
+                    type="number"
+                    min="1970"
+                    max="2027"
+                    value={bikeYear}
+                    onChange={(e) => setBikeYear(e.target.value === '' ? '' : Number(e.target.value))}
+                    placeholder="2024"
+                    className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3 py-2.5 text-xs text-[#1A1918] focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]"
+                  />
+                </div>
 
-              <div>
-                <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
-                  Cilindrada (cc)
-                </label>
-                <input
-                  type="number"
-                  min="50"
-                  max="2500"
-                  value={bikeCc}
-                  onChange={(e) => setBikeCc(e.target.value === '' ? '' : Number(e.target.value))}
-                  placeholder="Ej. 411"
-                  className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3 py-2.5 text-xs text-[#1A1918] focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]"
-                />
+                <div>
+                  <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
+                    Cilindrada (cc) *
+                  </label>
+                  <input
+                    type="number"
+                    min="50"
+                    max="2500"
+                    value={bikeCc}
+                    onChange={(e) => setBikeCc(e.target.value === '' ? '' : Number(e.target.value))}
+                    placeholder="Ej. 411"
+                    className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3 py-2.5 text-xs text-[#1A1918] focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]"
+                  />
+                </div>
               </div>
             </div>
 
