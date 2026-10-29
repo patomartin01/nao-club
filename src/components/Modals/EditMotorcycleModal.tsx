@@ -38,8 +38,8 @@ export const EditMotorcycleModal: React.FC<EditMotorcycleModalProps> = ({
 }) => {
   const [brand, setBrand] = useState('BMW');
   const [model, setModel] = useState('');
-  const [year, setYear] = useState<number>(2023);
-  const [displacementCc, setDisplacementCc] = useState<number>(1250);
+  const [year, setYear] = useState<number | string>(2023);
+  const [displacementCc, setDisplacementCc] = useState<number | string>(1250);
   const [type, setType] = useState<BikeType>('Doble Propósito');
   const [nickname, setNickname] = useState('');
   const [photoUrl, setPhotoUrl] = useState('');
@@ -215,7 +215,8 @@ export const EditMotorcycleModal: React.FC<EditMotorcycleModalProps> = ({
                 min="1950"
                 max="2030"
                 value={year}
-                onChange={(e) => setYear(parseInt(e.target.value) || 2023)}
+                onChange={(e) => setYear(e.target.value === '' ? '' : parseInt(e.target.value))}
+                placeholder="2024"
                 className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3.5 py-2.5 text-xs text-[#1A1918] font-mono font-bold focus:outline-none transition shadow-[2px_2px_0px_#1A1918]"
               />
             </div>
@@ -229,7 +230,8 @@ export const EditMotorcycleModal: React.FC<EditMotorcycleModalProps> = ({
                 min="50"
                 max="2500"
                 value={displacementCc}
-                onChange={(e) => setDisplacementCc(parseInt(e.target.value) || 1250)}
+                onChange={(e) => setDisplacementCc(e.target.value === '' ? '' : parseInt(e.target.value))}
+                placeholder="Ej. 411"
                 className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3.5 py-2.5 text-xs text-[#1A1918] font-mono font-bold focus:outline-none transition shadow-[2px_2px_0px_#1A1918]"
               />
             </div>

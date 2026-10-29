@@ -103,8 +103,8 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
   const [showAddBikeModal, setShowAddBikeModal] = useState(false);
   const [bikeBrand, setBikeBrand] = useState('BMW');
   const [bikeModel, setBikeModel] = useState('');
-  const [bikeYear, setBikeYear] = useState<number>(2023);
-  const [bikeCc, setBikeCc] = useState<number>(1250);
+  const [bikeYear, setBikeYear] = useState<number | string>(2023);
+  const [bikeCc, setBikeCc] = useState<number | string>(1250);
   const [bikeType, setBikeType] = useState<BikeType>('Doble Propósito');
   const [bikeNickname, setBikeNickname] = useState('');
   const [bikePhotoUrl, setBikePhotoUrl] = useState('');
@@ -156,8 +156,8 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
       userId: currentUser.id,
       brand: bikeBrand,
       model: bikeModel.trim(),
-      year: bikeYear,
-      displacementCc: bikeCc,
+      year: Number(bikeYear) || 2024,
+      displacementCc: Number(bikeCc) || 500,
       type: bikeType,
       nickname: bikeNickname.trim() || undefined,
       photoUrl: bikePhotoUrl.trim() || PRESET_MOTO_PHOTOS[0],
@@ -905,7 +905,8 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
                     min="1970"
                     max="2027"
                     value={bikeYear}
-                    onChange={(e) => setBikeYear(Number(e.target.value))}
+                    onChange={(e) => setBikeYear(e.target.value === '' ? '' : Number(e.target.value))}
+                    placeholder="2024"
                     className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3 py-2.5 text-xs text-[#1A1918] focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]"
                   />
                 </div>
@@ -919,7 +920,8 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
                     min="50"
                     max="2500"
                     value={bikeCc}
-                    onChange={(e) => setBikeCc(Number(e.target.value))}
+                    onChange={(e) => setBikeCc(e.target.value === '' ? '' : Number(e.target.value))}
+                    placeholder="Ej. 411"
                     className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3 py-2.5 text-xs text-[#1A1918] focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]"
                   />
                 </div>

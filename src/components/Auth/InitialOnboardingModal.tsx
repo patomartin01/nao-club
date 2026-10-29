@@ -61,8 +61,8 @@ export const InitialOnboardingModal: React.FC = () => {
   const [bikeBrand, setBikeBrand] = useState('BMW');
   const [bikeModel, setBikeModel] = useState('');
   const [bikeNickname, setBikeNickname] = useState('');
-  const [bikeYear, setBikeYear] = useState<number>(2023);
-  const [bikeCc, setBikeCc] = useState<number>(1250);
+  const [bikeYear, setBikeYear] = useState<number | string>(2023);
+  const [bikeCc, setBikeCc] = useState<number | string>(1250);
   const [bikeType, setBikeType] = useState<BikeType>('Adventure / Maxi-Trail');
   const [bikeTires, setBikeTires] = useState('Continental TKC80 (50/50)');
   const [bikePhotoPreview, setBikePhotoPreview] = useState<string>('');
@@ -477,7 +477,8 @@ export const InitialOnboardingModal: React.FC = () => {
                   min="1970"
                   max="2027"
                   value={bikeYear}
-                  onChange={(e) => setBikeYear(Number(e.target.value))}
+                  onChange={(e) => setBikeYear(e.target.value === '' ? '' : Number(e.target.value))}
+                  placeholder="2024"
                   className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3 py-2.5 text-xs text-[#1A1918] focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]"
                 />
               </div>
@@ -491,7 +492,8 @@ export const InitialOnboardingModal: React.FC = () => {
                   min="50"
                   max="2500"
                   value={bikeCc}
-                  onChange={(e) => setBikeCc(Number(e.target.value))}
+                  onChange={(e) => setBikeCc(e.target.value === '' ? '' : Number(e.target.value))}
+                  placeholder="Ej. 411"
                   className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3 py-2.5 text-xs text-[#1A1918] focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]"
                 />
               </div>
