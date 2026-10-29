@@ -24,34 +24,7 @@ export const INITIAL_USERS: User[] = [
   CURRENT_USER
 ];
 
-export const INITIAL_MOTORCYCLES: Motorcycle[] = [
-  {
-    id: 'moto-1',
-    userId: 'user-patricio',
-    brand: 'Royal Enfield',
-    model: 'Himalayan 411',
-    year: 2023,
-    displacementCc: 411,
-    type: 'Doble Propósito',
-    nickname: 'La Himalayan',
-    photoUrl: 'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&q=80&w=800',
-    modifications: ['Defensas de motor y tanque Royal Enfield', 'Skid plate de aluminio', 'Faros auxiliares LED Tripper', 'Cubrepuños Barkbusters'],
-    tires: 'Ceat Gripp-XL (Doble Propósito)'
-  },
-  {
-    id: 'moto-2',
-    userId: 'user-patricio',
-    brand: 'BMW',
-    model: 'R 1250 GS Adventure',
-    year: 2023,
-    displacementCc: 1254,
-    type: 'Adventure / Maxi-Trail',
-    nickname: 'La Bestia Negra',
-    photoUrl: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=800',
-    modifications: ['Defensas altas Touratech', 'Skid plate de aluminio 4mm', 'Faros auxiliares Baja Designs', 'Escape Akrapovič HP'],
-    tires: 'Continental TKC80 (Twinduro 50/50)'
-  },
-];
+export const INITIAL_MOTORCYCLES: Motorcycle[] = [];
 
 export const INITIAL_CREWS: Crew[] = [
   {

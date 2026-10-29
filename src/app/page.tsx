@@ -18,6 +18,7 @@ import { PilotProfileModal } from '../components/Modals/PilotProfileModal';
 import { LiveRouteRecorderModal } from '../components/Modals/LiveRouteRecorderModal';
 import { AuthModal } from '../components/Modals/AuthModal';
 import { WelcomeLoginGate } from '../components/Auth/WelcomeLoginGate';
+import { InitialOnboardingModal } from '../components/Auth/InitialOnboardingModal';
 import { BottomBar } from '../components/Navigation/BottomBar';
 import { AdminDashboardView } from '../components/Admin/AdminDashboardView';
 
@@ -143,6 +144,7 @@ export default function Home() {
       <PilotProfileModal />
 
       <AuthModal />
+      <InitialOnboardingModal />
 
       <LiveRouteRecorderModal 
         isOpen={recordRouteOpen || activeNavTab === 'registrar'} 

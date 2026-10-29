@@ -106,6 +106,9 @@ interface AppContextType {
   signIn: (email: string, password: string) => Promise<{ success: boolean; message: string }>;
   signInWithGoogle: () => Promise<{ success: boolean; message: string }>;
   signOut: () => Promise<void>;
+  isOnboardingOpen: boolean;
+  setOnboardingOpen: (open: boolean) => void;
+  completeOnboarding: () => void;
   updateCurrentUserProfile: (updates: Partial<User>) => Promise<void>;
 }
 
@@ -157,6 +160,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isAuthModalOpen, setAuthModalOpen] = useState(false);
   const [isSupabaseOnline] = useState(isSupabaseConfigured());
   const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const [isOnboardingOpen, setOnboardingOpen] = useState(false);
+
+  const completeOnboarding = () => {
+    setOnboardingOpen(false);
+    if (currentUser.id) {
+      try {
+        localStorage.setItem(`nao_onboarding_done_${currentUser.id}`, 'true');
+      } catch {}
+    }
+  };
 
   const isAuthenticated = currentUser.id !== 'guest' && currentUser.id !== '';
 
@@ -234,6 +247,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         try {
           localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(mappedUser));
         } catch {}
+
+        // For newly created user, open onboarding
+        try {
+          const done = localStorage.getItem(`nao_onboarding_done_${authUserId}`);
+          if (!done) {
+            setOnboardingOpen(true);
+          }
+        } catch {
+          setOnboardingOpen(true);
+        }
       }
     } catch (e) {
       console.error('Error loading profile:', e);
@@ -289,6 +312,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         };
         setCurrentUser(newPilot);
         setUsers(prev => [newPilot, ...prev]);
+        setOnboardingOpen(true);
         try {
           localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(newPilot));
         } catch {}
@@ -441,13 +465,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       const savedMotos = localStorage.getItem(STORAGE_KEYS.MOTORCYCLES);
       if (savedMotos) {
-        const parsedMotos: Motorcycle[] = JSON.parse(savedMotos);
-        INITIAL_MOTORCYCLES.forEach(initM => {
-          if (!parsedMotos.some(m => m.id === initM.id)) {
-            parsedMotos.push(initM);
-          }
-        });
-        setMotorcycles(parsedMotos);
+        try {
+          const parsedMotos: Motorcycle[] = JSON.parse(savedMotos);
+          // Filter out legacy dummy bikes (moto-1, moto-2)
+          const cleanMotos = parsedMotos.filter(m => m.id !== 'moto-1' && m.id !== 'moto-2');
+          setMotorcycles(cleanMotos);
+        } catch {}
       }
 
       const savedCrews = localStorage.getItem(STORAGE_KEYS.CREWS);
@@ -1640,6 +1663,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         signIn,
         signInWithGoogle,
         signOut,
+        isOnboardingOpen,
+        setOnboardingOpen,
+        completeOnboarding,
         updateCurrentUserProfile
       }}
     >

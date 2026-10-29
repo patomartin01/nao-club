@@ -15,7 +15,8 @@ import {
   Check, 
   Sparkles,
   HeartPulse,
-  Bike
+  Bike,
+  Upload
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -132,55 +133,60 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
         <form onSubmit={handleSubmit} className="space-y-5">
           
           {/* Avatar Selector Section */}
-          <div className="space-y-2.5 bg-[#F4EEDB] border-2 border-[#1A1918] p-4 rounded-2xl shadow-[3px_3px_0px_#1A1918]">
+          {/* Avatar Selector Section from Device Gallery */}
+          <div className="space-y-3 bg-[#F4EEDB] border-2 border-[#1A1918] p-4 rounded-2xl shadow-[3px_3px_0px_#1A1918]">
             <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block">
-              Foto de Perfil del Piloto
+              Foto de Perfil del Piloto (Galería de Fotos)
             </label>
             
+            <input
+              type="file"
+              id="edit-profile-avatar-file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onload = () => {
+                    if (typeof reader.result === 'string') {
+                      setAvatar(reader.result);
+                    }
+                  };
+                  reader.readAsDataURL(file);
+                }
+              }}
+            />
+
             <div className="flex items-center gap-4">
-              <div className="relative shrink-0">
+              <label 
+                htmlFor="edit-profile-avatar-file"
+                className="relative shrink-0 cursor-pointer group"
+              >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img 
-                  src={customAvatarInput.trim() || avatar} 
+                  src={avatar} 
                   alt={name} 
-                  className="w-16 h-16 rounded-2xl object-cover border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] bg-[#FAF6ED]" 
+                  className="w-18 h-18 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] bg-[#FAF6ED] group-hover:opacity-90 transition" 
                 />
-                <span className="absolute -bottom-1 -right-1 p-1 bg-[#E6332A] text-white rounded-lg border border-[#1A1918]">
-                  <Camera className="w-3 h-3" />
+                <span className="absolute -bottom-1 -right-1 p-1.5 bg-[#E6332A] text-white rounded-lg border border-[#1A1918] shadow-[1px_1px_0px_#1A1918]">
+                  <Camera className="w-3.5 h-3.5" />
                 </span>
-              </div>
+              </label>
 
               <div className="flex-1 space-y-2">
-                <p className="text-[11px] font-serif italic text-[#1A1918]/70">
-                  Selecciona uno de los retratos de ruta o pega el enlace a tu foto:
+                <p className="text-xs font-serif italic text-[#1A1918]/80 font-medium">
+                  Sube tu foto favorita directamente desde tu galería o cámara.
                 </p>
-                <div className="flex items-center gap-2 overflow-x-auto pb-1">
-                  {PRESET_AVATARS.map((url, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => { setAvatar(url); setCustomAvatarInput(''); }}
-                      className={`w-9 h-9 rounded-xl overflow-hidden border-2 transition shrink-0 ${
-                        avatar === url && !customAvatarInput 
-                          ? 'border-[#E6332A] scale-105 shadow-[2px_2px_0px_#E6332A]' 
-                          : 'border-[#1A1918] hover:opacity-80'
-                      }`}
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={url} alt={`Avatar ${idx}`} className="w-full h-full object-cover" />
-                    </button>
-                  ))}
-                </div>
+                <label
+                  htmlFor="edit-profile-avatar-file"
+                  className="px-3.5 py-2 bg-white hover:bg-[#FAF6ED] text-[#1A1918] border-2 border-[#1A1918] rounded-xl font-display font-black text-xs uppercase tracking-wider shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition inline-flex items-center gap-2 cursor-pointer"
+                >
+                  <Upload className="w-3.5 h-3.5 text-[#E6332A]" />
+                  <span>Subir foto de mi galería</span>
+                </label>
               </div>
             </div>
-
-            <input
-              type="url"
-              value={customAvatarInput}
-              onChange={(e) => setCustomAvatarInput(e.target.value)}
-              placeholder="O pega una URL de imagen (https://...)"
-              className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3 py-2 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition shadow-[2px_2px_0px_#1A1918]"
-            />
           </div>
 
           {/* Name & Handle */}

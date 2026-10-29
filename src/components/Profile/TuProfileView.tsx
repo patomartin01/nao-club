@@ -23,7 +23,9 @@ import {
   Phone,
   HeartPulse,
   ShieldCheck,
-  ShieldAlert
+  ShieldAlert,
+  Upload,
+  Camera
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { EditProfileModal } from '../Modals/EditProfileModal';
@@ -105,9 +107,24 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
   const [bikeCc, setBikeCc] = useState<number>(1250);
   const [bikeType, setBikeType] = useState<BikeType>('Doble Propósito');
   const [bikeNickname, setBikeNickname] = useState('');
-  const [bikePhotoUrl, setBikePhotoUrl] = useState(PRESET_MOTO_PHOTOS[0]);
+  const [bikePhotoUrl, setBikePhotoUrl] = useState('');
   const [bikeTires, setBikeTires] = useState('Continental TKC80 (50/50)');
   const [bikeMods, setBikeMods] = useState('Skid plate de aluminio, Defensas de motor, Faros auxiliares');
+
+  const bikeFileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleBikePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          setBikePhotoUrl(reader.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   // Filter completed activities by user and search
   const userActivities = activities.filter(a => a.pilotId === currentUser.id || a.pilotName === currentUser.name);
@@ -782,37 +799,58 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
 
             <form onSubmit={handleAddBikeSubmit} className="space-y-5">
               
-              {/* Photo presets selector */}
-              <div className="space-y-2.5 bg-[#F4EEDB] border-2 border-[#1A1918] p-4 rounded-2xl shadow-[3px_3px_0px_#1A1918]">
+              {/* Photo Upload from Gallery (No presets) */}
+              <div className="space-y-3 bg-[#F4EEDB] border-2 border-[#1A1918] p-4 rounded-2xl shadow-[3px_3px_0px_#1A1918]">
                 <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block">
-                  Foto de la Máquina
+                  Foto de la Máquina (Galería de Fotos)
                 </label>
-                
-                <div className="flex items-center gap-3 overflow-x-auto pb-1">
-                  {PRESET_MOTO_PHOTOS.map((url, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => setBikePhotoUrl(url)}
-                      className={`w-20 h-14 rounded-xl overflow-hidden border-2 transition shrink-0 ${
-                        bikePhotoUrl === url 
-                          ? 'border-[#E6332A] scale-105 shadow-[2px_2px_0px_#E6332A]' 
-                          : 'border-[#1A1918] hover:opacity-80'
-                      }`}
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={url} alt={`Preset ${idx}`} className="w-full h-full object-cover" />
-                    </button>
-                  ))}
-                </div>
 
                 <input
-                  type="url"
-                  value={bikePhotoUrl}
-                  onChange={(e) => setBikePhotoUrl(e.target.value)}
-                  placeholder="O pega una URL de imagen de tu moto (https://...)"
-                  className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3 py-2 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition shadow-[2px_2px_0px_#1A1918]"
+                  ref={bikeFileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleBikePhotoUpload}
                 />
+
+                <div className="flex flex-col sm:flex-row items-center gap-4">
+                  <div 
+                    onClick={() => bikeFileInputRef.current?.click()}
+                    className="relative w-full sm:w-36 h-28 rounded-2xl overflow-hidden border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] bg-white cursor-pointer group shrink-0 flex items-center justify-center"
+                  >
+                    {bikePhotoUrl ? (
+                      <>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={bikePhotoUrl} alt="Foto seleccionada" className="w-full h-full object-cover group-hover:scale-105 transition" />
+                        <div className="absolute inset-0 bg-[#1A1918]/50 opacity-0 group-hover:opacity-100 transition flex flex-col items-center justify-center text-white text-[9px] font-mono font-bold uppercase p-1">
+                          <Camera className="w-4 h-4 mb-1" />
+                          Cambiar
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center p-3 text-center text-[#1A1918]/60 group-hover:text-[#E6332A] transition">
+                        <Bike className="w-7 h-7 mb-1" />
+                        <span className="text-[9px] font-mono uppercase font-black">
+                          Tocar para subir
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex-1 space-y-2 text-center sm:text-left">
+                    <p className="text-xs font-serif italic text-[#1A1918]/80 font-medium">
+                      Sube una fotografía real de tu moto desde los archivos o galería de tu dispositivo.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => bikeFileInputRef.current?.click()}
+                      className="px-4 py-2 bg-white hover:bg-[#FAF6ED] text-[#1A1918] border-2 border-[#1A1918] rounded-xl font-display font-black text-xs uppercase tracking-wider shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition inline-flex items-center gap-2 cursor-pointer"
+                    >
+                      <Upload className="w-3.5 h-3.5 text-[#E6332A]" />
+                      <span>{bikePhotoUrl ? 'Cambiar foto de galería' : 'Subir foto de mi galería'}</span>
+                    </button>
+                  </div>
+                </div>
               </div>
 
               {/* Brand and Model */}
