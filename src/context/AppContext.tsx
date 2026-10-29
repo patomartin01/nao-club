@@ -121,8 +121,26 @@ const STORAGE_KEYS = {
   CREW_MESSAGES: 'motomami_crew_messages'
 };
 
+const GUEST_PILOT: User = {
+  id: 'guest',
+  name: 'Piloto Invitado',
+  handle: '@invitado',
+  email: '',
+  avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250',
+  bio: 'Inicia sesión para crear tu credencial oficial de piloto.',
+  location: 'México',
+  ridingLevel: 'Intermedio',
+  completedRouteIds: [],
+  savedRouteIds: [],
+  stats: {
+    totalKm: 0,
+    completedCount: 0,
+    elevationGain: 0
+  }
+};
+
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState<User>(CURRENT_USER);
+  const [currentUser, setCurrentUser] = useState<User>(GUEST_PILOT);
   const [users, setUsers] = useState<User[]>(INITIAL_USERS);
   const [motorcycles, setMotorcycles] = useState<Motorcycle[]>(INITIAL_MOTORCYCLES);
   const [crews, setCrews] = useState<Crew[]>(INITIAL_CREWS);
@@ -160,8 +178,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (profile) {
         const mappedUser: User = {
           id: profile.id,
-          name: profile.name,
-          handle: profile.handle,
+          name: profile.name || (fallbackEmail ? fallbackEmail.split('@')[0] : 'Piloto'),
+          handle: profile.handle || `@${(fallbackEmail ? fallbackEmail.split('@')[0] : 'piloto')}`,
           email: profile.email || fallbackEmail || '',
           avatar: profile.avatar_url || 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
           bio: profile.bio || 'Piloto en NAO.',
@@ -180,8 +198,42 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         try {
           localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(mappedUser));
         } catch {}
+      } else if (fallbackEmail) {
+        // Create initial profile for OAuth or first-time user
+        const newName = fallbackEmail.split('@')[0];
+        const newHandle = `@${newName.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+        const newAvatar = 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250';
+        
+        await supabase.from('profiles').insert({
+          id: authUserId,
+          name: newName,
+          handle: newHandle,
+          email: fallbackEmail,
+          avatar_url: newAvatar,
+          bio: 'Piloto en NAO.',
+          location: 'México',
+          riding_level: 'Intermedio'
+        });
+
+        const mappedUser: User = {
+          id: authUserId,
+          name: newName,
+          handle: newHandle,
+          email: fallbackEmail,
+          avatar: newAvatar,
+          bio: 'Piloto en NAO.',
+          location: 'México',
+          ridingLevel: 'Intermedio'
+        };
+        setCurrentUser(mappedUser);
+        setUsers(prev => [mappedUser, ...prev]);
+        try {
+          localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(mappedUser));
+        } catch {}
       }
-    } catch {}
+    } catch (e) {
+      console.error('Error loading profile:', e);
+    }
   };
 
   // Sign Up with Supabase / Local Fallback
@@ -312,7 +364,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         await supabase.auth.signOut();
       } catch {}
     }
-    setCurrentUser(CURRENT_USER);
+    setCurrentUser(GUEST_PILOT);
     try {
       localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
     } catch {}
@@ -467,6 +519,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Supabase Cloud Hydration & Realtime Session
   useEffect(() => {
+    // Check saved user in localStorage first
+    try {
+      const savedUserStr = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
+      if (savedUserStr) {
+        const parsed = JSON.parse(savedUserStr);
+        if (parsed && parsed.id) {
+          setCurrentUser(parsed);
+        }
+      }
+    } catch {}
+
     if (!isSupabaseConfigured()) return;
 
     // Check active session
@@ -476,9 +539,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user) {
         loadSupabaseProfile(session.user.id, session.user.email);
+      } else if (event === 'SIGNED_OUT') {
+        setCurrentUser(GUEST_PILOT);
+        try {
+          localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+        } catch {}
       }
     });
 

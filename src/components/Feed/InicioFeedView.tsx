@@ -199,11 +199,9 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
   };
 
   return (
-    <div className="max-w-[1440px] w-full mx-auto pb-28 font-sans space-y-8">
+    <div className="max-w-[1440px] w-full mx-auto pb-24 font-sans space-y-4 sm:space-y-8">
 
-
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-8 items-start">
         
         {/* ========================================================= */}
         {/* LEFT COLUMN (DESKTOP ONLY): PILOT SIDEBAR & STATS         */}
@@ -301,21 +299,21 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
         {/* ========================================================= */}
         {/* CENTER COLUMN: FEED OF ACTIVITIES (MOBILE & DESKTOP)      */}
         {/* ========================================================= */}
-        <section className="col-span-12 lg:col-span-6 space-y-6">
+        <section className="col-span-12 lg:col-span-6 space-y-4 sm:space-y-6">
           
           {/* Mobile "Tu serie" streak banner (Hidden on desktop) */}
-          <div className="lg:hidden bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[24px] p-5 shadow-[4px_4px_0px_#1A1918]">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Flame className="w-4 h-4 text-[#E6332A] animate-pulse" />
-                <span className="text-xs font-display font-black text-[#1A1918] uppercase tracking-widest">Racha de Salidas</span>
+          <div className="lg:hidden bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[22px] sm:rounded-[24px] p-3.5 sm:p-5 shadow-[3px_3px_0px_#1A1918] sm:shadow-[4px_4px_0px_#1A1918]">
+            <div className="flex items-center justify-between mb-2 sm:mb-3">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#E6332A] animate-pulse" />
+                <span className="text-[11px] sm:text-xs font-display font-black text-[#1A1918] uppercase tracking-widest">Racha de Salidas</span>
               </div>
-              <span className="text-[10px] font-display font-black text-[#E6332A] uppercase tracking-wider bg-[#E6332A]/10 px-2 py-0.5 rounded border border-[#E6332A]/30">
+              <span className="text-[9px] sm:text-[10px] font-display font-black text-[#E6332A] uppercase tracking-wider bg-[#E6332A]/10 px-2 py-0.5 rounded border border-[#E6332A]/30">
                 0 Semanas
               </span>
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#F4EEDB] border-2 border-[#1A1918] rounded-xl p-4 shadow-[2px_2px_0px_#1A1918]">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 bg-[#F4EEDB] border-2 border-[#1A1918] rounded-xl p-3 sm:p-4 shadow-[2px_2px_0px_#1A1918]">
               <div className="flex items-center gap-3">
                 <div className="w-11 h-11 rounded-xl bg-[#FAF6ED] border-2 border-[#1A1918] flex flex-col items-center justify-center shrink-0 shadow-[2px_2px_0px_#1A1918]">
                   <span className="text-base font-display font-black text-[#1A1918]">0</span>
@@ -460,21 +458,21 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
             </div>
           ) : (
             /* Cards Feed */
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {filteredActivities.length === 0 ? (
-                <div className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[24px] p-8 sm:p-12 text-center space-y-4 shadow-[4px_4px_0px_#1A1918]">
-                  <div className="w-16 h-16 rounded-2xl bg-[#F7B32B] text-[#1A1918] border-2 border-[#1A1918] mx-auto flex items-center justify-center shadow-[2px_2px_0px_#1A1918]">
-                    <Compass className="w-8 h-8 stroke-[2.5]" />
+                <div className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[22px] sm:rounded-[24px] p-5 sm:p-10 text-center space-y-3.5 sm:space-y-4 shadow-[3px_3px_0px_#1A1918] sm:shadow-[4px_4px_0px_#1A1918]">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-[#F7B32B] text-[#1A1918] border-2 border-[#1A1918] mx-auto flex items-center justify-center shadow-[2px_2px_0px_#1A1918]">
+                    <Compass className="w-6 h-6 sm:w-8 sm:h-8 stroke-[2.5]" />
                   </div>
                   <div>
-                    <h3 className="font-display font-black text-xl sm:text-2xl uppercase text-[#1A1918]">
+                    <h3 className="font-display font-black text-lg sm:text-2xl uppercase text-[#1A1918]">
                       El Despacho está listo para nuevas rutas
                     </h3>
                     <p className="text-xs sm:text-sm font-serif italic text-[#1A1918]/70 mt-1 max-w-md mx-auto">
                       Aún no hay publicaciones en el feed. Sé el primer piloto en grabar una rodada o proponer una expedición para la comunidad.
                     </p>
                   </div>
-                  <div className="flex items-center justify-center gap-3 pt-2 flex-wrap">
+                  <div className="flex items-center justify-center gap-2.5 sm:gap-3 pt-1 sm:pt-2 flex-wrap">
                     <button
                       type="button"
                       onClick={() => onOpenRecordRoute && onOpenRecordRoute()}
@@ -637,8 +635,8 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                 </div>
 
                 {/* Title & Surface Tag */}
-                <div className="px-5 pt-4 pb-3 bg-[#FAF6ED]">
-                  <h3 className="text-xl sm:text-2xl font-display font-black text-[#1A1918] uppercase tracking-wide group-hover:text-[#E6332A] transition">
+                <div className="px-3.5 sm:px-5 pt-3 sm:pt-4 pb-2.5 sm:pb-3 bg-[#FAF6ED]">
+                  <h3 className="text-lg sm:text-2xl font-display font-black text-[#1A1918] uppercase tracking-wide group-hover:text-[#E6332A] transition">
                     {act.title}
                   </h3>
                   
@@ -705,25 +703,25 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                 </div>
 
                 {/* 3-Column Big Metrics with Risograph Woodblock Typography */}
-                <div className="px-5 py-4 grid grid-cols-3 gap-2 border-y-2 border-[#1A1918] bg-[#F4EEDB]">
+                <div className="px-3.5 sm:px-5 py-3 sm:py-4 grid grid-cols-3 gap-1.5 sm:gap-2 border-y-2 border-[#1A1918] bg-[#F4EEDB]">
                   <div>
-                    <span className="text-[10px] font-display uppercase tracking-widest text-[#1A1918]/60 block font-black">Distancia</span>
-                    <span className="text-2xl sm:text-3xl font-display font-black text-[#1A1918]">
-                      {act.distanceKm.toFixed(2)} <span className="text-xs font-normal text-[#1A1918]/60 font-mono">km</span>
+                    <span className="text-[9px] sm:text-[10px] font-display uppercase tracking-widest text-[#1A1918]/60 block font-black">Distancia</span>
+                    <span className="text-xl sm:text-3xl font-display font-black text-[#1A1918]">
+                      {act.distanceKm.toFixed(2)} <span className="text-[10px] sm:text-xs font-normal text-[#1A1918]/60 font-mono">km</span>
                     </span>
                   </div>
 
-                  <div className="border-x-2 border-[#1A1918] px-2 sm:px-4">
-                    <span className="text-[10px] font-display uppercase tracking-widest text-[#1A1918]/60 block font-black">Desnivel</span>
-                    <span className="text-2xl sm:text-3xl font-display font-black text-[#1A1918]">
-                      {act.elevationGainM} <span className="text-xs font-normal text-[#1A1918]/60 font-mono">m</span>
+                  <div className="border-x-2 border-[#1A1918] px-1.5 sm:px-4">
+                    <span className="text-[9px] sm:text-[10px] font-display uppercase tracking-widest text-[#1A1918]/60 block font-black">Desnivel</span>
+                    <span className="text-xl sm:text-3xl font-display font-black text-[#1A1918]">
+                      {act.elevationGainM} <span className="text-[10px] sm:text-xs font-normal text-[#1A1918]/60 font-mono">m</span>
                     </span>
                   </div>
 
                   <div>
-                    <span className="text-[10px] font-display uppercase tracking-widest text-[#1A1918]/60 block font-black">Duración</span>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-2xl sm:text-3xl font-display font-black text-[#E6332A]">
+                    <span className="text-[9px] sm:text-[10px] font-display uppercase tracking-widest text-[#1A1918]/60 block font-black">Duración</span>
+                    <div className="flex items-center gap-1 sm:gap-1.5">
+                      <span className="text-xl sm:text-3xl font-display font-black text-[#E6332A]">
                         {act.durationText}
                       </span>
                       {act.trophiesCount && act.trophiesCount > 0 && (

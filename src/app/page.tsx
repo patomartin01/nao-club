@@ -46,7 +46,7 @@ export default function Home() {
       <main className={`flex-1 w-full mx-auto ${
         (activeNavTab === 'mapas' || activeNavTab === 'rutas')
           ? 'p-0 max-w-none h-[calc(100dvh-60px)] overflow-hidden relative'
-          : 'max-w-[1520px] px-3 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-24'
+          : 'max-w-[1520px] px-2.5 sm:px-6 lg:px-8 pt-3 sm:pt-6 pb-24'
       }`}>
         {/* TAB 01: INICIO (DESPACHO TÁCTICO Y OPERACIONES) */}
         {(activeNavTab === 'inicio' || activeNavTab === 'home') && (

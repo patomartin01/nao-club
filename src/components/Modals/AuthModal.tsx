@@ -15,7 +15,8 @@ import {
   AlertCircle,
   Database,
   KeyRound,
-  ShieldCheck
+  ShieldCheck,
+  LogOut
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -26,6 +27,7 @@ export const AuthModal: React.FC = () => {
     signUp, 
     signIn, 
     signInWithGoogle,
+    signOut,
     currentUser,
     switchCurrentUser,
     users
@@ -127,22 +129,35 @@ export const AuthModal: React.FC = () => {
           </button>
         </div>
 
-        {/* Status Cloud Banner */}
-        <div className={`p-2.5 rounded-xl border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] flex items-center justify-between gap-2 text-[11px] font-mono ${
-          isConfigured 
-            ? 'bg-[#E8F5E9] text-[#1B5E20]' 
-            : 'bg-[#FFF9C4] text-[#827717]'
-        }`}>
-          <div className="flex items-center gap-2 min-w-0">
-            <Database className="w-4 h-4 shrink-0" />
-            <span className="font-bold truncate">
-              {isConfigured ? 'Supabase Conectado (Nube)' : 'Modo Local / Demo Activo'}
-            </span>
+        {/* Current Pilot Session Status if Logged In */}
+        {currentUser.id !== 'guest' && (
+          <div className="p-3 bg-[#FAF6ED] border-2 border-[#1A1918] rounded-xl shadow-[2px_2px_0px_#1A1918] flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5 min-w-0">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img 
+                src={currentUser.avatar} 
+                alt={currentUser.name} 
+                className="w-8 h-8 rounded-full object-cover border border-[#1A1918] shrink-0" 
+              />
+              <div className="min-w-0">
+                <p className="text-xs font-display font-black uppercase text-[#1A1918] truncate">{currentUser.name}</p>
+                <p className="text-[10px] font-mono text-[#E6332A] font-bold">{currentUser.handle}</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={async () => {
+                await signOut();
+                setSuccessMessage('Has cerrado sesión correctamente.');
+              }}
+              className="px-3 py-1.5 bg-[#FFEBEE] hover:bg-[#FFCDD2] text-[#C62828] border-2 border-[#C62828] rounded-lg text-[10px] font-display font-black uppercase tracking-wider flex items-center gap-1 transition cursor-pointer shrink-0"
+              title="Cerrar sesión actual"
+            >
+              <LogOut className="w-3 h-3" />
+              <span>Salir</span>
+            </button>
           </div>
-          <span className="text-[9px] px-2 py-0.5 bg-white/80 border border-[#1A1918] rounded-md font-black shrink-0">
-            {isConfigured ? 'PRODUCCIÓN' : 'STANDBY'}
-          </span>
-        </div>
+        )}
 
         {/* Tab Switcher */}
         <div className="flex rounded-xl bg-[#F4EEDB] p-1 border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918]">

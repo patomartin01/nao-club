@@ -43,21 +43,31 @@ export const Navbar: React.FC<NavbarProps> = () => {
 
         {/* Right: Auth / Pilot Quick Access */}
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => setAuthModalOpen(true)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#FAF6ED] hover:bg-[#F4EEDB] border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition text-xs font-display font-black uppercase text-[#1A1918] cursor-pointer"
-            title="Iniciar sesión o registrar cuenta de piloto"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img 
-              src={currentUser.avatar} 
-              alt={currentUser.name} 
-              className="w-5 h-5 rounded-full object-cover border border-[#1A1918]" 
-            />
-            <span className="hidden md:inline font-mono text-[11px] font-bold">
-              CUENTA
-            </span>
-          </button>
+          {currentUser.id === 'guest' ? (
+            <button
+              onClick={() => setAuthModalOpen(true)}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#E6332A] hover:bg-[#c92820] text-white border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition text-xs font-display font-black uppercase cursor-pointer"
+              title="Iniciar sesión o registrar cuenta de piloto"
+            >
+              <span>Entrar / Registro</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => setAuthModalOpen(true)}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#FAF6ED] hover:bg-[#F4EEDB] border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition text-xs font-display font-black uppercase text-[#1A1918] cursor-pointer"
+              title="Gestionar cuenta de piloto"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img 
+                src={currentUser.avatar} 
+                alt={currentUser.name} 
+                className="w-5 h-5 rounded-full object-cover border border-[#1A1918]" 
+              />
+              <span className="hidden md:inline font-mono text-[11px] font-bold">
+                {currentUser.handle}
+              </span>
+            </button>
+          )}
         </div>
 
       </div>

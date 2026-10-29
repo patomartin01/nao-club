@@ -162,8 +162,31 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
   return (
     <div className="space-y-8 pb-32 max-w-[1440px] w-full mx-auto font-sans text-[#141312]">
       
+      {/* GUEST WARNING / LOGIN PROMPT */}
+      {currentUser.id === 'guest' && (
+        <div className="bg-[#FAF6ED] border-2 border-[#E6332A] rounded-[24px] p-5 sm:p-6 shadow-[5px_5px_0px_#1A1918] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <span className="text-[10px] font-mono uppercase font-black text-[#E6332A] bg-[#E6332A]/10 px-2 py-0.5 rounded border border-[#E6332A]/30">
+              MODO INVITADO
+            </span>
+            <h2 className="text-xl font-display font-black text-[#1A1918] uppercase">
+              Crea tu perfil de piloto personal
+            </h2>
+            <p className="text-xs font-serif italic text-[#1A1918]/80">
+              Inicia sesión o regístrate para tener tu propio hangar de motos, registrar salidas y que nadie más tenga acceso a tus datos.
+            </p>
+          </div>
+          <button
+            onClick={() => setAuthModalOpen(true)}
+            className="w-full sm:w-auto px-6 py-3 bg-[#E6332A] hover:bg-[#c92820] text-white border-2 border-[#1A1918] rounded-xl font-display font-black text-xs uppercase tracking-widest shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition shrink-0 cursor-pointer"
+          >
+            Iniciar Sesión / Registrarse
+          </button>
+        </div>
+      )}
+
       {/* 01. PROFILE HEADER (Authentic Pilot Matchbook Dossier) */}
-      <div className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[28px] p-6 sm:p-10 space-y-6 shadow-[6px_6px_0px_#1A1918] relative overflow-hidden">
+      <div className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[28px] p-4 sm:p-8 space-y-5 sm:space-y-6 shadow-[4px_4px_0px_#1A1918] sm:shadow-[6px_6px_0px_#1A1918] relative overflow-hidden">
         {/* Subtle background typographic watermark */}
         <div className="absolute right-[-10px] top-[-15px] pointer-events-none select-none opacity-[0.04] text-[#1A1918] font-display font-black text-9xl tracking-tighter">
           PILOT
