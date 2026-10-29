@@ -836,10 +836,7 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
                     )}
                   </div>
 
-                  <div className="flex-1 space-y-2 text-center sm:text-left">
-                    <p className="text-xs font-serif italic text-[#1A1918]/80 font-medium">
-                      Sube una fotografía real de tu moto desde los archivos o galería de tu dispositivo.
-                    </p>
+                  <div className="flex-1 text-center sm:text-left">
                     <button
                       type="button"
                       onClick={() => bikeFileInputRef.current?.click()}

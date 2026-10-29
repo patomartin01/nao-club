@@ -174,10 +174,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                 </span>
               </label>
 
-              <div className="flex-1 space-y-2">
-                <p className="text-xs font-serif italic text-[#1A1918]/80 font-medium">
-                  Sube tu foto favorita directamente desde tu galería o cámara.
-                </p>
+              <div className="flex-1">
                 <label
                   htmlFor="edit-profile-avatar-file"
                   className="px-3.5 py-2 bg-white hover:bg-[#FAF6ED] text-[#1A1918] border-2 border-[#1A1918] rounded-xl font-display font-black text-xs uppercase tracking-wider shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition inline-flex items-center gap-2 cursor-pointer"
