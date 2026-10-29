@@ -2197,8 +2197,8 @@ export const TribusView: React.FC<TribusViewProps> = ({
       {/* 4. MODAL: DETALLE DE RUTA + VOTACIÓN + COMENTARIOS (RISOGRAPH)      */}
       {/* =================================================================== */}
       {selectedProposalForDetail && (
-        <div className="fixed inset-0 z-50 bg-[#1A1918]/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-          <div className="border-2 border-[#1A1918] bg-[#FAF6ED] rounded-[28px] max-w-2xl w-full p-5 sm:p-6 space-y-5 my-auto max-h-[92vh] overflow-y-auto font-sans text-[#1A1918] shadow-[6px_6px_0px_#1A1918]">
+        <div className="fixed inset-0 z-[70] bg-[#1A1918]/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="border-2 border-[#1A1918] bg-[#FAF6ED] rounded-[28px] max-w-2xl w-full p-4 sm:p-6 space-y-4 sm:space-y-5 my-auto max-h-[88vh] overflow-y-auto overscroll-contain font-sans text-[#1A1918] shadow-[6px_6px_0px_#1A1918] pb-8">
             
             {/* Modal Header */}
             <div className="flex items-start justify-between border-b-2 border-[#1A1918] pb-4 gap-3">
@@ -2318,11 +2318,13 @@ export const TribusView: React.FC<TribusViewProps> = ({
 
             {/* Collaborative Comments Section */}
             <div className="border-t-2 border-[#1A1918] pt-4 space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                 <span className="text-xs font-mono text-[#1A1918] uppercase tracking-wider font-black">
                   Comentarios del Grupo ({selectedProposalForDetail.comments?.length || 0})
                 </span>
-                <span className="text-[11px] font-mono text-[#1A1918]/60 font-bold">Notas breves sobre esta opción</span>
+                <span className="text-[10px] sm:text-[11px] font-mono text-[#1A1918]/60 font-bold">
+                  Notas breves sobre esta opción
+                </span>
               </div>
 
               {/* Comments List */}
@@ -2388,7 +2390,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
       {/* 5. MODAL: PROPUESTA RÁPIDA DE RUTA ALTERNATIVA                    */}
       {/* =================================================================== */}
       {showProposeModal && (
-        <div className="fixed inset-0 z-50 bg-[#1A1918]/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div className="fixed inset-0 z-[70] bg-[#1A1918]/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
           <div className="border-2 border-[#1A1918] bg-[#FAF6ED] rounded-[28px] max-w-lg w-full p-5 sm:p-6 space-y-4 my-auto max-h-[92vh] overflow-y-auto font-sans text-[#1A1918] shadow-[6px_6px_0px_#1A1918]">
             
             <div className="flex items-center justify-between border-b-2 border-[#1A1918] pb-3">
@@ -2583,7 +2585,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
       {/* 9. MODAL: AÑADIR O INVITAR PILOTOS A LA TRIBU                       */}
       {/* =================================================================== */}
       {showAddPilotModal && activeTribu && (
-        <div className="fixed inset-0 z-50 bg-[#1A1918]/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div className="fixed inset-0 z-[70] bg-[#1A1918]/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
           <div className="border-2 border-[#1A1918] bg-[#FAF6ED] rounded-[28px] max-w-lg w-full p-5 sm:p-6 space-y-5 my-auto max-h-[92vh] overflow-y-auto font-sans text-[#1A1918] shadow-[6px_6px_0px_#1A1918]">
             {/* Header */}
             <div className="flex items-start justify-between border-b-2 border-[#1A1918] pb-4 gap-3">
@@ -2698,7 +2700,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
 
       {/* MODAL: EDITAR NOMBRE Y FOTO DEL GRUPO */}
       {showEditCrewModal && activeTribu && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#1A1918]/70 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-[#1A1918]/70 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="w-full max-w-md bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[28px] shadow-[6px_6px_0px_#1A1918] p-5 sm:p-6 space-y-5 animate-in zoom-in-95 duration-200 font-sans text-[#1A1918]">
             
             <div className="flex items-center justify-between border-b-2 border-[#1A1918] pb-3">
