@@ -745,24 +745,24 @@ export const TribusView: React.FC<TribusViewProps> = ({
                 </div>
 
                 {/* 2. Card Content & Identity */}
-                <div className="px-5 pb-5 -mt-9 relative z-10 flex-1 flex flex-col justify-between">
+                <div className="px-5 pb-5 pt-3 relative z-10 flex-1 flex flex-col justify-between">
                   <div>
                     {/* Avatar + Title + City */}
-                    <div className="flex items-start gap-3.5">
+                    <div className="flex items-center gap-3.5">
                       {/* Emblem / Avatar */}
-                      <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-[#1A1918] bg-[#FAF6ED] shadow-[3px_3px_0px_#1A1918] shrink-0 group-hover:ring-2 group-hover:ring-[#E6332A] transition duration-300">
+                      <div className="w-12 h-12 rounded-xl overflow-hidden border-2 border-[#1A1918] bg-[#FAF6ED] shadow-[2px_2px_0px_#1A1918] shrink-0 group-hover:ring-2 group-hover:ring-[#E6332A] transition duration-300">
                         {crew.coverImage ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={crew.coverImage} alt={crew.name} className="w-full h-full object-cover" />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center font-display font-black text-base text-[#1A1918] bg-[#F4EEDB]">
+                          <div className="w-full h-full flex items-center justify-center font-display font-black text-sm text-[#1A1918] bg-[#F4EEDB]">
                             {crew.name.slice(0, 2).toUpperCase()}
                           </div>
                         )}
                       </div>
 
                       {/* Title & Location */}
-                      <div className="min-w-0 flex-1 pt-1.5">
+                      <div className="min-w-0 flex-1">
                         <h3 className="font-display font-black text-lg sm:text-xl text-[#1A1918] uppercase group-hover:text-[#E6332A] transition truncate tracking-wide leading-tight">
                           {crew.name}
                         </h3>
