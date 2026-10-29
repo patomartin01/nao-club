@@ -344,10 +344,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const signInWithGoogle = async (): Promise<{ success: boolean; message: string }> => {
     if (isSupabaseConfigured()) {
       try {
+        const redirectUrl = typeof window !== 'undefined' 
+          ? window.location.origin 
+          : 'https://nao-club-three.vercel.app';
+
         const { error } = await supabase.auth.signInWithOAuth({
           provider: 'google',
           options: {
-            redirectTo: typeof window !== 'undefined' ? `${window.location.origin}` : undefined
+            redirectTo: redirectUrl
           }
         });
         if (error) {
