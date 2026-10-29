@@ -243,14 +243,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Sign Up with Supabase / Local Fallback
   const signUp = async (email: string, password: string, name: string, handle: string): Promise<{ success: boolean; message: string }> => {
     if (isSupabaseConfigured()) {
+      const formattedHandle = handle.startsWith('@') ? handle : `@${handle}`;
+      const defaultAvatar = 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250';
+      const redirectUrl = typeof window !== 'undefined' ? window.location.origin : 'https://nao-club-three.vercel.app';
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
+          emailRedirectTo: redirectUrl,
           data: {
             name,
-            handle,
-            avatar_url: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250'
+            handle: formattedHandle,
+            avatar_url: defaultAvatar
           }
         }
       });
@@ -258,12 +263,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return { success: false, message: error.message };
       }
       if (data.user) {
+        // Also insert profile directly to profiles table
+        try {
+          await supabase.from('profiles').upsert({
+            id: data.user.id,
+            name,
+            handle: formattedHandle,
+            email,
+            avatar_url: defaultAvatar,
+            bio: 'Piloto en NAO.',
+            location: 'México',
+            riding_level: 'Intermedio'
+          });
+        } catch {}
+
         const newPilot: User = {
           id: data.user.id,
           name,
-          handle,
+          handle: formattedHandle,
           email,
-          avatar: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
+          avatar: defaultAvatar,
           bio: 'Piloto en NAO.',
           location: 'México',
           ridingLevel: 'Intermedio'
