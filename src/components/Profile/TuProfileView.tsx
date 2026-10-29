@@ -278,15 +278,14 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
           </div>
         </div>
 
-        {/* Action Buttons: Editar Perfil / Compartir / Gestionar Cuenta */}
-        {/* Action Buttons: Editar Perfil / Editar Hangar / Compartir / Gestionar Cuenta */}
-        <div className="flex items-center gap-3 pt-2 relative z-10 flex-wrap">
+        {/* Action Buttons: Clean grid layout */}
+        <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 sm:gap-3 pt-2 relative z-10">
           <button
             onClick={() => {
               if (onOpenEditProfile) onOpenEditProfile();
               setEditProfileOpen(true);
             }}
-            className="flex-1 min-w-[130px] py-3 px-4 bg-[#1A1918] hover:bg-black text-[#FAF6ED] text-xs font-display font-black uppercase tracking-widest flex items-center justify-center gap-2 transition rounded-xl border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer"
+            className="py-2.5 sm:py-3 px-3 sm:px-4 bg-[#1A1918] hover:bg-black text-[#FAF6ED] text-[11px] sm:text-xs font-display font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition rounded-xl border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer"
           >
             <Edit3 className="w-3.5 h-3.5 text-[#F7B32B]" />
             <span>Editar perfil</span>
@@ -301,7 +300,7 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
                 setShowAddBikeModal(true);
               }
             }}
-            className="flex-1 min-w-[130px] py-3 px-4 bg-[#F4EEDB] hover:bg-[#EDE6D3] text-[#1A1918] text-xs font-display font-black uppercase tracking-widest flex items-center justify-center gap-2 transition rounded-xl border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer"
+            className="py-2.5 sm:py-3 px-3 sm:px-4 bg-[#F4EEDB] hover:bg-[#EDE6D3] text-[#1A1918] text-[11px] sm:text-xs font-display font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition rounded-xl border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer"
             title="Editar ficha técnica de tu moto en el Hangar"
           >
             <Wrench className="w-3.5 h-3.5 text-[#E6332A]" />
@@ -310,15 +309,15 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
 
           <button
             onClick={handleShareProfile}
-            className="py-3 px-4 bg-[#F7B32B] hover:bg-[#e5a424] text-[#1A1918] text-xs font-display font-black uppercase tracking-widest flex items-center justify-center gap-2 transition rounded-xl border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer"
+            className="py-2.5 sm:py-3 px-3 sm:px-4 bg-[#F7B32B] hover:bg-[#e5a424] text-[#1A1918] text-[11px] sm:text-xs font-display font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition rounded-xl border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer"
           >
             <Share2 className="w-3.5 h-3.5 text-[#1A1918]" />
-            <span className="hidden sm:inline">Compartir</span>
+            <span>Compartir</span>
           </button>
 
           <button
             onClick={() => setAuthModalOpen(true)}
-            className="py-3 px-4 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] text-xs font-display font-black uppercase tracking-widest flex items-center justify-center gap-2 transition rounded-xl border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer"
+            className="py-2.5 sm:py-3 px-3 sm:px-4 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] text-[11px] sm:text-xs font-display font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition rounded-xl border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer"
             title="Gestionar sesión o cambiar piloto"
           >
             <UserCheck className="w-3.5 h-3.5 text-[#E6332A]" />
@@ -328,7 +327,7 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
           {(currentUser.email?.toLowerCase() === 'pmartin.v2001@gmail.com' || currentUser.handle === '@patomartin' || currentUser.id === 'user-patricio') && (
             <button
               onClick={() => setActiveNavTab('admin')}
-              className="py-3 px-4 bg-[#1A1918] hover:bg-black text-[#F7B32B] text-xs font-display font-black uppercase tracking-widest flex items-center justify-center gap-2 transition rounded-xl border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer"
+              className="col-span-2 sm:col-span-1 py-2 sm:py-3 px-3 sm:px-4 bg-[#1A1918] hover:bg-black text-[#F7B32B] text-[11px] sm:text-xs font-display font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition rounded-xl border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer"
               title="Panel Administrativo de Usabilidad y Control"
             >
               <ShieldCheck className="w-3.5 h-3.5 text-[#F7B32B]" />

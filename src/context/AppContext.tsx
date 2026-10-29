@@ -713,8 +713,41 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     });
 
+    // Realtime channel for crews sync across all users
+    const crewsChannel = supabase
+      .channel('public:crews')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'crews' },
+        (payload) => {
+          if (payload.eventType === 'UPDATE' && payload.new) {
+            const updated = payload.new as any;
+            setCrews(prev => prev.map(c => c.id === updated.id ? {
+              ...c,
+              name: updated.name || c.name,
+              tagline: updated.tagline !== undefined ? updated.tagline : c.tagline,
+              description: updated.description !== undefined ? updated.description : c.description,
+              coverImage: updated.cover_image || c.coverImage,
+              baseCity: updated.base_city || c.baseCity,
+              whatsappGroupUrl: updated.whatsapp_group_url !== undefined ? updated.whatsapp_group_url : c.whatsappGroupUrl
+            } : c));
+            setCurrentCrew(prev => prev && prev.id === updated.id ? {
+              ...prev,
+              name: updated.name || prev.name,
+              tagline: updated.tagline !== undefined ? updated.tagline : prev.tagline,
+              description: updated.description !== undefined ? updated.description : prev.description,
+              coverImage: updated.cover_image || prev.coverImage,
+              baseCity: updated.base_city || prev.baseCity,
+              whatsappGroupUrl: updated.whatsapp_group_url !== undefined ? updated.whatsapp_group_url : prev.whatsappGroupUrl
+            } : prev);
+          }
+        }
+      )
+      .subscribe();
+
     return () => {
       subscription.unsubscribe();
+      supabase.removeChannel(crewsChannel);
     };
   }, []);
 
@@ -897,6 +930,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCurrentCrew(prev => (prev && prev.id === crewId ? { ...prev, ...updates } : prev));
     if (updates.name || updates.members) {
       syncActivitiesWithCrew(crewId, updates.name, updates.members);
+    }
+
+    // Persist to Supabase Cloud so all users see changes immediately
+    if (isSupabaseConfigured()) {
+      const dbUpdates: any = {};
+      if (updates.name !== undefined) dbUpdates.name = updates.name;
+      if (updates.tagline !== undefined) dbUpdates.tagline = updates.tagline;
+      if (updates.description !== undefined) dbUpdates.description = updates.description;
+      if (updates.coverImage !== undefined) dbUpdates.cover_image = updates.coverImage;
+      if (updates.baseCity !== undefined) dbUpdates.base_city = updates.baseCity;
+      if (updates.whatsappGroupUrl !== undefined) dbUpdates.whatsapp_group_url = updates.whatsappGroupUrl;
+
+      if (Object.keys(dbUpdates).length > 0) {
+        supabase
+          .from('crews')
+          .update(dbUpdates)
+          .eq('id', crewId)
+          .then(({ error }) => {
+            if (error) console.error('Error updating crew in cloud:', error);
+          });
+      }
     }
   };
 

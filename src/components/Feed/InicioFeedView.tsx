@@ -301,51 +301,16 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
         {/* ========================================================= */}
         <section className="col-span-12 lg:col-span-6 space-y-4 sm:space-y-6">
           
-          {/* Mobile "Tu serie" streak banner (Hidden on desktop) */}
-          <div className="lg:hidden bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[22px] sm:rounded-[24px] p-3.5 sm:p-5 shadow-[3px_3px_0px_#1A1918] sm:shadow-[4px_4px_0px_#1A1918]">
-            <div className="flex items-center justify-between mb-2 sm:mb-3">
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#E6332A] animate-pulse" />
-                <span className="text-[11px] sm:text-xs font-display font-black text-[#1A1918] uppercase tracking-widest">Racha de Salidas</span>
-              </div>
-              <span className="text-[9px] sm:text-[10px] font-display font-black text-[#E6332A] uppercase tracking-wider bg-[#E6332A]/10 px-2 py-0.5 rounded border border-[#E6332A]/30">
-                0 Semanas
-              </span>
-            </div>
-
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 bg-[#F4EEDB] border-2 border-[#1A1918] rounded-xl p-3 sm:p-4 shadow-[2px_2px_0px_#1A1918]">
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl bg-[#FAF6ED] border-2 border-[#1A1918] flex flex-col items-center justify-center shrink-0 shadow-[2px_2px_0px_#1A1918]">
-                  <span className="text-base font-display font-black text-[#1A1918]">0</span>
-                  <span className="text-[8px] text-[#1A1918]/70 uppercase font-display font-black">Sem</span>
-                </div>
-                <div>
-                  <p className="text-xs text-[#1A1918] font-display font-black uppercase tracking-wider">Comienza tu bitácora</p>
-                  <p className="text-[11px] font-serif italic text-[#1A1918]/70 font-medium">Rueda cada fin de semana con tu tribu.</p>
-                </div>
-              </div>
-
-              <button
-                onClick={onOpenRecordRoute}
-                className="btn-carbon w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs"
-              >
-                Registrar
-              </button>
-            </div>
-          </div>
-
-
-
-          {/* Discipline filter chips (Risograph Matchbook Style) */}
-          <div className="flex flex-wrap items-center gap-2 py-1">
+          {/* Horizontal compact scroll for categories on mobile */}
+          <div className="flex items-center gap-2 py-1 overflow-x-auto no-scrollbar -mx-2 px-2 sm:mx-0 sm:px-0">
             {disciplineFilters.map(f => (
               <button
                 key={f.id}
                 onClick={() => setSelectedDiscipline(f.id)}
-                className={`px-4 py-2 text-xs font-display uppercase tracking-widest transition rounded-xl border-2 shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${
+                className={`px-3.5 py-1.5 text-[11px] sm:text-xs font-display uppercase tracking-wider shrink-0 transition rounded-xl border-2 active:scale-95 ${
                   selectedDiscipline === f.id
-                    ? 'bg-[#E6332A] text-white border-[#1A1918] font-black'
-                    : 'bg-[#FAF6ED] text-[#1A1918] border-[#1A1918] hover:bg-[#F7B32B] font-bold'
+                    ? 'bg-[#E6332A] text-white border-[#1A1918] font-black shadow-[2px_2px_0px_#1A1918]'
+                    : 'bg-[#FAF6ED] text-[#1A1918] border-[#1A1918] hover:bg-[#F4EEDB] font-bold shadow-[1px_1px_0px_#1A1918]'
                 }`}
               >
                 {f.label}
@@ -460,31 +425,31 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
             /* Cards Feed */
             <div className="space-y-4 sm:space-y-6">
               {filteredActivities.length === 0 ? (
-                <div className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[22px] sm:rounded-[24px] p-5 sm:p-10 text-center space-y-3.5 sm:space-y-4 shadow-[3px_3px_0px_#1A1918] sm:shadow-[4px_4px_0px_#1A1918]">
-                  <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-[#F7B32B] text-[#1A1918] border-2 border-[#1A1918] mx-auto flex items-center justify-center shadow-[2px_2px_0px_#1A1918]">
-                    <Compass className="w-6 h-6 sm:w-8 sm:h-8 stroke-[2.5]" />
+                <div className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[20px] p-5 sm:p-8 text-center space-y-3 shadow-[3px_3px_0px_#1A1918]">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-[#F7B32B] text-[#1A1918] border-2 border-[#1A1918] mx-auto flex items-center justify-center shadow-[2px_2px_0px_#1A1918]">
+                    <Compass className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.5]" />
                   </div>
                   <div>
-                    <h3 className="font-display font-black text-lg sm:text-2xl uppercase text-[#1A1918]">
-                      El Despacho está listo para nuevas rutas
+                    <h3 className="font-display font-black text-base sm:text-lg uppercase text-[#1A1918]">
+                      Sin rodadas aún
                     </h3>
-                    <p className="text-xs sm:text-sm font-serif italic text-[#1A1918]/70 mt-1 max-w-md mx-auto">
-                      Aún no hay publicaciones en el feed. Sé el primer piloto en grabar una rodada o proponer una expedición para la comunidad.
+                    <p className="text-xs font-serif italic text-[#1A1918]/70 mt-0.5 max-w-sm mx-auto">
+                      Sé el primer piloto en registrar una salida o proponer una expedición para la comunidad.
                     </p>
                   </div>
-                  <div className="flex items-center justify-center gap-2.5 sm:gap-3 pt-1 sm:pt-2 flex-wrap">
+                  <div className="flex items-center justify-center gap-2 pt-1 flex-wrap">
                     <button
                       type="button"
                       onClick={() => onOpenRecordRoute && onOpenRecordRoute()}
-                      className="py-3 px-5 bg-[#E6332A] hover:bg-[#d02c24] text-white border-2 border-[#1A1918] rounded-xl text-xs font-display font-black uppercase tracking-wider shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition flex items-center gap-2 cursor-pointer"
+                      className="py-2.5 px-4 bg-[#E6332A] hover:bg-[#d02c24] text-white border-2 border-[#1A1918] rounded-xl text-xs font-display font-black uppercase tracking-wider shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition flex items-center gap-1.5 cursor-pointer"
                     >
-                      <Plus className="w-4 h-4 stroke-[3]" />
-                      <span>Grabar Primera Rodada</span>
+                      <Plus className="w-3.5 h-3.5 stroke-[3]" />
+                      <span>Grabar Rodada</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => onOpenProposeRoute && onOpenProposeRoute()}
-                      className="py-3 px-5 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border-2 border-[#1A1918] rounded-xl text-xs font-display font-black uppercase tracking-wider shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition cursor-pointer"
+                      className="py-2.5 px-4 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border-2 border-[#1A1918] rounded-xl text-xs font-display font-black uppercase tracking-wider shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition cursor-pointer"
                     >
                       <span>Proponer Ruta</span>
                     </button>

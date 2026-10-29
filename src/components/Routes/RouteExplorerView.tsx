@@ -45,82 +45,53 @@ export const RouteExplorerView: React.FC<RouteExplorerViewProps> = () => {
       </div>
 
       {/* 2. CONTENEDOR HERO: INFORMACIÓN DE "PRÓXIMAMENTE" CON DISEÑO RISOGRAPH / BAUHAUS */}
-      <div className="relative z-10 flex flex-col items-center justify-center h-full px-4 sm:px-6 pointer-events-auto">
-        <div className="w-full max-w-lg bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[28px] sm:rounded-[32px] p-6 sm:p-8 shadow-[8px_8px_0px_#1A1918] text-[#1A1918] space-y-5 animate-scaleUp">
+      <div className="relative z-10 flex flex-col items-center justify-center h-full px-4 pointer-events-auto">
+        <div className="w-full max-w-md bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[24px] sm:rounded-[32px] p-5 sm:p-7 shadow-[5px_5px_0px_#1A1918] text-[#1A1918] space-y-3.5 sm:space-y-4 animate-scaleUp">
           
-          {/* Top Brand Stamp & Coordinates */}
-          <div className="flex items-center justify-between border-b-2 border-[#1A1918] pb-3 text-[10px] font-mono font-black uppercase tracking-widest text-[#E6332A]">
+          {/* Top Brand Stamp */}
+          <div className="flex items-center justify-between border-b-2 border-[#1A1918] pb-2 text-[10px] font-mono font-black uppercase tracking-widest text-[#E6332A]">
             <div className="flex items-center gap-1.5">
-              <Compass className="w-4 h-4 text-[#E6332A] stroke-[2.5]" />
+              <Compass className="w-3.5 h-3.5 text-[#E6332A] stroke-[2.5]" />
               <span>★ CARTOGRAFÍA // NAO CLUB ★</span>
             </div>
-            <span className="text-[#1A1918]/50 hidden sm:inline font-mono">
-              19°24&apos;N 99°17&apos;W
-            </span>
+            <span className="text-[#1A1918]/60 font-mono text-[9px] bg-[#F4EEDB] px-1.5 py-0.5 rounded border border-[#1A1918]/40">FASE 2</span>
           </div>
 
           {/* Headline Section */}
-          <div className="text-center sm:text-left space-y-1.5">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F4EEDB] border-2 border-[#1A1918] text-[10px] font-mono font-black uppercase tracking-wider mb-1 shadow-[2px_2px_0px_#1A1918]">
-              <span className="w-2 h-2 rounded-full bg-[#E6332A] animate-ping" />
-              <span>FASE 02 EN DESARROLLO</span>
-            </div>
-            <h1 className="font-display font-black text-3xl sm:text-4xl uppercase tracking-tight text-[#1A1918] leading-none">
+          <div className="text-center sm:text-left space-y-1">
+            <h1 className="font-display font-black text-2xl sm:text-3xl uppercase tracking-tight text-[#1A1918] leading-none">
               Próximamente
             </h1>
-            <p className="font-display font-black text-xs sm:text-sm text-[#E06423] uppercase tracking-wider">
-              Explorador de Rutas & Navegación GPS
+            <p className="font-display font-black text-xs text-[#E06423] uppercase tracking-wider">
+              Explorador de Rutas &amp; Navegación GPS
             </p>
           </div>
 
           {/* Description */}
-          <p className="text-xs sm:text-sm text-[#1A1918]/80 font-serif italic leading-relaxed">
-            Estamos diseñando la experiencia cartográfica definitiva para motociclistas: mapas topográficos de curvas, capas de elevación 3D, rutas verificadas por tribus y exportación directa de tracks GPX para Garmin, OsmAnd y CarPlay.
+          <p className="text-xs text-[#1A1918]/80 font-serif italic leading-relaxed">
+            Mapas topográficos de curvas, capas de elevación 3D, rutas curadas por la comunidad y exportación a GPX para tableros y navegadores.
           </p>
 
-          {/* Features Preview Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
-            <div className="p-3 bg-[#F4EEDB] border-2 border-[#1A1918] rounded-2xl shadow-[2px_2px_0px_#1A1918] flex flex-col justify-between">
-              <Mountain className="w-5 h-5 text-[#E06423] stroke-[2.5] mb-2" />
-              <div>
-                <p className="font-display font-black text-[11px] uppercase tracking-wide text-[#1A1918]">
-                  Topografía
-                </p>
-                <p className="text-[10px] text-[#1A1918]/70 font-serif italic mt-0.5">
-                  Curvas de nivel y tipo de suelo
-                </p>
-              </div>
+          {/* Features Horizontal Ribbon (clean, not 3 huge stacked boxes) */}
+          <div className="grid grid-cols-3 gap-2 pt-1 text-center">
+            <div className="p-2.5 bg-[#F4EEDB] border border-[#1A1918] rounded-xl">
+              <Mountain className="w-4 h-4 text-[#E06423] stroke-[2.5] mx-auto mb-1" />
+              <p className="font-display font-black text-[10px] uppercase text-[#1A1918]">Topografía</p>
             </div>
-
-            <div className="p-3 bg-[#F4EEDB] border-2 border-[#1A1918] rounded-2xl shadow-[2px_2px_0px_#1A1918] flex flex-col justify-between">
-              <Users className="w-5 h-5 text-[#1D4477] stroke-[2.5] mb-2" />
-              <div>
-                <p className="font-display font-black text-[11px] uppercase tracking-wide text-[#1A1918]">
-                  Curaduría
-                </p>
-                <p className="text-[10px] text-[#1A1918]/70 font-serif italic mt-0.5">
-                  Rutas votadas por las tribus
-                </p>
-              </div>
+            <div className="p-2.5 bg-[#F4EEDB] border border-[#1A1918] rounded-xl">
+              <Users className="w-4 h-4 text-[#1D4477] stroke-[2.5] mx-auto mb-1" />
+              <p className="font-display font-black text-[10px] uppercase text-[#1A1918]">Curaduría</p>
             </div>
-
-            <div className="p-3 bg-[#F4EEDB] border-2 border-[#1A1918] rounded-2xl shadow-[2px_2px_0px_#1A1918] flex flex-col justify-between">
-              <FileCode2 className="w-5 h-5 text-[#E6332A] stroke-[2.5] mb-2" />
-              <div>
-                <p className="font-display font-black text-[11px] uppercase tracking-wide text-[#1A1918]">
-                  Tracks GPX
-                </p>
-                <p className="text-[10px] text-[#1A1918]/70 font-serif italic mt-0.5">
-                  Sincronización con GPS y tableros
-                </p>
-              </div>
+            <div className="p-2.5 bg-[#F4EEDB] border border-[#1A1918] rounded-xl">
+              <FileCode2 className="w-4 h-4 text-[#E6332A] stroke-[2.5] mx-auto mb-1" />
+              <p className="font-display font-black text-[10px] uppercase text-[#1A1918]">GPX Sync</p>
             </div>
           </div>
 
-          {/* Quick CTA to return to Tribus or Despacho */}
-          <div className="pt-2 border-t-2 border-[#1A1918] flex flex-col sm:flex-row items-center justify-between gap-3">
-            <span className="text-[11px] font-mono text-[#1A1918]/60 font-bold text-center sm:text-left">
-              Mientras tanto, explora rodadas y tribus:
+          {/* Quick CTA */}
+          <div className="pt-2 border-t-2 border-[#1A1918] flex items-center justify-between gap-3">
+            <span className="text-[10px] font-mono text-[#1A1918]/60 font-bold">
+              Explora rodadas activas:
             </span>
             <button
               onClick={() => setActiveNavTab('tribus')}

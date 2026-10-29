@@ -560,49 +560,49 @@ export const TribusView: React.FC<TribusViewProps> = ({
       <div className="max-w-[1240px] w-full mx-auto pb-28 px-4 sm:px-6 font-sans">
         
         {/* Top Header: Risograph Motorcycle Chapters Editorial */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between border-b-2 border-[#1A1918] pb-6 pt-3 gap-5">
+        <div className="flex flex-col md:flex-row md:items-end justify-between border-b-2 border-[#1A1918] pb-4 sm:pb-6 pt-2 sm:pt-3 gap-3 sm:gap-5">
           <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="px-3.5 py-1 bg-[#E6332A] text-white border-2 border-[#1A1918] text-[10px] font-display font-black uppercase tracking-widest rounded-lg shadow-[2px_2px_0px_#1A1918]">
-                ★ MOTORCYCLE GUILDS &amp; FELLOWSHIPS ★
+            <div className="flex items-center gap-2 mb-1.5 sm:mb-2">
+              <span className="px-2.5 py-0.5 sm:px-3.5 sm:py-1 bg-[#E6332A] text-white border-2 border-[#1A1918] text-[9px] sm:text-[10px] font-display font-black uppercase tracking-widest rounded-lg shadow-[2px_2px_0px_#1A1918]">
+                ★ CLUBS &amp; HERMANDADES ★
               </span>
               <span className="w-2 h-2 rounded-full bg-[#F7B32B] animate-pulse" />
             </div>
-            <h1 className="font-display font-black text-3xl sm:text-5xl text-[#1A1918] uppercase tracking-wide">
+            <h1 className="font-display font-black text-2xl sm:text-5xl text-[#1A1918] uppercase tracking-wide">
               Clubs &amp; Tribus
             </h1>
-            <p className="text-xs sm:text-sm font-serif italic text-[#1A1918]/80 mt-1 max-w-xl leading-relaxed font-medium">
+            <p className="hidden sm:block text-xs sm:text-sm font-serif italic text-[#1A1918]/80 mt-1 max-w-xl leading-relaxed font-medium">
               &quot;The Emporium of Two-Wheeled Escapes — Private brotherhoods, shared custom stables &amp; roadbook expeditions in consensus.&quot;
             </p>
 
             {/* Quick Metrics in Vintage Plaque Style */}
-            <div className="flex items-center gap-4 text-xs font-sans text-[#1A1918] mt-3.5 flex-wrap font-bold">
-              <span className="text-[#1A1918] font-bold flex items-center gap-1.5 bg-[#FAF6ED] px-2.5 py-1 border border-[#1A1918] rounded-md shadow-[1px_1px_0px_#1A1918]">
-                <Shield className="w-3.5 h-3.5 text-[#E6332A]" /> {crews.length} {crews.length === 1 ? 'Club Activo' : 'Clubs Activos'}
+            <div className="flex items-center gap-2 sm:gap-4 text-[11px] sm:text-xs font-sans text-[#1A1918] mt-2.5 sm:mt-3.5 flex-wrap font-bold">
+              <span className="text-[#1A1918] font-bold flex items-center gap-1 bg-[#FAF6ED] px-2 py-0.5 border border-[#1A1918] rounded-md shadow-[1px_1px_0px_#1A1918]">
+                <Shield className="w-3 h-3 text-[#E6332A]" /> {crews.length} {crews.length === 1 ? 'Club' : 'Clubs'}
               </span>
               <span className="text-[#1A1918]/30">•</span>
-              <span className="text-[#1A1918] flex items-center gap-1.5 bg-[#FAF6ED] px-2.5 py-1 border border-[#1A1918] rounded-md shadow-[1px_1px_0px_#1A1918]">
-                <Users className="w-3.5 h-3.5 text-[#1A1918]/70" /> {totalNetworkPilotsCount} Pilotos en tu red
+              <span className="text-[#1A1918] flex items-center gap-1 bg-[#FAF6ED] px-2 py-0.5 border border-[#1A1918] rounded-md shadow-[1px_1px_0px_#1A1918]">
+                <Users className="w-3 h-3 text-[#1A1918]/70" /> {totalNetworkPilotsCount} Pilotos
               </span>
               <span className="text-[#1A1918]/30">•</span>
-              <span className="text-[#E06423] font-black flex items-center gap-1.5 bg-[#FAF6ED] px-2.5 py-1 border border-[#1A1918] rounded-md shadow-[1px_1px_0px_#1A1918]">
-                <Calendar className="w-3.5 h-3.5 text-[#E06423]" /> {totalConfirmedRidesCount} {totalConfirmedRidesCount === 1 ? 'Expedición en puerta' : 'Expediciones en puerta'}
+              <span className="text-[#E06423] font-black flex items-center gap-1 bg-[#FAF6ED] px-2 py-0.5 border border-[#1A1918] rounded-md shadow-[1px_1px_0px_#1A1918]">
+                <Calendar className="w-3 h-3 text-[#E06423]" /> {totalConfirmedRidesCount} {totalConfirmedRidesCount === 1 ? 'Rodada' : 'Rodadas'}
               </span>
             </div>
           </div>
 
-          {/* Action buttons with mechanical press Risograph styling */}
-          <div className="flex items-center gap-3 shrink-0 flex-wrap">
+          {/* Action buttons */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0 pt-1 sm:pt-0">
             <button
               onClick={onOpenJoinCrew}
-              className="btn-mustard px-4 py-3 rounded-xl text-xs flex items-center gap-2"
+              className="flex-1 sm:flex-none btn-mustard px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-xs flex items-center justify-center gap-1.5"
             >
               <Key className="w-3.5 h-3.5 text-[#1A1918]" />
-              <span>Clave de Club #</span>
+              <span>Unirse con Clave</span>
             </button>
             <button
               onClick={onOpenCreateCrew}
-              className="btn-vermillion px-5 py-3 rounded-xl text-xs flex items-center gap-2"
+              className="flex-1 sm:flex-none btn-vermillion px-3.5 sm:px-5 py-2.5 sm:py-3 rounded-xl text-xs flex items-center justify-center gap-1.5"
             >
               <Plus className="w-3.5 h-3.5 text-white" />
               <span>Fundar Club</span>
