@@ -96,10 +96,11 @@ interface AppContextType {
   setActiveNavTab: (tab: NavTab) => void;
   crewMessages: CrewChatMessage[];
   sendCrewMessage: (crewId: string, text: string) => void;
-  // Auth & Multi-user Cloud state
   isAuthModalOpen: boolean;
   setAuthModalOpen: (open: boolean) => void;
   isSupabaseOnline: boolean;
+  isAuthLoading: boolean;
+  isAuthenticated: boolean;
   switchCurrentUser: (userId: string) => void;
   signUp: (email: string, password: string, name: string, handle: string) => Promise<{ success: boolean; message: string }>;
   signIn: (email: string, password: string) => Promise<{ success: boolean; message: string }>;
@@ -155,6 +156,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Auth & Cloud State
   const [isAuthModalOpen, setAuthModalOpen] = useState(false);
   const [isSupabaseOnline] = useState(isSupabaseConfigured());
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
+
+  const isAuthenticated = currentUser.id !== 'guest' && currentUser.id !== '';
 
   // Switch active pilot (for demo testing and profile changing)
   const switchCurrentUser = (userId: string) => {
@@ -524,19 +528,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const savedUserStr = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
       if (savedUserStr) {
         const parsed = JSON.parse(savedUserStr);
-        if (parsed && parsed.id) {
+        if (parsed && parsed.id && parsed.id !== 'guest') {
           setCurrentUser(parsed);
         }
       }
     } catch {}
 
-    if (!isSupabaseConfigured()) return;
+    if (!isSupabaseConfigured()) {
+      setIsAuthLoading(false);
+      return;
+    }
 
     // Check active session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
-        loadSupabaseProfile(session.user.id, session.user.email);
+        await loadSupabaseProfile(session.user.id, session.user.email);
       }
+      setIsAuthLoading(false);
+    }).catch(() => {
+      setIsAuthLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -1600,6 +1610,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         isAuthModalOpen,
         setAuthModalOpen,
         isSupabaseOnline,
+        isAuthLoading,
+        isAuthenticated,
         switchCurrentUser,
         signUp,
         signIn,

@@ -17,11 +17,12 @@ import { CreateRodadaModal } from '../components/Modals/CreateRodadaModal';
 import { PilotProfileModal } from '../components/Modals/PilotProfileModal';
 import { LiveRouteRecorderModal } from '../components/Modals/LiveRouteRecorderModal';
 import { AuthModal } from '../components/Modals/AuthModal';
+import { WelcomeLoginGate } from '../components/Auth/WelcomeLoginGate';
 import { BottomBar } from '../components/Navigation/BottomBar';
 import { AdminDashboardView } from '../components/Admin/AdminDashboardView';
 
 export default function Home() {
-  const { activeNavTab, setActiveNavTab } = useApp();
+  const { activeNavTab, setActiveNavTab, isAuthenticated, isAuthLoading } = useApp();
 
   // Modal states
   const [proposeRouteOpen, setProposeRouteOpen] = useState(false);
@@ -29,6 +30,25 @@ export default function Home() {
   const [createCrewOpen, setCreateCrewOpen] = useState(false);
   const [createRodadaOpen, setCreateRodadaOpen] = useState(false);
   const [recordRouteOpen, setRecordRouteOpen] = useState(false);
+
+  // If session is still verifying, show clean minimalist loader
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen bg-[#F4EEDB] text-[#1A1918] flex flex-col items-center justify-center p-6 antialiased">
+        <div className="w-12 h-12 rounded-2xl bg-[#E6332A] flex items-center justify-center border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] animate-bounce">
+          <span className="font-display font-black text-white text-xl">N</span>
+        </div>
+        <p className="mt-4 font-mono text-xs uppercase font-bold tracking-widest text-[#1A1918]/60">
+          CONECTANDO CON EL CLUB...
+        </p>
+      </div>
+    );
+  }
+
+  // If pilot is not authenticated, show full-screen Welcome Gate (Instagram style)
+  if (!isAuthenticated) {
+    return <WelcomeLoginGate />;
+  }
 
   return (
     <div className="min-h-screen bg-[#F4EEDB] text-[#1A1918] flex flex-col antialiased selection:bg-[#E6332A] selection:text-white">
