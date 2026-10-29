@@ -116,7 +116,7 @@ const STORAGE_KEYS = {
   CREWS: 'motomami_crews',
   RODADAS: 'motomami_rodadas',
   ROUTES: 'motomami_routes',
-  ACTIVITIES: 'nao_activities',
+  ACTIVITIES: 'nao_activities_v2',
   CHALLENGES: 'nao_challenges',
   CREW_MESSAGES: 'motomami_crew_messages'
 };
@@ -552,6 +552,40 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           const cloudIds = new Set(mappedMotos.map(b => b.id));
           return [...mappedMotos, ...prev.filter(b => !cloudIds.has(b.id))];
         });
+      }
+    });
+
+    // Hydrate activities (publicaciones reales) from cloud
+    supabase.from('activities').select('*').order('created_at', { ascending: false }).then(({ data }) => {
+      if (data && data.length > 0) {
+        const mappedActs: ActivityPost[] = data.map((a: any) => ({
+          id: a.id,
+          pilotId: a.pilot_id,
+          pilotName: a.pilot_name,
+          pilotHandle: a.pilot_handle,
+          pilotAvatar: a.pilot_avatar || 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
+          dateText: a.created_at ? new Date(a.created_at).toLocaleDateString('es-MX', { hour: '2-digit', minute: '2-digit' }) : 'Reciente',
+          device: '',
+          location: a.location || 'México',
+          title: a.title,
+          motoModel: a.moto_model || 'Trail',
+          discipline: (a.discipline as any) || 'Trail / Aventura',
+          distanceKm: Number(a.distance_km) || 0,
+          elevationGainM: Number(a.elevation_gain_m) || 0,
+          durationText: a.duration_formatted || '0h 00m',
+          avgSpeedKmh: Number(a.avg_speed_kmh) || 0,
+          trophiesCount: 0,
+          kudosCount: 0,
+          hasKudoed: false,
+          kudosAvatars: [],
+          commentsCount: 0,
+          comments: [],
+          coordinates: a.route_coordinates || [],
+          surfaceBreakdown: a.surface_breakdown || { asphaltPercentage: 50, dirtPercentage: 50, curveDensity: 'Media' },
+          photos: a.photos || [],
+          groupInfo: a.group_info
+        }));
+        setActivities(mappedActs);
       }
     });
 
@@ -1298,15 +1332,38 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const addRecordedActivity = (data: Omit<ActivityPost, 'id' | 'kudosCount' | 'hasKudoed' | 'kudosAvatars' | 'commentsCount'>) => {
+    const newActId = `act-${Date.now()}`;
     const newAct: ActivityPost = {
       ...data,
-      id: `act-${Date.now()}`,
+      id: newActId,
       kudosCount: 1,
       hasKudoed: false,
       kudosAvatars: [],
       commentsCount: 0
     };
     setActivities(prev => [newAct, ...prev]);
+
+    if (isSupabaseConfigured() && currentUser.id && currentUser.id.length === 36) {
+      supabase.from('activities').insert({
+        id: newActId,
+        pilot_id: currentUser.id,
+        pilot_name: data.pilotName || currentUser.name,
+        pilot_handle: data.pilotHandle || currentUser.handle,
+        pilot_avatar: data.pilotAvatar || currentUser.avatar,
+        title: data.title,
+        distance_km: data.distanceKm || 0,
+        elevation_gain_m: data.elevationGainM || 0,
+        duration_formatted: data.durationText || '0h 00m',
+        avg_speed_kmh: data.avgSpeedKmh || 0,
+        moto_model: data.motoModel || null,
+        discipline: data.discipline || 'Trail / Aventura',
+        location: data.location || 'México',
+        route_coordinates: data.coordinates || [],
+        photos: data.photos || [],
+        surface_breakdown: data.surfaceBreakdown || { asphaltPercentage: 50, dirtPercentage: 50, curveDensity: 'Media' },
+        group_info: data.groupInfo || null
+      }).then(() => {});
+    }
   };
 
   const toggleJoinChallenge = (challengeId: string) => {

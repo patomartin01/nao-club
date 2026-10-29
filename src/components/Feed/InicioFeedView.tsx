@@ -462,18 +462,35 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
             /* Cards Feed */
             <div className="space-y-6">
               {filteredActivities.length === 0 ? (
-                <div className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[24px] p-8 text-center space-y-3 shadow-[4px_4px_0px_#1A1918]">
-                  <p className="font-display font-black text-lg uppercase text-[#1A1918]">No se encontraron expediciones con ese criterio</p>
-                  <p className="text-xs font-serif italic text-[#1A1918]/70">Prueba cambiando la búsqueda o seleccionando otra disciplina de ruta.</p>
-                  <button
-                    onClick={() => {
-                      setSearchQuery('');
-                      setSelectedDiscipline('Todas');
-                    }}
-                    className="btn-mustard px-4 py-2 rounded-xl text-xs mt-2"
-                  >
-                    Restablecer Filtros
-                  </button>
+                <div className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[24px] p-8 sm:p-12 text-center space-y-4 shadow-[4px_4px_0px_#1A1918]">
+                  <div className="w-16 h-16 rounded-2xl bg-[#F7B32B] text-[#1A1918] border-2 border-[#1A1918] mx-auto flex items-center justify-center shadow-[2px_2px_0px_#1A1918]">
+                    <Compass className="w-8 h-8 stroke-[2.5]" />
+                  </div>
+                  <div>
+                    <h3 className="font-display font-black text-xl sm:text-2xl uppercase text-[#1A1918]">
+                      El Despacho está listo para nuevas rutas
+                    </h3>
+                    <p className="text-xs sm:text-sm font-serif italic text-[#1A1918]/70 mt-1 max-w-md mx-auto">
+                      Aún no hay publicaciones en el feed. Sé el primer piloto en grabar una rodada o proponer una expedición para la comunidad.
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-center gap-3 pt-2 flex-wrap">
+                    <button
+                      type="button"
+                      onClick={() => onOpenRecordRoute && onOpenRecordRoute()}
+                      className="py-3 px-5 bg-[#E6332A] hover:bg-[#d02c24] text-white border-2 border-[#1A1918] rounded-xl text-xs font-display font-black uppercase tracking-wider shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition flex items-center gap-2 cursor-pointer"
+                    >
+                      <Plus className="w-4 h-4 stroke-[3]" />
+                      <span>Grabar Primera Rodada</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onOpenProposeRoute && onOpenProposeRoute()}
+                      className="py-3 px-5 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border-2 border-[#1A1918] rounded-xl text-xs font-display font-black uppercase tracking-wider shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition cursor-pointer"
+                    >
+                      <span>Proponer Ruta</span>
+                    </button>
+                  </div>
                 </div>
               ) : (
                 filteredActivities.map((act: ActivityPost) => {
