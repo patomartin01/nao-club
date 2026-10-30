@@ -158,7 +158,8 @@ const STORAGE_KEYS = {
   CREW_COVERS: 'nao_crew_custom_covers',
   FOLLOW_REQUESTS: 'nao_follow_requests_v1',
   APP_NOTIFICATIONS: 'nao_app_notifications_v1',
-  FOUNDER_FEEDBACK: 'nao_founder_feedback_v1'
+  FOUNDER_FEEDBACK: 'nao_founder_feedback_v1',
+  DELETED_CREWS: 'nao_deleted_crews_v1'
 };
 
 const GUEST_PILOT: User = {
@@ -817,10 +818,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           };
         });
 
-        // Remove duplicates by ID and by Normalized Name/Slug
+        // Filtrar tribus eliminadas (tombstones)
+        let deletedCrewIds: string[] = [];
+        try {
+          const savedDeleted = localStorage.getItem(STORAGE_KEYS.DELETED_CREWS);
+          if (savedDeleted) deletedCrewIds = JSON.parse(savedDeleted);
+        } catch {}
+        const deletedSet = new Set(deletedCrewIds);
+
+        // Remove duplicates by ID and by Normalized Name/Slug, excluyendo eliminados
         const seenNames = new Set<string>();
         const uniqueCrews: Crew[] = [];
         for (const c of parsed) {
+          if (deletedSet.has(c.id)) continue;
           const normKey = (c.slug || c.name.toLowerCase().trim().replace(/\s+/g, '-'));
           if (!seenNames.has(normKey)) {
             seenNames.add(normKey);
@@ -995,12 +1005,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             coverImage: customCovers[cr.id] || cr.coverImage
           }));
 
+          let deletedCrewIds: string[] = [];
+          try {
+            const savedDeleted = localStorage.getItem(STORAGE_KEYS.DELETED_CREWS);
+            if (savedDeleted) deletedCrewIds = JSON.parse(savedDeleted);
+          } catch {}
+          const deletedSet = new Set(deletedCrewIds);
+
           const cloudIds = new Set(mergedMapped.map(cr => cr.id));
           const allCrews = [...mergedMapped, ...prev.filter(cr => !cloudIds.has(cr.id))];
 
           const seenNames = new Set<string>();
           const finalCrews: Crew[] = [];
           for (const c of allCrews) {
+            if (deletedSet.has(c.id)) continue;
             const normKey = (c.slug || c.name.toLowerCase().trim().replace(/\s+/g, '-'));
             if (!seenNames.has(normKey)) {
               seenNames.add(normKey);
@@ -1477,14 +1495,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return { success: false, message: 'El grupo no existe.' };
     }
 
-    // Validación estricta: Solo quien lo creó lo puede borrar
-    const isCreator = targetCrew.creatorId === currentUser.id;
+    // Validación flexible: Solo quien lo creó lo puede borrar (o fundador / admin / capitán único)
+    const isCreator = targetCrew.creatorId === currentUser.id ||
+      currentUser.handle === '@patricio' ||
+      targetCrew.members[0]?.userId === currentUser.id ||
+      (targetCrew.members.length === 1 && targetCrew.members[0]?.userId === currentUser.id);
+
     if (!isCreator) {
       return { 
         success: false, 
         message: 'Permiso denegado. Solo el creador de la tribu tiene autoridad para borrar el grupo.' 
       };
     }
+
+    // 0. Registrar crewId inmediatamente en la lista de tumbas (DELETED_CREWS)
+    try {
+      const savedDeleted = localStorage.getItem(STORAGE_KEYS.DELETED_CREWS);
+      const deletedSet = new Set<string>(savedDeleted ? JSON.parse(savedDeleted) : []);
+      deletedSet.add(crewId);
+      localStorage.setItem(STORAGE_KEYS.DELETED_CREWS, JSON.stringify(Array.from(deletedSet)));
+    } catch {}
 
     // 1. Eliminar de crews local y storage
     setCrews(prev => {

@@ -397,7 +397,12 @@ export const TribusView: React.FC<TribusViewProps> = ({
     const targetCrew = crews.find(c => c.id === targetId);
     if (!targetCrew) return;
 
-    if (targetCrew.creatorId !== currentUser.id) {
+    const isCreator = targetCrew.creatorId === currentUser.id ||
+      currentUser.handle === '@patricio' ||
+      targetCrew.members[0]?.userId === currentUser.id ||
+      (targetCrew.members.length === 1 && targetCrew.members[0]?.userId === currentUser.id);
+
+    if (!isCreator) {
       alert('Solo el creador del grupo tiene permisos para borrarlo.');
       return;
     }
@@ -778,7 +783,10 @@ export const TribusView: React.FC<TribusViewProps> = ({
         {/* Tactical 2-Column Tribus Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 mt-5">
           {filteredCrews.map((crew) => {
-            const isUserAdmin = crew.creatorId === currentUser.id;
+            const isUserAdmin = crew.creatorId === currentUser.id ||
+              currentUser.handle === '@patricio' ||
+              crew.members[0]?.userId === currentUser.id ||
+              (crew.members.length === 1 && crew.members[0]?.userId === currentUser.id);
             const crewRides = rodadas.filter(r => r.crewId === crew.id);
 
             // 1. Siguiente ruta confirmada (si es que hay)
@@ -1252,7 +1260,10 @@ export const TribusView: React.FC<TribusViewProps> = ({
                     </button>
 
                     {/* Eliminar grupo (Solo creador) o Salirse (Miembros) */}
-                    {activeTribu.creatorId === currentUser.id ? (
+                    {(activeTribu.creatorId === currentUser.id ||
+                      currentUser.handle === '@patricio' ||
+                      activeTribu.members[0]?.userId === currentUser.id ||
+                      (activeTribu.members.length === 1 && activeTribu.members[0]?.userId === currentUser.id)) ? (
                       <button
                         onClick={() => {
                           setShowCrewDropdown(false);
