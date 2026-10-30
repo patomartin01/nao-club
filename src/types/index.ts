@@ -168,6 +168,7 @@ export interface RouteComment {
 export interface RouteProposal {
   id: string;
   rodadaId: string;
+  crewId?: string;
   title: string;
   destination: string;
   state: string;
@@ -196,6 +197,7 @@ export interface RouteProposal {
   comments: RouteComment[];
   dayOfDeadVibe?: string;
   safetyTips?: string[];
+  isRecorded?: boolean; // Flag to identify routes created from live GPS recordings (Historial only)
 }
 
 export type RsvpStatus = 'confirmado' | 'por_confirmar' | 'no_asistire' | 'interesado';
@@ -287,4 +289,47 @@ export interface CrewChatMessage {
     targetTitle?: string;
     targetId?: string;
   };
+}export interface FollowRequest {
+  id: string;
+  fromUserId: string;
+  fromUserName: string;
+  fromUserHandle: string;
+  fromUserAvatar: string;
+  toUserId: string;
+  createdAt: string;
+  status: 'pending' | 'accepted' | 'rejected';
 }
+
+export type NotificationType = 'route_published' | 'follow_request' | 'crew_invite' | 'rodada_convoked';
+
+export interface AppNotification {
+  id: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  createdAt: string;
+  read: boolean;
+  toUserId?: string; // If undefined or 'crew', targets members of the crew
+  crewId?: string;
+  crewName?: string;
+  fromUserId: string;
+  fromUserName: string;
+  fromUserAvatar: string;
+  routeId?: string;
+  actionUrl?: string;
+}
+
+export interface FounderFeedback {
+  id: string;
+  userId: string;
+  userName: string;
+  userHandle: string;
+  userEmail?: string;
+  userAvatar?: string;
+  founderNumber?: number;
+  category: 'sugerencia' | 'problema' | 'comentario' | 'idea';
+  message: string;
+  createdAt: string;
+  status: 'nuevo' | 'leido' | 'archivado';
+}
+

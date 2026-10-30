@@ -3,7 +3,7 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
 import { ActivityGroupInfo } from '../../types';
-import { X, Users, ChevronRight, Shield, Compass, Bike, UserPlus, Check } from 'lucide-react';
+import { X, Users, ChevronRight, Shield, Compass, Bike, UserPlus, UserX, Check } from 'lucide-react';
 
 interface GroupParticipantsModalProps {
   groupInfo: ActivityGroupInfo | null;
@@ -144,17 +144,19 @@ export const GroupParticipantsModal: React.FC<GroupParticipantsModalProps> = ({
                             e.stopPropagation();
                             toggleFollowUser(p.userId);
                           }}
-                          className={`text-[10px] font-display font-black uppercase tracking-wider px-3 py-1 rounded-full transition flex items-center gap-1 shadow-xs ${
+                          className={`text-[10px] font-display font-black uppercase tracking-wider px-3 py-1 rounded-full transition-all duration-150 flex items-center gap-1 shadow-xs cursor-pointer group/btn ${
                             isFollowingUser(p.userId)
-                              ? 'bg-[#FAF8F5] text-stone-600 border border-[#DDD7CB]'
+                              ? 'bg-[#FAF8F5] hover:bg-[#E6332A] text-stone-600 hover:text-white border border-[#DDD7CB] hover:border-[#E6332A]'
                               : 'bg-[#141312] hover:bg-black text-white'
                           }`}
-                          title={isFollowingUser(p.userId) ? 'Siguiendo' : 'Seguir'}
+                          title={isFollowingUser(p.userId) ? 'Click para dejar de seguir' : 'Seguir a este piloto'}
                         >
                           {isFollowingUser(p.userId) ? (
                             <>
-                              <Check className="w-3 h-3 text-emerald-600" />
-                              <span className="hidden xs:inline">Siguiendo</span>
+                              <Check className="w-3 h-3 text-emerald-600 group-hover/btn:hidden" />
+                              <UserX className="w-3 h-3 text-white hidden group-hover/btn:inline-block" />
+                              <span className="hidden xs:inline group-hover/btn:hidden">Siguiendo</span>
+                              <span className="hidden xs:group-hover/btn:inline">Dejar de seguir</span>
                             </>
                           ) : (
                             <>

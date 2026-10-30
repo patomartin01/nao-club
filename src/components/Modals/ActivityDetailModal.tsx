@@ -16,7 +16,8 @@ import {
   Send,
   Users,
   Bike,
-  Bookmark
+  Bookmark,
+  Trash2
 } from 'lucide-react';
 import { BikerSaluteIcon } from '../Icons/BikerSaluteIcon';
 import { SaveToListModal } from './SaveToListModal';
@@ -42,7 +43,7 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
   onToggleSaludo,
   onAddComment
 }) => {
-  const { currentUser, savedRouteIds, routeLists, isFollowingUser, crews, users, motorcycles } = useApp();
+  const { currentUser, deleteActivity, savedRouteIds, routeLists, isFollowingUser, crews, users, motorcycles } = useApp();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const [commentText, setCommentText] = useState('');
@@ -261,6 +262,22 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
             >
               <Bookmark className={`w-4 h-4 ${(savedRouteIds.includes(activity.id) || routeLists.some(l => l.routeIds.includes(activity.id))) ? 'fill-[#1A1918] text-[#1A1918]' : ''}`} />
             </button>
+
+            {/* Botón Borrar (Solo quien la publicó) */}
+            {(activity.pilotId === currentUser.id || activity.pilotName?.toLowerCase().trim() === currentUser.name?.toLowerCase().trim() || activity.pilotHandle === currentUser.handle) && (
+              <button
+                onClick={() => {
+                  if (window.confirm(`¿Seguro que deseas eliminar la publicación "${activity.title}"? Esta acción no se puede deshacer.`)) {
+                    deleteActivity(activity.id);
+                    onClose();
+                  }
+                }}
+                className="p-2.5 rounded-xl border-2 border-[#1A1918] hover:bg-[#E6332A] hover:text-white text-[#1A1918]/70 transition flex items-center justify-center bg-[#FAF6ED] shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                title="Eliminar tu publicación"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            )}
 
             <button
               onClick={onClose}

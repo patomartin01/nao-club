@@ -221,11 +221,17 @@ export const WelcomeLoginGate: React.FC = () => {
                       type="text"
                       required
                       value={handle}
-                      onChange={(e) => setHandle(e.target.value)}
+                      onChange={(e) => {
+                        setHandle(e.target.value.toLowerCase().replace(/\s+/g, '_'));
+                        if (errorMessage) setErrorMessage(null);
+                      }}
                       placeholder="roberto_gs"
                       className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl pl-8 pr-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]"
                     />
                   </div>
+                  <p className="mt-1 text-[10px] font-mono text-[#1A1918]/60">
+                    Tu usuario único e irrepetible en el club (@usuario).
+                  </p>
                 </div>
               </>
             )}

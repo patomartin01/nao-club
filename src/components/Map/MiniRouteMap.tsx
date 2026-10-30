@@ -4,9 +4,15 @@ import React, { useEffect, useRef } from 'react';
 
 interface MiniRouteMapProps {
   coordinates: [number, number][];
+  interactive?: boolean;
+  padding?: [number, number];
 }
 
-const MiniRouteMap: React.FC<MiniRouteMapProps> = ({ coordinates }) => {
+const MiniRouteMap: React.FC<MiniRouteMapProps> = ({ 
+  coordinates, 
+  interactive = false,
+  padding = [24, 24]
+}) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
 
@@ -25,11 +31,11 @@ const MiniRouteMap: React.FC<MiniRouteMapProps> = ({ coordinates }) => {
         zoom: 12,
         zoomControl: false,
         attributionControl: false,
-        dragging: false,
-        touchZoom: false,
-        doubleClickZoom: false,
+        dragging: interactive,
+        touchZoom: interactive,
+        doubleClickZoom: interactive,
         scrollWheelZoom: false,
-        boxZoom: false,
+        boxZoom: interactive,
         keyboard: false
       });
 
@@ -67,7 +73,7 @@ const MiniRouteMap: React.FC<MiniRouteMapProps> = ({ coordinates }) => {
         });
         L.marker(coordinates[coordinates.length - 1], { icon: endIcon }).addTo(map);
 
-        map.fitBounds(polyline.getBounds(), { padding: [24, 24] });
+        map.fitBounds(polyline.getBounds(), { padding });
       }
     };
 
@@ -80,10 +86,13 @@ const MiniRouteMap: React.FC<MiniRouteMapProps> = ({ coordinates }) => {
         mapRef.current = null;
       }
     };
-  }, [coordinates]);
+  }, [coordinates, padding, interactive]);
 
   return (
-    <div ref={containerRef} className="w-full h-full relative z-0 select-none pointer-events-none" />
+    <div 
+      ref={containerRef} 
+      className={`w-full h-full relative z-0 select-none ${interactive ? 'cursor-grab active:cursor-grabbing' : 'pointer-events-none'}`} 
+    />
   );
 };
 

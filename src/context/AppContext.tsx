@@ -16,7 +16,10 @@ import {
   ActivityComment,
   Challenge,
   CrewChatMessage,
-  RsvpStatus
+  RsvpStatus,
+  FollowRequest,
+  AppNotification,
+  FounderFeedback
 } from '../types';
 import { 
   CURRENT_USER, 
@@ -48,6 +51,8 @@ interface AppContextType {
   enterCrew: (crewId: string) => void;
   createCrew: (data: { name: string; tagline: string; description: string; baseCity: string; coverImage: string; whatsappGroupUrl?: string }) => Crew;
   updateCrew: (crewId: string, updates: Partial<Crew>) => void;
+  deleteCrew: (crewId: string) => { success: boolean; message: string };
+  leaveCrew: (crewId: string) => { success: boolean; message: string };
   addCrewMember: (crewId: string, userId: string, role?: CrewMember['role']) => void;
   joinCrewByCode: (code: string) => { success: boolean; message: string; crew?: Crew };
   rodadas: Rodada[];
@@ -60,6 +65,7 @@ interface AppContextType {
   selectedRoute: RouteProposal | null;
   setSelectedRoute: (route: RouteProposal | null) => void;
   proposeRoute: (data: Omit<RouteProposal, 'id' | 'votes' | 'comments'>) => void;
+  deleteRouteProposal: (routeId: string) => boolean;
   voteRoute: (routeId: string) => void;
   downvoteRoute: (routeId: string) => void;
   addRouteComment: (routeId: string, text: string) => void;
@@ -72,6 +78,7 @@ interface AppContextType {
   addGalleryPhoto: (rodadaId: string, url: string, caption: string) => void;
   // Moto Expeditions & GPS Architecture Extensions
   activities: ActivityPost[];
+  deleteActivity: (activityId: string) => boolean;
   toggleKudo: (activityId: string) => void;
   addActivityComment: (activityId: string, text: string) => void;
   addRecordedActivity: (activity: Omit<ActivityPost, 'id' | 'kudosCount' | 'hasKudoed' | 'kudosAvatars' | 'commentsCount'>) => void;
@@ -89,9 +96,26 @@ interface AppContextType {
   selectedPilotProfile: User | null;
   setSelectedPilotProfile: (pilot: User | null) => void;
   openPilotProfileById: (userId: string) => void;
+  closePilotProfile: () => void;
   followingUserIds: string[];
+  followersUserIds: string[];
+  allFollows: { follower_id: string; following_id: string }[];
+  getFollowersCountForUser: (userId: string) => number;
+  getFollowingCountForUser: (userId: string) => number;
   toggleFollowUser: (userId: string) => void;
   isFollowingUser: (userId: string) => boolean;
+  followRequests: FollowRequest[];
+  pendingFollowRequests: FollowRequest[];
+  requestToFollowUser: (targetUserId: string) => void;
+  acceptFollowRequest: (requestId: string) => void;
+  rejectFollowRequest: (requestId: string) => void;
+  isFollowRequested: (targetUserId: string) => boolean;
+  notifications: AppNotification[];
+  unreadNotificationsCount: number;
+  markNotificationAsRead: (notificationId: string) => void;
+  markAllNotificationsAsRead: () => void;
+  clearNotification: (notificationId: string) => void;
+  createNotification: (notification: Omit<AppNotification, 'id' | 'createdAt' | 'read'>) => void;
   activeNavTab: NavTab;
   setActiveNavTab: (tab: NavTab) => void;
   crewMessages: CrewChatMessage[];
@@ -109,7 +133,15 @@ interface AppContextType {
   isOnboardingOpen: boolean;
   setOnboardingOpen: (open: boolean) => void;
   completeOnboarding: () => void;
-  updateCurrentUserProfile: (updates: Partial<User>) => Promise<void>;
+  founderUserNumber: number | null;
+  dismissFounderWelcome: () => void;
+  currentUserFounderNumber: number | null;
+  founderFeedbacks: FounderFeedback[];
+  sendFounderFeedback: (category: 'sugerencia' | 'problema' | 'comentario' | 'idea', message: string) => Promise<{ success: boolean; message: string }>;
+  markFeedbackStatus: (feedbackId: string, status: 'nuevo' | 'leido' | 'archivado') => void;
+  deleteFeedback: (feedbackId: string) => void;
+  checkHandleAvailability: (handle: string, excludeUserId?: string) => Promise<{ available: boolean; message?: string }>;
+  updateCurrentUserProfile: (updates: Partial<User>) => Promise<{ success: boolean; message?: string }>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -118,11 +150,15 @@ const STORAGE_KEYS = {
   CURRENT_USER: 'motomami_current_user',
   MOTORCYCLES: 'motomami_motorcycles',
   CREWS: 'motomami_crews',
-  RODADAS: 'motomami_rodadas',
-  ROUTES: 'motomami_routes',
+  RODADAS: 'motomami_rodadas_v3',
+  ROUTES: 'motomami_routes_v3',
   ACTIVITIES: 'nao_activities_v2',
   CHALLENGES: 'nao_challenges',
-  CREW_MESSAGES: 'motomami_crew_messages'
+  CREW_MESSAGES: 'motomami_crew_messages',
+  CREW_COVERS: 'nao_crew_custom_covers',
+  FOLLOW_REQUESTS: 'nao_follow_requests_v1',
+  APP_NOTIFICATIONS: 'nao_app_notifications_v1',
+  FOUNDER_FEEDBACK: 'nao_founder_feedback_v1'
 };
 
 const GUEST_PILOT: User = {
@@ -148,7 +184,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [users, setUsers] = useState<User[]>(INITIAL_USERS);
   const [motorcycles, setMotorcycles] = useState<Motorcycle[]>(INITIAL_MOTORCYCLES);
   const [crews, setCrews] = useState<Crew[]>(INITIAL_CREWS);
-  const [currentCrew, setCurrentCrew] = useState<Crew | null>(INITIAL_CREWS[0]);
+  const [currentCrew, setCurrentCrew] = useState<Crew | null>(null);
   const [rodadas, setRodadas] = useState<Rodada[]>(INITIAL_RODADAS);
   const [currentRodada, setCurrentRodada] = useState<Rodada | null>(INITIAL_RODADAS[0]);
   const [routeProposals, setRouteProposals] = useState<RouteProposal[]>(INITIAL_ROUTE_PROPOSALS);
@@ -161,13 +197,155 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isSupabaseOnline] = useState(isSupabaseConfigured());
   const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [isOnboardingOpen, setOnboardingOpen] = useState(false);
+  const [founderUserNumber, setFounderUserNumber] = useState<number | null>(null);
+  const [currentUserFounderNumber, setCurrentUserFounderNumber] = useState<number | null>(null);
+
+  // Founder feedbacks store (local storage + cloud sync via realtime broadcast)
+  const [founderFeedbacks, setFounderFeedbacks] = useState<FounderFeedback[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEYS.FOUNDER_FEEDBACK);
+        if (saved) return JSON.parse(saved);
+      } catch {}
+    }
+    return [];
+  });
+
+  const dismissFounderWelcome = () => {
+    if (currentUser?.id) {
+      try {
+        localStorage.setItem(`nao_founder_welcome_shown_${currentUser.id}`, 'true');
+      } catch {}
+    }
+    setFounderUserNumber(null);
+  };
+
+  // Helper to determine exact user position in registration order (<= 50 means founder)
+  const calculateUserFounderNumber = async (userId: string): Promise<number | null> => {
+    if (!userId || userId === 'guest') return null;
+    try {
+      if (isSupabaseConfigured()) {
+        const { data: profiles, error } = await supabase
+          .from('profiles')
+          .select('id, created_at')
+          .order('created_at', { ascending: true });
+
+        if (!error && profiles && profiles.length > 0) {
+          const userIndex = profiles.findIndex((p: any) => p.id === userId);
+          if (userIndex !== -1) {
+            const realPosition = userIndex + 1;
+            return realPosition <= 50 ? realPosition : null;
+          }
+        }
+      }
+
+      // Fallback local memory
+      const localIndex = users.findIndex(u => u.id === userId);
+      if (localIndex !== -1) {
+        const pos = localIndex + 1;
+        return pos <= 50 ? pos : null;
+      }
+    } catch (err) {
+      console.warn('Error calculating founder number:', err);
+    }
+    return null;
+  };
+
+  // Helper to check if current user is within first 50 registered users and show popup once
+  const checkAndTriggerFounderWelcome = async (userId: string) => {
+    if (!userId || userId === 'guest') return;
+    try {
+      const founderNum = await calculateUserFounderNumber(userId);
+      if (founderNum !== null) {
+        setCurrentUserFounderNumber(founderNum);
+        const alreadyShown = localStorage.getItem(`nao_founder_welcome_shown_${userId}`);
+        if (alreadyShown !== 'true') {
+          setFounderUserNumber(founderNum);
+        }
+      } else {
+        setCurrentUserFounderNumber(null);
+      }
+    } catch (err) {
+      console.warn('Error checking founder number:', err);
+    }
+  };
+
+  // Send feedback from founder to admin
+  const sendFounderFeedback = async (
+    category: 'sugerencia' | 'problema' | 'comentario' | 'idea',
+    message: string
+  ): Promise<{ success: boolean; message: string }> => {
+    if (!message.trim()) {
+      return { success: false, message: 'Por favor escribe un mensaje.' };
+    }
+
+    const newFeedback: FounderFeedback = {
+      id: `fb-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+      userId: currentUser.id,
+      userName: currentUser.name,
+      userHandle: currentUser.handle,
+      userEmail: currentUser.email,
+      userAvatar: currentUser.avatar,
+      founderNumber: currentUserFounderNumber || undefined,
+      category,
+      message: message.trim(),
+      createdAt: new Date().toISOString(),
+      status: 'nuevo'
+    };
+
+    setFounderFeedbacks(prev => {
+      const updated = [newFeedback, ...prev];
+      try {
+        localStorage.setItem(STORAGE_KEYS.FOUNDER_FEEDBACK, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    // Broadcast in realtime so Admin immediately sees the new message
+    if (isSupabaseConfigured()) {
+      try {
+        supabase.channel('public:admin_channel').send({
+          type: 'broadcast',
+          event: 'new_founder_feedback',
+          payload: newFeedback
+        }).then(() => {}).catch(() => {});
+      } catch {}
+    }
+
+    return { success: true, message: '¡Gracias! Tu mensaje fue enviado directamente a Patricio Martin.' };
+  };
+
+  const markFeedbackStatus = (feedbackId: string, status: 'nuevo' | 'leido' | 'archivado') => {
+    setFounderFeedbacks(prev => {
+      const updated = prev.map(f => f.id === feedbackId ? { ...f, status } : f);
+      try {
+        localStorage.setItem(STORAGE_KEYS.FOUNDER_FEEDBACK, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
+
+  const deleteFeedback = (feedbackId: string) => {
+    setFounderFeedbacks(prev => {
+      const updated = prev.filter(f => f.id !== feedbackId);
+      try {
+        localStorage.setItem(STORAGE_KEYS.FOUNDER_FEEDBACK, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
 
   const completeOnboarding = () => {
     setOnboardingOpen(false);
-    if (currentUser.id) {
-      try {
+    try {
+      if (currentUser.id) {
         localStorage.setItem(`nao_onboarding_done_${currentUser.id}`, 'true');
-      } catch {}
+      }
+      localStorage.setItem('nao_onboarding_done_global', 'true');
+    } catch {}
+    // If they haven't seen founder welcome and are top 50, trigger it
+    if (currentUser.id && currentUser.id !== 'guest') {
+      checkAndTriggerFounderWelcome(currentUser.id);
     }
   };
 
@@ -214,7 +392,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         });
         try {
           localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(mappedUser));
+          localStorage.setItem(`nao_onboarding_done_${mappedUser.id}`, 'true');
         } catch {}
+        setOnboardingOpen(false);
+        // Trigger founder popup if user is in top 50 and hasn't seen it yet
+        checkAndTriggerFounderWelcome(mappedUser.id);
       } else if (fallbackEmail) {
         // Create initial profile for OAuth or first-time user
         const newName = fallbackEmail.split('@')[0];
@@ -263,10 +445,67 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  // Check if handle is already taken by another pilot
+  const checkHandleAvailability = async (rawHandle: string, excludeUserId?: string): Promise<{ available: boolean; message?: string }> => {
+    const cleanHandle = rawHandle.trim().toLowerCase().replace(/^@/, '');
+    if (!cleanHandle) {
+      return { available: false, message: 'El apodo o usuario no puede estar vacío.' };
+    }
+    if (cleanHandle.length < 3) {
+      return { available: false, message: 'El apodo debe tener al menos 3 caracteres.' };
+    }
+    if (!/^[a-z0-9_.]+$/.test(cleanHandle)) {
+      return { available: false, message: 'El apodo solo puede contener letras, números, puntos y guiones bajos.' };
+    }
+
+    const formattedHandle = `@${cleanHandle}`;
+
+    // 1. Check in local memory/cache
+    const foundInLocal = users.find(u => {
+      if (excludeUserId && u.id === excludeUserId) return false;
+      const uHandle = (u.handle || '').toLowerCase().trim();
+      return uHandle === formattedHandle || uHandle.replace(/^@/, '') === cleanHandle;
+    });
+
+    if (foundInLocal) {
+      return { available: false, message: `El apodo ${formattedHandle} ya está en uso por otro piloto.` };
+    }
+
+    // 2. Check in Supabase cloud profiles
+    if (isSupabaseConfigured()) {
+      try {
+        let query = supabase
+          .from('profiles')
+          .select('id, handle')
+          .or(`handle.ilike.${formattedHandle},handle.ilike.@${cleanHandle},handle.ilike.${cleanHandle}`);
+
+        if (excludeUserId) {
+          query = query.neq('id', excludeUserId);
+        }
+
+        const { data, error } = await query;
+        if (!error && data && data.length > 0) {
+          return { available: false, message: `El apodo ${formattedHandle} ya está registrado. Elige uno diferente.` };
+        }
+      } catch (err) {
+        console.warn('Error checking handle availability in cloud:', err);
+      }
+    }
+
+    return { available: true };
+  };
+
   // Sign Up with Supabase / Local Fallback
   const signUp = async (email: string, password: string, name: string, handle: string): Promise<{ success: boolean; message: string }> => {
+    // Check handle availability first
+    const handleCheck = await checkHandleAvailability(handle);
+    if (!handleCheck.available) {
+      return { success: false, message: handleCheck.message || 'Este apodo ya está en uso.' };
+    }
+
     if (isSupabaseConfigured()) {
-      const formattedHandle = handle.startsWith('@') ? handle : `@${handle}`;
+      const cleanHandle = handle.trim().toLowerCase().replace(/^@/, '');
+      const formattedHandle = `@${cleanHandle}`;
       const defaultAvatar = 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250';
       const redirectUrl = typeof window !== 'undefined' ? window.location.origin : 'https://nao-club-three.vercel.app';
 
@@ -333,6 +572,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
     setCurrentUser(newPilot);
     setUsers(prev => [newPilot, ...prev]);
+    setOnboardingOpen(true);
     try {
       localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(newPilot));
     } catch {}
@@ -422,7 +662,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Update Current User Profile
-  const updateCurrentUserProfile = async (updates: Partial<User>) => {
+  const updateCurrentUserProfile = async (updates: Partial<User>): Promise<{ success: boolean; message?: string }> => {
+    // If handle is being updated, verify uniqueness
+    if (updates.handle && updates.handle !== currentUser.handle) {
+      const check = await checkHandleAvailability(updates.handle, currentUser.id);
+      if (!check.available) {
+        return { success: false, message: check.message || 'El apodo elegido ya está en uso por otro piloto.' };
+      }
+    }
+
     const updated: User = { ...currentUser, ...updates };
     setCurrentUser(updated);
     setUsers(prev => prev.map(u => u.id === updated.id ? updated : u));
@@ -432,7 +680,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     if (isSupabaseConfigured() && currentUser.id) {
       try {
-        await supabase.from('profiles').update({
+        const { error } = await supabase.from('profiles').update({
           name: updated.name,
           handle: updated.handle,
           bio: updated.bio,
@@ -442,10 +690,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           emergency_contact: updated.emergencyContact,
           avatar_url: updated.avatar
         }).eq('id', currentUser.id);
-      } catch (err) {
+
+        if (error) {
+          console.error('Error updating Supabase profile:', error);
+          if (error.code === '23505' || error.message?.includes('duplicate') || error.message?.includes('unique')) {
+            return { success: false, message: 'Este apodo ya está registrado en el club. Elige uno diferente.' };
+          }
+        }
+      } catch (err: any) {
         console.error('Error updating Supabase profile:', err);
+        return { success: false, message: err?.message || 'Error al guardar en el servidor' };
       }
     }
+
+    return { success: true };
   };
 
   // Moto Expeditions & Social state
@@ -455,13 +713,48 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [savedRouteIds, setSavedRouteIds] = useState<string[]>(CURRENT_USER.savedRouteIds || ['route-2', 'route-3', 'route-5']);
   const [routeLists, setRouteLists] = useState<RouteList[]>(INITIAL_ROUTE_LISTS);
   const [selectedPilotProfile, setSelectedPilotProfile] = useState<User | null>(null);
-  const [followingUserIds, setFollowingUserIds] = useState<string[]>(['user-manuel', 'user-mich']);
+  const [followingUserIds, setFollowingUserIds] = useState<string[]>([]);
+  const [followersUserIds, setFollowersUserIds] = useState<string[]>([]);
+  const [allFollows, setAllFollows] = useState<{ follower_id: string; following_id: string }[]>([]);
+  const [followRequests, setFollowRequests] = useState<FollowRequest[]>([]);
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
 
   // Load from LocalStorage if available
   useEffect(() => {
     try {
+      const savedNotifications = localStorage.getItem(STORAGE_KEYS.APP_NOTIFICATIONS);
+      if (savedNotifications) {
+        try {
+          const parsedNotifs: AppNotification[] = JSON.parse(savedNotifications);
+          setNotifications(parsedNotifs);
+        } catch {}
+      }
+
       const savedFollowing = localStorage.getItem('nao_following_users');
-      if (savedFollowing) setFollowingUserIds(JSON.parse(savedFollowing));
+      if (savedFollowing) {
+        const parsed: string[] = JSON.parse(savedFollowing);
+        // Clean out legacy mock IDs
+        const cleaned = parsed.filter(id => id !== 'user-manuel' && id !== 'user-mich');
+        setFollowingUserIds(cleaned);
+      }
+
+      const savedFollowers = localStorage.getItem('nao_followers_users');
+      if (savedFollowers) {
+        const parsed: string[] = JSON.parse(savedFollowers);
+        // Clean out legacy mock IDs
+        const cleaned = parsed.filter(id => id !== 'user-manuel' && id !== 'user-mich');
+        setFollowersUserIds(cleaned);
+      }
+
+      const savedRequests = localStorage.getItem(STORAGE_KEYS.FOLLOW_REQUESTS);
+      if (savedRequests) {
+        const parsedReqs: FollowRequest[] = JSON.parse(savedRequests);
+        // Clean out legacy dummy requests
+        const cleanedReqs = parsedReqs.filter(r => r.id !== 'req-mock-1' && r.fromUserId !== 'user-manuel');
+        setFollowRequests(cleanedReqs);
+      } else {
+        setFollowRequests([]);
+      }
 
       const savedMotos = localStorage.getItem(STORAGE_KEYS.MOTORCYCLES);
       if (savedMotos) {
@@ -475,8 +768,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       const savedCrews = localStorage.getItem(STORAGE_KEYS.CREWS);
       if (savedCrews) {
+        let customCovers: Record<string, string> = {};
+        try {
+          const savedCustomCovers = localStorage.getItem(STORAGE_KEYS.CREW_COVERS);
+          if (savedCustomCovers) customCovers = JSON.parse(savedCustomCovers);
+        } catch {}
+
         let parsed: Crew[] = JSON.parse(savedCrews);
         parsed = parsed.map(c => {
+          const coverOverride = customCovers[c.id];
           if (c.id === 'crew-motomami') {
             const currentMembers = Array.isArray(c.members) ? [...c.members] : [];
             INITIAL_CREWS[0].members.forEach(initM => {
@@ -486,6 +786,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             });
             return {
               ...c,
+              coverImage: coverOverride || c.coverImage,
               name: 'MotoMami',
               inviteCode: 'MAMI-2026',
               members: currentMembers,
@@ -505,16 +806,44 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               c.whatsappGroupUrl.includes('Jg1AKUEqoXF7nXZuAPJ588');
             return {
               ...c,
+              coverImage: coverOverride || c.coverImage,
               members: currentMembers,
               whatsappGroupUrl: isDummyLink ? undefined : c.whatsappGroupUrl
             };
           }
-          return c;
+          return {
+            ...c,
+            coverImage: coverOverride || c.coverImage
+          };
         });
-        localStorage.setItem(STORAGE_KEYS.CREWS, JSON.stringify(parsed));
-        setCrews(parsed);
-        const myCrew = parsed.find(c => c.members.some(m => m.userId === CURRENT_USER.id)) || parsed[0];
-        setCurrentCrew(myCrew);
+
+        // Remove duplicates by ID and by Normalized Name/Slug
+        const seenNames = new Set<string>();
+        const uniqueCrews: Crew[] = [];
+        for (const c of parsed) {
+          const normKey = (c.slug || c.name.toLowerCase().trim().replace(/\s+/g, '-'));
+          if (!seenNames.has(normKey)) {
+            seenNames.add(normKey);
+            uniqueCrews.push(c);
+          }
+        }
+        localStorage.setItem(STORAGE_KEYS.CREWS, JSON.stringify(uniqueCrews));
+        setCrews(uniqueCrews);
+        // Las tribus son privadas: únicamente seleccionar si el usuario actual es creador o miembro
+        const savedUserStr = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
+        let activeUid = CURRENT_USER.id;
+        if (savedUserStr) {
+          try {
+            const parsedUser = JSON.parse(savedUserStr);
+            if (parsedUser?.id) activeUid = parsedUser.id;
+          } catch {}
+        }
+        const myCrew = parsed.find(c => c.creatorId === activeUid || c.members.some(m => m.userId === activeUid));
+        if (myCrew) {
+          setCurrentCrew(myCrew);
+        } else {
+          setCurrentCrew(null);
+        }
       }
 
       const savedActivities = localStorage.getItem(STORAGE_KEYS.ACTIVITIES);
@@ -562,6 +891,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           }
         } catch {}
       }
+
+      // End of local storage initial hydration
     } catch (e) {
       console.warn('Could not read from localStorage', e);
     }
@@ -576,6 +907,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const parsed = JSON.parse(savedUserStr);
         if (parsed && parsed.id && parsed.id !== 'guest') {
           setCurrentUser(parsed);
+          calculateUserFounderNumber(parsed.id).then(num => {
+            if (num !== null) setCurrentUserFounderNumber(num);
+          });
         }
       }
     } catch {}
@@ -650,9 +984,87 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           createdAt: c.created_at?.split('T')[0] || ''
         }));
         setCrews(prev => {
-          const cloudIds = new Set(mappedCrews.map(cr => cr.id));
-          return [...mappedCrews, ...prev.filter(cr => !cloudIds.has(cr.id))];
+          let customCovers: Record<string, string> = {};
+          try {
+            const savedCustomCovers = localStorage.getItem(STORAGE_KEYS.CREW_COVERS);
+            if (savedCustomCovers) customCovers = JSON.parse(savedCustomCovers);
+          } catch {}
+
+          const mergedMapped = mappedCrews.map(cr => ({
+            ...cr,
+            coverImage: customCovers[cr.id] || cr.coverImage
+          }));
+
+          const cloudIds = new Set(mergedMapped.map(cr => cr.id));
+          const allCrews = [...mergedMapped, ...prev.filter(cr => !cloudIds.has(cr.id))];
+
+          const seenNames = new Set<string>();
+          const finalCrews: Crew[] = [];
+          for (const c of allCrews) {
+            const normKey = (c.slug || c.name.toLowerCase().trim().replace(/\s+/g, '-'));
+            if (!seenNames.has(normKey)) {
+              seenNames.add(normKey);
+              finalCrews.push(c);
+            }
+          }
+
+          // Sincronizar currentCrew si ya estaba seleccionado y pertenece a él
+          setCurrentCrew(curr => {
+            if (!curr) return null;
+            const updatedCurr = finalCrews.find(c => c.id === curr.id);
+            return updatedCurr || null;
+          });
+
+          return finalCrews;
         });
+      }
+    });
+
+    // Hydrate follows from cloud and sync requests
+    supabase.from('follows').select('*').then(async ({ data: followsData }) => {
+      if (followsData) {
+        setAllFollows(followsData.map((f: any) => ({ follower_id: f.follower_id, following_id: f.following_id })));
+
+        const cloudFollowing = followsData
+          .filter((f: any) => f.follower_id === currentUser.id)
+          .map((f: any) => f.following_id);
+        setFollowingUserIds(cloudFollowing);
+
+        const cloudFollowers = followsData
+          .filter((f: any) => f.following_id === currentUser.id)
+          .map((f: any) => f.follower_id);
+        setFollowersUserIds(cloudFollowers);
+
+        // Si alguien sigue a currentUser pero no estaba reconocido en followRequests locales,
+        // generar notificación visible en la campana
+        if (currentUser.id && currentUser.id !== 'guest' && cloudFollowers.length > 0) {
+          const { data: profilesData } = await supabase.from('profiles').select('*');
+          if (profilesData && profilesData.length > 0) {
+            const profilesMap = new Map(profilesData.map((p: any) => [p.id, p]));
+            setFollowRequests(prev => {
+              const existingFromIds = new Set(prev.map(r => r.fromUserId));
+              const newReqs: FollowRequest[] = [];
+              cloudFollowers.forEach((followerId: string) => {
+                if (!existingFromIds.has(followerId)) {
+                  const prof = profilesMap.get(followerId);
+                  if (prof) {
+                    newReqs.push({
+                      id: `cloud-follow-${followerId}`,
+                      fromUserId: prof.id,
+                      fromUserName: prof.name || 'Piloto',
+                      fromUserHandle: prof.handle || '@piloto',
+                      fromUserAvatar: prof.avatar_url || 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
+                      toUserId: currentUser.id,
+                      createdAt: new Date().toISOString(),
+                      status: 'pending'
+                    });
+                  }
+                }
+              });
+              return newReqs.length > 0 ? [...newReqs, ...prev] : prev;
+            });
+          }
+        }
       }
     });
 
@@ -745,11 +1157,92 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       )
       .subscribe();
 
+    // Realtime channel for social follow notifications across all devices
+    const socialChannel = supabase
+      .channel('public:social_notifications')
+      .on(
+        'broadcast',
+        { event: 'new_follow_request' },
+        (payload: any) => {
+          if (payload?.payload) {
+            const req = payload.payload as FollowRequest;
+            if (req.toUserId === currentUser.id || (currentUser.handle && req.toUserId === currentUser.handle)) {
+              setFollowRequests(prev => {
+                if (prev.some(r => r.id === req.id)) return prev;
+                return [req, ...prev];
+              });
+            }
+          }
+        }
+      )
+      .on(
+        'broadcast',
+        { event: 'follow_request_accepted' },
+        (payload: any) => {
+          if (payload?.payload) {
+            const { followerId, followingId } = payload.payload;
+            if (followerId === currentUser.id) {
+              setFollowingUserIds(prev => prev.includes(followingId) ? prev : [...prev, followingId]);
+            }
+          }
+        }
+      )
+      .on(
+        'broadcast',
+        { event: 'new_route_published' },
+        (payload: any) => {
+          if (payload?.payload) {
+            const notif = payload.payload as AppNotification;
+            // Solo registrar si el usuario no es el autor de la ruta
+            if (notif.fromUserId !== currentUser.id) {
+              // Si la notificación va dirigida a un grupo, verificar si el usuario es miembro de esa crew
+              if (notif.crewId) {
+                const userCrews = crews.filter(c => 
+                  c.id === notif.crewId && (c.members.some(m => m.userId === currentUser.id) || c.creatorId === currentUser.id)
+                );
+                if (userCrews.length === 0) return;
+              }
+              setNotifications(prev => {
+                if (prev.some(n => n.id === notif.id)) return prev;
+                const updated = [notif, ...prev];
+                try {
+                  localStorage.setItem(STORAGE_KEYS.APP_NOTIFICATIONS, JSON.stringify(updated));
+                } catch {}
+                return updated;
+              });
+            }
+          }
+        }
+      )
+    // Realtime channel for admin events (feedback from founders)
+    const adminChannel = supabase
+      .channel('public:admin_channel')
+      .on(
+        'broadcast',
+        { event: 'new_founder_feedback' },
+        (payload: any) => {
+          if (payload?.payload) {
+            const fb = payload.payload as FounderFeedback;
+            setFounderFeedbacks(prev => {
+              if (prev.some(f => f.id === fb.id)) return prev;
+              const updated = [fb, ...prev];
+              try {
+                localStorage.setItem(STORAGE_KEYS.FOUNDER_FEEDBACK, JSON.stringify(updated));
+              } catch {}
+              return updated;
+            });
+          }
+        }
+      )
+      .subscribe();
+
     return () => {
       subscription.unsubscribe();
       supabase.removeChannel(crewsChannel);
+      supabase.removeChannel(socialChannel);
+      supabase.removeChannel(adminChannel);
     };
-  }, []);
+  }, [currentUser.id, currentUser.handle]);
 
   // Save changes
   useEffect(() => {
@@ -789,9 +1282,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   useEffect(() => {
     try {
+      localStorage.setItem(STORAGE_KEYS.FOLLOW_REQUESTS, JSON.stringify(followRequests));
+    } catch (e) { console.error(e); }
+  }, [followRequests]);
+
+  useEffect(() => {
+    try {
       localStorage.setItem('nao_following_users', JSON.stringify(followingUserIds));
     } catch (e) { console.error(e); }
   }, [followingUserIds]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('nao_followers_users', JSON.stringify(followersUserIds));
+    } catch (e) { console.error(e); }
+  }, [followersUserIds]);
 
   const userBikes = motorcycles.filter(m => m.userId === currentUser.id);
 
@@ -927,6 +1432,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       } catch {}
       return updatedList;
     });
+
+    if (updates.coverImage) {
+      try {
+        const savedCovers = localStorage.getItem(STORAGE_KEYS.CREW_COVERS);
+        const coversMap = savedCovers ? JSON.parse(savedCovers) : {};
+        coversMap[crewId] = updates.coverImage;
+        localStorage.setItem(STORAGE_KEYS.CREW_COVERS, JSON.stringify(coversMap));
+      } catch (e) {
+        console.warn('Could not persist cover in CREW_COVERS:', e);
+      }
+    }
+
     setCurrentCrew(prev => (prev && prev.id === crewId ? { ...prev, ...updates } : prev));
     if (updates.name || updates.members) {
       syncActivitiesWithCrew(crewId, updates.name, updates.members);
@@ -954,6 +1471,109 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const deleteCrew = (crewId: string): { success: boolean; message: string } => {
+    const targetCrew = crews.find(c => c.id === crewId);
+    if (!targetCrew) {
+      return { success: false, message: 'El grupo no existe.' };
+    }
+
+    // Validación estricta: Solo quien lo creó lo puede borrar
+    const isCreator = targetCrew.creatorId === currentUser.id;
+    if (!isCreator) {
+      return { 
+        success: false, 
+        message: 'Permiso denegado. Solo el creador de la tribu tiene autoridad para borrar el grupo.' 
+      };
+    }
+
+    // 1. Eliminar de crews local y storage
+    setCrews(prev => {
+      const updated = prev.filter(c => c.id !== crewId);
+      try {
+        localStorage.setItem(STORAGE_KEYS.CREWS, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    // 2. Si estaba activa como currentCrew, resetear
+    if (currentCrew?.id === crewId) {
+      setCurrentCrew(null);
+    }
+
+    // 3. Limpiar mensajes locales del grupo
+    setCrewMessages(prev => {
+      const updated = prev.filter(m => m.crewId !== crewId);
+      try {
+        localStorage.setItem(STORAGE_KEYS.CREW_MESSAGES, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    // 4. Limpiar rodadas asociadas a este grupo
+    setRodadas(prev => {
+      const updated = prev.filter(r => r.crewId !== crewId);
+      try {
+        localStorage.setItem(STORAGE_KEYS.RODADAS, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    // 5. Eliminar de Supabase Cloud si está configurado
+    if (isSupabaseConfigured()) {
+      supabase.from('crew_messages').delete().eq('crew_id', crewId).then(() => {});
+      supabase.from('crew_members').delete().eq('crew_id', crewId).then(() => {});
+      supabase.from('crews').delete().eq('id', crewId).then(({ error }) => {
+        if (error) console.error('Error deleting crew in Supabase:', error);
+      });
+    }
+
+    return { success: true, message: `El grupo "${targetCrew.name}" ha sido eliminado exitosamente.` };
+  };
+
+  const leaveCrew = (crewId: string): { success: boolean; message: string } => {
+    const targetCrew = crews.find(c => c.id === crewId);
+    if (!targetCrew) {
+      return { success: false, message: 'El grupo no existe.' };
+    }
+
+    // Si es el creador, no puede simplemente salirse sin borrar o transferir
+    if (targetCrew.creatorId === currentUser.id) {
+      return { 
+        success: false, 
+        message: 'Eres el creador de este grupo. Si ya no deseas mantenerlo, debes borrarlo.' 
+      };
+    }
+
+    const updatedMembers = targetCrew.members.filter(m => m.userId !== currentUser.id);
+    const updatedCrew: Crew = {
+      ...targetCrew,
+      members: updatedMembers
+    };
+
+    setCrews(prev => {
+      const updated = prev.map(c => c.id === crewId ? updatedCrew : c);
+      try {
+        localStorage.setItem(STORAGE_KEYS.CREWS, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    if (currentCrew?.id === crewId) {
+      setCurrentCrew(null);
+    }
+
+    if (isSupabaseConfigured()) {
+      supabase
+        .from('crew_members')
+        .delete()
+        .eq('crew_id', crewId)
+        .eq('user_id', currentUser.id)
+        .then(() => {});
+    }
+
+    return { success: true, message: `Te has salido de "${targetCrew.name}".` };
+  };
+
   const sendCrewMessage = (crewId: string, text: string) => {
     if (!text.trim()) return;
     const userBikes = motorcycles.filter(m => m.userId === currentUser.id);
@@ -968,7 +1588,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       message: text.trim(),
       createdAt: new Date().toISOString()
     };
-    setCrewMessages(prev => [...prev, newMsg]);
+    setCrewMessages(prev => {
+      const updated = [...prev, newMsg];
+      try {
+        localStorage.setItem(STORAGE_KEYS.CREW_MESSAGES, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
 
     if (isSupabaseConfigured() && currentUser.id && currentUser.id.length === 36) {
       supabase.from('crew_messages').insert({
@@ -1064,9 +1690,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const enterCrew = (crewId: string) => {
     const found = crews.find(c => c.id === crewId);
     if (found) {
-      const isMember = found.members.some(m => m.userId === currentUser.id);
+      const isMember = found.members.some(m => m.userId === currentUser.id) || found.creatorId === currentUser.id;
       if (!isMember) {
-        // No se permite ver el detalle de clubes a los que no perteneces
+        // Los grupos son estrictamente privados: no se permite ver detalles sin ser miembro o creador
         return;
       }
       setCurrentCrew(found);
@@ -1079,7 +1705,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (found) {
       const associatedCrew = crews.find(c => c.id === found.crewId);
       if (associatedCrew) {
-        const isMember = associatedCrew.members.some(m => m.userId === currentUser.id);
+        const isMember = associatedCrew.members.some(m => m.userId === currentUser.id) || associatedCrew.creatorId === currentUser.id;
         if (!isMember) {
           // No se puede entrar a eventos privados de clubes a los que no perteneces
           return;
@@ -1135,9 +1761,100 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       votes: [currentUser.id],
       comments: []
     };
-    setRouteProposals(prev => [newRoute, ...prev]);
+    setRouteProposals(prev => {
+      const updated = [newRoute, ...prev];
+      try {
+        localStorage.setItem(STORAGE_KEYS.ROUTES, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
     setSelectedRoute(newRoute);
     setActiveNavTab('crew');
+
+    // Identificar el grupo destino (por crewId explícito o por la rodada a la que pertenece)
+    const targetCrewId = newRoute.crewId || (newRoute.rodadaId ? rodadas.find(r => r.id === newRoute.rodadaId)?.crewId : currentCrew?.id);
+    const targetCrew = crews.find(c => c.id === targetCrewId);
+
+    if (targetCrewId && targetCrew) {
+      // 1. Crear notificación para los miembros de la tribu
+      const notifTitle = newRoute.isRecorded ? 'Nueva ruta grabada en tu tribu' : 'Nueva ruta propuesta en tu tribu';
+      const notifMessage = `${currentUser.name} compartió "${newRoute.title}" (${newRoute.destination || 'Expedición'}) en ${targetCrew.name}.`;
+
+      createNotification({
+        type: 'route_published',
+        title: notifTitle,
+        message: notifMessage,
+        crewId: targetCrew.id,
+        crewName: targetCrew.name,
+        fromUserId: currentUser.id,
+        fromUserName: currentUser.name,
+        fromUserAvatar: currentUser.avatar,
+        routeId: newRoute.id
+      });
+
+      // 2. Enviar mensaje de sistema discreto al chat de la tribu
+      const chatSysMsg: CrewChatMessage = {
+        id: `msg-sys-${Date.now()}`,
+        crewId: targetCrew.id,
+        userId: 'system',
+        userName: 'SISTEMA NAO',
+        userAvatar: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=150',
+        message: `📍 ${currentUser.name} publicó una nueva ruta: "${newRoute.title}" hacia ${newRoute.destination}.`,
+        createdAt: new Date().toISOString(),
+        systemAction: {
+          type: 'ruta_propuesta',
+          targetTitle: newRoute.title,
+          targetId: newRoute.id
+        }
+      };
+
+      setCrewMessages(prev => {
+        const updated = [...prev, chatSysMsg];
+        try {
+          localStorage.setItem(STORAGE_KEYS.CREW_MESSAGES, JSON.stringify(updated));
+        } catch {}
+        return updated;
+      });
+
+      if (isSupabaseConfigured()) {
+        supabase.from('crew_messages').insert({
+          crew_id: targetCrew.id,
+          user_id: 'system',
+          user_name: 'SISTEMA NAO',
+          user_avatar: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=150',
+          content: chatSysMsg.message
+        }).then(() => {});
+      }
+    }
+  };
+
+  const deleteRouteProposal = (routeId: string): boolean => {
+    const targetRoute = routeProposals.find(r => r.id === routeId);
+    if (!targetRoute) return false;
+
+    // Security check: Only author / creator can delete their route
+    const isOwner = 
+      (targetRoute.proposedByUserId && targetRoute.proposedByUserId === currentUser.id) ||
+      (targetRoute.proposedByName && targetRoute.proposedByName.toLowerCase().trim() === currentUser.name?.toLowerCase().trim());
+
+    if (!isOwner) {
+      console.warn('Unauthorized: Only the creator of the route can delete it.');
+      return false;
+    }
+
+    setRouteProposals(prev => {
+      const updated = prev.filter(r => r.id !== routeId);
+      try {
+        localStorage.setItem(STORAGE_KEYS.ROUTES, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    if (selectedRoute?.id === routeId) {
+      setSelectedRoute(null);
+    }
+
+    return true;
   };
 
   const voteRoute = (routeId: string) => {
@@ -1222,12 +1939,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       text: text.trim(),
       createdAt: 'Hace un momento'
     };
-    setRouteProposals(prev => prev.map(r => {
-      if (r.id === routeId) {
-        return { ...r, comments: [...r.comments, newComment] };
-      }
-      return r;
-    }));
+    setRouteProposals(prev => {
+      const updated = prev.map(r => {
+        if (r.id === routeId) {
+          return { ...r, comments: [...r.comments, newComment] };
+        }
+        return r;
+      });
+      try {
+        localStorage.setItem(STORAGE_KEYS.ROUTES, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
     setSelectedRoute(prev => {
       if (!prev || prev.id !== routeId) return prev;
       return { ...prev, comments: [...prev.comments, newComment] };
@@ -1519,7 +2242,34 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       kudosAvatars: [],
       commentsCount: 0
     };
-    setActivities(prev => [newAct, ...prev]);
+    setActivities(prev => {
+      const updated = [newAct, ...prev];
+      try {
+        localStorage.setItem(STORAGE_KEYS.ACTIVITIES, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    // Update pilot real stats based on real ride
+    setCurrentUser(prevUser => {
+      const newTotalKm = Math.round(((prevUser.stats?.totalKm || 0) + (data.distanceKm || 0)) * 10) / 10;
+      const newCompletedCount = (prevUser.stats?.completedCount || 0) + 1;
+      const newElevationGain = (prevUser.stats?.elevationGain || 0) + (data.elevationGainM || 0);
+
+      const updated = {
+        ...prevUser,
+        stats: {
+          totalKm: newTotalKm,
+          completedCount: newCompletedCount,
+          elevationGain: newElevationGain
+        }
+      };
+
+      try {
+        localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
 
     if (isSupabaseConfigured() && currentUser.id && currentUser.id.length === 36) {
       supabase.from('activities').insert({
@@ -1544,6 +2294,67 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const deleteActivity = (activityId: string): boolean => {
+    const targetActivity = activities.find(a => a.id === activityId);
+    if (!targetActivity) return false;
+
+    // Security check: Only author / publisher can delete their activity
+    const isOwner = 
+      (targetActivity.pilotId && targetActivity.pilotId === currentUser.id) ||
+      (targetActivity.pilotName && targetActivity.pilotName.toLowerCase().trim() === currentUser.name?.toLowerCase().trim()) ||
+      (targetActivity.pilotHandle && currentUser.handle && targetActivity.pilotHandle.toLowerCase().trim() === currentUser.handle.toLowerCase().trim());
+
+    if (!isOwner) {
+      console.warn('Unauthorized: Only the pilot who published this activity can delete it.');
+      return false;
+    }
+
+    // Remove from activities list
+    setActivities(prev => {
+      const updated = prev.filter(a => a.id !== activityId);
+      try {
+        localStorage.setItem(STORAGE_KEYS.ACTIVITIES, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    // Recalculate pilot stats if the deleted activity belonged to currentUser
+    setCurrentUser(prevUser => {
+      const remainingUserActs = activities.filter(a => 
+        a.id !== activityId && (
+          (a.pilotId && a.pilotId === prevUser.id) ||
+          (a.pilotName && a.pilotName.toLowerCase().trim() === prevUser.name?.toLowerCase().trim()) ||
+          (a.groupInfo?.participants?.some(p => p.userId === prevUser.id || p.name?.toLowerCase().trim() === prevUser.name?.toLowerCase().trim()))
+        )
+      );
+
+      const recalculatedKm = Math.round(remainingUserActs.reduce((acc, a) => acc + (a.distanceKm || 0), 0) * 10) / 10;
+      const recalculatedElev = remainingUserActs.reduce((acc, a) => acc + (a.elevationGainM || 0), 0);
+      const recalculatedCount = remainingUserActs.length;
+
+      const updated = {
+        ...prevUser,
+        stats: {
+          totalKm: recalculatedKm,
+          completedCount: recalculatedCount,
+          elevationGain: recalculatedElev
+        }
+      };
+
+      try {
+        localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    // Also delete from Supabase if online
+    if (isSupabaseConfigured() && currentUser.id) {
+      supabase.from('activities').delete().eq('id', activityId).then(() => {});
+    }
+
+    return true;
+  };
+
   const toggleJoinChallenge = (challengeId: string) => {
     setChallenges(prev => prev.map(ch => {
       if (ch.id === challengeId) {
@@ -1563,6 +2374,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const exists = prev.includes(userId);
       const next = exists ? prev.filter(id => id !== userId) : [...prev, userId];
 
+      // Also keep allFollows in sync locally
+      setAllFollows(prevAll => {
+        if (exists) {
+          return prevAll.filter(f => !(f.follower_id === currentUser.id && f.following_id === userId));
+        } else {
+          return [...prevAll, { follower_id: currentUser.id, following_id: userId }];
+        }
+      });
+
       if (isSupabaseConfigured() && currentUser.id && currentUser.id.length === 36 && userId.length === 36) {
         if (exists) {
           supabase.from('follows').delete().match({ follower_id: currentUser.id, following_id: userId }).then(() => {});
@@ -1575,9 +2395,177 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
+  const getFollowersCountForUser = (userId: string): number => {
+    if (!userId) return 0;
+    // If checking current logged-in user, use followersUserIds length
+    if (userId === currentUser.id) {
+      return followersUserIds.length;
+    }
+    // Count how many records have following_id === userId in allFollows
+    const fromAll = allFollows.filter(f => f.following_id === userId).length;
+    // Also check if current user is following this user locally
+    const currentFollowsTarget = followingUserIds.includes(userId);
+    const countedInAll = allFollows.some(f => f.follower_id === currentUser.id && f.following_id === userId);
+    if (currentFollowsTarget && !countedInAll) {
+      return fromAll + 1;
+    }
+    return fromAll;
+  };
+
+  const getFollowingCountForUser = (userId: string): number => {
+    if (!userId) return 0;
+    // If checking current logged-in user, use followingUserIds length
+    if (userId === currentUser.id) {
+      return followingUserIds.length;
+    }
+    return allFollows.filter(f => f.follower_id === userId).length;
+  };
+
   const isFollowingUser = (userId: string) => {
     return followingUserIds.includes(userId);
   };
+
+  const isFollowRequested = (targetUserId: string) => {
+    return followRequests.some(
+      r => r.fromUserId === currentUser.id && r.toUserId === targetUserId && r.status === 'pending'
+    );
+  };
+
+  const requestToFollowUser = (targetUserId: string) => {
+    if (!targetUserId || targetUserId === currentUser.id) return;
+
+    // Si ya lo sigue, no hacer nada o dejar de seguir
+    if (isFollowingUser(targetUserId)) {
+      toggleFollowUser(targetUserId);
+      return;
+    }
+
+    // Si ya mandó solicitud, retirarla
+    const existingIndex = followRequests.findIndex(
+      r => r.fromUserId === currentUser.id && r.toUserId === targetUserId && r.status === 'pending'
+    );
+    if (existingIndex >= 0) {
+      setFollowRequests(prev => prev.filter((_, idx) => idx !== existingIndex));
+      return;
+    }
+
+    // Crear nueva solicitud
+    const newReq: FollowRequest = {
+      id: `req-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+      fromUserId: currentUser.id,
+      fromUserName: currentUser.name,
+      fromUserHandle: currentUser.handle,
+      fromUserAvatar: currentUser.avatar,
+      toUserId: targetUserId,
+      createdAt: new Date().toISOString(),
+      status: 'pending'
+    };
+
+    // Broadcast en Realtime para que el receptor lo vea inmediatamente en su campana
+    if (isSupabaseConfigured()) {
+      supabase.channel('public:social_notifications').send({
+        type: 'broadcast',
+        event: 'new_follow_request',
+        payload: newReq
+      }).then(() => {}).catch(() => {});
+
+      // Sincronizar en tabla follows si ambos son UUIDs
+      if (currentUser.id?.length === 36 && targetUserId.length === 36) {
+        supabase.from('follows').insert({ follower_id: currentUser.id, following_id: targetUserId }).then(() => {});
+      }
+    }
+
+    setFollowRequests(prev => [newReq, ...prev]);
+  };
+
+  const acceptFollowRequest = (requestId: string) => {
+    const req = followRequests.find(r => r.id === requestId);
+    if (!req) return;
+
+    // Actualizar estado de la solicitud a 'accepted'
+    setFollowRequests(prev => prev.filter(r => r.id !== requestId));
+
+    // Agregar al solicitante a la lista de seguidores del usuario actual
+    setFollowersUserIds(prev => prev.includes(req.fromUserId) ? prev : [...prev, req.fromUserId]);
+
+    if (isSupabaseConfigured()) {
+      supabase.channel('public:social_notifications').send({
+        type: 'broadcast',
+        event: 'follow_request_accepted',
+        payload: { followerId: req.fromUserId, followingId: currentUser.id }
+      }).then(() => {}).catch(() => {});
+
+      if (currentUser.id?.length === 36 && req.fromUserId.length === 36) {
+        supabase.from('follows').insert({ follower_id: req.fromUserId, following_id: currentUser.id }).then(() => {});
+      }
+    }
+  };
+
+  const rejectFollowRequest = (requestId: string) => {
+    setFollowRequests(prev => prev.filter(r => r.id !== requestId));
+  };
+
+  const pendingFollowRequests = followRequests.filter(
+    r => r.toUserId === currentUser.id && r.status === 'pending'
+  );
+
+  const markNotificationAsRead = (notificationId: string) => {
+    setNotifications(prev => {
+      const updated = prev.map(n => n.id === notificationId ? { ...n, read: true } : n);
+      try {
+        localStorage.setItem(STORAGE_KEYS.APP_NOTIFICATIONS, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
+
+  const markAllNotificationsAsRead = () => {
+    setNotifications(prev => {
+      const updated = prev.map(n => ({ ...n, read: true }));
+      try {
+        localStorage.setItem(STORAGE_KEYS.APP_NOTIFICATIONS, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
+
+  const clearNotification = (notificationId: string) => {
+    setNotifications(prev => {
+      const updated = prev.filter(n => n.id !== notificationId);
+      try {
+        localStorage.setItem(STORAGE_KEYS.APP_NOTIFICATIONS, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
+
+  const createNotification = (notificationData: Omit<AppNotification, 'id' | 'createdAt' | 'read'>) => {
+    const newNotif: AppNotification = {
+      ...notificationData,
+      id: `notif-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+      createdAt: new Date().toISOString(),
+      read: false
+    };
+
+    setNotifications(prev => {
+      const updated = [newNotif, ...prev];
+      try {
+        localStorage.setItem(STORAGE_KEYS.APP_NOTIFICATIONS, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    // Broadcast vía Supabase realtime
+    if (isSupabaseConfigured()) {
+      supabase.channel('public:social_notifications').send({
+        type: 'broadcast',
+        event: 'new_route_published',
+        payload: newNotif
+      }).then(() => {}).catch(() => {});
+    }
+  };
+
+  const unreadNotificationsCount = notifications.filter(n => !n.read).length;
 
   const openPilotProfileById = (userId: string) => {
     if (!userId) return;
@@ -1598,6 +2586,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // Si no está en users, buscar en actividades y participantes
     for (const act of activities) {
       if (act.pilotId === userId) {
+        const pilotActs = activities.filter(a => a.pilotId === userId);
+        const calcKm = Math.round(pilotActs.reduce((acc, a) => acc + (a.distanceKm || 0), 0) * 10) / 10;
+        const calcElev = pilotActs.reduce((acc, a) => acc + (a.elevationGainM || 0), 0);
         setSelectedPilotProfile({
           id: act.pilotId,
           name: act.pilotName,
@@ -1606,11 +2597,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           avatar: act.pilotAvatar,
           bio: `Piloto de NAO. Moto: ${act.motoModel}.`,
           location: act.location || 'México',
-          ridingLevel: 'Avanzado',
+          ridingLevel: 'Intermedio',
           stats: {
-            totalKm: Math.round(act.distanceKm * 18),
-            completedCount: 15,
-            elevationGain: act.elevationGainM * 12
+            totalKm: calcKm,
+            completedCount: pilotActs.length,
+            elevationGain: calcElev
           }
         });
         return;
@@ -1618,6 +2609,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (act.groupInfo?.participants) {
         const p = act.groupInfo.participants.find(part => part.userId === userId || part.handle === userId);
         if (p) {
+          const participantActs = activities.filter(a => 
+            a.pilotId === p.userId || 
+            a.groupInfo?.participants?.some(part => part.userId === p.userId)
+          );
+          const calcKm = Math.round(participantActs.reduce((acc, a) => acc + (a.distanceKm || 0), 0) * 10) / 10;
+          const calcElev = participantActs.reduce((acc, a) => acc + (a.elevationGainM || 0), 0);
           setSelectedPilotProfile({
             id: p.userId,
             name: p.name,
@@ -1626,12 +2623,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             avatar: p.avatar,
             bio: `Piloto de la tribu ${act.groupInfo.crewName}. Rodando en ${p.motoModel || 'moto dual-sport'}.`,
             location: 'México',
-            ridingLevel: 'Avanzado',
-            phone: '+52 55 4567 8901',
+            ridingLevel: 'Intermedio',
+            phone: '',
             stats: {
-              totalKm: 5120,
-              completedCount: 26,
-              elevationGain: 21800
+              totalKm: calcKm,
+              completedCount: participantActs.length,
+              elevationGain: calcElev
             }
           });
           return;
@@ -1639,8 +2636,78 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     }
 
+    // Si no se encontró en memoria local, consultar Supabase directamente
+    if (isSupabaseConfigured()) {
+      const isUuid = userId.length === 36 && userId.includes('-');
+      const queryBuilder = supabase.from('profiles').select('*');
+      const finalQuery = isUuid 
+        ? queryBuilder.eq('id', userId) 
+        : queryBuilder.or(`handle.eq.${userId},handle.eq.@${userId.replace(/^@/, '')},name.ilike.%${userId}%`);
+
+      finalQuery.maybeSingle().then(async ({ data: p }) => {
+        if (p) {
+          // Obtener motos de este usuario si existen
+          const { data: userMotos } = await supabase.from('motorcycles').select('*').eq('user_id', p.id);
+          if (userMotos && userMotos.length > 0) {
+            setMotorcycles(prev => {
+              const existingIds = new Set(prev.map(m => m.id));
+              const newMotos = userMotos
+                .filter((m: any) => !existingIds.has(m.id))
+                .map((m: any) => ({
+                  id: m.id,
+                  userId: m.user_id,
+                  brand: m.brand,
+                  model: m.model,
+                  year: m.year || 2023,
+                  displacementCc: m.displacement_cc || 500,
+                  type: (m.type as any) || 'Doble Propósito',
+                  nickname: m.nickname || '',
+                  photoUrl: m.image_url || 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=800',
+                  modifications: m.modifications || [],
+                  tires: m.tires || ''
+                }));
+              return [...prev, ...newMotos];
+            });
+          }
+
+          const remoteUser: User = {
+            id: p.id,
+            name: p.name || 'Piloto NAO',
+            handle: p.handle || `@${(p.name || 'piloto').toLowerCase().replace(/\s+/g, '')}`,
+            email: p.email || '',
+            avatar: p.avatar_url || 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
+            bio: p.bio || 'Piloto en NAO.',
+            location: p.location || 'México',
+            ridingLevel: (p.riding_level as any) || 'Intermedio',
+            phone: p.phone,
+            emergencyContact: p.emergency_contact
+          };
+
+          // Guardarlo en users para el caché local
+          setUsers(prev => prev.some(u => u.id === remoteUser.id) ? prev : [...prev, remoteUser]);
+          setSelectedPilotProfile(remoteUser);
+        } else {
+          setSelectedPilotProfile(null);
+        }
+      });
+      return;
+    }
+
     // NUNCA hacer fallback al usuario actual
     setSelectedPilotProfile(null);
+  };
+
+  const closePilotProfile = () => {
+    setSelectedPilotProfile(null);
+    if (typeof window !== 'undefined') {
+      try {
+        const url = new URL(window.location.href);
+        if (url.searchParams.has('piloto')) {
+          url.searchParams.delete('piloto');
+          window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
+        }
+      } catch {}
+    }
   };
 
   return (
@@ -1660,6 +2727,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         enterCrew,
         createCrew,
         updateCrew,
+        deleteCrew,
+        leaveCrew,
         addCrewMember,
         joinCrewByCode,
         rodadas,
@@ -1672,6 +2741,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         selectedRoute,
         setSelectedRoute,
         proposeRoute,
+        deleteRouteProposal,
         voteRoute,
         downvoteRoute,
         addRouteComment,
@@ -1683,6 +2753,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addPackingItem,
         addGalleryPhoto,
         activities,
+        deleteActivity,
         toggleKudo,
         addActivityComment,
         addRecordedActivity,
@@ -1700,9 +2771,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         selectedPilotProfile,
         setSelectedPilotProfile,
         openPilotProfileById,
+        closePilotProfile,
         followingUserIds,
+        followersUserIds,
+        allFollows,
+        getFollowersCountForUser,
+        getFollowingCountForUser,
         toggleFollowUser,
         isFollowingUser,
+        followRequests,
+        pendingFollowRequests,
+        requestToFollowUser,
+        acceptFollowRequest,
+        rejectFollowRequest,
+        isFollowRequested,
+        notifications,
+        unreadNotificationsCount,
+        markNotificationAsRead,
+        markAllNotificationsAsRead,
+        clearNotification,
+        createNotification,
         activeNavTab,
         setActiveNavTab,
         crewMessages,
@@ -1720,6 +2808,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         isOnboardingOpen,
         setOnboardingOpen,
         completeOnboarding,
+        founderUserNumber,
+        dismissFounderWelcome,
+        currentUserFounderNumber,
+        founderFeedbacks,
+        sendFounderFeedback,
+        markFeedbackStatus,
+        deleteFeedback,
+        checkHandleAvailability,
         updateCurrentUserProfile
       }}
     >

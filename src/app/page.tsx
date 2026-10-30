@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../context/AppContext';
 import { Navbar } from '../components/Navbar';
 import { InicioFeedView } from '../components/Feed/InicioFeedView';
@@ -19,11 +19,12 @@ import { LiveRouteRecorderModal } from '../components/Modals/LiveRouteRecorderMo
 import { AuthModal } from '../components/Modals/AuthModal';
 import { WelcomeLoginGate } from '../components/Auth/WelcomeLoginGate';
 import { InitialOnboardingModal } from '../components/Auth/InitialOnboardingModal';
+import { FounderWelcomeModal } from '../components/Modals/FounderWelcomeModal';
 import { BottomBar } from '../components/Navigation/BottomBar';
 import { AdminDashboardView } from '../components/Admin/AdminDashboardView';
 
 export default function Home() {
-  const { activeNavTab, setActiveNavTab, isAuthenticated, isAuthLoading } = useApp();
+  const { activeNavTab, setActiveNavTab, isAuthenticated, isAuthLoading, openPilotProfileById } = useApp();
 
   // Modal states
   const [proposeRouteOpen, setProposeRouteOpen] = useState(false);
@@ -31,6 +32,23 @@ export default function Home() {
   const [createCrewOpen, setCreateCrewOpen] = useState(false);
   const [createRodadaOpen, setCreateRodadaOpen] = useState(false);
   const [recordRouteOpen, setRecordRouteOpen] = useState(false);
+
+  // Handle URL profile sharing: ?piloto=@handle or ?piloto=id
+  const pilotParamHandledRef = useRef(false);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (pilotParamHandledRef.current) return;
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const pilotParam = urlParams.get('piloto');
+      if (pilotParam) {
+        pilotParamHandledRef.current = true;
+        setTimeout(() => {
+          openPilotProfileById(pilotParam);
+        }, 400);
+      }
+    } catch {}
+  }, [openPilotProfileById]);
 
   // If session is still verifying, show clean minimalist loader
   if (isAuthLoading) {
@@ -93,6 +111,7 @@ export default function Home() {
             onOpenJoinCrew={() => setJoinCrewOpen(true)}
             onOpenCreateRodada={() => setCreateRodadaOpen(true)}
             onOpenProposeRoute={() => setProposeRouteOpen(true)}
+            onOpenRecordRoute={() => setRecordRouteOpen(true)}
           />
         )}
 
@@ -145,6 +164,7 @@ export default function Home() {
 
       <AuthModal />
       <InitialOnboardingModal />
+      <FounderWelcomeModal />
 
       <LiveRouteRecorderModal 
         isOpen={recordRouteOpen || activeNavTab === 'registrar'} 

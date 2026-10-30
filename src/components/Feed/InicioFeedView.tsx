@@ -19,6 +19,7 @@ import {
   ShieldCheck,
   TrendingUp,
   UserPlus,
+  UserX,
   Check,
   Plus,
   Maximize2,
@@ -28,7 +29,12 @@ import {
   X,
   SlidersHorizontal,
   Table as TableIcon,
-  LayoutGrid
+  LayoutGrid,
+  Play,
+  Circle,
+  Radio,
+  Navigation,
+  Trash2
 } from 'lucide-react';
 
 const RoadIcon: React.FC<{ className?: string }> = ({ className = "w-3 h-3" }) => (
@@ -74,6 +80,7 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
 }) => {
   const { 
     activities, 
+    deleteActivity,
     toggleKudo, 
     addActivityComment, 
     openPilotProfileById,
@@ -141,6 +148,21 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
   const [sortOrder, setSortOrder] = useState<'recent' | 'distance' | 'kudos'>('recent');
+  const [isGpsBannerDismissed, setIsGpsBannerDismissed] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      return localStorage.getItem('motomami_dismiss_gps_hero_banner') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const handleDismissGpsBanner = () => {
+    setIsGpsBannerDismissed(true);
+    try {
+      localStorage.setItem('motomami_dismiss_gps_hero_banner', 'true');
+    } catch {}
+  };
 
   const disciplineFilters = [
     { id: 'Todas', label: 'Todas' },
@@ -300,6 +322,57 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
         {/* CENTER COLUMN: FEED OF ACTIVITIES (MOBILE & DESKTOP)      */}
         {/* ========================================================= */}
         <section className="col-span-12 lg:col-span-6 space-y-4 sm:space-y-6">
+
+          {/* HERO CTA: INICIAR RODADA HOY / GRABAR RUTA EN VIVO GPS */}
+          {!isGpsBannerDismissed && (
+            <div className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[24px] p-4 sm:p-5 shadow-[4px_4px_0px_#1A1918] relative overflow-hidden group">
+              {/* Top accent badge */}
+              <div className="flex items-center justify-between pb-2.5 border-b-2 border-[#1A1918] mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#E6332A] animate-pulse" />
+                  <span className="text-[10px] sm:text-xs font-mono font-black uppercase tracking-widest text-[#E6332A]">
+                    ★ SISTEMA GPS EN VIVO ★
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-mono font-bold text-[#1A1918]/60 bg-[#F4EEDB] px-2 py-0.5 rounded-lg border border-[#1A1918]">
+                    HOY
+                  </span>
+                  {/* Tachesito discreto para cerrar */}
+                  <button
+                    type="button"
+                    onClick={handleDismissGpsBanner}
+                    title="Cerrar aviso"
+                    className="w-6 h-6 rounded-lg border border-[#1A1918]/30 hover:border-[#1A1918] bg-[#FAF6ED] hover:bg-[#F4EEDB] text-stone-500 hover:text-[#1A1918] flex items-center justify-center transition active:scale-90 cursor-pointer shadow-xs"
+                    aria-label="Cerrar aviso de GPS"
+                  >
+                    <X className="w-3.5 h-3.5 stroke-[2.5]" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5">
+                <div className="space-y-1 min-w-0 flex-1">
+                  <h2 className="font-display font-black text-lg sm:text-xl text-[#1A1918] uppercase tracking-wide leading-tight">
+                    ¿Sales a rodar hoy? Graba tu ruta
+                  </h2>
+                  <p className="text-xs text-[#1A1918]/70 font-serif italic leading-relaxed font-medium">
+                    Registra tu recorrido GPS en vivo con paradas, tiempos y altitud. Al terminar, compártela en Google Maps o con tu tribu.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={onOpenRecordRoute}
+                  className="shrink-0 py-3 px-4 sm:px-5 bg-[#E6332A] hover:bg-[#d02c24] text-white border-2 border-[#1A1918] rounded-xl font-display font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition touch-manipulation cursor-pointer"
+                >
+                  <Play className="w-4 h-4 fill-current text-[#F7B32B]" />
+                  <span>Empezar a Rodar</span>
+                </button>
+              </div>
+            </div>
+          )}
           
           {/* Horizontal compact scroll for categories on mobile */}
           <div className="flex items-center gap-2 py-1 overflow-x-auto no-scrollbar -mx-2 px-2 sm:mx-0 sm:px-0">
@@ -559,17 +632,19 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                           e.stopPropagation();
                           toggleFollowUser(act.pilotId);
                         }}
-                        className={`text-[10px] font-display font-black uppercase tracking-widest px-3.5 py-2 transition flex items-center gap-1.5 border-2 border-[#1A1918] rounded-xl shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${
+                        className={`text-[10px] font-display font-black uppercase tracking-widest px-3.5 py-2 transition-all duration-150 flex items-center gap-1.5 border-2 border-[#1A1918] rounded-xl shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer group ${
                           isFollowingUser(act.pilotId)
-                            ? 'bg-[#F4EEDB] text-[#1A1918]'
+                            ? 'bg-[#F4EEDB] hover:bg-[#E6332A] text-[#1A1918] hover:text-white'
                             : 'btn-carbon text-white'
                         }`}
-                        title={isFollowingUser(act.pilotId) ? 'Siguiendo a este piloto' : 'Seguir a este piloto'}
+                        title={isFollowingUser(act.pilotId) ? 'Click para dejar de seguir a este piloto' : 'Seguir a este piloto'}
                       >
                         {isFollowingUser(act.pilotId) ? (
                           <>
-                            <Check className="w-3 h-3 text-[#1A1918] stroke-[3]" />
-                            <span>Siguiendo</span>
+                            <Check className="w-3 h-3 text-[#1A1918] stroke-[3] group-hover:hidden" />
+                            <UserX className="w-3 h-3 text-white hidden group-hover:inline-block" />
+                            <span className="group-hover:hidden">Siguiendo</span>
+                            <span className="hidden group-hover:inline">Dejar de seguir</span>
                           </>
                         ) : (
                           <>
@@ -596,6 +671,23 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                     >
                       <Bookmark className={`w-4 h-4 ${(savedRouteIds.includes(act.id) || routeLists.some(l => l.routeIds.includes(act.id))) ? 'fill-white text-white' : ''}`} />
                     </button>
+
+                    {/* Botón Borrar (Solo quien la publicó) */}
+                    {(act.pilotId === currentUser.id || act.pilotName?.toLowerCase().trim() === currentUser.name?.toLowerCase().trim() || act.pilotHandle === currentUser.handle) && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (window.confirm(`¿Seguro que deseas eliminar la publicación "${act.title}"? Esta acción no se puede deshacer.`)) {
+                            deleteActivity(act.id);
+                          }
+                        }}
+                        className="p-2 transition border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] rounded-xl bg-[#FAF6ED] text-[#1A1918]/60 hover:bg-[#E6332A] hover:text-white active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                        title="Eliminar tu publicación"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
                 </div>
 
@@ -707,136 +799,171 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                   }}
                   className="relative h-64 sm:h-80 w-full bg-[#0E0C0A] border-b border-white/[0.06] overflow-hidden group/gallery cursor-pointer select-none"
                 >
-                  {/* Photo Gallery Grid */}
+                  {/* CASE 1: With Photos - Show Photo Gallery with Floating Square Mini Route Map */}
                   {act.photos && act.photos.length > 0 ? (
-                    <div className="w-full h-full">
-                      {act.photos.length === 1 && (
-                        <div className="w-full h-full overflow-hidden bg-black">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img 
-                            src={act.photos[0]} 
-                            alt={act.title} 
-                            onError={(e) => {
-                              (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&q=80&w=1200';
-                            }}
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover/gallery:scale-105" 
-                          />
-                        </div>
-                      )}
-
-                      {act.photos.length === 2 && (
-                        <div className="grid grid-cols-2 gap-1 w-full h-full bg-black">
-                          <div className="w-full h-full overflow-hidden">
+                    <>
+                      <div className="w-full h-full">
+                        {act.photos.length === 1 && (
+                          <div className="w-full h-full overflow-hidden bg-black">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img 
                               src={act.photos[0]} 
-                              alt={`${act.title} 1`} 
+                              alt={act.title} 
                               onError={(e) => {
                                 (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&q=80&w=1200';
                               }}
                               className="w-full h-full object-cover transition-transform duration-500 group-hover/gallery:scale-105" 
                             />
                           </div>
-                          <div className="w-full h-full overflow-hidden">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img 
-                              src={act.photos[1]} 
-                              alt={`${act.title} 2`} 
-                              onError={(e) => {
-                                (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=1200';
-                              }}
-                              className="w-full h-full object-cover transition-transform duration-500 group-hover/gallery:scale-105" 
-                            />
-                          </div>
-                        </div>
-                      )}
+                        )}
 
-                      {act.photos.length >= 3 && (
-                        <div className="grid grid-cols-3 gap-1 w-full h-full bg-black">
-                          <div className="w-full h-full overflow-hidden">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img 
-                              src={act.photos[0]} 
-                              alt={`${act.title} 1`} 
-                              onError={(e) => {
-                                (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&q=80&w=1200';
-                              }}
-                              className="w-full h-full object-cover transition-transform duration-500 group-hover/gallery:scale-105" 
-                            />
+                        {act.photos.length === 2 && (
+                          <div className="grid grid-cols-2 gap-1 w-full h-full bg-black">
+                            <div className="w-full h-full overflow-hidden">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img 
+                                src={act.photos[0]} 
+                                alt={`${act.title} 1`} 
+                                onError={(e) => {
+                                  (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&q=80&w=1200';
+                                }}
+                                className="w-full h-full object-cover transition-transform duration-500 group-hover/gallery:scale-105" 
+                              />
+                            </div>
+                            <div className="w-full h-full overflow-hidden">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img 
+                                src={act.photos[1]} 
+                                alt={`${act.title} 2`} 
+                                onError={(e) => {
+                                  (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=1200';
+                                }}
+                                className="w-full h-full object-cover transition-transform duration-500 group-hover/gallery:scale-105" 
+                              />
+                            </div>
                           </div>
-                          <div className="w-full h-full overflow-hidden">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img 
-                              src={act.photos[1]} 
-                              alt={`${act.title} 2`} 
-                              onError={(e) => {
-                                (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=1200';
-                              }}
-                              className="w-full h-full object-cover transition-transform duration-500 group-hover/gallery:scale-105" 
-                            />
-                          </div>
-                          <div className="w-full h-full overflow-hidden relative">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img 
-                              src={act.photos[2]} 
-                              alt={`${act.title} 3`} 
-                              onError={(e) => {
-                                (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&q=80&w=1200';
-                              }}
-                              className="w-full h-full object-cover transition-transform duration-500 group-hover/gallery:scale-105" 
-                            />
-                            {act.photos.length > 3 && (
-                              <div className="absolute inset-0 bg-black/65 backdrop-blur-[2px] flex flex-col items-center justify-center text-white transition group-hover/gallery:bg-black/50">
-                                <div className="w-10 h-10 rounded-full bg-black/70 border-2 border-white/80 flex items-center justify-center mb-1 group-hover/gallery:scale-110 transition shadow-lg">
-                                  <Plus className="w-6 h-6 text-white stroke-[2.5]" />
+                        )}
+
+                        {act.photos.length >= 3 && (
+                          <div className="grid grid-cols-3 gap-1 w-full h-full bg-black">
+                            <div className="w-full h-full overflow-hidden">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img 
+                                src={act.photos[0]} 
+                                alt={`${act.title} 1`} 
+                                onError={(e) => {
+                                  (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&q=80&w=1200';
+                                }}
+                                className="w-full h-full object-cover transition-transform duration-500 group-hover/gallery:scale-105" 
+                              />
+                            </div>
+                            <div className="w-full h-full overflow-hidden">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img 
+                                src={act.photos[1]} 
+                                alt={`${act.title} 2`} 
+                                onError={(e) => {
+                                  (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=1200';
+                                }}
+                                className="w-full h-full object-cover transition-transform duration-500 group-hover/gallery:scale-105" 
+                              />
+                            </div>
+                            <div className="w-full h-full overflow-hidden relative">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img 
+                                src={act.photos[2]} 
+                                alt={`${act.title} 3`} 
+                                onError={(e) => {
+                                  (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&q=80&w=1200';
+                                }}
+                                className="w-full h-full object-cover transition-transform duration-500 group-hover/gallery:scale-105" 
+                              />
+                              {act.photos.length > 3 && (
+                                <div className="absolute inset-0 bg-black/65 backdrop-blur-[2px] flex flex-col items-center justify-center text-white transition group-hover/gallery:bg-black/50">
+                                  <div className="w-10 h-10 rounded-full bg-black/70 border-2 border-white/80 flex items-center justify-center mb-1 group-hover/gallery:scale-110 transition shadow-lg">
+                                    <Plus className="w-6 h-6 text-white stroke-[2.5]" />
+                                  </div>
+                                  <span className="font-mono text-[11px] font-extrabold uppercase tracking-wider text-white drop-shadow">
+                                    +{act.photos.length - 3} {act.photos.length - 3 === 1 ? 'FOTO' : 'FOTOS'}
+                                  </span>
                                 </div>
-                                <span className="font-mono text-[11px] font-extrabold uppercase tracking-wider text-white drop-shadow">
-                                  +{act.photos.length - 3} {act.photos.length - 3 === 1 ? 'FOTO' : 'FOTOS'}
-                                </span>
-                              </div>
-                            )}
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Gradient shadow for contrast */}
+                      <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/60 via-transparent to-black/20" />
+
+                      {/* Floating Square Mini Route Map Layer */}
+                      {act.coordinates && act.coordinates.length > 0 && (
+                        <div 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedDetailActivity(act);
+                            setIsDetailModalOpen(true);
+                          }}
+                          title="Ver mapa completo e interactivo de la ruta"
+                          className="absolute bottom-3 left-3 w-28 h-28 sm:w-36 sm:h-36 aspect-square rounded-2xl border-2 border-[#1A1918] bg-[#FAF6ED] shadow-[3px_3px_0px_#1A1918] overflow-hidden z-20 group/map transition-all duration-300 hover:scale-105"
+                        >
+                          <MiniRouteMap coordinates={act.coordinates} />
+
+                          {/* Radar / HUD Badge */}
+                          <div className="absolute top-1.5 left-1.5 px-2 py-0.5 bg-[#FAF6ED] border border-[#1A1918] text-[8px] font-display font-black text-[#1A1918] uppercase tracking-widest flex items-center gap-1 z-10 pointer-events-none rounded shadow-[1px_1px_0px_#1A1918]">
+                            <Compass className="w-2.5 h-2.5 text-[#E6332A] animate-pulse" />
+                            <span>GPS RUTA</span>
+                          </div>
+
+                          {/* Distance pill */}
+                          <div className="absolute bottom-1.5 right-1.5 px-2 py-0.5 bg-[#1A1918] text-[9px] font-mono font-bold text-white z-10 pointer-events-none rounded">
+                            {act.distanceKm} km
                           </div>
                         </div>
                       )}
-                    </div>
+                    </>
                   ) : (
-                    /* Fallback when no photos uploaded: show scenic trail backdrop */
-                    <div className="w-full h-full relative overflow-hidden bg-black">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img 
-                        src="https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&q=80&w=1200" 
-                        alt={act.title} 
-                        className="w-full h-full object-cover opacity-80"
-                      />
-                    </div>
-                  )}
+                    /* CASE 2: No Photos - Route Map takes the FULL space (No dummy stock photos) */
+                    <div className="w-full h-full relative">
+                      {act.coordinates && act.coordinates.length > 0 ? (
+                        <>
+                          <MiniRouteMap coordinates={act.coordinates} padding={[32, 32]} />
 
-                  {/* Gradient shadow for contrast */}
-                  <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/60 via-transparent to-black/20" />
+                          {/* Top Left GPS Satélite telemetry badge */}
+                          <div className="absolute top-3 left-3 px-2.5 py-1 bg-[#FAF6ED]/95 backdrop-blur-md border-2 border-[#1A1918] rounded-xl flex items-center gap-1.5 shadow-[2px_2px_0px_#1A1918] z-10">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse border border-[#1A1918]" />
+                            <span className="text-[9px] font-display font-black text-[#1A1918] uppercase tracking-wider">
+                              GPS SATÉLITE • TRAZADO EN VIVO
+                            </span>
+                          </div>
 
-                  {/* Floating Square Mini Route Map Layer (Layer on top of photos) */}
-                  {act.coordinates && act.coordinates.length > 0 && (
-                    <div 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedDetailActivity(act);
-                        setIsDetailModalOpen(true);
-                      }}
-                      title="Ver mapa completo e interactivo de la ruta"
-                      className="absolute bottom-3 left-3 w-28 h-28 sm:w-36 sm:h-36 aspect-square rounded-2xl border-2 border-[#1A1918] bg-[#FAF6ED] shadow-[3px_3px_0px_#1A1918] overflow-hidden z-20 group/map transition-all duration-300 hover:scale-105"
-                    >
-                      <MiniRouteMap coordinates={act.coordinates} />
+                          {/* Bottom Left Legend */}
+                          <div className="absolute bottom-3 left-3 px-3 py-1.5 bg-[#FAF6ED]/95 backdrop-blur-md border-2 border-[#1A1918] rounded-xl flex items-center gap-3 text-[9px] font-mono font-black uppercase text-[#1A1918] shadow-[2px_2px_0px_#1A1918] z-10">
+                            <span className="flex items-center gap-1.5">
+                              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 border border-[#1A1918]" />
+                              Inicio
+                            </span>
+                            <span className="flex items-center gap-1.5">
+                              <span className="w-2.5 h-2.5 rounded-full bg-[#ef4444] border border-[#1A1918]" />
+                              Fin
+                            </span>
+                          </div>
 
-                      {/* Radar / HUD Badge */}
-                      <div className="absolute top-1.5 left-1.5 px-2 py-0.5 bg-[#FAF6ED] border border-[#1A1918] text-[8px] font-display font-black text-[#1A1918] uppercase tracking-widest flex items-center gap-1 z-10 pointer-events-none rounded shadow-[1px_1px_0px_#1A1918]">
-                        <Compass className="w-2.5 h-2.5 text-[#E6332A] animate-pulse" />
-                        <span>GPS RUTA</span>
-                      </div>
-
-                      {/* Distance pill */}
-                      <div className="absolute bottom-1.5 right-1.5 px-2 py-0.5 bg-[#1A1918] text-[9px] font-mono font-bold text-white z-10 pointer-events-none rounded">
-                        {act.distanceKm} km
-                      </div>
+                          {/* Bottom Right Distance + Surface badge */}
+                          <div className="absolute bottom-3 right-3 px-3 py-1.5 bg-[#1A1918]/90 backdrop-blur-md border border-white/20 rounded-xl flex items-center gap-2 text-white z-10 shadow-lg">
+                            <Compass className="w-3.5 h-3.5 text-[#E6332A]" />
+                            <span className="text-[10px] font-mono font-bold">
+                              {act.distanceKm} km recorridos
+                            </span>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center bg-[#1A1918] text-[#FAF6ED] p-6 text-center">
+                          <Compass className="w-10 h-10 text-[#E6332A] mb-2 animate-spin-slow" />
+                          <span className="font-display font-black text-sm uppercase tracking-wider">Trazado GPS Registrado</span>
+                          <span className="text-xs font-serif italic text-white/60 mt-1">Toca para abrir la telemetría detallada</span>
+                        </div>
+                      )}
                     </div>
                   )}
 

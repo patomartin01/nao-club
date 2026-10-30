@@ -5,11 +5,9 @@ import { useApp } from '../../context/AppContext';
 import { BikeType, Motorcycle } from '../../types';
 import { 
   BarChart2, 
-  FileText, 
   Grid, 
   Share2, 
   Edit3, 
-  Search, 
   Wrench, 
   MapPin, 
   Navigation,
@@ -25,46 +23,32 @@ import {
   ShieldCheck,
   ShieldAlert,
   Upload,
-  Camera
+  Camera,
+  Radio,
+  Image as ImageIcon,
+  Calendar,
+  Clock,
+  Flame,
+  Compass,
+  TrendingUp,
+  Map as MapIcon,
+  ChevronRight,
+  MessageSquarePlus
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { EditProfileModal } from '../Modals/EditProfileModal';
 import { EditMotorcycleModal } from '../Modals/EditMotorcycleModal';
+import { FollowersModal } from '../Modals/FollowersModal';
+import { ActivityDetailModal } from '../Modals/ActivityDetailModal';
+import { FounderFeedbackModal } from '../Modals/FounderFeedbackModal';
+import { ActivityPost } from '../../types';
 
 interface TuProfileViewProps {
   onOpenEditProfile?: () => void;
   onOpenGarage?: () => void;
 }
 
-type ProfileSubTab = 'hangar' | 'progreso' | 'actividades' | 'galeria';
-
-// Sample 12-week telemetry data for the chart
-const WEEKLY_DATA = [
-  { week: 'Sem 1', km: 24, elev: 450, rides: 1 },
-  { week: 'Sem 2', km: 48, elev: 890, rides: 2 },
-  { week: 'Sem 3', km: 0, elev: 0, rides: 0 },
-  { week: 'Sem 4', km: 82, elev: 1620, rides: 2 },
-  { week: 'Sem 5', km: 35, elev: 600, rides: 1 },
-  { week: 'Sem 6', km: 110, elev: 2150, rides: 3 },
-  { week: 'Sem 7', km: 14, elev: 280, rides: 1 },
-  { week: 'Sem 8', km: 65, elev: 1200, rides: 2 },
-  { week: 'Sem 9', km: 92, elev: 1850, rides: 2 },
-  { week: 'Sem 10', km: 40, elev: 780, rides: 1 },
-  { week: 'Sem 11', km: 74, elev: 1420, rides: 2 },
-  { week: 'Sem 12 (Esta)', km: 42.8, elev: 890, rides: 1 }
-];
-
-const GALLERY_PHOTOS = [
-  { url: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&q=80&w=600', caption: 'Paso de montaña en la sierra' },
-  { url: 'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&q=80&w=600', caption: 'KTM lista para brecha' },
-  { url: 'https://images.unsplash.com/photo-1449426468159-d96dbf08f19f?auto=format&fit=crop&q=80&w=600', caption: 'Atardecer en Laguna de Zempoala' },
-  { url: 'https://images.unsplash.com/photo-1502744688674-c619d38864a8?auto=format&fit=crop&q=80&w=600', caption: 'Basecamp bajo las estrellas' },
-  { url: 'https://images.unsplash.com/photo-1609630875171-b1321377ee65?auto=format&fit=crop&q=80&w=600', caption: 'Curvas de asfalto en cañón' },
-  { url: 'https://images.unsplash.com/photo-1558980664-3a031cf67ea8?auto=format&fit=crop&q=80&w=600', caption: 'Parada de hidratación' },
-  { url: 'https://images.unsplash.com/photo-1515777315835-281b94c9589f?auto=format&fit=crop&q=80&w=600', caption: 'Trocha técnica con lodo' },
-  { url: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&q=80&w=600', caption: 'Escuadrón en cumbre' },
-  { url: 'https://images.unsplash.com/photo-1525160354320-d8e92641c563?auto=format&fit=crop&q=80&w=600', caption: 'Mecánica de ruta' }
-];
+type ProfileSubTab = 'hangar' | 'progreso' | 'galeria';
 
 const PRESET_MOTO_PHOTOS = [
   'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&q=80&w=800',
@@ -84,15 +68,73 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
     addMotorcycle,
     updateMotorcycle,
     deleteMotorcycle,
+    users,
     followingUserIds,
+    followersUserIds,
+    pendingFollowRequests,
     setAuthModalOpen,
-    setActiveNavTab
+    setActiveNavTab,
+    deleteActivity,
+    toggleKudo,
+    addActivityComment,
+    openPilotProfileById,
+    currentUserFounderNumber
   } = useApp();
 
+  const validFollowersCount = users.filter(u => followersUserIds.includes(u.id)).length;
+  const validFollowingCount = users.filter(u => followingUserIds.includes(u.id)).length;
+
   const [activeSubTab, setActiveSubTab] = useState<ProfileSubTab>('hangar');
-  const [activitySearch, setActivitySearch] = useState('');
   const [selectedDiscipline, setSelectedDiscipline] = useState<string>('Todos los deportes');
+  const [followersModalOpen, setFollowersModalOpen] = useState(false);
+  const [followersModalTab, setFollowersModalTab] = useState<'followers' | 'following' | 'requests'>('followers');
+  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   
+  // Custom uploaded photos state
+  const [customPhotos, setCustomPhotos] = useState<{ url: string; caption: string }[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('motomami_user_gallery_photos');
+        if (saved) return JSON.parse(saved);
+      } catch {}
+    }
+    return [];
+  });
+  const galleryFileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleUploadGalleryPhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          const newPhoto = {
+            url: reader.result,
+            caption: `Expedición ${new Date().toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })}`
+          };
+          setCustomPhotos(prev => {
+            const updated = [newPhoto, ...prev];
+            try {
+              localStorage.setItem('motomami_user_gallery_photos', JSON.stringify(updated));
+            } catch {}
+            return updated;
+          });
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleDeleteGalleryPhoto = (indexToDelete: number) => {
+    setCustomPhotos(prev => {
+      const updated = prev.filter((_, i) => i !== indexToDelete);
+      try {
+        localStorage.setItem('motomami_user_gallery_photos', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
+
   // Profile edit modal state
   const [isEditProfileOpen, setEditProfileOpen] = useState(false);
 
@@ -119,27 +161,161 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
       const reader = new FileReader();
       reader.onload = () => {
         if (typeof reader.result === 'string') {
-          setBikePhotoUrl(reader.result);
+          const raw = reader.result;
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const maxW = 900;
+            let w = img.width;
+            let h = img.height;
+            if (w > maxW) {
+              h = Math.round((h * maxW) / w);
+              w = maxW;
+            }
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+              ctx.drawImage(img, 0, 0, w, h);
+              setBikePhotoUrl(canvas.toDataURL('image/jpeg', 0.85));
+            } else {
+              setBikePhotoUrl(raw);
+            }
+          };
+          img.onerror = () => setBikePhotoUrl(raw);
+          img.src = raw;
         }
       };
       reader.readAsDataURL(file);
     }
   };
 
-  // Filter completed activities by user and search
-  const userActivities = activities.filter(a => a.pilotId === currentUser.id || a.pilotName === currentUser.name);
-  const displayActivities = userActivities.length > 0 ? userActivities : activities;
+  // State for inspecting activity detail
+  const [selectedActivityForDetail, setSelectedActivityForDetail] = useState<ActivityPost | null>(null);
 
-  const filteredHistory = displayActivities.filter(a => 
-    a.title.toLowerCase().includes(activitySearch.toLowerCase()) ||
-    a.location.toLowerCase().includes(activitySearch.toLowerCase()) ||
-    a.motoModel.toLowerCase().includes(activitySearch.toLowerCase())
-  );
+  // Filter completed activities by user:
+  // 1. Where currentUser is the author/pilot (by pilotId, pilotName or pilotHandle)
+  // 2. Where someone else recorded the expedition and added currentUser as participant/attendee
+  const userActivities = React.useMemo(() => {
+    return activities.filter(a => {
+      const isPilot = 
+        (a.pilotId && a.pilotId === currentUser.id) ||
+        (a.pilotName && a.pilotName.toLowerCase().trim() === currentUser.name?.toLowerCase().trim()) ||
+        (a.pilotHandle && currentUser.handle && a.pilotHandle.toLowerCase().trim() === currentUser.handle.toLowerCase().trim());
+      
+      const isGroupAttendee = Boolean(
+        a.groupInfo?.participants?.some(p => 
+          (p.userId && p.userId === currentUser.id) ||
+          (p.name && p.name.toLowerCase().trim() === currentUser.name?.toLowerCase().trim()) ||
+          (p.handle && currentUser.handle && p.handle.toLowerCase().trim() === currentUser.handle.toLowerCase().trim())
+        )
+      );
+
+      return isPilot || isGroupAttendee;
+    });
+  }, [activities, currentUser.id, currentUser.name, currentUser.handle]);
+
+  const displayActivities = userActivities.length > 0 ? userActivities : [];
+
+  // Compute real statistics strictly from published activities (0 when no rides)
+  const realTotalKm = Math.round(userActivities.reduce((acc, a) => acc + (a.distanceKm || 0), 0) * 10) / 10;
+  const realTotalElev = userActivities.reduce((acc, a) => acc + (a.elevationGainM || 0), 0);
+  const realRidesCount = userActivities.length;
+
+  // Compute total duration in minutes then format nicely
+  const parseDurationMinutes = (durStr?: string): number => {
+    if (!durStr) return 0;
+    const hMatch = durStr.match(/(\d+)\s*h/i);
+    const mMatch = durStr.match(/(\d+)\s*m/i);
+    const hours = hMatch ? parseInt(hMatch[1], 10) : 0;
+    const mins = mMatch ? parseInt(mMatch[1], 10) : 0;
+    return hours * 60 + mins;
+  };
+
+  const totalMinutes = userActivities.reduce((acc, a) => acc + parseDurationMinutes(a.durationText), 0);
+  const totalHours = Math.floor(totalMinutes / 60);
+  const remainingMins = totalMinutes % 60;
+  const realDurationFormatted = totalHours > 0 
+    ? `${totalHours}h ${remainingMins}m` 
+    : totalMinutes > 0 ? `${remainingMins}m` : '0h 00m';
+
+  // Real weekly telemetry breakdown (last 12 weeks dynamically generated)
+  const realWeeklyData = React.useMemo(() => {
+    const weeks: { week: string; km: number; elev: number; rides: number }[] = [];
+    const now = new Date();
+    
+    for (let i = 11; i >= 0; i--) {
+      const weekStart = new Date(now);
+      weekStart.setDate(now.getDate() - (i * 7 + now.getDay()));
+      weekStart.setHours(0, 0, 0, 0);
+
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 7);
+
+      // Match activities that fall in this week window
+      const weekActs = userActivities.filter(a => {
+        if (!a.dateText) return false;
+        // Try parsing activity timestamp or id
+        const actTime = a.id?.startsWith('act-') 
+          ? parseInt(a.id.replace('act-', ''), 10) 
+          : new Date(a.dateText).getTime();
+        if (isNaN(actTime)) return false;
+        return actTime >= weekStart.getTime() && actTime < weekEnd.getTime();
+      });
+
+      const km = Math.round(weekActs.reduce((sum, a) => sum + (a.distanceKm || 0), 0) * 10) / 10;
+      const elev = weekActs.reduce((sum, a) => sum + (a.elevationGainM || 0), 0);
+      weeks.push({
+        week: i === 0 ? 'Esta' : `Sem -${i}`,
+        km,
+        elev,
+        rides: weekActs.length
+      });
+    }
+    return weeks;
+  }, [userActivities]);
+
+  const maxKmWeek = Math.max(...realWeeklyData.map(d => d.km), 10);
+  const avgWeeklyKm = Math.round((realTotalKm / 12) * 10) / 10;
+
+  // Aggregate photos from custom user uploads + published activities
+  const galleryPhotos = React.useMemo(() => {
+    const list: { url: string; caption: string; isCustom?: boolean; customIndex?: number }[] = [];
+    
+    // Add custom uploaded photos
+    customPhotos.forEach((cp, idx) => {
+      list.push({ url: cp.url, caption: cp.caption, isCustom: true, customIndex: idx });
+    });
+
+    // Add photos from user's published activities
+    userActivities.forEach(act => {
+      if (act.photos && act.photos.length > 0) {
+        act.photos.forEach(photoUrl => {
+          list.push({
+            url: photoUrl,
+            caption: `${act.title} • ${act.location}`
+          });
+        });
+      }
+    });
+
+    return list;
+  }, [customPhotos, userActivities]);
+
+  const [shareToast, setShareToast] = useState(false);
 
   const handleShareProfile = () => {
-    navigator.clipboard?.writeText(window.location.href);
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://nao-club-three.vercel.app';
+    const profileUrl = `${origin}?piloto=${encodeURIComponent(currentUser.handle || currentUser.id)}`;
+    
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(profileUrl);
+    }
+    setShareToast(true);
+    setTimeout(() => setShareToast(false), 3000);
     try {
-      confetti({ particleCount: 20, spread: 50 });
+      confetti({ particleCount: 25, spread: 60 });
     } catch {}
   };
 
@@ -174,7 +350,6 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
     } catch {}
   };
 
-  const maxKmWeek = Math.max(...WEEKLY_DATA.map(d => d.km));
 
   return (
     <div className="space-y-8 pb-32 max-w-[1440px] w-full mx-auto font-sans text-[#141312]">
@@ -202,142 +377,199 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
         </div>
       )}
 
-      {/* 01. PROFILE HEADER (Authentic Pilot Matchbook Dossier) */}
-      <div className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[28px] p-4 sm:p-8 space-y-5 sm:space-y-6 shadow-[4px_4px_0px_#1A1918] sm:shadow-[6px_6px_0px_#1A1918] relative overflow-hidden">
-        {/* Subtle background typographic watermark */}
-        <div className="absolute right-[-10px] top-[-15px] pointer-events-none select-none opacity-[0.04] text-[#1A1918] font-display font-black text-9xl tracking-tighter">
-          PILOT
+      {/* 01. PROFILE HEADER (Simplified & Compact Pilot Card) */}
+      <div className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-[3px_3px_0px_#1A1918] relative overflow-hidden">
+        {/* Top-Right Action: Share button */}
+        <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20 flex items-center gap-2">
+          {shareToast && (
+            <span className="text-[10px] font-mono font-bold bg-[#1A1918] text-[#FAF6ED] px-2.5 py-1 rounded-lg border border-[#1A1918] shadow-[2px_2px_0px_#1A1918] animate-in fade-in duration-150 flex items-center gap-1">
+              <Check className="w-3 h-3 text-[#F7B32B]" />
+              ¡Link copiado!
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={handleShareProfile}
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#F7B32B] hover:bg-[#e5a424] text-[#1A1918] border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none flex items-center justify-center transition cursor-pointer"
+            title="Compartir perfil de piloto (copiar enlace para que te sigan)"
+          >
+            <Share2 className="w-3.5 h-3.5 text-[#1A1918]" />
+          </button>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 relative z-10">
-          <div className="relative shrink-0">
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-2 border-[#1A1918] shadow-[4px_4px_0px_#1A1918] bg-[#F4EEDB]">
+        <div className="flex items-start sm:items-center gap-3.5 sm:gap-4 relative z-10 pr-10">
+          {/* Avatar with edit badge */}
+          <div className="relative shrink-0 group">
+            <button
+              type="button"
+              onClick={() => {
+                if (onOpenEditProfile) onOpenEditProfile();
+                setEditProfileOpen(true);
+              }}
+              className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl overflow-hidden border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] bg-[#F4EEDB] block relative text-left cursor-pointer transition active:translate-x-0.5 active:translate-y-0.5"
+              title="Toca para cambiar foto o editar perfil"
+            >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img 
                 src={currentUser.avatar} 
                 alt={currentUser.name}
-                className="w-full h-full object-cover" 
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
               />
-            </div>
-            <span className="absolute -bottom-2 -right-2 px-2 py-0.5 bg-[#E6332A] text-white text-[8px] font-mono uppercase font-black rounded border border-[#1A1918] shadow-[1px_1px_0px_#1A1918]">
-              VERIFICADO
-            </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (onOpenEditProfile) onOpenEditProfile();
+                setEditProfileOpen(true);
+              }}
+              className="absolute -bottom-1 -right-1 p-1 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] rounded-lg border border-[#1A1918] shadow-[1px_1px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 transition cursor-pointer"
+              title="Editar foto y perfil"
+            >
+              <Edit3 className="w-2.5 h-2.5 text-[#1A1918]" />
+            </button>
           </div>
 
-          <div className="space-y-1.5 flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-display text-[10px] text-[#E6332A] uppercase tracking-[0.2em] font-black">
-                ★ CREDENCIAL DE PILOTO OFICIAL ★
+          <div className="space-y-1 flex-1 min-w-0">
+            {/* Level badge & Handle as Primary Identifier */}
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-[11px] font-mono font-black text-[#E6332A] bg-[#E6332A]/10 px-2 py-0.5 rounded-md border border-[#E6332A]/30 tracking-tight">
+                {currentUser.handle}
               </span>
-              <span className="text-[10px] font-mono text-[#1A1918] uppercase tracking-widest bg-[#FAF6ED] px-2.5 py-0.5 border-2 border-[#1A1918] rounded-md font-black shadow-[1px_1px_0px_#1A1918]">
-                NIVEL: {currentUser.ridingLevel?.toUpperCase() || 'INTERMEDIO'}
+              <span className="text-[9px] font-mono text-[#1A1918]/80 uppercase tracking-wider bg-[#F4EEDB] px-1.5 py-0.5 border border-[#1A1918]/30 rounded font-bold">
+                {currentUser.ridingLevel?.toUpperCase() || 'INTERMEDIO'}
               </span>
             </div>
 
-            <h1 className="text-2xl sm:text-4xl font-display font-black text-[#1A1918] uppercase tracking-wide">
-              {currentUser.name}
-            </h1>
-            
-            <p className="text-xs font-serif italic text-[#1A1918]/80 font-medium">
-              <span className="text-[#E6332A] font-bold not-italic font-mono">{currentUser.handle}</span> • {currentUser.location || 'México'} {currentUser.bio ? `— ${currentUser.bio}` : ''}
-            </p>
-
-            {/* Quick stats and primary bike summary */}
-            <div className="flex items-center gap-3 pt-2 text-xs flex-wrap">
-              <button 
-                onClick={() => setActiveSubTab('hangar')}
-                className="flex items-center gap-1.5 font-display font-black text-[#1A1918] bg-[#F4EEDB] hover:bg-[#EDE6D3] px-2.5 py-1 rounded-lg border border-[#1A1918] shadow-[1px_1px_0px_#1A1918] transition cursor-pointer"
-                title="Ver motos en el Hangar"
+            {/* Pilot Name with inline Edit Icon */}
+            <div className="flex items-center gap-2">
+              <h1 className="text-base sm:text-xl font-display font-black text-[#1A1918] uppercase tracking-wide truncate">
+                {currentUser.name}
+              </h1>
+              <button
+                type="button"
+                onClick={() => {
+                  if (onOpenEditProfile) onOpenEditProfile();
+                  setEditProfileOpen(true);
+                }}
+                className="p-1 rounded-lg border border-[#1A1918] bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] shadow-[1px_1px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 transition cursor-pointer inline-flex items-center justify-center shrink-0"
+                title="Editar información de perfil"
               >
-                <Bike className="w-3.5 h-3.5 text-[#E6332A]" />
-                <span>{userBikes.length} {userBikes.length === 1 ? 'MOTO' : 'MOTOS'} EN HANGAR</span>
+                <Edit3 className="w-3 h-3 text-[#1A1918]" />
               </button>
-
-              <span className="text-[#1A1918]/30">•</span>
-              
-              <div className="flex items-center gap-1">
-                <span className="font-display font-black text-[#1A1918]">{currentUser.stats?.completedCount || userActivities.length || 12}</span>
-                <span className="text-[#1A1918]/70 font-medium">salidas</span>
-              </div>
-
-              <span className="text-[#1A1918]/30">•</span>
-
-              <div className="flex items-center gap-1">
-                <span className="font-display font-black text-[#1A1918]">{followingUserIds.length}</span>
-                <span className="text-[#1A1918]/70 font-medium">siguiendo</span>
-              </div>
             </div>
-
-            {/* Safety & SOS Indicator */}
-            {currentUser.emergencyContact && (
-              <div className="flex items-center gap-2 pt-1 text-[11px] text-[#1A1918]/70 font-mono">
-                <HeartPulse className="w-3 h-3 text-[#E6332A] shrink-0" />
-                <span>SOS: {currentUser.emergencyContact}</span>
-              </div>
-            )}
+            
+            <p className="text-[11px] font-serif italic text-[#1A1918]/80 truncate">
+              {currentUser.location || 'México'}
+            </p>
           </div>
         </div>
 
-        {/* Action Buttons: Clean grid layout */}
-        <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 sm:gap-3 pt-2 relative z-10">
-          <button
-            onClick={() => {
-              if (onOpenEditProfile) onOpenEditProfile();
-              setEditProfileOpen(true);
-            }}
-            className="py-2.5 sm:py-3 px-3 sm:px-4 bg-[#1A1918] hover:bg-black text-[#FAF6ED] text-[11px] sm:text-xs font-display font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition rounded-xl border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer"
-          >
-            <Edit3 className="w-3.5 h-3.5 text-[#F7B32B]" />
-            <span>Editar perfil</span>
-          </button>
+        {/* Dedicated stats & community bar - Clean, spacious, beautifully aligned */}
+        <div className="mt-3.5 pt-3 border-t-2 border-[#1A1918]/15 flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+            {/* Hangar badge */}
+            <button 
+              type="button"
+              onClick={() => setActiveSubTab('hangar')}
+              className="inline-flex items-center gap-1.5 font-display font-black text-[#1A1918] bg-[#F4EEDB] hover:bg-[#EDE6D3] px-2.5 py-1 rounded-xl border-2 border-[#1A1918] shadow-[1.5px_1.5px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition cursor-pointer text-[10px]"
+              title="Ver motos en el Hangar"
+            >
+              <Bike className="w-3.5 h-3.5 text-[#E6332A]" />
+              <span>{userBikes.length} {userBikes.length === 1 ? 'MOTO' : 'MOTOS'}</span>
+            </button>
 
-          <button
-            onClick={() => {
-              setActiveSubTab('hangar');
-              if (userBikes.length > 0) {
-                setEditingBike(userBikes[0]);
-              } else {
-                setShowAddBikeModal(true);
-              }
-            }}
-            className="py-2.5 sm:py-3 px-3 sm:px-4 bg-[#F4EEDB] hover:bg-[#EDE6D3] text-[#1A1918] text-[11px] sm:text-xs font-display font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition rounded-xl border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer"
-            title="Editar ficha técnica de tu moto en el Hangar"
-          >
-            <Wrench className="w-3.5 h-3.5 text-[#E6332A]" />
-            <span>Editar Hangar</span>
-          </button>
+            {/* Salidas count */}
+            <div className="inline-flex items-center gap-1 px-2.5 py-1 bg-white/70 border border-[#1A1918]/30 rounded-xl text-[11px]">
+              <span className="font-display font-black text-[#1A1918]">{userActivities.length || currentUser.stats?.completedCount || 0}</span>
+              <span className="text-[#1A1918]/70 font-medium">salidas</span>
+            </div>
 
-          <button
-            onClick={handleShareProfile}
-            className="py-2.5 sm:py-3 px-3 sm:px-4 bg-[#F7B32B] hover:bg-[#e5a424] text-[#1A1918] text-[11px] sm:text-xs font-display font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition rounded-xl border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer"
-          >
-            <Share2 className="w-3.5 h-3.5 text-[#1A1918]" />
-            <span>Compartir</span>
-          </button>
+            {/* Seguidores */}
+            <button
+              type="button"
+              onClick={() => {
+                setFollowersModalTab('followers');
+                setFollowersModalOpen(true);
+              }}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/70 hover:bg-[#EDE6D3] border border-[#1A1918]/30 hover:border-[#1A1918] rounded-xl text-[11px] cursor-pointer transition group"
+              title="Ver personas que te siguen"
+            >
+              <span className="font-display font-black text-[#1A1918] group-hover:text-[#E6332A] transition">
+                {validFollowersCount}
+              </span>
+              <span className="text-[#1A1918]/70 group-hover:text-[#1A1918] font-medium transition">
+                {validFollowersCount === 1 ? 'seguidor' : 'seguidores'}
+              </span>
+            </button>
 
-          <button
-            onClick={() => setAuthModalOpen(true)}
-            className="py-2.5 sm:py-3 px-3 sm:px-4 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] text-[11px] sm:text-xs font-display font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition rounded-xl border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer"
-            title="Gestionar sesión o cambiar piloto"
-          >
-            <UserCheck className="w-3.5 h-3.5 text-[#E6332A]" />
-            <span>Cuenta</span>
-          </button>
+            {/* Siguiendo */}
+            <button
+              type="button"
+              onClick={() => {
+                setFollowersModalTab('following');
+                setFollowersModalOpen(true);
+              }}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/70 hover:bg-[#EDE6D3] border border-[#1A1918]/30 hover:border-[#1A1918] rounded-xl text-[11px] cursor-pointer transition group"
+              title="Ver pilotos a los que sigues"
+            >
+              <span className="font-display font-black text-[#1A1918] group-hover:text-[#E6332A] transition">
+                {validFollowingCount}
+              </span>
+              <span className="text-[#1A1918]/70 group-hover:text-[#1A1918] font-medium transition">
+                siguiendo
+              </span>
+            </button>
 
+            {/* Solicitudes pendientes si las hay */}
+            {pendingFollowRequests.length > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  setFollowersModalTab('requests');
+                  setFollowersModalOpen(true);
+                }}
+                className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#E6332A] text-white border-2 border-[#1A1918] rounded-xl font-display font-black text-[9px] uppercase tracking-wider shadow-[2px_2px_0px_#1A1918] animate-pulse hover:bg-[#c92820] cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
+                title="Tienes solicitudes de seguimiento pendientes"
+              >
+                <span>{pendingFollowRequests.length} SOLICITUD{pendingFollowRequests.length > 1 ? 'ES' : ''}</span>
+              </button>
+            )}
+          </div>
+
+          {/* Botón sutil exclusivo para los primeros 50 usuarios: sugerencias o comentarios */}
+          {currentUserFounderNumber !== null && currentUserFounderNumber <= 50 && (
+            <button
+              type="button"
+              onClick={() => setFeedbackModalOpen(true)}
+              className="py-1 px-2.5 bg-[#F4EEDB] hover:bg-[#FAF6ED] text-[#1A1918] text-[9px] font-mono font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition rounded-xl border border-[#1A1918]/40 hover:border-[#1A1918] shadow-[1px_1px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 cursor-pointer shrink-0 ml-auto"
+              title={`Piloto Fundador #${currentUserFounderNumber}: Enviar sugerencia o comentario directo al CEO`}
+            >
+              <MessageSquarePlus className="w-3 h-3 text-[#E6332A]" />
+              <span className="hidden sm:inline">Sugerencias</span>
+              <span className="sm:hidden">Feedback</span>
+              <span className="text-[8px] font-black bg-[#F7B32B] text-[#1A1918] px-1 py-0.2 rounded font-mono">
+                #{currentUserFounderNumber}
+              </span>
+            </button>
+          )}
+
+          {/* Optional Admin shortcut button if admin */}
           {(currentUser.email?.toLowerCase() === 'pmartin.v2001@gmail.com' || currentUser.handle === '@patomartin' || currentUser.id === 'user-patricio') && (
             <button
               onClick={() => setActiveNavTab('admin')}
-              className="col-span-2 sm:col-span-1 py-2 sm:py-3 px-3 sm:px-4 bg-[#1A1918] hover:bg-black text-[#F7B32B] text-[11px] sm:text-xs font-display font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition rounded-xl border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer"
+              className={`py-1 px-2.5 bg-[#1A1918] hover:bg-black text-[#F7B32B] text-[9px] font-display font-black uppercase tracking-wider flex items-center justify-center gap-1 transition rounded-xl border-2 border-[#1A1918] shadow-[1.5px_1.5px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer shrink-0 ${
+                currentUserFounderNumber !== null && currentUserFounderNumber <= 50 ? 'ml-1' : 'ml-auto'
+              }`}
               title="Panel Administrativo de Usabilidad y Control"
             >
-              <ShieldCheck className="w-3.5 h-3.5 text-[#F7B32B]" />
+              <ShieldCheck className="w-3 h-3 text-[#F7B32B]" />
               <span>Admin</span>
             </button>
           )}
         </div>
       </div>
 
-      {/* 02. SUB-TABS (HANGAR / PROGRESO / ACTIVIDADES / GALERÍA) */}
+      {/* 02. SUB-TABS (HANGAR / PROGRESO / GALERÍA) */}
       <div className="p-1.5 bg-[#FAF6ED] border-2 border-[#1A1918] rounded-2xl flex gap-1.5 shadow-[3px_3px_0px_#1A1918] overflow-x-auto no-scrollbar">
         <button
           onClick={() => setActiveSubTab('hangar')}
@@ -364,18 +596,6 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
         </button>
 
         <button
-          onClick={() => setActiveSubTab('actividades')}
-          className={`flex-1 min-w-[100px] py-3 flex items-center justify-center gap-2 uppercase tracking-wider font-display transition rounded-xl text-xs cursor-pointer ${
-            activeSubTab === 'actividades'
-              ? 'bg-[#1A1918] text-[#FAF6ED] font-black border border-[#1A1918] shadow-[2px_2px_0px_#1A1918]'
-              : 'text-[#1A1918]/70 hover:text-[#1A1918] font-bold'
-          }`}
-        >
-          <FileText className="w-4 h-4 text-[#F7B32B]" />
-          <span className="text-[10px] tracking-widest">Actividades</span>
-        </button>
-
-        <button
           onClick={() => setActiveSubTab('galeria')}
           className={`flex-1 min-w-[100px] py-3 flex items-center justify-center gap-2 uppercase tracking-wider font-display transition rounded-xl text-xs cursor-pointer ${
             activeSubTab === 'galeria'
@@ -384,7 +604,7 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
           }`}
         >
           <Grid className="w-4 h-4 text-[#F7B32B]" />
-          <span className="text-[10px] tracking-widest">Galería</span>
+          <span className="text-[10px] tracking-widest">Galería ({galleryPhotos.length})</span>
         </button>
       </div>
 
@@ -393,33 +613,7 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
       {/* ========================================================= */}
       {activeSubTab === 'hangar' && (
         <div className="space-y-6">
-          {/* Hangar Controls Bar */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#F4EEDB] border-2 border-[#1A1918] p-5 rounded-[24px] shadow-[4px_4px_0px_#1A1918]">
-            <div>
-              <div className="flex items-center gap-2">
-                <Wrench className="w-4 h-4 text-[#E6332A]" />
-                <span className="text-[10px] font-mono uppercase font-black text-[#E6332A] tracking-wider">
-                  FLOTA DE EXPEDICIÓN // HANGAR PRIVADO
-                </span>
-              </div>
-              <h3 className="text-xl font-display font-black text-[#1A1918] uppercase tracking-wide mt-0.5">
-                Tus Máquinas de Ruta
-              </h3>
-              <p className="text-xs font-serif italic text-[#1A1918]/70">
-                Motos asignadas para rodadas, telemetría y credencial de piloto.
-              </p>
-            </div>
-
-            <button
-              onClick={() => setShowAddBikeModal(true)}
-              className="px-5 py-3 bg-[#E6332A] hover:bg-[#d02c24] text-white font-display font-black text-xs uppercase tracking-wider rounded-xl border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition flex items-center justify-center gap-2 shrink-0 cursor-pointer"
-            >
-              <Plus className="w-4 h-4 stroke-[3]" />
-              <span>Añadir Moto al Hangar</span>
-            </button>
-          </div>
-
-          {/* Motorcycles Grid */}
+          {/* Motorcycles Grid / Empty State */}
           {userBikes.length === 0 ? (
             <div className="bg-[#FAF6ED] border-2 border-dashed border-[#1A1918] rounded-[28px] p-8 sm:p-12 text-center space-y-4">
               <div className="w-16 h-16 rounded-2xl bg-[#F4EEDB] border-2 border-[#1A1918] flex items-center justify-center mx-auto shadow-[3px_3px_0px_#1A1918]">
@@ -442,7 +636,17 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setShowAddBikeModal(true)}
+                  className="px-4 py-2 bg-[#E6332A] hover:bg-[#d02c24] text-white font-display font-black text-xs uppercase tracking-wider rounded-xl border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition flex items-center gap-2 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4 stroke-[3]" />
+                  <span>Añadir Moto</span>
+                </button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {userBikes.map((bike, index) => (
                 <div 
                   key={bike.id}
@@ -573,188 +777,325 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
                 </div>
               ))}
             </div>
+          </div>
+        )}
+      </div>
+    )}
+
+      {/* ========================================================= */}
+      {/* 04. SUB-TAB: PROGRESO (TELEMETRY CHARTS)                  */}
+      {/* ========================================================= */}
+      {/* 04. SUB-TAB: PROGRESO (TELEMETRY CHARTS) */}
+      {activeSubTab === 'progreso' && (
+        <div className="space-y-6">
+          {userActivities.length === 0 ? (
+            /* Clean Empty State when user hasn't published any rides yet */
+            <div className="bg-[#FAF6ED] border-2 border-dashed border-[#1A1918] rounded-[28px] p-8 sm:p-12 text-center space-y-4 shadow-[4px_4px_0px_#1A1918]">
+              <div className="w-16 h-16 rounded-2xl bg-[#F7B32B] border-2 border-[#1A1918] flex items-center justify-center mx-auto shadow-[3px_3px_0px_#1A1918]">
+                <BarChart2 className="w-8 h-8 text-[#1A1918]" />
+              </div>
+              <div className="max-w-md mx-auto space-y-1.5">
+                <h3 className="text-xl font-display font-black text-[#1A1918] uppercase tracking-wide">
+                  Sin Rodadas Registradas Aún
+                </h3>
+                <p className="text-xs text-[#1A1918]/70 font-serif italic">
+                  Tus kilómetros, desnivel, velocidad y gráficas semanales se calcularán automáticamente en tiempo real conforme grabes y publiques tus rodadas oficiales.
+                </p>
+              </div>
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => setActiveNavTab('registrar')}
+                  className="px-6 py-3 bg-[#E6332A] hover:bg-[#c92820] text-white border-2 border-[#1A1918] rounded-xl font-display font-black text-xs uppercase tracking-widest shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition inline-flex items-center gap-2 cursor-pointer"
+                >
+                  <Radio className="w-4 h-4" />
+                  <span>Grabar Mi Primera Rodada</span>
+                </button>
+              </div>
+            </div>
+          ) : (
+            /* Real Telemetry Data */
+            <>
+              {/* Summary Card with Real Data */}
+              <div className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[24px] p-5 sm:p-6 space-y-4 shadow-[5px_5px_0px_#1A1918]">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-[#E6332A] uppercase tracking-widest font-display font-black">
+                    ★ TELEMETRÍA ACUMULADA REAL ★
+                  </span>
+                  <span className="text-[10px] font-mono text-[#1A1918]/70 uppercase">
+                    {realRidesCount} {realRidesCount === 1 ? 'salida publicada' : 'salidas publicadas'}
+                  </span>
+                </div>
+                
+                <div className="grid grid-cols-3 gap-2.5 sm:gap-4">
+                  <div className="bg-[#F4EEDB] border-2 border-[#1A1918] rounded-xl p-3 sm:p-4 shadow-[2px_2px_0px_#1A1918]">
+                    <span className="text-[9px] uppercase tracking-wider text-[#1A1918]/70 block font-display font-black">Distancia</span>
+                    <span className="text-xl sm:text-3xl font-black text-[#1A1918] font-display">
+                      {realTotalKm} <span className="text-[10px] sm:text-xs text-[#1A1918]/70 font-sans font-bold">km</span>
+                    </span>
+                  </div>
+                  <div className="bg-[#F4EEDB] border-2 border-[#1A1918] rounded-xl p-3 sm:p-4 shadow-[2px_2px_0px_#1A1918]">
+                    <span className="text-[9px] uppercase tracking-wider text-[#1A1918]/70 block font-display font-black">Desnivel</span>
+                    <span className="text-xl sm:text-3xl font-black text-[#1A1918] font-display">
+                      {realTotalElev} <span className="text-[10px] sm:text-xs text-[#1A1918]/70 font-sans font-bold">m</span>
+                    </span>
+                  </div>
+                  <div className="bg-[#F4EEDB] border-2 border-[#1A1918] rounded-xl p-3 sm:p-4 shadow-[2px_2px_0px_#1A1918]">
+                    <span className="text-[9px] uppercase tracking-wider text-[#1A1918]/70 block font-display font-black">Tiempo</span>
+                    <span className="text-xl sm:text-3xl font-black text-[#1A1918] font-display">
+                      {realDurationFormatted}
+                    </span>
+                  </div>
+                </div>
+
+                <p className="text-xs text-[#1A1918]/70 border-t-2 border-[#1A1918] pt-3 font-serif italic font-medium">
+                  Estadísticas calculadas directamente de tus publicaciones de ruta.
+                </p>
+              </div>
+
+              {/* 12-Week Dynamic Bar Chart */}
+              <div className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[24px] p-5 sm:p-6 space-y-5 shadow-[5px_5px_0px_#1A1918]">
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <h4 className="text-sm font-display font-black text-[#1A1918] uppercase tracking-wide">Últimas 12 Semanas</h4>
+                    <p className="text-xs text-[#1A1918]/70 font-serif italic font-medium">Kilómetros reales acumulados por semana</p>
+                  </div>
+                  <span className="text-xs text-[#1A1918] font-display font-black bg-[#F7B32B] px-2.5 py-1 rounded-md border-2 border-[#1A1918] shadow-[1px_1px_0px_#1A1918] shrink-0">
+                    Prom: {avgWeeklyKm} km/sem
+                  </span>
+                </div>
+
+                <div className="h-40 flex items-end gap-1.5 pt-6 pb-2 border-b-2 border-[#1A1918]">
+                  {realWeeklyData.map((item, idx) => {
+                    const heightPct = item.km > 0 ? Math.max(15, Math.round((item.km / maxKmWeek) * 100)) : 6;
+                    const isCurrent = idx === realWeeklyData.length - 1;
+
+                    return (
+                      <div key={idx} className="flex-1 flex flex-col items-center gap-1 group relative">
+                        <div className="absolute -top-9 bg-[#1A1918] text-[#FAF6ED] text-[9px] px-2 py-0.5 rounded opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap z-10 font-mono shadow-[2px_2px_0px_#1A1918] border border-[#FAF6ED]/20">
+                          {item.km} km ({item.elev}m)
+                        </div>
+
+                        <div 
+                          className={`w-full rounded-t-sm transition-all duration-300 border border-[#1A1918] ${
+                            isCurrent 
+                              ? (item.km > 0 ? 'bg-[#E6332A]' : 'bg-[#E6332A]/30')
+                              : item.km > 0 ? 'bg-[#1A1918] group-hover:bg-[#E06423]' : 'bg-[#F4EEDB]'
+                          }`}
+                          style={{ height: `${heightPct}%` }}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="flex justify-between text-[10px] text-[#1A1918]/70 uppercase font-display font-black">
+                  <span>Hace 12 semanas</span>
+                  <span>Esta semana</span>
+                </div>
+              </div>
+
+              {/* Dynamic Compact List of Pilot Rides (Simple & clean) */}
+              <div className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[24px] p-5 sm:p-6 space-y-4 shadow-[5px_5px_0px_#1A1918]">
+                <div className="flex items-center justify-between border-b-2 border-[#1A1918] pb-3">
+                  <div>
+                    <h4 className="text-sm font-display font-black text-[#1A1918] uppercase tracking-wide flex items-center gap-2">
+                      <MapIcon className="w-4 h-4 text-[#E6332A]" />
+                      <span>Bitácora de Rodadas del Piloto ({userActivities.length})</span>
+                    </h4>
+                    <p className="text-xs text-[#1A1918]/70 font-serif italic font-medium">
+                      Tus expediciones grabadas y salidas en grupo como asistente
+                    </p>
+                  </div>
+                  <span className="text-[10px] font-mono text-[#1A1918]/70 uppercase hidden sm:inline-block">
+                    Orden cronológico
+                  </span>
+                </div>
+
+                <div className="space-y-2.5">
+                  {userActivities.map((act) => {
+                    const isAuthor = act.pilotId === currentUser.id || act.pilotName === currentUser.name;
+                    return (
+                      <div
+                        key={act.id}
+                        onClick={() => setSelectedActivityForDetail(act)}
+                        className="bg-[#F4EEDB] hover:bg-[#FAF6ED] border-2 border-[#1A1918] rounded-xl p-3 sm:p-3.5 flex items-center justify-between gap-3 shadow-[2px_2px_0px_#1A1918] hover:shadow-[3px_3px_0px_#1A1918] transition cursor-pointer group active:translate-x-0.5 active:translate-y-0.5"
+                      >
+                        {/* Left: Icon & Core Info */}
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-10 h-10 rounded-xl bg-[#FAF6ED] border-2 border-[#1A1918] flex items-center justify-center shrink-0 shadow-[1.5px_1.5px_0px_#1A1918] group-hover:bg-[#F7B32B] transition">
+                            <Compass className="w-5 h-5 text-[#1A1918]" />
+                          </div>
+
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h5 className="font-display font-black text-xs sm:text-sm text-[#1A1918] uppercase tracking-tight truncate group-hover:text-[#E6332A] transition">
+                                {act.title}
+                              </h5>
+                              {!isAuthor && (
+                                <span className="bg-[#1A1918] text-[#F7B32B] text-[8px] font-display font-black uppercase px-1.5 py-0.5 rounded border border-[#1A1918] shrink-0">
+                                  Asistente
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="flex items-center gap-2.5 text-[10px] text-[#1A1918]/70 font-mono mt-0.5">
+                              <span className="flex items-center gap-1">
+                                <Calendar className="w-3 h-3 text-[#E6332A]" />
+                                <span>{act.dateText}</span>
+                              </span>
+                              {act.location && (
+                                <>
+                                  <span>•</span>
+                                  <span className="truncate max-w-[120px] sm:max-w-[200px]">{act.location}</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Right: Metrics & Action */}
+                        <div className="flex items-center gap-2.5 shrink-0">
+                          <div className="text-right">
+                            <div className="font-display font-black text-sm sm:text-base text-[#1A1918] leading-none">
+                              {act.distanceKm} <span className="text-[10px] font-sans font-bold text-[#1A1918]/70">km</span>
+                            </div>
+                            <div className="text-[9px] font-mono text-[#1A1918]/60 mt-0.5">
+                              {act.durationText || '0h 00m'}
+                            </div>
+                          </div>
+
+                          {/* Delete button (Solo autor / quien la grabó) */}
+                          {isAuthor && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (window.confirm(`¿Seguro que deseas eliminar la rodada grabada "${act.title}"? Esta acción no se puede deshacer.`)) {
+                                  deleteActivity(act.id);
+                                }
+                              }}
+                              className="w-7 h-7 rounded-lg bg-[#FAF6ED] hover:bg-[#E6332A] hover:text-white border-2 border-[#1A1918] flex items-center justify-center text-[#1A1918]/60 transition shrink-0 shadow-[1px_1px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5"
+                              title="Eliminar tu rodada grabada"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+
+                          <div className="w-7 h-7 rounded-lg bg-[#FAF6ED] border-2 border-[#1A1918] flex items-center justify-center text-[#1A1918] group-hover:bg-[#1A1918] group-hover:text-white transition shrink-0 shadow-[1px_1px_0px_#1A1918]">
+                            <ChevronRight className="w-4 h-4" />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </>
           )}
         </div>
       )}
 
       {/* ========================================================= */}
-      {/* 04. SUB-TAB: PROGRESO (TELEMETRY CHARTS)                  */}
-      {/* ========================================================= */}
-      {activeSubTab === 'progreso' && (
-        <div className="space-y-6">
-          {/* Discipline selector */}
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
-            {['Todos los deportes', 'Carretera', 'Doble Propósito', 'Enduro', 'Pista'].map(d => (
-              <button
-                key={d}
-                onClick={() => setSelectedDiscipline(d)}
-                className={`px-4 py-2 text-[10px] uppercase tracking-wider font-display whitespace-nowrap rounded-xl border-2 transition shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer ${
-                  selectedDiscipline === d
-                    ? 'bg-[#1A1918] text-[#FAF6ED] border-[#1A1918] font-black'
-                    : 'bg-[#FAF6ED] text-[#1A1918] border-[#1A1918] hover:bg-[#F4EEDB] font-bold'
-                }`}
-              >
-                {d}
-              </button>
-            ))}
-          </div>
-
-          {/* This Week Summary */}
-          <div className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[24px] p-6 space-y-4 shadow-[5px_5px_0px_#1A1918]">
-            <span className="text-[10px] text-[#E6332A] uppercase tracking-widest font-display font-black">
-              ★ BITÁCORA DE ESTA SEMANA ★
-            </span>
-            
-            <div className="grid grid-cols-3 gap-3 sm:gap-4">
-              <div className="bg-[#F4EEDB] border-2 border-[#1A1918] rounded-xl p-4 shadow-[2px_2px_0px_#1A1918]">
-                <span className="text-[9px] uppercase tracking-wider text-[#1A1918]/70 block font-display font-black">Distancia</span>
-                <span className="text-2xl sm:text-3xl font-black text-[#1A1918] font-display">42.8 <span className="text-xs text-[#1A1918]/70 font-sans font-bold">km</span></span>
-              </div>
-              <div className="bg-[#F4EEDB] border-2 border-[#1A1918] rounded-xl p-4 shadow-[2px_2px_0px_#1A1918]">
-                <span className="text-[9px] uppercase tracking-wider text-[#1A1918]/70 block font-display font-black">Desnivel</span>
-                <span className="text-2xl sm:text-3xl font-black text-[#1A1918] font-display">890 <span className="text-xs text-[#1A1918]/70 font-sans font-bold">m</span></span>
-              </div>
-              <div className="bg-[#F4EEDB] border-2 border-[#1A1918] rounded-xl p-4 shadow-[2px_2px_0px_#1A1918]">
-                <span className="text-[9px] uppercase tracking-wider text-[#1A1918]/70 block font-display font-black">Tiempo</span>
-                <span className="text-2xl sm:text-3xl font-black text-[#1A1918] font-display">1h 45m</span>
-              </div>
-            </div>
-
-            <p className="text-xs text-[#1A1918]/70 border-t-2 border-[#1A1918] pt-3 font-serif italic font-medium">
-              Máquina en óptimo desempeño. Próxima revisión programada a los 5,000 km.
-            </p>
-          </div>
-
-          {/* 12-Week Interactive Bar Chart */}
-          <div className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[24px] p-6 space-y-5 shadow-[5px_5px_0px_#1A1918]">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="text-sm font-display font-black text-[#1A1918] uppercase tracking-wide">Últimas 12 Semanas</h4>
-                <p className="text-xs text-[#1A1918]/70 font-serif italic font-medium">Kilómetros acumulados por semana</p>
-              </div>
-              <span className="text-xs text-[#1A1918] font-display font-black bg-[#F7B32B] px-2.5 py-1 rounded-md border-2 border-[#1A1918] shadow-[1px_1px_0px_#1A1918]">Prom: 48.2 km/sem</span>
-            </div>
-
-            <div className="h-44 flex items-end gap-1.5 pt-6 pb-2 border-b-2 border-[#1A1918]">
-              {WEEKLY_DATA.map((item, idx) => {
-                const heightPct = item.km > 0 ? Math.max(12, Math.round((item.km / maxKmWeek) * 100)) : 4;
-                const isCurrent = idx === WEEKLY_DATA.length - 1;
-
-                return (
-                  <div key={idx} className="flex-1 flex flex-col items-center gap-1 group relative">
-                    <div className="absolute -top-9 bg-[#1A1918] text-[#FAF6ED] text-[9px] px-2.5 py-1 rounded-md opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap z-10 font-mono shadow-[2px_2px_0px_#1A1918] border border-[#FAF6ED]/20">
-                      {item.km} km ({item.elev}m)
-                    </div>
-
-                    <div 
-                      className={`w-full rounded-t-sm transition-all duration-300 border border-[#1A1918] ${
-                        isCurrent 
-                          ? 'bg-[#E6332A] shadow-xs' 
-                          : item.km > 0 ? 'bg-[#1A1918] group-hover:bg-[#E06423]' : 'bg-[#F4EEDB]'
-                      }`}
-                      style={{ height: `${heightPct}%` }}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="flex justify-between text-[10px] text-[#1A1918]/70 uppercase font-display font-black">
-              <span>Hace 12 semanas</span>
-              <span>Esta semana</span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================= */}
-      {/* 05. SUB-TAB: ACTIVIDADES (SEARCHABLE HISTORICAL LOG)      */}
-      {/* ========================================================= */}
-      {activeSubTab === 'actividades' && (
-        <div className="space-y-5">
-          {/* Search bar */}
-          <div className="relative">
-            <Search className="w-4 h-4 text-[#1A1918]/60 absolute left-3.5 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              value={activitySearch}
-              onChange={(e) => setActivitySearch(e.target.value)}
-              placeholder="Buscar por destino, moto o título..."
-              className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] pl-10 pr-4 py-3 text-xs text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:ring-2 focus:ring-[#E6332A] shadow-[3px_3px_0px_#1A1918] rounded-xl font-medium"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {filteredHistory.map(act => (
-              <div 
-                key={act.id}
-                className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[24px] p-5 space-y-4 shadow-[4px_4px_0px_#1A1918] hover:shadow-[7px_7px_0px_#1A1918] transition duration-200"
-              >
-                <div className="flex items-start justify-between">
-                  <div>
-                    <span className="text-[10px] text-[#1A1918]/70 font-serif italic font-medium">{act.dateText}</span>
-                    <h4 className="text-base font-display font-black text-[#1A1918] uppercase tracking-wide mt-0.5">
-                      {act.title}
-                    </h4>
-                    <span className="text-xs text-[#E6332A] font-display font-black">{act.location}</span>
-                  </div>
-                  <span className="text-[10px] text-[#1A1918] font-display font-black bg-[#F4EEDB] px-2.5 py-1 border-2 border-[#1A1918] uppercase tracking-wider rounded-md shadow-[1px_1px_0px_#1A1918]">
-                    {act.motoModel}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-3 gap-2 bg-[#F4EEDB] border-2 border-[#1A1918] rounded-xl p-3 text-xs shadow-[2px_2px_0px_#1A1918]">
-                  <div>
-                    <span className="text-[8px] uppercase text-[#1A1918]/70 block font-display font-black">Distancia</span>
-                    <span className="text-[#1A1918] font-display font-black">{act.distanceKm} km</span>
-                  </div>
-                  <div>
-                    <span className="text-[8px] uppercase text-[#1A1918]/70 block font-display font-black">Desnivel</span>
-                    <span className="text-[#1A1918] font-display font-black">{act.elevationGainM} m</span>
-                  </div>
-                  <div>
-                    <span className="text-[8px] uppercase text-[#1A1918]/70 block font-display font-black">Tiempo</span>
-                    <span className="text-[#1A1918] font-display font-black">{act.durationText}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================= */}
-      {/* 06. SUB-TAB: GALERÍA (PHOTO GRID FROM TRAILS)             */}
+      {/* 05. SUB-TAB: GALERÍA (REAL RIDE PHOTOS + UPLOADS)         */}
       {/* ========================================================= */}
       {activeSubTab === 'galeria' && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between border-b-2 border-[#1A1918] pb-3">
-            <h3 className="text-sm font-display font-black text-[#1A1918] uppercase tracking-wide">
-              Fotos de Expediciones ({GALLERY_PHOTOS.length})
-            </h3>
-            <span className="text-xs text-[#1A1918]/70 font-serif italic font-medium">Capturas en ruta con telemetría GPS</span>
+        <div className="space-y-5">
+          {/* Header bar with photo counter and upload button */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b-2 border-[#1A1918] pb-4">
+            <div>
+              <h3 className="text-sm font-display font-black text-[#1A1918] uppercase tracking-wide">
+                Galería de Expediciones ({galleryPhotos.length})
+              </h3>
+              <p className="text-xs text-[#1A1918]/70 font-serif italic font-medium">
+                Fotos de tus rodadas publicadas y capturas subidas directamente
+              </p>
+            </div>
+
+            {/* Hidden file input for uploading gallery photos */}
+            <input
+              ref={galleryFileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleUploadGalleryPhoto}
+            />
+
+            <button
+              type="button"
+              onClick={() => galleryFileInputRef.current?.click()}
+              className="px-4 py-2 bg-[#E6332A] hover:bg-[#c92820] text-white border-2 border-[#1A1918] rounded-xl font-display font-black text-xs uppercase tracking-wider shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition inline-flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
+            >
+              <Upload className="w-3.5 h-3.5" />
+              <span>Subir Foto</span>
+            </button>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-            {GALLERY_PHOTOS.map((photo, idx) => (
-              <div 
-                key={idx}
-                className="aspect-square bg-[#F4EEDB] overflow-hidden relative group cursor-pointer border-2 border-[#1A1918] rounded-2xl shadow-[3px_3px_0px_#1A1918] hover:shadow-[5px_5px_0px_#1A1918] transition"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img 
-                  src={photo.url} 
-                  alt={photo.caption}
-                  className="w-full h-full object-cover group-hover:scale-105 transition duration-500" 
-                />
-                <div className="absolute inset-0 bg-[#1A1918]/80 opacity-0 group-hover:opacity-100 transition p-2.5 flex items-end">
-                  <p className="text-[10px] text-white leading-tight font-serif italic line-clamp-2">
-                    {photo.caption}
-                  </p>
-                </div>
+          {galleryPhotos.length === 0 ? (
+            /* Empty state when no photos have been added yet */
+            <div className="bg-[#FAF6ED] border-2 border-dashed border-[#1A1918] rounded-[28px] p-8 sm:p-12 text-center space-y-4 shadow-[4px_4px_0px_#1A1918]">
+              <div className="w-16 h-16 rounded-2xl bg-[#F4EEDB] border-2 border-[#1A1918] flex items-center justify-center mx-auto shadow-[3px_3px_0px_#1A1918]">
+                <ImageIcon className="w-8 h-8 text-[#1A1918]/50" />
               </div>
-            ))}
-          </div>
+              <div className="max-w-md mx-auto space-y-1.5">
+                <h3 className="text-lg font-display font-black text-[#1A1918] uppercase tracking-wide">
+                  Tu Galería Está Vacía
+                </h3>
+                <p className="text-xs text-[#1A1918]/70 font-serif italic">
+                  Las fotos que subas aquí o adjuntes a las rodadas que publiques se guardarán y mostrarán en esta cuadrícula.
+                </p>
+              </div>
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => galleryFileInputRef.current?.click()}
+                  className="px-5 py-2.5 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border-2 border-[#1A1918] rounded-xl font-display font-black text-xs uppercase tracking-wider shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition inline-flex items-center gap-2 cursor-pointer"
+                >
+                  <Camera className="w-4 h-4 text-[#E6332A]" />
+                  <span>Subir Mi Primera Foto</span>
+                </button>
+              </div>
+            </div>
+          ) : (
+            /* Dynamic grid of real photos */
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+              {galleryPhotos.map((photo, idx) => (
+                <div 
+                  key={idx}
+                  className="aspect-square bg-[#F4EEDB] overflow-hidden relative group border-2 border-[#1A1918] rounded-2xl shadow-[3px_3px_0px_#1A1918] hover:shadow-[5px_5px_0px_#1A1918] transition"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img 
+                    src={photo.url} 
+                    alt={photo.caption}
+                    className="w-full h-full object-cover group-hover:scale-105 transition duration-500" 
+                  />
+                  
+                  {/* Caption Overlay */}
+                  <div className="absolute inset-0 bg-[#1A1918]/80 opacity-0 group-hover:opacity-100 transition p-2.5 flex flex-col justify-between">
+                    <div className="flex justify-end">
+                      {photo.isCustom && photo.customIndex !== undefined && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteGalleryPhoto(photo.customIndex!);
+                          }}
+                          className="p-1 bg-[#E6332A] text-white rounded-md border border-[#1A1918] hover:bg-[#c92820] transition"
+                          title="Eliminar foto"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      )}
+                    </div>
+                    <p className="text-[10px] text-white leading-tight font-serif italic line-clamp-2">
+                      {photo.caption}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -1016,6 +1357,33 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
         onSave={(id, updates) => {
           updateMotorcycle(id, updates);
         }}
+      />
+
+      {/* Followers & Following Modal */}
+      <FollowersModal
+        isOpen={followersModalOpen}
+        onClose={() => setFollowersModalOpen(false)}
+        initialTab={followersModalTab}
+        targetUser={currentUser}
+      />
+
+      {/* Activity Detail Modal */}
+      <ActivityDetailModal
+        activity={selectedActivityForDetail}
+        isOpen={!!selectedActivityForDetail}
+        onClose={() => setSelectedActivityForDetail(null)}
+        onOpenPilotProfile={(pilotId) => {
+          setSelectedActivityForDetail(null);
+          openPilotProfileById(pilotId);
+        }}
+        onToggleSaludo={(activityId) => toggleKudo(activityId)}
+        onAddComment={(activityId, text) => addActivityComment(activityId, text)}
+      />
+
+      {/* Founder Feedback Modal (Exclusive for top 50 users) */}
+      <FounderFeedbackModal
+        isOpen={feedbackModalOpen}
+        onClose={() => setFeedbackModalOpen(false)}
       />
 
     </div>

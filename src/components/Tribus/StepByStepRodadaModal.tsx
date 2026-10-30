@@ -14,7 +14,10 @@ import {
   Compass,
   ArrowUp,
   ArrowDown,
-  GripVertical
+  GripVertical,
+  Clock,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { Rodada, RouteProposal, User, Waypoint, WaypointType } from '../../types';
 import { buildDynamicRouteGoogleMapsUrl } from '../../utils/googleMaps';
@@ -96,8 +99,29 @@ export const StepByStepRodadaModal: React.FC<StepByStepRodadaModalProps> = ({
 
   // Step 3: Ritmo, Dificultad & Hora
   const [departureTime, setDepartureTime] = useState('07:30 AM');
+  const [timeHour, setTimeHour] = useState('07');
+  const [timeMinute, setTimeMinute] = useState('30');
+  const [timePeriod, setTimePeriod] = useState<'AM' | 'PM'>('AM');
   const [difficulty, setDifficulty] = useState<RouteProposal['difficulty']>('Intermedio');
   const [offroadPercentage, setOffroadPercentage] = useState(30);
+
+  // Sincronizar hora seleccionada al cambiar componentes
+  const updateCustomTime = (newH: string, newM: string, newP: 'AM' | 'PM') => {
+    setTimeHour(newH);
+    setTimeMinute(newM);
+    setTimePeriod(newP);
+    setDepartureTime(`${newH}:${newM} ${newP}`);
+  };
+
+  const applyPresetTime = (timeStr: string) => {
+    setDepartureTime(timeStr);
+    const match = timeStr.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+    if (match) {
+      setTimeHour(match[1].padStart(2, '0'));
+      setTimeMinute(match[2]);
+      setTimePeriod((match[3]?.toUpperCase() || 'AM') as 'AM' | 'PM');
+    }
+  };
 
   // Step 4: Nombre y Resumen
   const [title, setTitle] = useState('');
@@ -119,7 +143,9 @@ export const StepByStepRodadaModal: React.FC<StepByStepRodadaModalProps> = ({
   const previewMapsUrl = buildDynamicRouteGoogleMapsUrl(
     origin,
     stops.map(s => ({ name: s.name, lat: s.lat, lng: s.lng })),
-    destination
+    destination,
+    originCoords,
+    destinationCoords
   );
 
   const handleNext = () => {
@@ -262,9 +288,9 @@ export const StepByStepRodadaModal: React.FC<StepByStepRodadaModalProps> = ({
       ],
       waypoints: allWaypoints,
       coordinates: [
-        [19.4000, -99.2500],
-        [19.8000, -98.9000],
-        [20.2000, -98.7300]
+        [originCoords.lat, originCoords.lng],
+        ...stops.filter(s => s.lat && s.lng).map(s => [s.lat!, s.lng!] as [number, number]),
+        [destinationCoords.lat, destinationCoords.lng]
       ],
       downvotes: [],
       dayOfDeadVibe: 'Camaradería de tribu',
@@ -719,26 +745,129 @@ export const StepByStepRodadaModal: React.FC<StepByStepRodadaModalProps> = ({
                 </div>
               </div>
 
-              {/* Hora de Salida */}
-              <div>
-                <span className="text-[10px] uppercase font-display font-black text-[#1A1918]/70 tracking-wider block mb-1.5">
-                  Hora de Salida
-                </span>
-                <div className="flex gap-2">
-                  {['07:00 AM', '07:30 AM', '08:00 AM', '08:30 AM'].map(t => (
-                    <button
-                      key={t}
-                      type="button"
-                      onClick={() => setDepartureTime(t)}
-                      className={`px-2.5 py-2 text-xs font-display border-2 rounded-xl transition flex-1 text-center shadow-[2px_2px_0px_#1A1918] ${
-                        departureTime === t
-                          ? 'border-[#1A1918] bg-[#E6332A] text-white font-black'
-                          : 'border-[#1A1918] bg-[#FAF6ED] text-[#1A1918] hover:bg-[#F4EEDB] font-bold'
-                      }`}
-                    >
-                      {t}
-                    </button>
-                  ))}
+              {/* Hora de Salida Dinámica, Libre e Interactiva */}
+              <div className="border-2 border-[#1A1918] bg-[#FAF6ED] p-3.5 sm:p-4 rounded-2xl space-y-3 shadow-[3px_3px_0px_#1A1918]">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] uppercase font-display font-black text-[#1A1918]/80 tracking-wider flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-[#E6332A]" />
+                    <span>Hora de Salida</span>
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] font-serif italic text-[#1A1918]/60">Elegida:</span>
+                    <span className="text-sm font-mono font-black text-[#E6332A] bg-white px-2.5 py-0.5 rounded-lg border-2 border-[#1A1918] shadow-[1.5px_1.5px_0px_#1A1918]">
+                      {departureTime}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Selector interactivo estilo reloj: Hora, Minutos y AM/PM */}
+                <div className="bg-[#F4EEDB] border-2 border-[#1A1918] p-3 rounded-xl shadow-[2px_2px_0px_#1A1918]">
+                  <div className="text-[9px] uppercase font-mono font-bold text-[#1A1918]/60 tracking-wider mb-2">
+                    Ajuste fino (Cualquier horario del día)
+                  </div>
+                  <div className="flex items-center justify-center gap-2 sm:gap-3">
+                    {/* Hora selector */}
+                    <div className="flex flex-col items-center">
+                      <label className="text-[9px] font-mono text-[#1A1918]/60 uppercase mb-0.5">Hora</label>
+                      <select
+                        value={timeHour}
+                        onChange={(e) => updateCustomTime(e.target.value, timeMinute, timePeriod)}
+                        className="bg-white border-2 border-[#1A1918] rounded-xl px-2.5 py-1.5 text-base sm:text-lg font-mono font-black text-[#1A1918] shadow-[2px_2px_0px_#1A1918] focus:outline-none focus:border-[#E6332A] cursor-pointer"
+                      >
+                        {Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0')).map(h => (
+                          <option key={h} value={h}>{h}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <span className="text-xl font-mono font-black text-[#1A1918] mt-3">:</span>
+
+                    {/* Minutos selector (cada 5 min o libre) */}
+                    <div className="flex flex-col items-center">
+                      <label className="text-[9px] font-mono text-[#1A1918]/60 uppercase mb-0.5">Minutos</label>
+                      <select
+                        value={timeMinute}
+                        onChange={(e) => updateCustomTime(timeHour, e.target.value, timePeriod)}
+                        className="bg-white border-2 border-[#1A1918] rounded-xl px-2.5 py-1.5 text-base sm:text-lg font-mono font-black text-[#1A1918] shadow-[2px_2px_0px_#1A1918] focus:outline-none focus:border-[#E6332A] cursor-pointer"
+                      >
+                        {['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55'].map(m => (
+                          <option key={m} value={m}>{m}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* AM / PM Toggle */}
+                    <div className="flex flex-col items-center ml-1">
+                      <label className="text-[9px] font-mono text-[#1A1918]/60 uppercase mb-0.5">Periodo</label>
+                      <div className="flex border-2 border-[#1A1918] rounded-xl overflow-hidden bg-white shadow-[2px_2px_0px_#1A1918]">
+                        <button
+                          type="button"
+                          onClick={() => updateCustomTime(timeHour, timeMinute, 'AM')}
+                          className={`px-3 py-1.5 text-xs font-mono font-black transition cursor-pointer flex items-center gap-1 ${
+                            timePeriod === 'AM'
+                              ? 'bg-[#E6332A] text-white'
+                              : 'bg-white text-[#1A1918] hover:bg-[#F4EEDB]'
+                          }`}
+                        >
+                          <Sun className="w-3 h-3" />
+                          <span>AM</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => updateCustomTime(timeHour, timeMinute, 'PM')}
+                          className={`px-3 py-1.5 text-xs font-mono font-black transition cursor-pointer flex items-center gap-1 border-l-2 border-[#1A1918] ${
+                            timePeriod === 'PM'
+                              ? 'bg-[#1A1918] text-[#F7B32B]'
+                              : 'bg-white text-[#1A1918] hover:bg-[#F4EEDB]'
+                          }`}
+                        >
+                          <Moon className="w-3 h-3" />
+                          <span>PM</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Accesos rápidos y frecuentes */}
+                <div className="space-y-1.5 pt-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[9px] uppercase font-mono font-bold text-[#1A1918]/60 tracking-wider">
+                      Horarios frecuentes recomendados
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
+                    {[
+                      { t: '06:00 AM', label: '06:00 AM' },
+                      { t: '06:30 AM', label: '06:30 AM' },
+                      { t: '07:00 AM', label: '07:00 AM' },
+                      { t: '07:30 AM', label: '07:30 AM' },
+                      { t: '08:00 AM', label: '08:00 AM' },
+                      { t: '08:30 AM', label: '08:30 AM' },
+                      { t: '09:00 AM', label: '09:00 AM' },
+                      { t: '09:30 AM', label: '09:30 AM' },
+                      { t: '10:00 AM', label: '10:00 AM' },
+                      { t: '11:00 AM', label: '11:00 AM' },
+                      { t: '04:00 PM', label: '04:00 PM' },
+                      { t: '06:00 PM', label: '06:00 PM' }
+                    ].map(({ t, label }) => {
+                      const isSelected = departureTime === t;
+                      return (
+                        <button
+                          key={t}
+                          type="button"
+                          onClick={() => applyPresetTime(t)}
+                          className={`py-1 px-1.5 text-[10px] font-mono rounded-lg border-2 transition text-center shadow-[1px_1px_0px_#1A1918] cursor-pointer ${
+                            isSelected
+                              ? 'border-[#1A1918] bg-[#E6332A] text-white font-black scale-102'
+                              : 'border-[#1A1918] bg-[#FAF6ED] text-[#1A1918] hover:bg-[#F4EEDB] font-bold'
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
 

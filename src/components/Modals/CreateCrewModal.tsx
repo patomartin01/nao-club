@@ -17,7 +17,12 @@ import {
   ArrowRight,
   ClipboardPaste,
   HelpCircle,
-  Key
+  Key,
+  Upload,
+  Camera,
+  Image as ImageIcon,
+  Dices,
+  RotateCcw
 } from 'lucide-react';
 import { Crew } from '../../types';
 
@@ -27,37 +32,50 @@ interface CreateCrewModalProps {
 }
 
 const WhatsAppIcon: React.FC<{ className?: string }> = ({ className = "w-4 h-4" }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-    <path d="M12.031 2c-5.502 0-9.971 4.468-9.971 9.97 0 1.761.459 3.479 1.331 4.992L2 22l5.166-1.354a9.923 9.923 0 0 0 4.865 1.258h.004c5.498 0 9.967-4.47 9.967-9.972 0-2.663-1.037-5.166-2.92-7.049A9.897 9.897 0 0 0 12.031 2zm5.792 14.18c-.244.686-1.22 1.258-1.722 1.328-.468.065-1.08.1-3.14-.754-2.637-1.092-4.328-3.784-4.46-3.959-.131-.174-1.06-1.41-1.06-2.689 0-1.278.67-1.908.91-2.164.24-.256.524-.32.698-.32.174 0 .349.002.502.01.163.008.382-.062.597.455.22.529.742 1.81.808 1.942.065.131.109.284.022.458-.087.174-.131.284-.262.436-.131.153-.275.342-.393.458-.131.131-.268.273-.116.535.153.262.68 1.118 1.458 1.81.998.889 1.84 1.164 2.102 1.295.262.131.415.109.568-.065.153-.175.655-.764.83-1.026.174-.262.349-.218.59-.131.24.087 1.528.72 1.79.851.262.131.436.196.502.305.066.109.066.633-.178 1.319z"/>
+  <svg 
+    className={className} 
+    viewBox="0 0 24 24" 
+    fill="currentColor"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path d="M17.472 14.382c-.301-.15-1.78-.878-2.056-.978-.275-.1-.475-.15-.675.15-.2.301-.775.978-.95 1.179-.175.2-.351.226-.651.076-.3-.15-1.268-.467-2.416-1.491-.893-.797-1.496-1.782-1.672-2.082-.175-.3-.019-.462.131-.611.136-.134.301-.351.451-.526.15-.175.2-.3.301-.501.1-.2.05-.375-.025-.526-.075-.15-.676-1.63-.926-2.232-.243-.587-.49-.507-.675-.516-.175-.01-.376-.01-.576-.01-.2 0-.526.075-.802.375-.275.3-1.052 1.028-1.052 2.508 0 1.479 1.077 2.908 1.228 3.109.15.2 2.12 3.237 5.136 4.54.717.311 1.277.496 1.714.635.72.229 1.376.197 1.895.12.578-.087 1.78-.727 2.03-1.43.25-.702.25-1.303.175-1.43-.075-.126-.275-.201-.576-.351z"/>
+    <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 1.826.49 3.538 1.344 5.013L2.05 21.95a.75.75 0 00.923.923l4.937-1.294A9.954 9.954 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2zM3.5 12c0-4.694 3.806-8.5 8.5-8.5s8.5 3.806 8.5 8.5-3.806 8.5-8.5 8.5a8.46 8.46 0 01-4.48-1.278.75.75 0 00-.512-.116l-3.376.885.885-3.376a.75.75 0 00-.116-.512A8.46 8.46 0 013.5 12z"/>
   </svg>
 );
 
-const COVER_PRESETS = [
+// Patrones geométricos vectoriales de aventura y branding NAO (#FAF6ED, #1A1918, #E6332A, #F7B32B)
+export const BRANDING_PATTERNS: { id: string; name: string; svg: string }[] = [
   {
-    id: 'sierra-basalto',
-    name: 'Sierra Basalto',
-    url: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=1200',
-    tone: 'Terracota & Roca',
+    id: 'topo-contour',
+    name: 'Curvas Topográficas',
+    svg: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400"><rect width="800" height="400" fill="%231A1918"/><path d="M0 100 Q 200 40, 400 120 T 800 80 L 800 400 L 0 400 Z" fill="%2322201E"/><path d="M0 160 Q 250 80, 500 180 T 800 140 L 800 400 L 0 400 Z" fill="%232A2825"/><path d="M0 220 Q 200 160, 450 250 T 800 200 L 800 400 L 0 400 Z" fill="%23383531"/><path d="M0 290 Q 300 230, 550 310 T 800 280 L 800 400 L 0 400 Z" fill="%23E6332A" opacity="0.85"/><circle cx="680" cy="90" r="45" fill="%23F7B32B" opacity="0.9"/><path d="M50 360 L120 280 L190 360 Z" fill="%23FAF6ED" opacity="0.15"/><path d="M160 360 L240 250 L320 360 Z" fill="%23FAF6ED" opacity="0.12"/></svg>`
   },
   {
-    id: 'nevado-glaciar',
-    name: 'Nevado Glaciar',
-    url: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=1200',
-    tone: 'Glaciar & Nieve',
+    id: 'desert-dunes',
+    name: 'Dunas Terracota',
+    svg: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400"><rect width="800" height="400" fill="%23FAF6ED"/><path d="M-50 260 C 150 180, 300 320, 500 240 C 650 180, 750 220, 850 190 L 850 450 L -50 450 Z" fill="%23F4EEDB"/><path d="M-50 290 C 180 230, 320 340, 520 280 C 680 240, 780 260, 850 240 L 850 450 L -50 450 Z" fill="%23F7B32B" opacity="0.35"/><path d="M-50 330 C 220 280, 380 370, 580 320 C 720 290, 800 310, 850 290 L 850 450 L -50 450 Z" fill="%23E6332A" opacity="0.88"/><circle cx="160" cy="110" r="50" fill="%23E6332A" opacity="0.2"/><path d="M0 40 L800 40 M0 80 L800 80 M0 120 L800 120" stroke="%231A1918" stroke-width="1" stroke-dasharray="8 12" opacity="0.12"/></svg>`
   },
   {
-    id: 'bosque-coniferas',
-    name: 'Bosque Coníferas',
-    url: 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&q=80&w=1200',
-    tone: 'Selva & Musgo',
+    id: 'sierra-peaks',
+    name: 'Picos de la Sierra',
+    svg: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400"><rect width="800" height="400" fill="%231A1918"/><polygon points="80,400 240,160 400,400" fill="%232D2A26"/><polygon points="260,400 450,110 640,400" fill="%233A3631"/><polygon points="460,400 620,180 780,400" fill="%23E6332A" opacity="0.8"/><polygon points="240,160 270,210 210,210" fill="%23FAF6ED" opacity="0.85"/><polygon points="450,110 490,180 410,180" fill="%23F7B32B" opacity="0.95"/><circle cx="680" cy="80" r="30" fill="%23F7B32B"/><line x1="0" y1="380" x2="800" y2="380" stroke="%23FAF6ED" stroke-width="4" opacity="0.3"/></svg>`
   },
   {
-    id: 'canon-arcilla',
-    name: 'Cañón Arcilla',
-    url: 'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&q=80&w=1200',
-    tone: 'Ocre & Desierto',
+    id: 'rally-geo',
+    name: 'Geometría Rally NAO',
+    svg: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400"><rect width="800" height="400" fill="%23FAF6ED"/><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="%231A1918" stroke-width="0.8" opacity="0.08"/></pattern><rect width="800" height="400" fill="url(%23grid)"/><polygon points="0,0 350,0 200,400 0,400" fill="%231A1918"/><polygon points="210,400 360,0 480,0 330,400" fill="%23E6332A"/><polygon points="340,400 490,0 540,0 390,400" fill="%23F7B32B"/><circle cx="650" cy="200" r="70" fill="none" stroke="%231A1918" stroke-width="4"/><circle cx="650" cy="200" r="55" fill="none" stroke="%23E6332A" stroke-width="2" stroke-dasharray="6 6"/></svg>`
+  },
+  {
+    id: 'trail-tracks',
+    name: 'Trazos de Huella',
+    svg: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400"><rect width="800" height="400" fill="%231A1918"/><path d="M-50 350 Q 200 200, 450 300 T 850 180" fill="none" stroke="%23F7B32B" stroke-width="24" stroke-linecap="round" opacity="0.85"/><path d="M-50 350 Q 200 200, 450 300 T 850 180" fill="none" stroke="%231A1918" stroke-width="6" stroke-dasharray="14 14"/><path d="M-50 250 Q 250 350, 550 150 T 850 280" fill="none" stroke="%23E6332A" stroke-width="16" opacity="0.8"/><circle cx="450" cy="300" r="16" fill="%23FAF6ED"/><circle cx="450" cy="300" r="8" fill="%231A1918"/></svg>`
   }
 ];
+
+export const getRandomBrandingPattern = (): string => {
+  const index = Math.floor(Math.random() * BRANDING_PATTERNS.length);
+  return BRANDING_PATTERNS[index].svg;
+};
 
 const CITY_PRESETS = [
   'Interlomas / CDMX',
@@ -75,6 +93,32 @@ const VIBE_PRESETS = [
   { label: '🏍️ Scrambler & Aventura', tagline: 'Paseos escénicos, carreteras secundarias y buena comida.' },
 ];
 
+const compressCoverImage = (dataUrl: string, maxWidth = 1200, quality = 0.8): Promise<string> => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      let width = img.width;
+      let height = img.height;
+      if (width > maxWidth) {
+        height = Math.round((height * maxWidth) / width);
+        width = maxWidth;
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        resolve(dataUrl);
+        return;
+      }
+      ctx.drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = () => resolve(dataUrl);
+    img.src = dataUrl;
+  });
+};
+
 export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClose }) => {
   const { createCrew, enterCrew, setActiveNavTab, currentUser } = useApp();
 
@@ -82,9 +126,12 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
   const [tagline, setTagline] = useState('Comunidad de aventura, terracería y expediciones.');
   const [description, setDescription] = useState('');
   const [baseCity, setBaseCity] = useState('Interlomas / CDMX');
-  const [coverImage, setCoverImage] = useState(COVER_PRESETS[0].url);
+  const [coverImage, setCoverImage] = useState(() => getRandomBrandingPattern());
+  const [hasCustomCover, setHasCustomCover] = useState(false);
   const [whatsappGroupUrl, setWhatsappGroupUrl] = useState('');
   const [showWhatsappHelp, setShowWhatsappHelp] = useState(false);
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   // Success state after creation
   const [createdCrew, setCreatedCrew] = useState<Crew | null>(null);
@@ -105,6 +152,38 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
       }
     } catch (e) {
       console.warn('Clipboard read error', e);
+    }
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUploadingCover(true);
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          if (typeof reader.result === 'string') {
+            const compressed = await compressCoverImage(reader.result, 1200, 0.85);
+            setCoverImage(compressed);
+            setHasCustomCover(true);
+          }
+        } catch (err) {
+          console.error('Error compressing image', err);
+          if (typeof reader.result === 'string') {
+            setCoverImage(reader.result);
+            setHasCustomCover(true);
+          }
+        } finally {
+          setIsUploadingCover(false);
+        }
+      };
+      reader.onerror = () => setIsUploadingCover(false);
+      reader.readAsDataURL(file);
+    } catch (err) {
+      console.error('Error reading file', err);
+      setIsUploadingCover(false);
     }
   };
 
@@ -414,42 +493,82 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
                 </div>
               </div>
 
-              {/* Campo 4: Portada */}
+              {/* Campo 4: Fotografía de Portada (Galería o Patrón Aleatorio con Branding) */}
               <div>
-                <label className="text-[#1A1918]/70 uppercase text-[10px] font-display font-black block mb-1">
-                  Fotografía de Portada
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {COVER_PRESETS.map((preset) => {
-                    const isSelected = coverImage === preset.url;
-                    return (
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-[#1A1918]/70 uppercase text-[10px] font-display font-black flex items-center gap-1.5">
+                    <ImageIcon className="w-3.5 h-3.5 text-[#E6332A]" />
+                    <span>Fotografía de Portada</span>
+                  </label>
+                  <div className="flex items-center gap-2">
+                    {hasCustomCover && (
                       <button
-                        key={preset.id}
                         type="button"
-                        onClick={() => setCoverImage(preset.url)}
-                        className={`p-1.5 rounded-xl border-2 text-left transition flex flex-col gap-1 cursor-pointer shadow-[2px_2px_0px_#1A1918] ${
-                          isSelected 
-                            ? 'border-[#1A1918] ring-2 ring-[#E6332A] bg-[#FAF6ED]' 
-                            : 'border-[#1A1918] bg-[#F4EEDB] hover:bg-[#FAF6ED]'
-                        }`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setHasCustomCover(false);
+                          setCoverImage(getRandomBrandingPattern());
+                        }}
+                        className="text-[9px] font-mono text-[#E6332A] hover:underline flex items-center gap-1 cursor-pointer font-bold"
                       >
-                        <div className="h-10 w-full rounded-lg overflow-hidden border border-[#1A1918]">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img 
-                            src={preset.url} 
-                            alt={preset.name} 
-                            className="w-full h-full object-cover" 
-                          />
-                        </div>
-                        <span className={`text-[10px] font-display font-black uppercase truncate ${isSelected ? 'text-[#E6332A]' : 'text-[#1A1918]'}`}>
-                          {preset.name}
-                        </span>
-                        <span className="text-[8px] text-[#1A1918]/60 font-serif italic truncate -mt-0.5 font-bold">
-                          {preset.tone}
-                        </span>
+                        <RotateCcw className="w-2.5 h-2.5" />
+                        <span>Usar patrón</span>
                       </button>
-                    );
-                  })}
+                    )}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setHasCustomCover(false);
+                        setCoverImage(getRandomBrandingPattern());
+                      }}
+                      className="text-[9px] font-mono text-[#1A1918]/70 hover:text-[#1A1918] bg-[#F4EEDB] border border-[#1A1918] px-2 py-0.5 rounded-lg flex items-center gap-1 cursor-pointer font-bold"
+                      title="Cambiar patrón aleatorio"
+                    >
+                      <Dices className="w-3 h-3 text-[#E6332A]" />
+                      <span>Aleatorio</span>
+                    </button>
+                  </div>
+                </div>
+
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  accept="image/*"
+                  className="hidden"
+                />
+
+                <div 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="group relative cursor-pointer border-2 border-[#1A1918] rounded-2xl overflow-hidden bg-[#FAF6ED] shadow-[3px_3px_0px_#1A1918] hover:border-[#E6332A] transition p-3 flex flex-col sm:flex-row items-center gap-3.5"
+                >
+                  <div className="w-full sm:w-28 h-20 rounded-xl overflow-hidden border-2 border-[#1A1918] relative shrink-0 bg-[#F4EEDB]">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img 
+                      src={coverImage} 
+                      alt="Vista previa de portada" 
+                      className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                    />
+                    <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition flex items-center justify-center">
+                      <Camera className="w-5 h-5 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]" />
+                    </div>
+                  </div>
+
+                  <div className="flex-1 text-center sm:text-left min-w-0">
+                    <div className="flex items-center justify-center sm:justify-start gap-1.5 text-xs font-display font-black text-[#1A1918] group-hover:text-[#E6332A] transition uppercase tracking-wide">
+                      <Upload className="w-3.5 h-3.5 text-[#E6332A]" />
+                      <span>{isUploadingCover ? 'Optimizando foto...' : 'Subir foto de tu galería'}</span>
+                    </div>
+                    <p className="text-[10px] text-[#1A1918]/70 font-serif italic mt-0.5 leading-snug">
+                      {hasCustomCover 
+                        ? '✓ Foto personalizada cargada desde tu dispositivo.' 
+                        : 'Si no subes foto, se asigna automáticamente este patrón con los colores y la vibra del club.'}
+                    </p>
+                    <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#1A1918] text-[#FAF6ED] rounded-lg text-[9px] font-display font-black uppercase tracking-wider group-hover:bg-[#E6332A] transition">
+                      <span>{hasCustomCover ? 'Cambiar foto de galería' : 'Elegir de la galería (opcional)'}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 

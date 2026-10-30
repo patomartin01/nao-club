@@ -13,8 +13,8 @@ export const BottomBar: React.FC<BottomBarProps> = ({ onOpenRecordRoute }) => {
     activeNavTab, 
     setActiveNavTab, 
     currentUser,
-    activities,
-    crews
+    crewMessages,
+    routeProposals
   } = useApp();
 
   const isInicio = activeNavTab === 'inicio' || activeNavTab === 'home';
@@ -22,6 +22,63 @@ export const BottomBar: React.FC<BottomBarProps> = ({ onOpenRecordRoute }) => {
   const isRegistrar = activeNavTab === 'registrar';
   const isTribus = activeNavTab === 'tribus' || activeNavTab === 'grupos' || activeNavTab === 'crew' || activeNavTab === 'rodada';
   const isTu = activeNavTab === 'tu' || activeNavTab === 'garaje';
+
+  // Calculate real unread items for Tribus (new group chat messages or route plan comments)
+  // Default is strictly 0 (no badge) unless there are new notifications since last visit
+  const [tribusLastSeen, setTribusLastSeen] = React.useState<number>(() => {
+    if (typeof window === 'undefined') return Date.now();
+    try {
+      const stored = localStorage.getItem('nao_tribus_last_seen');
+      return stored ? parseInt(stored, 10) : Date.now();
+    } catch {
+      return Date.now();
+    }
+  });
+
+  const unreadTribusCount = React.useMemo(() => {
+    let count = 0;
+    // Count real unread chat messages from other pilots
+    if (crewMessages && crewMessages.length > 0) {
+      count += crewMessages.filter(m => {
+        if (m.userId === currentUser.id) return false;
+        const msgTime = new Date(m.createdAt).getTime();
+        return !isNaN(msgTime) && msgTime > tribusLastSeen;
+      }).length;
+    }
+    // Count real unread comments on routes/plans from other pilots
+    if (routeProposals && routeProposals.length > 0) {
+      routeProposals.forEach(p => {
+        // Also count newly published route proposals by others since tribusLastSeen
+        if (p.proposedByUserId && p.proposedByUserId !== currentUser.id) {
+          const propIdTime = p.id.startsWith('route-') ? parseInt(p.id.replace('route-', ''), 10) : 0;
+          if (propIdTime && propIdTime > tribusLastSeen) {
+            count++;
+          }
+        }
+
+        if (p.comments && p.comments.length > 0) {
+          p.comments.forEach(c => {
+            if (c.userId !== currentUser.id) {
+              const commTime = (c as any).timestamp || (c.createdAt?.includes('T') ? new Date(c.createdAt).getTime() : 0);
+              if (commTime && commTime > tribusLastSeen) {
+                count++;
+              }
+            }
+          });
+        }
+      });
+    }
+    return count;
+  }, [crewMessages, routeProposals, currentUser.id, tribusLastSeen]);
+
+  const handleTribusClick = () => {
+    setActiveNavTab('tribus');
+    const now = Date.now();
+    setTribusLastSeen(now);
+    try {
+      localStorage.setItem('nao_tribus_last_seen', now.toString());
+    } catch {}
+  };
 
   const handleRecordClick = () => {
     setActiveNavTab('registrar');
@@ -46,11 +103,6 @@ export const BottomBar: React.FC<BottomBarProps> = ({ onOpenRecordRoute }) => {
         >
           <div className="relative">
             <Home className={`w-4 h-4 transition-transform ${isInicio ? 'scale-110 stroke-[2.5]' : 'group-hover:text-[#1A1918]'}`} />
-            {activities.length > 0 && (
-              <span className="absolute -top-1 -right-2 text-[7px] font-mono px-1 bg-[#1A1918] text-white rounded-full font-bold">
-                {activities.length}
-              </span>
-            )}
           </div>
           <span className={`font-display uppercase tracking-wider text-[9px] mt-0.5 ${isInicio ? 'text-[#E6332A] font-black' : 'font-bold'}`}>
             Despacho
@@ -93,16 +145,18 @@ export const BottomBar: React.FC<BottomBarProps> = ({ onOpenRecordRoute }) => {
         {/* 04. TRIBUS (CLUBS) */}
         <button
           type="button"
-          onClick={() => setActiveNavTab('tribus')}
+          onClick={handleTribusClick}
           className={`flex-1 min-h-[42px] flex flex-col items-center justify-center py-0.5 transition-all active:scale-95 group touch-manipulation cursor-pointer ${
             isTribus ? 'text-[#E6332A]' : 'text-[#1A1918]/60 hover:text-[#1A1918]'
           }`}
         >
           <div className="relative">
             <Users className={`w-4 h-4 transition-transform ${isTribus ? 'scale-110 stroke-[2.5]' : 'group-hover:text-[#1A1918]'}`} />
-            <span className="absolute -top-1 -right-2 text-[7px] font-mono px-1 bg-[#F7B32B] text-[#1A1918] font-black border border-[#1A1918] rounded-full">
-              {crews.length}
-            </span>
+            {unreadTribusCount > 0 && (
+              <span className="absolute -top-1 -right-2 text-[7px] font-mono px-1 bg-[#F7B32B] text-[#1A1918] font-black border border-[#1A1918] rounded-full animate-pulse">
+                {unreadTribusCount}
+              </span>
+            )}
           </div>
           <span className={`font-display uppercase tracking-wider text-[9px] mt-0.5 ${isTribus ? 'text-[#E6332A] font-black' : 'font-bold'}`}>
             Tribus

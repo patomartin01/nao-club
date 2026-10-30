@@ -21,7 +21,8 @@ import {
   Check,
   Mountain,
   HelpCircle,
-  XCircle
+  XCircle,
+  Play
 } from 'lucide-react';
 import { Rodada, RouteProposal, User, Motorcycle, RsvpStatus } from '../../types';
 import { buildOrderedGoogleMapsUrl } from '../../utils/googleMaps';
@@ -52,6 +53,7 @@ interface PlanCardModalProps {
   onClose: () => void;
   onRsvp: (rodadaId: string, bikeId: string, status: RsvpStatus) => void;
   formatHumanDate: (start: string, end?: string, includeYear?: boolean) => string;
+  onOpenRecordRoute?: () => void;
 }
 
 export const PlanCardModal: React.FC<PlanCardModalProps> = ({
@@ -62,7 +64,8 @@ export const PlanCardModal: React.FC<PlanCardModalProps> = ({
   userBikes,
   onClose,
   onRsvp,
-  formatHumanDate
+  formatHumanDate,
+  onOpenRecordRoute
 }) => {
   const [copiedLink, setCopiedLink] = useState(false);
   const [attendeeTab, setAttendeeTab] = useState<'confirmados' | 'por_confirmar' | 'no_asistire'>('confirmados');
@@ -458,6 +461,21 @@ export const PlanCardModal: React.FC<PlanCardModalProps> = ({
               {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Share2 className="w-3.5 h-3.5" />}
               <span>{copiedLink ? 'Copiado' : 'Compartir'}</span>
             </button>
+
+            {onOpenRecordRoute && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onOpenRecordRoute();
+                }}
+                className="px-3.5 py-2 border border-[#E6332A] bg-[#E6332A] text-white hover:bg-[#d02c24] text-xs uppercase font-display font-black tracking-wider flex items-center gap-1.5 transition rounded-xl shadow-xs"
+                title="Empezar a rodar y grabar esta ruta en vivo con GPS"
+              >
+                <Play className="w-3.5 h-3.5 fill-current text-[#F7B32B]" />
+                <span>Grabar Rodada</span>
+              </button>
+            )}
 
             {mapsUrl && (
               <a

@@ -12,7 +12,9 @@ import {
   Check, 
   Sparkles,
   MapPin,
-  ShieldCheck
+  ShieldCheck,
+  X,
+  AlertCircle
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -42,12 +44,34 @@ export const InitialOnboardingModal: React.FC = () => {
     addMotorcycle, 
     completeOnboarding,
     isOnboardingOpen,
-    setActiveNavTab
+    setOnboardingOpen,
+    setActiveNavTab,
+    checkHandleAvailability
   } = useApp();
 
   // Step 1: Profile info
   // Step 2: First motorcycle for the Hangar
   const [step, setStep] = useState<1 | 2>(1);
+
+  // Error validation state
+  const [handleError, setHandleError] = useState<string | null>(null);
+
+  // Robust Skip handler that works on both touch and click and directly enforces modal closing
+  const handleSkip = (e?: React.MouseEvent | React.TouchEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    completeOnboarding();
+    setOnboardingOpen(false);
+    try {
+      if (currentUser?.id) {
+        localStorage.setItem(`nao_onboarding_done_${currentUser.id}`, 'true');
+      }
+      localStorage.setItem('nao_onboarding_done_global', 'true');
+    } catch {}
+    setActiveNavTab('tu');
+  };
 
   // Pilot Profile State
   const [name, setName] = useState(currentUser.name || '');
@@ -73,16 +97,45 @@ export const InitialOnboardingModal: React.FC = () => {
   const avatarFileInputRef = useRef<HTMLInputElement>(null);
   const bikeFileInputRef = useRef<HTMLInputElement>(null);
 
-  if (!isOnboardingOpen) return null;
+  // Crop and compress helper
+  const compressSquare = (dataUrl: string, size = 600): Promise<string> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return resolve(dataUrl);
+        const scale = Math.max(size / img.width, size / img.height);
+        const w = img.width * scale;
+        const h = img.height * scale;
+        const x = (size - w) / 2;
+        const y = (size - h) / 2;
+        ctx.fillStyle = '#FAF6ED';
+        ctx.fillRect(0, 0, size, size);
+        ctx.drawImage(img, x, y, w, h);
+        resolve(canvas.toDataURL('image/jpeg', 0.85));
+      };
+      img.onerror = () => resolve(dataUrl);
+      img.src = dataUrl;
+    });
+  };
 
   // Handler for uploading pilot avatar from device gallery
   const handleAvatarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = () => {
+      reader.onload = async () => {
         if (typeof reader.result === 'string') {
-          setAvatarPreview(reader.result);
+          try {
+            const square = await compressSquare(reader.result, 600);
+            setAvatarPreview(square);
+          } catch {
+            setAvatarPreview(reader.result);
+          }
         }
       };
       reader.readAsDataURL(file);
@@ -94,9 +147,14 @@ export const InitialOnboardingModal: React.FC = () => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = () => {
+      reader.onload = async () => {
         if (typeof reader.result === 'string') {
-          setBikePhotoPreview(reader.result);
+          try {
+            const square = await compressSquare(reader.result, 800);
+            setBikePhotoPreview(square);
+          } catch {
+            setBikePhotoPreview(reader.result);
+          }
         }
       };
       reader.readAsDataURL(file);
@@ -106,14 +164,28 @@ export const InitialOnboardingModal: React.FC = () => {
   // Step 1 -> Step 2
   const handleStep1Submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setHandleError(null);
     setIsSubmitting(true);
 
-    const formattedHandle = handle.trim().startsWith('@') 
-      ? handle.trim().toLowerCase() 
-      : `@${handle.trim().toLowerCase().replace(/\s+/g, '_')}`;
+    const cleanHandle = handle.trim().toLowerCase().replace(/^@/, '');
+    if (!cleanHandle) {
+      setHandleError('El apodo o handle de piloto es obligatorio.');
+      setIsSubmitting(false);
+      return;
+    }
+
+    const formattedHandle = `@${cleanHandle.replace(/\s+/g, '_')}`;
+
+    // Validar disponibilidad de handle
+    const check = await checkHandleAvailability(formattedHandle, currentUser.id);
+    if (!check.available) {
+      setHandleError(check.message || 'Este apodo ya está en uso por otro piloto.');
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
-      await updateCurrentUserProfile({
+      const res = await updateCurrentUserProfile({
         name: name.trim() || currentUser.name,
         handle: formattedHandle || currentUser.handle,
         bio: bio.trim() || 'Piloto en NAO.',
@@ -121,6 +193,11 @@ export const InitialOnboardingModal: React.FC = () => {
         ridingLevel,
         avatar: avatarPreview || currentUser.avatar
       });
+
+      if (!res.success) {
+        setHandleError(res.message || 'No se pudo guardar el apodo.');
+        return;
+      }
 
       confetti({ particleCount: 25, spread: 50, origin: { y: 0.6 } });
       setStep(2);
@@ -163,13 +240,18 @@ export const InitialOnboardingModal: React.FC = () => {
     setActiveNavTab('tu');
   };
 
+  // If onboarding is not open, do not render modal
+  if (!isOnboardingOpen) {
+    return null;
+  }
+
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center p-3 sm:p-4 bg-[#1A1918]/85 backdrop-blur-md animate-fadeIn overflow-y-auto">
       <div 
-        className="w-full max-w-xl bg-[#FAF6ED] border-3 border-[#1A1918] rounded-[32px] shadow-[10px_10px_0px_#1A1918] my-auto max-h-[88vh] overflow-y-auto overscroll-contain text-[#1A1918] font-sans animate-scaleUp p-5 sm:p-8 space-y-6 pb-8"
+        className="w-full max-w-xl bg-[#FAF6ED] border-3 border-[#1A1918] rounded-[32px] shadow-[10px_10px_0px_#1A1918] my-auto max-h-[88vh] overflow-y-auto overscroll-contain text-[#1A1918] font-sans animate-scaleUp p-5 sm:p-8 space-y-6 pb-8 relative"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Progress Step Indicator */}
+        {/* Progress Step Indicator & Close Button */}
         <div className="flex items-center justify-between border-b-2 border-[#1A1918] pb-4">
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-[#E6332A] animate-pulse" />
@@ -178,14 +260,25 @@ export const InitialOnboardingModal: React.FC = () => {
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5 font-mono text-[11px] font-black text-[#1A1918]">
-            <span className={`w-6 h-6 rounded-lg flex items-center justify-center border-2 border-[#1A1918] ${step === 1 ? 'bg-[#E6332A] text-white shadow-[2px_2px_0px_#1A1918]' : 'bg-[#FAF6ED]'}`}>
-              1
-            </span>
-            <span className="text-[#1A1918]/40">—</span>
-            <span className={`w-6 h-6 rounded-lg flex items-center justify-center border-2 border-[#1A1918] ${step === 2 ? 'bg-[#E6332A] text-white shadow-[2px_2px_0px_#1A1918]' : 'bg-[#FAF6ED]'}`}>
-              2
-            </span>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 font-mono text-[11px] font-black text-[#1A1918]">
+              <span className={`w-6 h-6 rounded-lg flex items-center justify-center border-2 border-[#1A1918] ${step === 1 ? 'bg-[#E6332A] text-white shadow-[2px_2px_0px_#1A1918]' : 'bg-[#FAF6ED]'}`}>
+                1
+              </span>
+              <span className="text-[#1A1918]/40">—</span>
+              <span className={`w-6 h-6 rounded-lg flex items-center justify-center border-2 border-[#1A1918] ${step === 2 ? 'bg-[#E6332A] text-white shadow-[2px_2px_0px_#1A1918]' : 'bg-[#FAF6ED]'}`}>
+                2
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleSkip}
+              aria-label="Cerrar modal"
+              className="w-7 h-7 flex items-center justify-center rounded-full bg-[#1A1918]/10 hover:bg-[#E6332A] hover:text-white text-[#1A1918] transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4 stroke-[2.5]" />
+            </button>
           </div>
         </div>
 
@@ -279,11 +372,24 @@ export const InitialOnboardingModal: React.FC = () => {
                     type="text"
                     required
                     value={handle}
-                    onChange={(e) => setHandle(e.target.value)}
+                    onChange={(e) => {
+                      setHandle(e.target.value.toLowerCase().replace(/\s+/g, '_'));
+                      if (handleError) setHandleError(null);
+                    }}
                     placeholder="roberto_gs"
-                    className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl pl-8 pr-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]"
+                    className={`w-full bg-[#FAF6ED] border-2 ${handleError ? 'border-[#E6332A] bg-[#FFF5F5]' : 'border-[#1A1918]'} focus:border-[#E6332A] rounded-xl pl-8 pr-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]`}
                   />
                 </div>
+                {handleError ? (
+                  <p className="mt-1.5 text-[11px] font-mono text-[#E6332A] font-bold flex items-center gap-1 animate-fadeIn">
+                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                    <span>{handleError}</span>
+                  </p>
+                ) : (
+                  <p className="mt-1 text-[10px] font-mono text-[#1A1918]/60">
+                    Tu identificador único en NAO (@usuario). Sin espacios.
+                  </p>
+                )}
               </div>
             </div>
 
@@ -335,15 +441,25 @@ export const InitialOnboardingModal: React.FC = () => {
               />
             </div>
 
-            {/* Next Button */}
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full py-3.5 bg-[#E6332A] hover:bg-[#d02c24] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none text-white border-2 border-[#1A1918] rounded-xl font-display font-black text-xs uppercase tracking-wider transition shadow-[3px_3px_0px_#1A1918] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
-            >
-              <span>Continuar: Registrar mi Moto en el Hangar</span>
-              <ArrowRight className="w-4 h-4 stroke-[3]" />
-            </button>
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full sm:flex-1 py-3.5 bg-[#E6332A] hover:bg-[#d02c24] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none text-white border-2 border-[#1A1918] rounded-xl font-display font-black text-xs uppercase tracking-wider transition shadow-[3px_3px_0px_#1A1918] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+              >
+                <span>Continuar: Registrar mi Moto en el Hangar</span>
+                <ArrowRight className="w-4 h-4 stroke-[3]" />
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSkip}
+                className="w-full sm:w-auto px-5 py-3.5 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border-2 border-[#1A1918] rounded-xl font-display font-black text-xs uppercase tracking-wider transition shadow-[2px_2px_0px_#1A1918] cursor-pointer"
+              >
+                Hacerlo más tarde
+              </button>
+            </div>
           </form>
         )}
 
@@ -536,7 +652,7 @@ export const InitialOnboardingModal: React.FC = () => {
 
               <button
                 type="button"
-                onClick={handleSkipBike}
+                onClick={handleSkip}
                 className="w-full sm:w-auto px-5 py-3.5 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border-2 border-[#1A1918] rounded-xl font-display font-black text-xs uppercase tracking-wider transition shadow-[2px_2px_0px_#1A1918] cursor-pointer"
               >
                 Hacerlo más tarde

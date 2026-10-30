@@ -53,7 +53,30 @@ export const EditMotorcycleModal: React.FC<EditMotorcycleModalProps> = ({
       const reader = new FileReader();
       reader.onload = () => {
         if (typeof reader.result === 'string') {
-          setPhotoUrl(reader.result);
+          const raw = reader.result;
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const maxW = 900;
+            let w = img.width;
+            let h = img.height;
+            if (w > maxW) {
+              h = Math.round((h * maxW) / w);
+              w = maxW;
+            }
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+              ctx.drawImage(img, 0, 0, w, h);
+              setPhotoUrl(canvas.toDataURL('image/jpeg', 0.85));
+            } else {
+              setPhotoUrl(raw);
+            }
+          };
+          img.onerror = () => setPhotoUrl(raw);
+          img.src = raw;
         }
       };
       reader.readAsDataURL(file);

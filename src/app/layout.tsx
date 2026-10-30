@@ -21,6 +21,14 @@ export const metadata: Metadata = {
     statusBarStyle: 'black-translucent',
     title: 'NAO Moto'
   },
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' }
+    ],
+    apple: [
+      { url: '/apple-icon' }
+    ]
+  },
   formatDetection: {
     telephone: false
   }
@@ -34,6 +42,7 @@ export default function RootLayout({
   return (
     <html lang="es">
       <head>
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link 

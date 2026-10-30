@@ -36,7 +36,9 @@ const CURATED_BIKER_SPOTS: PlaceResult[] = [
   { name: 'Peña de Bernal', address: 'Ezequiel Montes, Querétaro', lat: 20.7489, lng: -99.9486 },
   { name: 'Malinalco, Pueblo Mágico', address: 'Estado de México', lat: 18.9486, lng: -99.4975 },
   { name: 'Paso de Cortés (Iztaccíhuatl - Popocatépetl)', address: 'Puebla / Edomex', lat: 19.0864, lng: -98.6472 },
-  { name: 'Lagunas de Zempoala', address: 'Morelos / Edomex', lat: 19.0520, lng: -99.3170 },
+  { name: 'Parque Ecoturístico Corral de Piedra', address: 'Amanalco, Estado de México', lat: 19.2108, lng: -99.9689 },
+  { name: 'Presa Corral de Piedra', address: 'Amanalco, Estado de México', lat: 19.2122, lng: -99.9566 },
+  { name: 'Presa Iturbide', address: 'Isidro Fabela, Estado de México', lat: 19.5298, lng: -99.4658 },
   { name: 'La Marquesa', address: 'Ocoyoacac, Estado de México', lat: 19.2986, lng: -99.3698 }
 ];
 

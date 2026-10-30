@@ -16,7 +16,10 @@ import {
   Database,
   KeyRound,
   ShieldCheck,
-  LogOut
+  LogOut,
+  UserCheck,
+  Users,
+  ChevronRight
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -111,14 +114,7 @@ export const AuthModal: React.FC = () => {
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header Bar */}
-        <div className="flex items-center justify-between border-b-2 border-[#1A1918] pb-3">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#E6332A]" />
-            <span className="text-[10px] font-mono uppercase font-black tracking-widest text-[#E6332A]">
-              NAO // CLUB DE EXPEDICIÓN
-            </span>
-          </div>
-
+        <div className="flex items-center justify-end border-b-2 border-[#1A1918] pb-3">
           <button
             type="button"
             onClick={() => setAuthModalOpen(false)}
@@ -126,74 +122,6 @@ export const AuthModal: React.FC = () => {
             title="Cerrar ventana"
           >
             <X className="w-4 h-4 stroke-[2.5]" />
-          </button>
-        </div>
-
-        {/* Current Pilot Session Status if Logged In */}
-        {currentUser.id !== 'guest' && (
-          <div className="p-3 bg-[#FAF6ED] border-2 border-[#1A1918] rounded-xl shadow-[2px_2px_0px_#1A1918] flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2.5 min-w-0">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img 
-                src={currentUser.avatar} 
-                alt={currentUser.name} 
-                className="w-8 h-8 rounded-full object-cover border border-[#1A1918] shrink-0" 
-              />
-              <div className="min-w-0">
-                <p className="text-xs font-display font-black uppercase text-[#1A1918] truncate">{currentUser.name}</p>
-                <p className="text-[10px] font-mono text-[#E6332A] font-bold">{currentUser.handle}</p>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={async () => {
-                await signOut();
-                setSuccessMessage('Has cerrado sesión correctamente.');
-              }}
-              className="px-3 py-1.5 bg-[#FFEBEE] hover:bg-[#FFCDD2] text-[#C62828] border-2 border-[#C62828] rounded-lg text-[10px] font-display font-black uppercase tracking-wider flex items-center gap-1 transition cursor-pointer shrink-0"
-              title="Cerrar sesión actual"
-            >
-              <LogOut className="w-3 h-3" />
-              <span>Salir</span>
-            </button>
-          </div>
-        )}
-
-        {/* Tab Switcher */}
-        <div className="flex rounded-xl bg-[#F4EEDB] p-1 border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918]">
-          <button
-            type="button"
-            onClick={() => { setMode('signup'); setErrorMessage(null); }}
-            className={`flex-1 py-2 text-xs font-display font-black uppercase rounded-lg transition ${
-              mode === 'signup'
-                ? 'bg-[#FAF6ED] text-[#1A1918] border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918]'
-                : 'text-[#1A1918]/60 hover:text-[#1A1918]'
-            }`}
-          >
-            Registro
-          </button>
-          <button
-            type="button"
-            onClick={() => { setMode('login'); setErrorMessage(null); }}
-            className={`flex-1 py-2 text-xs font-display font-black uppercase rounded-lg transition ${
-              mode === 'login'
-                ? 'bg-[#FAF6ED] text-[#1A1918] border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918]'
-                : 'text-[#1A1918]/60 hover:text-[#1A1918]'
-            }`}
-          >
-            Entrar
-          </button>
-          <button
-            type="button"
-            onClick={() => { setMode('demo'); setErrorMessage(null); }}
-            className={`py-2 px-3 text-xs font-display font-black uppercase rounded-lg transition ${
-              mode === 'demo'
-                ? 'bg-[#F7B32B] text-[#1A1918] border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918]'
-                : 'text-[#1A1918]/60 hover:text-[#1A1918]'
-            }`}
-            title="Cambiar entre perfiles demo de prueba"
-          >
-            Pilotos Demo
           </button>
         </div>
 
@@ -211,6 +139,100 @@ export const AuthModal: React.FC = () => {
             <span>{successMessage}</span>
           </div>
         )}
+
+        {/* ========================================================= */}
+        {/* 1. CASO USUARIO YA LOGUEADO (KISS: LIMPIO, DIRECTO Y ÚTIL) */}
+        {/* ========================================================= */}
+        {currentUser.id !== 'guest' ? (
+          <div className="space-y-4">
+            {/* Tarjeta del Piloto Actual */}
+            <div className="p-4 bg-white border-2 border-[#1A1918] rounded-2xl shadow-[3px_3px_0px_#1A1918] space-y-3">
+              <div className="flex items-center gap-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img 
+                  src={currentUser.avatar} 
+                  alt={currentUser.name} 
+                  className="w-14 h-14 rounded-full object-cover border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] shrink-0" 
+                />
+                <div className="min-w-0 flex-1">
+                  <span className="text-[9px] font-mono font-black uppercase text-white bg-[#1A1918] px-2 py-0.5 rounded tracking-wider">
+                    Sesión Activa
+                  </span>
+                  <h3 className="text-base font-display font-black uppercase text-[#1A1918] truncate mt-1">
+                    {currentUser.name}
+                  </h3>
+                  <p className="text-xs font-mono font-bold text-[#E6332A] truncate">
+                    {currentUser.handle}
+                  </p>
+                </div>
+              </div>
+
+              {currentUser.email && (
+                <div className="pt-2 border-t border-[#1A1918]/15 flex items-center justify-between text-xs text-stone-600 font-sans">
+                  <span className="font-mono text-[10px] text-stone-400 uppercase">Correo:</span>
+                  <span className="font-medium truncate max-w-[220px]">{currentUser.email}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Botón Principal: Cerrar Sesión */}
+            <button
+              type="button"
+              onClick={async () => {
+                await signOut();
+                setSuccessMessage('Has cerrado sesión correctamente.');
+                setTimeout(() => {
+                  setAuthModalOpen(false);
+                }, 800);
+              }}
+              className="w-full py-3.5 bg-[#FFEBEE] hover:bg-[#FFCDD2] text-[#C62828] border-2 border-[#C62828] rounded-xl font-display font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-[3px_3px_0px_#C62828] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition cursor-pointer"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Cerrar Sesión</span>
+            </button>
+          </div>
+        ) : (
+          /* ========================================================= */
+          /* 2. CASO INVITADO: FORMULARIO DE INICIO DE SESIÓN / REGISTRO */
+          /* ========================================================= */
+          <div className="space-y-4">
+            {/* Tab Switcher */}
+            <div className="flex rounded-xl bg-[#F4EEDB] p-1 border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918]">
+              <button
+                type="button"
+                onClick={() => { setMode('signup'); setErrorMessage(null); }}
+                className={`flex-1 py-2 text-xs font-display font-black uppercase rounded-lg transition ${
+                  mode === 'signup'
+                    ? 'bg-[#FAF6ED] text-[#1A1918] border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918]'
+                    : 'text-[#1A1918]/60 hover:text-[#1A1918]'
+                }`}
+              >
+                Registro
+              </button>
+              <button
+                type="button"
+                onClick={() => { setMode('login'); setErrorMessage(null); }}
+                className={`flex-1 py-2 text-xs font-display font-black uppercase rounded-lg transition ${
+                  mode === 'login'
+                    ? 'bg-[#FAF6ED] text-[#1A1918] border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918]'
+                    : 'text-[#1A1918]/60 hover:text-[#1A1918]'
+                }`}
+              >
+                Entrar
+              </button>
+              <button
+                type="button"
+                onClick={() => { setMode('demo'); setErrorMessage(null); }}
+                className={`py-2 px-3 text-xs font-display font-black uppercase rounded-lg transition ${
+                  mode === 'demo'
+                    ? 'bg-[#F7B32B] text-[#1A1918] border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918]'
+                    : 'text-[#1A1918]/60 hover:text-[#1A1918]'
+                }`}
+                title="Cambiar entre perfiles demo de prueba"
+              >
+                Pilotos Demo
+              </button>
+            </div>
 
         {/* FORM: REGISTRO O LOGIN */}
         {mode !== 'demo' ? (
@@ -401,6 +423,8 @@ export const AuthModal: React.FC = () => {
             </div>
           </div>
         )}
+        </div>
+      )}
 
         {/* Footer info note */}
         <div className="border-t-2 border-[#1A1918] pt-3 text-[10px] font-mono text-[#1A1918]/60 flex items-center justify-between">
