@@ -132,14 +132,21 @@ export const TribusView: React.FC<TribusViewProps> = ({
     currentRodada,
     setCurrentRodada,
     createRodada,
+    updateRodada,
+    deleteRodada,
     routeProposals,
     proposeRoute,
+    updateRouteProposal,
     deleteRouteProposal,
     voteRoute,
     downvoteRoute,
     addRouteComment,
     lockWinningRoute,
     unlockWinningRoute,
+    completeRodada,
+    reopenRodada,
+    archiveRouteProposal,
+    unarchiveRouteProposal,
     rsvpRodada,
     userBikes,
     motorcycles,
@@ -245,6 +252,8 @@ export const TribusView: React.FC<TribusViewProps> = ({
   // Interactive Route Proposal Modal state (multistop Google Maps route planner)
   const [showInteractiveProposeModal, setShowInteractiveProposeModal] = useState<boolean>(false);
   const [showConvokeModal, setShowConvokeModal] = useState<boolean>(false);
+  const [editingProposal, setEditingProposal] = useState<RouteProposal | null>(null);
+  const [editingRodada, setEditingRodada] = useState<Rodada | null>(null);
 
   // Quick propose modal state
   const [showProposeModal, setShowProposeModal] = useState<boolean>(false);
@@ -479,7 +488,26 @@ export const TribusView: React.FC<TribusViewProps> = ({
   });
 
   // Rodadas Confirmadas (status === 'fijada') - Solo estas aparecen en la sección superior
-  const confirmedRodadas = tribuRodadas.filter(r => r.status === 'fijada');
+  // Requiere estrictamente que exista al menos una propuesta de ruta activa válida asociada
+  // REGLA DE ORO DE LA TRIBU: No pueden haber 2 rutas confirmadas a la vez. Solo UNA ruta confirmada activa.
+  const allConfirmedRodadas = tribuRodadas.filter(r => 
+    r.status === 'fijada' && routeProposals.some(p => p.rodadaId === r.id && !p.isRecorded && !tribuRecordedActivityIds.has(p.id))
+  );
+
+  // Si hay más de una marcada como confirmada, tomar prioritariamente la seleccionada o la más reciente
+  const singleConfirmedRodada = allConfirmedRodadas.find(r => r.id === selectedRodadaId) || allConfirmedRodadas[0] || null;
+  const confirmedRodadas = singleConfirmedRodada ? [singleConfirmedRodada] : [];
+
+  // Auto-sanitización: Si existen otras rodadas marcadas como 'fijada', desconfirmarlas automáticamente
+  useEffect(() => {
+    if (allConfirmedRodadas.length > 1 && singleConfirmedRodada) {
+      allConfirmedRodadas.forEach(extra => {
+        if (extra.id !== singleConfirmedRodada.id) {
+          unlockWinningRoute(extra.id);
+        }
+      });
+    }
+  }, [allConfirmedRodadas.length, singleConfirmedRodada?.id]);
 
   // Active selected rodada (user-selected or first available)
   const activeRodada = (selectedRodadaId ? tribuRodadas.find(r => r.id === selectedRodadaId) : null)
@@ -1444,6 +1472,10 @@ export const TribusView: React.FC<TribusViewProps> = ({
         /* Caso 1: Una sola rodada confirmada -> Hero Card cinematográfica */
         (() => {
           const confRodada = confirmedRodadas[0];
+          const isPastRodada = Boolean(
+            (confRodada.endDate && new Date(confRodada.endDate + 'T23:59:59') < new Date()) ||
+            (!confRodada.endDate && confRodada.startDate && new Date(confRodada.startDate + 'T23:59:59') < new Date())
+          );
           const confWinning = routeProposals.find(p => p.rodadaId === confRodada.id && p.id === confRodada.winningRouteId) 
             || routeProposals.find(p => p.rodadaId === confRodada.id);
           const confAttendees = (confRodada.attendees || [])
@@ -1477,6 +1509,32 @@ export const TribusView: React.FC<TribusViewProps> = ({
                 
                 {/* Left side: Badge + Destination + Metrics */}
                 <div className="space-y-3 min-w-0">
+                  {/* Past Date Notice */}
+                  {isPastRodada && (
+                    <div 
+                      onClick={(e) => e.stopPropagation()}
+                      className="p-2.5 bg-[#F7B32B]/25 border-2 border-[#1A1918] rounded-xl flex items-center justify-between gap-2 shadow-[1.5px_1.5px_0px_#1A1918]"
+                    >
+                      <span className="text-[11px] font-mono font-bold text-[#1A1918] flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5 text-[#E6332A] shrink-0" />
+                        <span>Fecha concluida. ¿Ya rodaron esta ruta?</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          completeRodada(confRodada.id);
+                          setActiveTribuTab('historial');
+                          setNotificationToast('¡Rodada archivada en el Historial!');
+                          setTimeout(() => setNotificationToast(null), 3000);
+                        }}
+                        className="px-2.5 py-1 bg-[#1A1918] hover:bg-black text-[#FAF6ED] text-[10px] font-display font-black uppercase rounded-lg border border-[#1A1918] shadow-[1px_1px_0px_#1A1918] cursor-pointer"
+                      >
+                        Archivar al Historial ✓
+                      </button>
+                    </div>
+                  )}
+
                   {/* Status & Date Badges */}
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="inline-flex items-center gap-1.5 text-[9px] sm:text-[10px] font-display uppercase font-black px-2.5 py-1 bg-[#1A1918] text-[#FAF6ED] border border-[#1A1918] tracking-widest rounded-lg shadow-[1.5px_1.5px_0px_#1A1918]">
@@ -1735,6 +1793,27 @@ export const TribusView: React.FC<TribusViewProps> = ({
                       )}
                     </div>
 
+                    {/* Ya Rodamos esta Ruta (Archivar al Historial) */}
+                    {isCreatorOrAdmin && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (window.confirm(`¿Confirmas que ya rodaron "${confWinning?.destination || confRodada.title}"?\n\n• Se guardará en la pestaña "Historial" con su track GPS y detalles.\n• Se liberará la convocatoria para planear la siguiente rodada.`)) {
+                            completeRodada(confRodada.id);
+                            setActiveTribuTab('historial');
+                            setNotificationToast('¡Rodada completada y guardada con éxito en el Historial!');
+                            setTimeout(() => setNotificationToast(null), 4000);
+                          }
+                        }}
+                        className="flex items-center gap-1.5 text-[11px] sm:text-xs font-display font-black text-white uppercase tracking-wider px-3 py-2 bg-emerald-600 hover:bg-emerald-700 transition-all rounded-xl border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none shrink-0 cursor-pointer"
+                        title="Marcar rodada como completada y guardar en Historial"
+                      >
+                        <Check className="w-3.5 h-3.5 stroke-[3]" />
+                        <span>Ya la rodamos</span>
+                      </button>
+                    )}
+
                     {/* Iniciar Grabación en Vivo de esta Rodada */}
                     {onOpenRecordRoute && (
                       <button
@@ -1748,6 +1827,20 @@ export const TribusView: React.FC<TribusViewProps> = ({
                       >
                         <Play className="w-3 h-3 fill-current text-[#F7B32B]" />
                         <span>Grabar</span>
+                      </button>
+                    )}
+
+                    {confWinning && (confWinning.proposedByUserId === currentUser.id || confWinning.proposedByName?.toLowerCase().trim() === currentUser.name?.toLowerCase().trim() || currentUser.handle === '@patricio' || isCreatorOrAdmin) && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingProposal(confWinning);
+                        }}
+                        className="p-2 bg-[#FAF6ED] hover:bg-[#F7B32B] text-[#1A1918] border-2 border-[#1A1918] rounded-xl transition shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                        title="Editar la ruta confirmada"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
                       </button>
                     )}
 
@@ -2110,7 +2203,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                 if (p.title?.toLowerCase().startsWith('expedición grabada') || p.title?.toLowerCase().startsWith('ruta grabada')) return false;
                 return true;
               });
-              const isConfirmed = rodada.status === 'fijada';
+              const isConfirmed = singleConfirmedRodada?.id === rodada.id && rodada.status === 'fijada' && rodadaProposals.length > 0;
 
               return (
                 <button
@@ -2173,13 +2266,53 @@ export const TribusView: React.FC<TribusViewProps> = ({
                   </span>
                 </div>
 
-                <button
-                  onClick={() => setShowInteractiveProposeModal(true)}
-                  className="px-4 py-2 bg-[#E6332A] hover:bg-[#d02c24] text-white border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] text-xs font-display font-black uppercase tracking-wider rounded-xl flex items-center gap-1.5 transition active:translate-x-0.5 active:translate-y-0.5 active:shadow-none shrink-0"
-                >
-                  <Plus className="w-4 h-4 stroke-[3]" />
-                  <span>+ Proponer</span>
-                </button>
+                <div className="flex items-center gap-2">
+                  {/* Botones de Administrar Convocatoria / Fecha (Editar y Borrar Rodada) */}
+                  {(activeRodada.attendees?.[0]?.userId === currentUser.id || currentUser.handle === '@patricio' || isCreatorOrAdmin) && (
+                    <div className="flex items-center gap-1.5 mr-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newTitle = prompt('Editar título o convocatoria de la rodada:', activeRodada.title);
+                          if (newTitle && newTitle.trim()) {
+                            updateRodada(activeRodada.id, { title: newTitle.trim() });
+                            setNotificationToast(`Convocatoria actualizada: "${newTitle.trim()}"`);
+                            setTimeout(() => setNotificationToast(null), 3500);
+                          }
+                        }}
+                        className="p-2 bg-[#FAF6ED] hover:bg-[#F7B32B] text-[#1A1918] border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] rounded-xl text-xs font-mono font-bold flex items-center gap-1 transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                        title="Editar nombre de la convocatoria"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline text-[11px] font-display uppercase tracking-wider">Editar Fecha</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (confirm(`¿Eliminar la rodada "${activeRodada.title}" y todas sus propuestas asociadas?`)) {
+                            deleteRodada(activeRodada.id);
+                            setSelectedRodadaId(null);
+                            setNotificationToast('Rodada y propuestas eliminadas.');
+                            setTimeout(() => setNotificationToast(null), 3500);
+                          }
+                        }}
+                        className="p-2 bg-[#FAF6ED] hover:bg-[#E6332A] hover:text-white text-stone-500 border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] rounded-xl text-xs font-mono font-bold flex items-center gap-1 transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                        title="Borrar esta convocatoria"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
+
+                  <button
+                    onClick={() => setShowInteractiveProposeModal(true)}
+                    className="px-4 py-2 bg-[#E6332A] hover:bg-[#d02c24] text-white border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] text-xs font-display font-black uppercase tracking-wider rounded-xl flex items-center gap-1.5 transition active:translate-x-0.5 active:translate-y-0.5 active:shadow-none shrink-0"
+                  >
+                    <Plus className="w-4 h-4 stroke-[3]" />
+                    <span>+ Proponer</span>
+                  </button>
+                </div>
               </div>
 
               {/* Proposals Grid: Cartas Editoriales Risograph sobre Papel Cálido */}
@@ -2347,21 +2480,53 @@ export const TribusView: React.FC<TribusViewProps> = ({
                             )
                           )}
 
-                          {/* Botón Borrar Propuesta (Solo quien la creó) */}
-                          {(proposal.proposedByUserId === currentUser.id || proposal.proposedByName?.toLowerCase().trim() === currentUser.name?.toLowerCase().trim()) && (
+                          {/* Botones Editar y Borrar Propuesta (Solo quien la creó o Patricio) */}
+                          {/* Mover propuesta al Historial si ya se rodó */}
+                          {isCreatorOrAdmin && (
                             <button
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                if (window.confirm(`¿Seguro que deseas eliminar la propuesta "${proposal.title}"?`)) {
-                                  deleteRouteProposal(proposal.id);
+                                if (window.confirm(`¿Confirmas que ya rodaron "${proposal.title}"?\n\nSe moverá a la pestaña "Historial".`)) {
+                                  archiveRouteProposal(proposal.id);
+                                  setNotificationToast(`Ruta "${proposal.title}" archivada en el Historial.`);
+                                  setTimeout(() => setNotificationToast(null), 3500);
                                 }
                               }}
-                              className="p-1.5 bg-[#FAF6ED] hover:bg-[#E6332A] text-[#1A1918]/60 hover:text-white border-2 border-[#1A1918] rounded-xl transition-all shadow-[1.5px_1.5px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
-                              title="Eliminar tu propuesta"
+                              className="p-1.5 bg-[#FAF6ED] hover:bg-emerald-100 text-[#1A1918]/60 hover:text-emerald-700 border-2 border-[#1A1918] rounded-xl transition-all shadow-[1.5px_1.5px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5"
+                              title="Marcar como ya rodada y guardar en Historial"
                             >
-                              <Trash2 className="w-3.5 h-3.5" />
+                              <Check className="w-3.5 h-3.5" />
                             </button>
+                          )}
+
+                          {(proposal.proposedByUserId === currentUser.id || proposal.proposedByName?.toLowerCase().trim() === currentUser.name?.toLowerCase().trim() || currentUser.handle === '@patricio') && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingProposal(proposal);
+                                }}
+                                className="p-1.5 bg-[#FAF6ED] hover:bg-[#F7B32B] text-[#1A1918]/70 hover:text-[#1A1918] border-2 border-[#1A1918] rounded-xl transition-all shadow-[1.5px_1.5px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                                title="Editar tu propuesta"
+                              >
+                                <Pencil className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (window.confirm(`¿Seguro que deseas eliminar la propuesta "${proposal.title}"?`)) {
+                                    deleteRouteProposal(proposal.id);
+                                  }
+                                }}
+                                className="p-1.5 bg-[#FAF6ED] hover:bg-[#E6332A] text-[#1A1918]/60 hover:text-white border-2 border-[#1A1918] rounded-xl transition-all shadow-[1.5px_1.5px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                                title="Eliminar tu propuesta"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </>
                           )}
                         </div>
                       </div>
@@ -2545,21 +2710,34 @@ export const TribusView: React.FC<TribusViewProps> = ({
                           <span>Google Maps</span>
                         </a>
 
-                        {/* Botón Borrar Ruta (Solo quien la publicó) */}
-                        {(route.proposedByUserId === currentUser.id || route.proposedByName?.toLowerCase().trim() === currentUser.name?.toLowerCase().trim()) && (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (window.confirm(`¿Seguro que deseas eliminar la ruta grabada "${route.title}"? Esta acción no se puede deshacer.`)) {
-                                deleteRouteProposal(route.id);
-                              }
-                            }}
-                            className="p-1.5 bg-[#FAF6ED] hover:bg-[#E6332A] text-[#1A1918]/60 hover:text-white border-2 border-[#1A1918] rounded-xl transition-all shadow-[1.5px_1.5px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
-                            title="Eliminar tu ruta del historial"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                        {/* Botones Editar y Borrar Ruta (Solo quien la publicó o Patricio) */}
+                        {(route.proposedByUserId === currentUser.id || route.proposedByName?.toLowerCase().trim() === currentUser.name?.toLowerCase().trim() || currentUser.handle === '@patricio') && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingProposal(route);
+                              }}
+                              className="p-1.5 bg-[#FAF6ED] hover:bg-[#F7B32B] text-[#1A1918]/70 hover:text-[#1A1918] border-2 border-[#1A1918] rounded-xl transition-all shadow-[1.5px_1.5px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                              title="Editar tu ruta"
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (window.confirm(`¿Seguro que deseas eliminar la ruta grabada "${route.title}"? Esta acción no se puede deshacer.`)) {
+                                  deleteRouteProposal(route.id);
+                                }
+                              }}
+                              className="p-1.5 bg-[#FAF6ED] hover:bg-[#E6332A] text-[#1A1918]/60 hover:text-white border-2 border-[#1A1918] rounded-xl transition-all shadow-[1.5px_1.5px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                              title="Eliminar tu ruta del historial"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </>
                         )}
                       </div>
                     </div>
@@ -2616,20 +2794,33 @@ export const TribusView: React.FC<TribusViewProps> = ({
                 </p>
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                {(selectedProposalForDetail.proposedByUserId === currentUser.id || selectedProposalForDetail.proposedByName?.toLowerCase().trim() === currentUser.name?.toLowerCase().trim()) && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (window.confirm(`¿Seguro que deseas eliminar la ruta grabada "${selectedProposalForDetail.title}"? Esta acción no se puede deshacer.`)) {
-                        deleteRouteProposal(selectedProposalForDetail.id);
+                {(selectedProposalForDetail.proposedByUserId === currentUser.id || selectedProposalForDetail.proposedByName?.toLowerCase().trim() === currentUser.name?.toLowerCase().trim() || currentUser.handle === '@patricio') && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingProposal(selectedProposalForDetail);
                         setDetailProposalId(null);
-                      }
-                    }}
-                    className="p-2 bg-[#FAF6ED] hover:bg-[#E6332A] text-[#1A1918]/70 hover:text-white border-2 border-[#1A1918] rounded-xl shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition"
-                    title="Eliminar tu ruta"
-                  >
-                    <Trash2 className="w-5 h-5 stroke-[2.5]" />
-                  </button>
+                      }}
+                      className="p-2 bg-[#FAF6ED] hover:bg-[#F7B32B] text-[#1A1918]/80 hover:text-[#1A1918] border-2 border-[#1A1918] rounded-xl shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition"
+                      title="Editar tu propuesta"
+                    >
+                      <Pencil className="w-5 h-5 stroke-[2.5]" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (window.confirm(`¿Seguro que deseas eliminar la ruta grabada "${selectedProposalForDetail.title}"? Esta acción no se puede deshacer.`)) {
+                          deleteRouteProposal(selectedProposalForDetail.id);
+                          setDetailProposalId(null);
+                        }
+                      }}
+                      className="p-2 bg-[#FAF6ED] hover:bg-[#E6332A] text-[#1A1918]/70 hover:text-white border-2 border-[#1A1918] rounded-xl shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition"
+                      title="Eliminar tu ruta"
+                    >
+                      <Trash2 className="w-5 h-5 stroke-[2.5]" />
+                    </button>
+                  </>
                 )}
                 <button
                   onClick={() => setDetailProposalId(null)}
@@ -2770,6 +2961,52 @@ export const TribusView: React.FC<TribusViewProps> = ({
                         <span>Grabar</span>
                       </button>
                     )}
+                    {/* Marcar como ya rodada */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (window.confirm(`¿Ya rodaron esta ruta ("${selectedProposalForDetail.title}")? Se archivará en el Historial de la Tribu.`)) {
+                          archiveRouteProposal(selectedProposalForDetail.id);
+                          setDetailProposalId(null);
+                        }
+                      }}
+                      className="flex-1 sm:flex-initial px-3 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-mono font-bold border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] rounded-xl transition flex items-center justify-center gap-1.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                      title="Marcar como ya rodada y pasar al Historial"
+                    >
+                      <Check className="w-3.5 h-3.5 stroke-[3]" />
+                      <span>Ya la rodamos</span>
+                    </button>
+
+                    {/* Editar o Borrar para el creador */}
+                    {(selectedProposalForDetail.proposedByUserId === currentUser.id || selectedProposalForDetail.proposedByName?.toLowerCase().trim() === currentUser.name?.toLowerCase().trim() || currentUser.handle === '@patricio') && (
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const p = selectedProposalForDetail;
+                            setDetailProposalId(null);
+                            setEditingProposal(p);
+                          }}
+                          className="p-2 bg-[#F4EEDB] hover:bg-[#F7B32B] text-[#1A1918] border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] rounded-xl transition active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                          title="Editar propuesta"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (window.confirm(`¿Seguro que deseas eliminar la propuesta "${selectedProposalForDetail.title}"?`)) {
+                              deleteRouteProposal(selectedProposalForDetail.id);
+                              setDetailProposalId(null);
+                            }
+                          }}
+                          className="p-2 bg-[#F4EEDB] hover:bg-[#E6332A] hover:text-white text-[#1A1918]/70 border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] rounded-xl transition active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                          title="Eliminar propuesta"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -2777,20 +3014,35 @@ export const TribusView: React.FC<TribusViewProps> = ({
 
             {/* Acciones para ruta ya grabada en el historial */}
             {activeTribuTab === 'historial' && (
-              <div className="p-3 bg-[#FAF6ED] border-2 border-[#1A1918] rounded-2xl shadow-[2px_2px_0px_#1A1918] flex items-center justify-between gap-2">
+              <div className="p-3 bg-[#FAF6ED] border-2 border-[#1A1918] rounded-2xl shadow-[2px_2px_0px_#1A1918] flex items-center justify-between gap-2 flex-wrap">
                 <span className="text-xs font-mono font-bold text-[#1A1918]/80 flex items-center gap-1.5">
                   <Check className="w-3.5 h-3.5 text-emerald-600" />
                   <span>Ruta archivada en el historial de {activeTribu.name}</span>
                 </span>
-                <a
-                  href={buildOrderedGoogleMapsUrl(selectedProposalForDetail)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-3.5 py-1.5 bg-[#1A1918] hover:bg-black text-white text-xs font-display font-black uppercase tracking-wider border-2 border-[#1A1918] shadow-[1.5px_1.5px_0px_#1A1918] rounded-xl transition flex items-center gap-1.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none shrink-0"
-                >
-                  <Compass className="w-3.5 h-3.5 text-[#F7B32B]" />
-                  <span>Google Maps ↗</span>
-                </a>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (window.confirm(`¿Reactivar "${selectedProposalForDetail.title}" como propuesta activa?`)) {
+                        unarchiveRouteProposal(selectedProposalForDetail.id);
+                        setDetailProposalId(null);
+                      }
+                    }}
+                    className="px-3 py-1.5 bg-[#F4EEDB] hover:bg-[#F7B32B] text-[#1A1918] text-xs font-mono font-bold border-2 border-[#1A1918] shadow-[1.5px_1.5px_0px_#1A1918] rounded-xl transition flex items-center gap-1.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                    title="Volver a mover a propuestas activas"
+                  >
+                    <span>↺ Mover a Propuestas</span>
+                  </button>
+                  <a
+                    href={buildOrderedGoogleMapsUrl(selectedProposalForDetail)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3.5 py-1.5 bg-[#1A1918] hover:bg-black text-white text-xs font-display font-black uppercase tracking-wider border-2 border-[#1A1918] shadow-[1.5px_1.5px_0px_#1A1918] rounded-xl transition flex items-center gap-1.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none shrink-0"
+                  >
+                    <Compass className="w-3.5 h-3.5 text-[#F7B32B]" />
+                    <span>Google Maps ↗</span>
+                  </a>
+                </div>
               </div>
             )}
 
@@ -3072,6 +3324,27 @@ export const TribusView: React.FC<TribusViewProps> = ({
           currentUser={currentUser}
           onClose={() => setShowConvokeModal(false)}
           onSubmitConvoke={handleConvokeSubmit}
+          formatHumanDate={formatHumanDate}
+        />
+      )}
+
+      {/* =================================================================== */}
+      {/* 8.1 MODAL: EDITAR RUTA / PROPUESTA                                  */}
+      {/* =================================================================== */}
+      {editingProposal && (
+        <StepByStepRodadaModal
+          isOpen={Boolean(editingProposal)}
+          mode="edit"
+          initialProposal={editingProposal}
+          activeRodada={activeRodada}
+          currentUser={currentUser}
+          onClose={() => setEditingProposal(null)}
+          onUpdateProposal={(id, updates) => {
+            updateRouteProposal(id, updates);
+            setEditingProposal(null);
+            setNotificationToast(`Ruta "${updates.title || editingProposal.title}" actualizada con éxito.`);
+            setTimeout(() => setNotificationToast(null), 4000);
+          }}
           formatHumanDate={formatHumanDate}
         />
       )}

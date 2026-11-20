@@ -95,7 +95,9 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
     isFollowingUser,
     toggleFollowUser,
     savedRouteIds,
-    routeLists
+    routeLists,
+    getFollowersCountForUser,
+    currentUserFounderNumber
   } = useApp();
 
   // Helper to dynamically resolve groupInfo against live crews and users state
@@ -220,6 +222,42 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
     setCommentInput('');
   };
 
+  // Real statistics strictly for currentUser (matching TuProfileView)
+  const userActivities = React.useMemo(() => {
+    return activities.filter(a => {
+      const isPilot = 
+        (a.pilotId && a.pilotId === currentUser.id) ||
+        (a.pilotName && a.pilotName.toLowerCase().trim() === currentUser.name?.toLowerCase().trim()) ||
+        (a.pilotHandle && currentUser.handle && a.pilotHandle.toLowerCase().trim() === currentUser.handle.toLowerCase().trim());
+      
+      const isGroupAttendee = Boolean(
+        a.groupInfo?.participants?.some(p => 
+          (p.userId && p.userId === currentUser.id) ||
+          (p.name && p.name.toLowerCase().trim() === currentUser.name?.toLowerCase().trim()) ||
+          (p.handle && currentUser.handle && p.handle.toLowerCase().trim() === currentUser.handle.toLowerCase().trim())
+        )
+      );
+
+      return isPilot || isGroupAttendee;
+    });
+  }, [activities, currentUser.id, currentUser.name, currentUser.handle]);
+
+  const realTotalKm = Math.round(userActivities.reduce((acc, a) => acc + (a.distanceKm || 0), 0) * 10) / 10;
+  const realRidesCount = userActivities.length;
+  const realFollowersCount = getFollowersCountForUser ? getFollowersCountForUser(currentUser.id) : 0;
+  
+  // Real active motorcycle from user's garage
+  const userBikes = motorcycles.filter(m => m.userId === currentUser.id);
+  const activeBike = userBikes[0];
+  const activeBikeName = activeBike 
+    ? `${activeBike.brand} ${activeBike.model}` 
+    : (currentUser.ridingLevel ? `Nivel ${currentUser.ridingLevel}` : 'Sin moto registrada');
+
+  // Registration Dossier Number
+  const pilotDossierNo = currentUserFounderNumber 
+    ? `NO. ${String(currentUserFounderNumber).padStart(4, '0')}`
+    : (currentUser.id === 'user-patricio' ? 'NO. 0001' : 'NO. PILOT');
+
   return (
     <div className="max-w-[1440px] w-full mx-auto pb-24 font-sans space-y-4 sm:space-y-8">
 
@@ -235,7 +273,7 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
             {/* Top vintage seal */}
             <div className="flex items-center justify-between text-[10px] font-display uppercase tracking-widest text-[#1A1918] border-b-2 border-[#1A1918] pb-3">
               <span className="text-[#E6332A] font-black">★ PILOT DOSSIER</span>
-              <span className="font-mono text-[9px] font-bold bg-[#F4EEDB] px-1.5 py-0.5 border border-[#1A1918] rounded">NO. 0042</span>
+              <span className="font-mono text-[9px] font-bold bg-[#F4EEDB] px-1.5 py-0.5 border border-[#1A1918] rounded">{pilotDossierNo}</span>
             </div>
 
             <div className="flex items-center gap-4">
@@ -260,36 +298,38 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                 <p className="text-xs font-serif italic text-[#1A1918]/70 truncate">{currentUser.handle}</p>
                 <p className="text-[11px] text-[#1A1918]/80 flex items-center gap-1 mt-0.5 font-sans font-semibold">
                   <MapPin className="w-3 h-3 text-[#E6332A]" />
-                  <span>{currentUser.location}</span>
+                  <span>{currentUser.location || 'México'}</span>
                 </p>
               </div>
             </div>
 
-            {/* Quick Metrics in High Contrast Matchbook Style */}
+            {/* Quick Metrics in High Contrast Matchbook Style (REAL DATA) */}
             <div className="grid grid-cols-3 gap-2 border-2 border-[#1A1918] py-3 text-center bg-[#F4EEDB] rounded-xl shadow-[2px_2px_0px_#1A1918]">
               <div>
                 <span className="text-[9px] font-display uppercase tracking-widest text-[#1A1918]/70 block font-black">Rodadas</span>
-                <span className="text-xl font-display font-black text-[#1A1918]">{currentUser.stats?.completedCount || 33}</span>
+                <span className="text-xl font-display font-black text-[#1A1918]">{realRidesCount}</span>
               </div>
               <div className="border-x-2 border-[#1A1918]">
                 <span className="text-[9px] font-display uppercase tracking-widest text-[#1A1918]/70 block font-black">Km</span>
-                <span className="text-xl font-display font-black text-[#1A1918]">{currentUser.stats?.totalKm || 2450}</span>
+                <span className="text-xl font-display font-black text-[#1A1918]">{realTotalKm}</span>
               </div>
               <div>
                 <span className="text-[9px] font-display uppercase tracking-widest text-[#1A1918]/70 block font-black">Pilotos</span>
-                <span className="text-xl font-display font-black text-[#1A1918]">15</span>
+                <span className="text-xl font-display font-black text-[#1A1918]">{realFollowersCount}</span>
               </div>
             </div>
 
             {/* Active Machine Plaque */}
             <div className="flex items-center justify-between text-xs pt-1">
-              <div className="flex items-center gap-2 text-[#1A1918]">
-                <Wrench className="w-3.5 h-3.5 text-[#E6332A]" />
-                <span className="text-xs font-display font-black uppercase tracking-wider text-[#1A1918]">BMW R 1250 GS</span>
+              <div className="flex items-center gap-2 text-[#1A1918] min-w-0 flex-1 mr-2">
+                <Wrench className="w-3.5 h-3.5 text-[#E6332A] shrink-0" />
+                <span className="text-xs font-display font-black uppercase tracking-wider text-[#1A1918] truncate" title={activeBikeName}>
+                  {activeBikeName}
+                </span>
               </div>
               <button 
                 onClick={() => setActiveNavTab('garaje')}
-                className="text-[10px] font-display tracking-widest text-[#E6332A] uppercase hover:underline transition font-black"
+                className="text-[10px] font-display tracking-widest text-[#E6332A] uppercase hover:underline transition font-black shrink-0"
               >
                 Hangar &gt;
               </button>

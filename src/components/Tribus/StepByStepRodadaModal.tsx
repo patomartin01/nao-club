@@ -25,9 +25,10 @@ import { PlaceAutocompleteInput, PlaceResult } from './PlaceAutocompleteInput';
 
 export interface StepByStepRodadaModalProps {
   isOpen: boolean;
-  mode: 'alternative' | 'convoke';
+  mode: 'alternative' | 'convoke' | 'edit';
   activeRodada?: Rodada | null;
   currentUser: User;
+  initialProposal?: RouteProposal | null;
   onClose: () => void;
   onSubmitAlternative?: (
     proposal: Omit<RouteProposal, 'id' | 'votes' | 'comments'>,
@@ -43,6 +44,7 @@ export interface StepByStepRodadaModalProps {
     originPoint: string;
     proposal?: Omit<RouteProposal, 'id' | 'votes' | 'comments'>;
   }) => void;
+  onUpdateProposal?: (routeId: string, updates: Partial<RouteProposal>) => void;
   formatHumanDate: (start: string, end?: string, includeYear?: boolean) => string;
 }
 
@@ -60,13 +62,15 @@ export const StepByStepRodadaModal: React.FC<StepByStepRodadaModalProps> = ({
   mode,
   activeRodada,
   currentUser,
+  initialProposal,
   onClose,
   onSubmitAlternative,
   onSubmitConvoke,
+  onUpdateProposal,
   formatHumanDate
 }) => {
   // Step 1 to 4
-  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+  const [step, setStep] = useState<1 | 2 | 3 | 4>(mode === 'edit' ? 2 : 1);
 
   // Direction for transition effect
   const [direction, setDirection] = useState<'forward' | 'backward'>('forward');
@@ -90,11 +94,35 @@ export const StepByStepRodadaModal: React.FC<StepByStepRodadaModalProps> = ({
   };
 
   // Step 2: Ruta y Paradas (Google Maps Places)
-  const [origin, setOrigin] = useState(activeRodada?.originPoint || 'Interlomas');
-  const [originCoords, setOriginCoords] = useState<{ lat: number; lng: number }>({ lat: 19.3985, lng: -99.2783 });
-  const [destination, setDestination] = useState(activeRodada?.title || '');
-  const [destinationCoords, setDestinationCoords] = useState<{ lat: number; lng: number }>({ lat: 20.2154, lng: -98.7310 });
-  const [stops, setStops] = useState<IntermediateStop[]>([]);
+  const [origin, setOrigin] = useState(
+    initialProposal?.waypoints?.find(w => w.type === 'start')?.name || activeRodada?.originPoint || 'Interlomas'
+  );
+  const [originCoords, setOriginCoords] = useState<{ lat: number; lng: number }>({
+    lat: initialProposal?.waypoints?.find(w => w.type === 'start')?.lat || 19.3985,
+    lng: initialProposal?.waypoints?.find(w => w.type === 'start')?.lng || -99.2783
+  });
+  const [destination, setDestination] = useState(
+    initialProposal?.destination || activeRodada?.title || ''
+  );
+  const [destinationCoords, setDestinationCoords] = useState<{ lat: number; lng: number }>({
+    lat: initialProposal?.waypoints?.find(w => w.type === 'end' || w.type === 'camp')?.lat || 20.2154,
+    lng: initialProposal?.waypoints?.find(w => w.type === 'end' || w.type === 'camp')?.lng || -98.7310
+  });
+  const [stops, setStops] = useState<IntermediateStop[]>(() => {
+    if (initialProposal?.waypoints) {
+      return initialProposal.waypoints
+        .filter(w => w.type !== 'start' && w.type !== 'end' && w.type !== 'camp')
+        .map((w, i) => ({
+          id: w.id || `stop-${i}-${Date.now()}`,
+          name: w.name,
+          type: w.type || 'stop',
+          description: w.notes || w.description || '',
+          lat: w.lat,
+          lng: w.lng
+        }));
+    }
+    return [];
+  });
   const [draggedStopIndex, setDraggedStopIndex] = useState<number | null>(null);
 
   // Step 3: Ritmo, Dificultad & Hora
@@ -102,8 +130,12 @@ export const StepByStepRodadaModal: React.FC<StepByStepRodadaModalProps> = ({
   const [timeHour, setTimeHour] = useState('07');
   const [timeMinute, setTimeMinute] = useState('30');
   const [timePeriod, setTimePeriod] = useState<'AM' | 'PM'>('AM');
-  const [difficulty, setDifficulty] = useState<RouteProposal['difficulty']>('Intermedio');
-  const [offroadPercentage, setOffroadPercentage] = useState(30);
+  const [difficulty, setDifficulty] = useState<RouteProposal['difficulty']>(
+    initialProposal?.difficulty || 'Intermedio'
+  );
+  const [offroadPercentage, setOffroadPercentage] = useState(
+    initialProposal?.offroadPercentage ?? 30
+  );
 
   // Sincronizar hora seleccionada al cambiar componentes
   const updateCustomTime = (newH: string, newM: string, newP: 'AM' | 'PM') => {
@@ -124,18 +156,57 @@ export const StepByStepRodadaModal: React.FC<StepByStepRodadaModalProps> = ({
   };
 
   // Step 4: Nombre y Resumen
-  const [title, setTitle] = useState('');
-  const [summary, setSummary] = useState('');
+  const [title, setTitle] = useState(initialProposal?.title || '');
+  const [summary, setSummary] = useState(initialProposal?.description || '');
 
-  // Auto-generate title if empty
+  // Cargar datos si initialProposal cambia
   useEffect(() => {
-    if (!title || title.startsWith('Ruta')) {
+    if (initialProposal) {
+      setTitle(initialProposal.title || '');
+      setSummary(initialProposal.description || '');
+      setDestination(initialProposal.destination || '');
+      setOffroadPercentage(initialProposal.offroadPercentage ?? 30);
+      setDifficulty(initialProposal.difficulty || 'Intermedio');
+      
+      const startWp = initialProposal.waypoints?.find(w => w.type === 'start');
+      if (startWp) {
+        setOrigin(startWp.name);
+        if (startWp.lat && startWp.lng) setOriginCoords({ lat: startWp.lat, lng: startWp.lng });
+        if (startWp.notes && startWp.notes.includes('Salida ')) {
+          applyPresetTime(startWp.notes.replace('Salida ', '').trim());
+        }
+      }
+
+      const destWp = initialProposal.waypoints?.find(w => w.type === 'end' || w.type === 'camp');
+      if (destWp && destWp.lat && destWp.lng) {
+        setDestinationCoords({ lat: destWp.lat, lng: destWp.lng });
+      }
+
+      if (initialProposal.waypoints) {
+        const intermediate = initialProposal.waypoints
+          .filter(w => w.type !== 'start' && w.type !== 'end' && w.type !== 'camp')
+          .map((w, i) => ({
+            id: w.id || `stop-${i}-${Date.now()}`,
+            name: w.name,
+            type: w.type || 'stop',
+            description: w.notes || w.description || '',
+            lat: w.lat,
+            lng: w.lng
+          }));
+        setStops(intermediate);
+      }
+    }
+  }, [initialProposal]);
+
+  // Auto-generate title if empty and not in edit mode
+  useEffect(() => {
+    if (mode !== 'edit' && (!title || title.startsWith('Ruta'))) {
       if (destination) {
         const stopsSnippet = stops.length > 0 ? `${stops[0].name} & ` : '';
         setTitle(`Ruta ${stopsSnippet}${destination}`);
       }
     }
-  }, [destination, stops]);
+  }, [destination, stops, mode]);
 
   if (!isOpen) return null;
 
@@ -297,7 +368,33 @@ export const StepByStepRodadaModal: React.FC<StepByStepRodadaModalProps> = ({
       safetyTips: ['Tanque lleno', 'Revisar presiones']
     };
 
-    if (mode === 'alternative') {
+    if (mode === 'edit' && initialProposal) {
+      onUpdateProposal?.(initialProposal.id, {
+        title: title.trim() || initialProposal.title,
+        destination: destination.trim() || initialProposal.destination,
+        description: summary.trim() || initialProposal.description,
+        difficulty,
+        offroadPercentage,
+        asphaltPercentage: Math.max(0, 100 - offroadPercentage),
+        totalKm: 130 + stops.length * 20,
+        waypoints: allWaypoints,
+        coordinates: [
+          [originCoords.lat, originCoords.lng],
+          ...stops.filter(s => s.lat && s.lng).map(s => [s.lat!, s.lng!] as [number, number]),
+          [destinationCoords.lat, destinationCoords.lng]
+        ],
+        itinerary: [
+          {
+            day: 1,
+            title: `Travesía hacia ${destination}`,
+            description: summary || 'Rodada en grupo con paradas programadas.',
+            distanceKm: 130 + stops.length * 20,
+            offroadKm: Math.round(((130 + stops.length * 20) * offroadPercentage) / 100),
+            terrainType: `${offroadPercentage}% terracería / ${100 - offroadPercentage}% asfalto`
+          }
+        ]
+      });
+    } else if (mode === 'alternative') {
       const dateConfig = {
         mode: dateSelection,
         startDate: dateSelection === 'custom' ? customStartDate : undefined,
@@ -329,11 +426,11 @@ export const StepByStepRodadaModal: React.FC<StepByStepRodadaModalProps> = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-[10px] uppercase font-mono font-black text-[#E6332A] tracking-widest">
-                {mode === 'alternative' ? '★ ALTERNATIVA ★' : '★ CONVOCAR RODADA ★'}
+                {mode === 'edit' ? '★ EDITAR RUTA ★' : mode === 'alternative' ? '★ ALTERNATIVA ★' : '★ CONVOCAR RODADA ★'}
               </span>
               <span className="text-[#1A1918]/30 text-[10px]">•</span>
               <span className="text-[10px] text-[#1A1918]/70 font-mono font-bold uppercase tracking-wider">
-                Paso {step} de 4
+                {mode === 'edit' ? `Paso ${step} de 4` : `Paso ${step} de 4`}
               </span>
             </div>
 
@@ -972,7 +1069,7 @@ export const StepByStepRodadaModal: React.FC<StepByStepRodadaModalProps> = ({
               className="px-6 py-2.5 bg-[#E6332A] hover:bg-[#d02c24] text-white border-2 border-[#1A1918] text-xs font-display font-black uppercase tracking-widest flex items-center gap-2 transition ml-auto shadow-[3px_3px_0px_#1A1918] rounded-xl active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
             >
               <Sparkles className="w-3.5 h-3.5 text-[#F7B32B]" />
-              <span>{mode === 'alternative' ? 'Publicar Alternativa' : 'Convocar Rodada'}</span>
+              <span>{mode === 'edit' ? 'Guardar Cambios' : mode === 'alternative' ? 'Publicar Alternativa' : 'Convocar Rodada'}</span>
             </button>
           )}
         </div>

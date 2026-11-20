@@ -144,25 +144,15 @@ export const PilotProfileModal: React.FC = () => {
               {selectedPilotProfile.id !== currentUser.id && (
                 <button
                   type="button"
-                  onClick={() => {
-                    if (isFollowingUser(selectedPilotProfile.id)) {
-                      toggleFollowUser(selectedPilotProfile.id);
-                    } else {
-                      requestToFollowUser(selectedPilotProfile.id);
-                    }
-                  }}
+                  onClick={() => toggleFollowUser(selectedPilotProfile.id)}
                   className={`px-4 py-2 text-xs font-display font-black uppercase tracking-wider transition-all duration-150 flex items-center justify-center gap-1.5 whitespace-nowrap rounded-xl border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer group ${
                     isFollowingUser(selectedPilotProfile.id)
                       ? 'bg-[#FAF6ED] hover:bg-[#E6332A] text-[#1A1918] hover:text-white hover:border-[#1A1918]'
-                      : isFollowRequested(selectedPilotProfile.id)
-                      ? 'bg-[#F7B32B] hover:bg-[#e5a422] text-[#1A1918]'
                       : 'bg-[#E6332A] hover:bg-[#d02c24] text-white'
                   }`}
                   title={
                     isFollowingUser(selectedPilotProfile.id)
                       ? 'Click para dejar de seguir a este piloto'
-                      : isFollowRequested(selectedPilotProfile.id)
-                      ? 'Cancelar solicitud de seguimiento'
                       : 'Seguir a este piloto'
                   }
                 >
@@ -173,14 +163,9 @@ export const PilotProfileModal: React.FC = () => {
                       <span className="group-hover:hidden">Siguiendo</span>
                       <span className="hidden group-hover:inline">Dejar de seguir</span>
                     </>
-                  ) : isFollowRequested(selectedPilotProfile.id) ? (
-                    <>
-                      <Clock className="w-3.5 h-3.5 text-[#1A1918]" />
-                      <span>Solicitado</span>
-                    </>
                   ) : (
                     <>
-                      <UserPlus className="w-3.5 h-3.5 text-[#F7B32B]" />
+                      <UserPlus className="w-3.5 h-3.5 text-white" />
                       <span>+ Seguir</span>
                     </>
                   )}

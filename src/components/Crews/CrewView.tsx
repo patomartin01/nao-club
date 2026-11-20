@@ -74,6 +74,8 @@ export const CrewView: React.FC<CrewViewProps> = ({
     addRouteComment,
     lockWinningRoute,
     unlockWinningRoute,
+    completeRodada,
+    reopenRodada,
     togglePackingItem,
     addPackingItem,
     rsvpRodada,
@@ -553,13 +555,28 @@ ${gpxPoints}
 
                       {/* Captain Consensus Lock */}
                       {isWinningRouteLocked ? (
-                        <button
-                          onClick={() => unlockWinningRoute(activeRodada.id)}
-                          className="px-3 py-2 bg-emerald-500/10 border border-emerald-500 text-emerald-400 hover:bg-emerald-500/20 uppercase font-bold text-[10px] flex items-center gap-1.5"
-                        >
-                          <Lock className="w-3.5 h-3.5" />
-                          <span>Ruta Fijada (Reabrir)</span>
-                        </button>
+                        <>
+                          <button
+                            onClick={() => unlockWinningRoute(activeRodada.id)}
+                            className="px-3 py-2 bg-emerald-500/10 border border-emerald-500 text-emerald-400 hover:bg-emerald-500/20 uppercase font-bold text-[10px] flex items-center gap-1.5"
+                          >
+                            <Lock className="w-3.5 h-3.5" />
+                            <span>Ruta Fijada (Reabrir)</span>
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (window.confirm('¿Ya concluyeron esta rodada? Se marcará como COMPLETADA y la ruta se archivará en el Historial.')) {
+                                completeRodada(activeRodada.id);
+                                setActiveTab('historial');
+                              }
+                            }}
+                            className="px-3 py-2 bg-emerald-500 hover:bg-emerald-600 text-obsidian font-black uppercase text-[10px] flex items-center gap-1.5 transition shadow-[0_0_15px_rgba(16,185,129,0.3)]"
+                            title="Marcar como ya rodada y archivar al historial"
+                          >
+                            <Check className="w-3.5 h-3.5 stroke-[3]" />
+                            <span>✓ Ya la rodamos</span>
+                          </button>
+                        </>
                       ) : (
                         <button
                           onClick={() => lockWinningRoute(activeRodada.id, activeRoute.id)}
@@ -1046,8 +1063,14 @@ ${gpxPoints}
               >
                 <div className="space-y-2 flex-1">
                   <div className="flex items-center gap-3 font-mono text-[10px]">
-                    <span className="px-2 py-0.5 bg-earth/20 border border-earth text-earth font-bold uppercase tracking-widest">
-                      {rd.status === 'votacion' ? 'Votación Abierta de Rutas' : 'Confirmada'}
+                    <span className={`px-2 py-0.5 border font-bold uppercase tracking-widest ${
+                      rd.status === 'completada'
+                        ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400'
+                        : rd.status === 'votacion'
+                        ? 'bg-earth/20 border-earth text-earth'
+                        : 'bg-white/10 border-white/20 text-white'
+                    }`}>
+                      {rd.status === 'completada' ? '✓ Rodada Completada' : rd.status === 'votacion' ? 'Votación Abierta de Rutas' : 'Confirmada'}
                     </span>
                     <span className="text-ash">·</span>
                     <span className="text-white bg-white/10 px-2 py-0.5">

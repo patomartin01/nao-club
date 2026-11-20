@@ -343,25 +343,15 @@ export const FollowersModal: React.FC<FollowersModalProps> = ({
                         <div className="shrink-0">
                           <button
                             type="button"
-                            onClick={() => {
-                              if (isFollowing) {
-                                toggleFollowUser(pilot.id);
-                              } else {
-                                requestToFollowUser(pilot.id);
-                              }
-                            }}
+                            onClick={() => toggleFollowUser(pilot.id)}
                             className={`px-3 py-1.5 text-[10px] font-display font-black uppercase tracking-wider transition-all duration-150 flex items-center justify-center gap-1 rounded-xl border border-[#1A1918] shadow-[1px_1px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 cursor-pointer group ${
                               isFollowing
                                 ? 'bg-[#FAF6ED] hover:bg-[#E6332A] text-[#1A1918] hover:text-white'
-                                : isRequested
-                                ? 'bg-[#F7B32B] text-[#1A1918]'
                                 : 'bg-[#E6332A] hover:bg-[#c92820] text-white'
                             }`}
                             title={
                               isFollowing
                                 ? 'Click para dejar de seguir a este piloto'
-                                : isRequested
-                                ? 'Cancelar solicitud de seguimiento'
                                 : 'Seguir a este piloto'
                             }
                           >
@@ -372,15 +362,10 @@ export const FollowersModal: React.FC<FollowersModalProps> = ({
                                 <span className="group-hover:hidden">Siguiendo</span>
                                 <span className="hidden group-hover:inline">Dejar de seguir</span>
                               </>
-                            ) : isRequested ? (
-                              <>
-                                <Clock className="w-3 h-3 text-[#1A1918]" />
-                                <span>Solicitado</span>
-                              </>
                             ) : (
                               <>
-                                <UserPlus className="w-3 h-3" />
-                                <span>Seguir</span>
+                                <UserPlus className="w-3 h-3 text-white" />
+                                <span>+ Seguir</span>
                               </>
                             )}
                           </button>
