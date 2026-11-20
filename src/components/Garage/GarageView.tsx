@@ -67,7 +67,7 @@ export const GarageView: React.FC = () => {
             <div className="space-y-1.5">
               <div className="flex items-center gap-2">
                 <span className="font-sans text-[10px] text-[#E6332A] uppercase tracking-[0.2em] font-semibold">
-                  EXPEDITION WORKSHOP &amp; FLEET
+                  Taller y flota
                 </span>
                 <span className="text-[9px] font-mono bg-[#FAF6ED] px-2.5 py-0.5 border border-[#1A1918]/10 rounded-md font-semibold text-[#1A1918] shadow-sm">
                   TALLER NO. 01
@@ -126,7 +126,7 @@ export const GarageView: React.FC = () => {
           </div>
           <div className="p-6">
             <span className="text-[10px] text-[#1A1918]/70 font-sans uppercase tracking-wider block font-bold">Rango</span>
-            <p className="font-display font-semibold text-[#E6332A] text-lg mt-1  ">Rider titular</p>
+            <p className="font-display font-semibold text-[#E6332A] text-lg mt-1  ">Piloto titular</p>
           </div>
         </div>
       </section>
@@ -136,7 +136,7 @@ export const GarageView: React.FC = () => {
         <div className="flex items-center justify-between border-b border-[#1A1918]/10 pb-4">
           <div>
             <span className="font-sans text-[10px] text-[#E6332A] uppercase tracking-[0.2em] font-semibold">
-              CUSTOM STABLE &amp; FLEET
+              Garaje y flota
             </span>
             <h2 className="font-display font-semibold text-2xl sm:text-4xl text-[#1A1918] mt-1">
               Máquinas en garaje

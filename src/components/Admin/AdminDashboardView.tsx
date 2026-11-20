@@ -93,7 +93,7 @@ export const AdminDashboardView: React.FC = () => {
           <div>
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-mono uppercase font-semibold bg-[#1A1918] text-white px-2 py-0.5 rounded">
-                COMMAND CENTER · ADMIN
+                Centro de control · Admin
               </span>
               <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border border-[#1A1918]/10 ${
                 isSupabaseOnline ? 'bg-[#E8F5E9] text-[#1B5E20]' : 'bg-[#FFF9C4] text-[#827717]'

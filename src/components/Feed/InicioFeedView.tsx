@@ -272,7 +272,7 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
           <div className="bg-[#FAF6ED] border border-[#1A1918]/10 rounded-[24px] p-6 space-y-5 shadow-sm relative overflow-hidden">
             {/* Top vintage seal */}
             <div className="flex items-center justify-between text-[10px] font-sans uppercase tracking-widest text-[#1A1918] border-b border-[#1A1918]/10 pb-3">
-              <span className="text-[#E6332A] font-semibold">PILOT DOSSIER</span>
+              <span className="text-[#E6332A] font-semibold">Ficha de piloto</span>
               <span className="font-mono text-[9px] font-bold bg-[#F4EEDB] px-1.5 py-0.5 border border-[#1A1918]/10 rounded">{pilotDossierNo}</span>
             </div>
 
@@ -346,7 +346,7 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
               <span className="text-[10px] font-sans font-semibold text-[#F7B32B] uppercase tracking-wider bg-[#FAF6ED]/10 px-2 py-0.5 rounded border border-[#F7B32B]/30">0 Semanas</span>
             </div>
             <p className="text-xs font-sans text-[#FAF6ED]/70 leading-relaxed font-medium">
-              &quot;In the endless pursuit of open throttle every weekend.&quot;
+              &quot;Cada fin de semana, en busca de camino abierto.&quot;
             </p>
             <button
               onClick={onOpenRecordRoute}

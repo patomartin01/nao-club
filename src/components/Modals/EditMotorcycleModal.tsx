@@ -139,7 +139,7 @@ export const EditMotorcycleModal: React.FC<EditMotorcycleModalProps> = ({
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <span className="font-mono text-[10px] text-[#E6332A] uppercase tracking-[0.2em] font-semibold">
-                TALLER · EXPEDITION WORKSHOP
+                Taller de expedición
               </span>
               <span className="text-[9px] font-mono bg-[#F4EEDB] px-2 py-0.5 border border-[#1A1918]/10 rounded font-bold text-[#1A1918]">
                 ID: {bike.id.slice(0, 10)}

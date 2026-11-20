@@ -2145,7 +2145,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                         )}
 
                         <span className="font-sans uppercase tracking-widest text-[10px] text-[#1A1918] group-hover:text-[#E6332A] flex items-center gap-1 ml-auto transition-transform font-semibold">
-                          Dossier →
+                          Ver perfil →
                         </span>
                       </div>
                     </div>
