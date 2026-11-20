@@ -74,48 +74,48 @@ export const WelcomeLoginGate: React.FC = () => {
   return (
     <div className="fixed inset-0 z-[100] bg-[#F4EEDB] flex flex-col justify-between overflow-y-auto antialiased selection:bg-[#E6332A] selection:text-white">
       {/* Background Graphic Elements */}
-      <div className="absolute inset-0 pointer-events-none opacity-[0.03] select-none flex items-center justify-center font-display font-black text-[22vw] text-[#1A1918] leading-none tracking-tighter">
+      <div className="absolute inset-0 pointer-events-none opacity-[0.03] select-none flex items-center justify-center font-sans font-semibold text-[22vw] text-[#1A1918] leading-none tracking-tighter">
         NAO
       </div>
 
       {/* Center Auth Card */}
       <div className="w-full max-w-md mx-auto px-4 py-8 relative z-10 my-auto">
-        <div className="bg-[#FAF6ED] border-3 border-[#1A1918] rounded-[28px] p-6 sm:p-8 space-y-6 shadow-[8px_8px_0px_#1A1918] relative">
+        <div className="bg-[#FAF6ED] border-3 border-[#1A1918]/10 rounded-[28px] p-6 sm:p-8 space-y-6 shadow-sm relative">
           
           {/* Brand Header */}
           <div className="text-center space-y-2">
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#E6332A] text-white border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] mb-1">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#E6332A] text-white border border-[#1A1918]/10 shadow-sm mb-1">
               <Compass className="w-8 h-8 stroke-[2.5]" />
             </div>
             
-            <h1 className="text-4xl sm:text-5xl font-display font-black uppercase text-[#1A1918] tracking-tight">
+            <h1 className="text-4xl sm:text-5xl font-display font-semibold text-[#1A1918] tracking-tight">
               NAO CLUB
             </h1>
             
-            <p className="text-xs font-serif italic text-[#1A1918]/80 max-w-xs mx-auto">
+            <p className="text-xs font-sans text-[#1A1918]/80 max-w-xs mx-auto">
               Comunidad y bitácora técnica de motociclismo. Inicia sesión para acceder a rutas, tribus y hangares.
             </p>
           </div>
 
           {/* Tab Switcher */}
-          <div className="flex rounded-xl bg-[#F4EEDB] p-1 border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918]">
+          <div className="flex rounded-xl bg-[#F4EEDB] p-1 border border-[#1A1918]/10 shadow-sm">
             <button
               type="button"
               onClick={() => { setMode('login'); setErrorMessage(null); }}
-              className={`flex-1 py-2 text-xs font-display font-black uppercase rounded-lg transition cursor-pointer ${
+              className={`flex-1 py-2 text-xs font-sans font-semibold rounded-lg transition cursor-pointer ${
                 mode === 'login'
-                  ? 'bg-[#FAF6ED] text-[#1A1918] border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918]'
+                  ? 'bg-[#FAF6ED] text-[#1A1918] border border-[#1A1918]/10 shadow-sm'
                   : 'text-[#1A1918]/60 hover:text-[#1A1918]'
               }`}
             >
-              Iniciar Sesión
+              Iniciar sesión
             </button>
             <button
               type="button"
               onClick={() => { setMode('signup'); setErrorMessage(null); }}
-              className={`flex-1 py-2 text-xs font-display font-black uppercase rounded-lg transition cursor-pointer ${
+              className={`flex-1 py-2 text-xs font-sans font-semibold rounded-lg transition cursor-pointer ${
                 mode === 'signup'
-                  ? 'bg-[#FAF6ED] text-[#1A1918] border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918]'
+                  ? 'bg-[#FAF6ED] text-[#1A1918] border border-[#1A1918]/10 shadow-sm'
                   : 'text-[#1A1918]/60 hover:text-[#1A1918]'
               }`}
             >
@@ -125,14 +125,14 @@ export const WelcomeLoginGate: React.FC = () => {
 
           {/* Feedback Messages */}
           {errorMessage && (
-            <div className="p-3 bg-[#FFEBEE] border-2 border-[#D32F2F] rounded-xl flex items-center gap-2 text-xs text-[#C62828] font-sans font-medium">
+            <div className="p-3 bg-[#FFEBEE] border border-[#D32F2F] rounded-xl flex items-center gap-2 text-xs text-[#C62828] font-sans font-medium">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{errorMessage}</span>
             </div>
           )}
 
           {successMessage && (
-            <div className="p-3 bg-[#E8F5E9] border-2 border-[#2E7D32] rounded-xl flex items-center gap-2 text-xs text-[#1B5E20] font-sans font-medium">
+            <div className="p-3 bg-[#E8F5E9] border border-[#2E7D32] rounded-xl flex items-center gap-2 text-xs text-[#1B5E20] font-sans font-medium">
               <Check className="w-4 h-4 shrink-0" />
               <span>{successMessage}</span>
             </div>
@@ -159,7 +159,7 @@ export const WelcomeLoginGate: React.FC = () => {
                 setGoogleLoading(false);
               }
             }}
-            className="w-full py-3.5 px-4 bg-white hover:bg-[#FAF6ED] text-[#1A1918] border-2 border-[#1A1918] rounded-xl font-display font-black text-xs uppercase tracking-wider transition shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none flex items-center justify-center gap-3 cursor-pointer disabled:opacity-60"
+            className="w-full py-3.5 px-4 bg-white hover:bg-[#FAF6ED] text-[#1A1918] border border-[#1A1918]/10 rounded-xl font-sans font-semibold text-xs transition shadow-sm active:shadow-none flex items-center justify-center gap-3 cursor-pointer disabled:opacity-60"
           >
             <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
               <path
@@ -184,8 +184,8 @@ export const WelcomeLoginGate: React.FC = () => {
 
           {/* Divider */}
           <div className="relative flex items-center justify-center">
-            <div className="border-t-2 border-[#1A1918]/20 w-full" />
-            <span className="bg-[#FAF6ED] px-3 text-[10px] font-mono uppercase font-black text-[#1A1918]/60 absolute">
+            <div className="border-t border-[#1A1918]/20 w-full" />
+            <span className="bg-[#FAF6ED] px-3 text-[10px] font-mono uppercase font-semibold text-[#1A1918]/60 absolute">
               o con tu correo
             </span>
           </div>
@@ -195,8 +195,8 @@ export const WelcomeLoginGate: React.FC = () => {
             {mode === 'signup' && (
               <>
                 <div>
-                  <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
-                    Nombre Completo
+                  <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block mb-1">
+                    Nombre completo
                   </label>
                   <div className="relative">
                     <UserIcon className="w-4 h-4 text-[#1A1918]/50 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -206,13 +206,13 @@ export const WelcomeLoginGate: React.FC = () => {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Ej. Roberto Sánchez"
-                      className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl pl-9 pr-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]"
+                      className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl pl-9 pr-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-sm"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
+                  <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block mb-1">
                     Alias de Piloto (Handle)
                   </label>
                   <div className="relative">
@@ -226,7 +226,7 @@ export const WelcomeLoginGate: React.FC = () => {
                         if (errorMessage) setErrorMessage(null);
                       }}
                       placeholder="roberto_gs"
-                      className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl pl-8 pr-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]"
+                      className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl pl-8 pr-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-sm"
                     />
                   </div>
                   <p className="mt-1 text-[10px] font-mono text-[#1A1918]/60">
@@ -237,8 +237,8 @@ export const WelcomeLoginGate: React.FC = () => {
             )}
 
             <div>
-              <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
-                Correo Electrónico
+              <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block mb-1">
+                Correo electrónico
               </label>
               <div className="relative">
                 <Mail className="w-4 h-4 text-[#1A1918]/50 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -248,13 +248,13 @@ export const WelcomeLoginGate: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="piloto@correo.com"
-                  className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl pl-9 pr-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]"
+                  className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl pl-9 pr-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-sm"
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
+              <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block mb-1">
                 Contraseña
               </label>
               <div className="relative">
@@ -266,7 +266,7 @@ export const WelcomeLoginGate: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Mínimo 6 caracteres"
-                  className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl pl-9 pr-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]"
+                  className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl pl-9 pr-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-sm"
                 />
               </div>
             </div>
@@ -274,7 +274,7 @@ export const WelcomeLoginGate: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-2 py-3.5 bg-[#E6332A] hover:bg-[#d02c24] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none text-white border-2 border-[#1A1918] rounded-xl font-display font-black text-xs uppercase tracking-wider transition shadow-[3px_3px_0px_#1A1918] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+              className="w-full mt-2 py-3.5 bg-[#E6332A] hover:bg-[#d02c24] active:shadow-none text-white border border-[#1A1918]/10 rounded-xl font-sans font-semibold text-xs transition shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
             >
               {loading ? (
                 <span>Validando credencial...</span>

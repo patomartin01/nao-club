@@ -117,23 +117,23 @@ export const FollowersModal: React.FC<FollowersModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#1A1918]/70 backdrop-blur-sm animate-fadeIn">
       <div 
-        className="bg-[#FAF6ED] border-2 border-[#1A1918] w-full max-w-lg rounded-[28px] overflow-hidden text-[#1A1918] shadow-[8px_8px_0px_#1A1918] flex flex-col max-h-[85vh] animate-scaleUp"
+        className="bg-[#FAF6ED] border border-[#1A1918]/10 w-full max-w-lg rounded-[28px] overflow-hidden text-[#1A1918] shadow-sm flex flex-col max-h-[85vh] animate-scaleUp"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="bg-[#F4EEDB] border-b-2 border-[#1A1918] p-4 flex items-center justify-between">
+        <div className="bg-[#F4EEDB] border-b border-[#1A1918]/10 p-4 flex items-center justify-between">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="text-[10px] uppercase font-mono font-black tracking-widest text-[#E6332A] bg-[#FAF6ED] px-2.5 py-1 border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] rounded-lg shrink-0">
+            <span className="text-[10px] uppercase font-mono font-semibold tracking-widest text-[#E6332A] bg-[#FAF6ED] px-2.5 py-1 border border-[#1A1918]/10 shadow-sm rounded-lg shrink-0">
               COMUNIDAD
             </span>
-            <h2 className="font-display font-black text-sm sm:text-base uppercase tracking-wide truncate">
+            <h2 className="font-display font-semibold text-sm sm:text-base truncate">
               {isCurrentUsersOwnProfile ? 'Tus Conexiones' : `Conexiones de ${inspectedUser.name}`}
             </h2>
           </div>
           <button 
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-xl bg-[#FAF6ED] border-2 border-[#1A1918] text-[#1A1918] flex items-center justify-center hover:bg-[#E6332A] hover:text-white transition shrink-0 shadow-[2px_2px_0px_#1A1918]"
+            className="w-8 h-8 rounded-xl bg-[#FAF6ED] border border-[#1A1918]/10 text-[#1A1918] flex items-center justify-center hover:bg-[#E6332A] hover:text-white transition shrink-0 shadow-sm"
             title="Cerrar modal"
           >
             <X className="w-4 h-4" />
@@ -141,13 +141,13 @@ export const FollowersModal: React.FC<FollowersModalProps> = ({
         </div>
 
         {/* Tabs switcher */}
-        <div className="grid grid-cols-3 border-b-2 border-[#1A1918] bg-[#EDE6D3] text-xs font-display font-black uppercase">
+        <div className="grid grid-cols-3 border-b border-[#1A1918]/10 bg-[#EDE6D3] text-xs font-sans font-semibold ">
           <button
             type="button"
             onClick={() => setActiveTab('followers')}
-            className={`py-3 px-2 flex items-center justify-center gap-1.5 transition border-r-2 border-[#1A1918] ${
+            className={`py-3 px-2 flex items-center justify-center gap-1.5 transition border-r border-[#1A1918]/10 ${
               activeTab === 'followers'
-                ? 'bg-[#FAF6ED] text-[#E6332A] border-b-2 border-b-transparent shadow-[inset_0_-2px_0_#E6332A]'
+                ? 'bg-[#FAF6ED] text-[#E6332A] border-b border-b-transparent shadow-[inset_0_-2px_0_#E6332A]'
                 : 'text-[#1A1918]/70 hover:bg-[#FAF6ED]/60'
             }`}
           >
@@ -162,10 +162,10 @@ export const FollowersModal: React.FC<FollowersModalProps> = ({
             type="button"
             onClick={() => setActiveTab('following')}
             className={`py-3 px-2 flex items-center justify-center gap-1.5 transition ${
-              isCurrentUsersOwnProfile ? 'border-r-2 border-[#1A1918]' : ''
+              isCurrentUsersOwnProfile ? 'border-r border-[#1A1918]/10' : ''
             } ${
               activeTab === 'following'
-                ? 'bg-[#FAF6ED] text-[#E6332A] border-b-2 border-b-transparent shadow-[inset_0_-2px_0_#E6332A]'
+                ? 'bg-[#FAF6ED] text-[#E6332A] border-b border-b-transparent shadow-[inset_0_-2px_0_#E6332A]'
                 : 'text-[#1A1918]/70 hover:bg-[#FAF6ED]/60'
             }`}
           >
@@ -182,7 +182,7 @@ export const FollowersModal: React.FC<FollowersModalProps> = ({
               onClick={() => setActiveTab('requests')}
               className={`py-3 px-2 flex items-center justify-center gap-1.5 transition relative ${
                 activeTab === 'requests'
-                  ? 'bg-[#FAF6ED] text-[#E6332A] border-b-2 border-b-transparent shadow-[inset_0_-2px_0_#E6332A]'
+                  ? 'bg-[#FAF6ED] text-[#E6332A] border-b border-b-transparent shadow-[inset_0_-2px_0_#E6332A]'
                   : 'text-[#1A1918]/70 hover:bg-[#FAF6ED]/60'
               }`}
             >
@@ -198,7 +198,7 @@ export const FollowersModal: React.FC<FollowersModalProps> = ({
         </div>
 
         {/* Search bar */}
-        <div className="p-3 border-b-2 border-[#1A1918] bg-[#FAF6ED]">
+        <div className="p-3 border-b border-[#1A1918]/10 bg-[#FAF6ED]">
           <div className="relative">
             <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#1A1918]/50" />
             <input
@@ -206,7 +206,7 @@ export const FollowersModal: React.FC<FollowersModalProps> = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar por nombre, @handle o ubicación..."
-              className="w-full pl-9 pr-3 py-2 bg-[#F4EEDB] border-2 border-[#1A1918] rounded-xl text-xs font-sans text-[#1A1918] placeholder:text-[#1A1918]/40 focus:outline-none focus:border-[#E6332A] transition"
+              className="w-full pl-9 pr-3 py-2 bg-[#F4EEDB] border border-[#1A1918]/10 rounded-xl text-xs font-sans text-[#1A1918] placeholder:text-[#1A1918]/40 focus:outline-none focus:border-[#E6332A] transition"
             />
           </div>
         </div>
@@ -217,14 +217,14 @@ export const FollowersModal: React.FC<FollowersModalProps> = ({
           {activeTab === 'requests' && (
             <>
               {filteredRequests.length === 0 ? (
-                <div className="py-12 text-center text-[#1A1918]/60 font-serif italic text-xs">
+                <div className="py-12 text-center text-[#1A1918]/60 font-sans text-xs">
                   {searchQuery ? 'No hay solicitudes que coincidan con la búsqueda.' : 'No tienes solicitudes de seguimiento pendientes.'}
                 </div>
               ) : (
                 filteredRequests.map((req) => (
                   <div
                     key={req.id}
-                    className="p-3 bg-[#F4EEDB] border-2 border-[#1A1918] rounded-2xl flex items-center justify-between gap-3 shadow-[2px_2px_0px_#1A1918]"
+                    className="p-3 bg-[#F4EEDB] border border-[#1A1918]/10 rounded-2xl flex items-center justify-between gap-3 shadow-sm"
                   >
                     <div 
                       onClick={() => {
@@ -237,16 +237,16 @@ export const FollowersModal: React.FC<FollowersModalProps> = ({
                       <img
                         src={req.fromUserAvatar}
                         alt={req.fromUserName}
-                        className="w-10 h-10 rounded-xl object-cover border-2 border-[#1A1918] shrink-0 group-hover:scale-105 transition bg-[#FAF6ED]"
+                        className="w-10 h-10 rounded-xl object-cover border border-[#1A1918]/10 shrink-0 group-hover:scale-105 transition bg-[#FAF6ED]"
                       />
                       <div className="min-w-0">
-                        <p className="text-xs font-display font-black text-[#1A1918] truncate group-hover:text-[#E6332A] transition">
+                        <p className="text-xs font-sans font-semibold text-[#1A1918] truncate group-hover:text-[#E6332A] transition">
                           {req.fromUserName}
                         </p>
                         <p className="text-[11px] font-mono text-[#E6332A] font-bold truncate">
                           {req.fromUserHandle}
                         </p>
-                        <p className="text-[10px] text-[#1A1918]/60 font-serif italic">
+                        <p className="text-[10px] text-[#1A1918]/60 font-sans ">
                           Quiere seguir tu actividad y rodadas
                         </p>
                       </div>
@@ -256,7 +256,7 @@ export const FollowersModal: React.FC<FollowersModalProps> = ({
                       <button
                         type="button"
                         onClick={() => acceptFollowRequest(req.id)}
-                        className="px-3 py-1.5 bg-[#1A1918] hover:bg-[#E6332A] text-white text-[10px] font-display font-black uppercase rounded-xl border border-[#1A1918] shadow-[1px_1px_0px_#1A1918] flex items-center gap-1 transition active:translate-x-0.5 active:translate-y-0.5 cursor-pointer"
+                        className="px-3 py-1.5 bg-[#1A1918] hover:bg-[#E6332A] text-white text-[10px] font-sans font-semibold uppercase rounded-xl border border-[#1A1918]/10 shadow-sm flex items-center gap-1 transition cursor-pointer"
                         title="Aceptar como seguidor"
                       >
                         <Check className="w-3 h-3 text-[#F7B32B]" />
@@ -281,7 +281,7 @@ export const FollowersModal: React.FC<FollowersModalProps> = ({
           {activeTab !== 'requests' && (
             <>
               {filteredUsers.length === 0 ? (
-                <div className="py-12 text-center text-[#1A1918]/60 font-serif italic text-xs">
+                <div className="py-12 text-center text-[#1A1918]/60 font-sans text-xs">
                   {searchQuery 
                     ? 'No se encontraron pilotos con ese criterio.' 
                     : activeTab === 'followers'
@@ -298,7 +298,7 @@ export const FollowersModal: React.FC<FollowersModalProps> = ({
                   return (
                     <div
                       key={pilot.id}
-                      className="p-3 bg-[#F4EEDB] border-2 border-[#1A1918] rounded-2xl flex items-center justify-between gap-3 shadow-[2px_2px_0px_#1A1918] hover:border-[#E6332A] transition"
+                      className="p-3 bg-[#F4EEDB] border border-[#1A1918]/10 rounded-2xl flex items-center justify-between gap-3 shadow-sm hover:border-[#E6332A] transition"
                     >
                       <div
                         onClick={() => {
@@ -311,10 +311,10 @@ export const FollowersModal: React.FC<FollowersModalProps> = ({
                         <img
                           src={pilot.avatar}
                           alt={pilot.name}
-                          className="w-11 h-11 rounded-xl object-cover border-2 border-[#1A1918] shrink-0 group-hover:scale-105 transition bg-[#FAF6ED]"
+                          className="w-11 h-11 rounded-xl object-cover border border-[#1A1918]/10 shrink-0 group-hover:scale-105 transition bg-[#FAF6ED]"
                         />
                         <div className="min-w-0">
-                          <p className="text-xs font-display font-black text-[#1A1918] truncate group-hover:text-[#E6332A] transition">
+                          <p className="text-xs font-sans font-semibold text-[#1A1918] truncate group-hover:text-[#E6332A] transition">
                             {pilot.name}
                           </p>
                           <div className="flex items-center gap-1.5 text-[10px] text-[#1A1918]/70 flex-wrap">
@@ -322,7 +322,7 @@ export const FollowersModal: React.FC<FollowersModalProps> = ({
                             {pilot.location && (
                               <>
                                 <span>•</span>
-                                <span className="font-serif italic truncate flex items-center gap-0.5">
+                                <span className="font-sans truncate flex items-center gap-0.5">
                                   <MapPin className="w-2.5 h-2.5 text-[#E06423]" />
                                   {pilot.location}
                                 </span>
@@ -344,7 +344,7 @@ export const FollowersModal: React.FC<FollowersModalProps> = ({
                           <button
                             type="button"
                             onClick={() => toggleFollowUser(pilot.id)}
-                            className={`px-3 py-1.5 text-[10px] font-display font-black uppercase tracking-wider transition-all duration-150 flex items-center justify-center gap-1 rounded-xl border border-[#1A1918] shadow-[1px_1px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 cursor-pointer group ${
+                            className={`px-3 py-1.5 text-[10px] font-sans font-semibold uppercase tracking-wider transition-all duration-150 flex items-center justify-center gap-1 rounded-xl border border-[#1A1918]/10 shadow-sm cursor-pointer group ${
                               isFollowing
                                 ? 'bg-[#FAF6ED] hover:bg-[#E6332A] text-[#1A1918] hover:text-white'
                                 : 'bg-[#E6332A] hover:bg-[#c92820] text-white'
@@ -365,7 +365,7 @@ export const FollowersModal: React.FC<FollowersModalProps> = ({
                             ) : (
                               <>
                                 <UserPlus className="w-3 h-3 text-white" />
-                                <span>+ Seguir</span>
+                                <span>Seguir</span>
                               </>
                             )}
                           </button>

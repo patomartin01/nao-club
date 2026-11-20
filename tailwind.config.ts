@@ -32,6 +32,11 @@ const config: Config = {
         sand: "#EDE7DC",
       },
       boxShadow: {
+        // Sombras suaves con tinte carbón (reemplazan las sombras duras desplazadas)
+        sm: '0 1px 2px rgba(26,25,24,0.05), 0 1px 3px rgba(26,25,24,0.07)',
+        DEFAULT: '0 2px 6px rgba(26,25,24,0.07)',
+        md: '0 4px 14px rgba(26,25,24,0.08)',
+        lg: '0 10px 30px rgba(26,25,24,0.10)',
         'retro-sm': '2px 2px 0px #1A1918',
         'retro': '4px 4px 0px #1A1918',
         'retro-lg': '6px 6px 0px #1A1918',

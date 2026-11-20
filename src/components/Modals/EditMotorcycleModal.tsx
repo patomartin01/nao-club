@@ -131,25 +131,25 @@ export const EditMotorcycleModal: React.FC<EditMotorcycleModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 bg-[#1A1918]/75 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
       <div 
-        className="border-2 border-[#1A1918] bg-[#FAF6ED] rounded-[28px] max-w-xl w-full p-6 sm:p-8 space-y-6 shadow-[8px_8px_0px_#1A1918] my-8 animate-in fade-in-0 zoom-in-95"
+        className="border border-[#1A1918]/10 bg-[#FAF6ED] rounded-[28px] max-w-xl w-full p-6 sm:p-8 space-y-6 shadow-sm my-8 animate-in fade-in-0 zoom-in-95"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="flex items-start justify-between border-b-2 border-[#1A1918] pb-4">
+        <div className="flex items-start justify-between border-b border-[#1A1918]/10 pb-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="font-mono text-[10px] text-[#E6332A] uppercase tracking-[0.2em] font-black">
-                ★ TALLER // EXPEDITION WORKSHOP ★
+              <span className="font-mono text-[10px] text-[#E6332A] uppercase tracking-[0.2em] font-semibold">
+                TALLER · EXPEDITION WORKSHOP
               </span>
-              <span className="text-[9px] font-mono bg-[#F4EEDB] px-2 py-0.5 border border-[#1A1918] rounded font-bold text-[#1A1918]">
+              <span className="text-[9px] font-mono bg-[#F4EEDB] px-2 py-0.5 border border-[#1A1918]/10 rounded font-bold text-[#1A1918]">
                 ID: {bike.id.slice(0, 10)}
               </span>
             </div>
-            <h3 className="font-display font-black text-2xl sm:text-3xl text-[#1A1918] uppercase tracking-wide flex items-center gap-2">
+            <h3 className="font-display font-semibold text-2xl sm:text-3xl text-[#1A1918] flex items-center gap-2">
               <Wrench className="w-6 h-6 text-[#E6332A]" />
-              <span>Editar Máquina del Hangar</span>
+              <span>Editar máquina del hangar</span>
             </h3>
-            <p className="text-xs font-serif italic text-[#1A1918]/70">
+            <p className="text-xs font-sans text-[#1A1918]/70">
               Ajusta las especificaciones técnicas, neumáticos, modificaciones o foto de tu moto.
             </p>
           </div>
@@ -157,7 +157,7 @@ export const EditMotorcycleModal: React.FC<EditMotorcycleModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-2 border-2 border-[#1A1918] rounded-xl bg-[#F4EEDB] hover:bg-[#E6332A] hover:text-white text-[#1A1918] transition shadow-[2px_2px_0px_#1A1918] cursor-pointer"
+            className="p-2 border border-[#1A1918]/10 rounded-xl bg-[#F4EEDB] hover:bg-[#E6332A] hover:text-white text-[#1A1918] transition shadow-sm cursor-pointer"
           >
             <X className="w-4 h-4 stroke-[2.5]" />
           </button>
@@ -168,8 +168,8 @@ export const EditMotorcycleModal: React.FC<EditMotorcycleModalProps> = ({
           {/* Brand & Model */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block">
-                Marca de la Moto
+              <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block">
+                Marca de la moto
               </label>
               <input
                 type="text"
@@ -177,12 +177,12 @@ export const EditMotorcycleModal: React.FC<EditMotorcycleModalProps> = ({
                 value={brand}
                 onChange={(e) => setBrand(e.target.value)}
                 placeholder="Ej. BMW, KTM, Yamaha, Honda"
-                className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3.5 py-2.5 text-xs text-[#1A1918] font-bold focus:outline-none transition shadow-[2px_2px_0px_#1A1918]"
+                className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl px-3.5 py-2.5 text-xs text-[#1A1918] font-bold focus:outline-none transition shadow-sm"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block">
+              <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block">
                 Modelo / Denominación
               </label>
               <input
@@ -191,7 +191,7 @@ export const EditMotorcycleModal: React.FC<EditMotorcycleModalProps> = ({
                 value={model}
                 onChange={(e) => setModel(e.target.value)}
                 placeholder="Ej. R 1250 GS Adventure"
-                className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3.5 py-2.5 text-xs text-[#1A1918] font-bold focus:outline-none transition shadow-[2px_2px_0px_#1A1918]"
+                className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl px-3.5 py-2.5 text-xs text-[#1A1918] font-bold focus:outline-none transition shadow-sm"
               />
             </div>
           </div>
@@ -199,7 +199,7 @@ export const EditMotorcycleModal: React.FC<EditMotorcycleModalProps> = ({
           {/* Nickname & Category */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block">
+              <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block">
                 Apodo o Nombre de Ruta (Opcional)
               </label>
               <input
@@ -207,18 +207,18 @@ export const EditMotorcycleModal: React.FC<EditMotorcycleModalProps> = ({
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
                 placeholder="Ej. Tromba Negra, Panzer, El Pato"
-                className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3.5 py-2.5 text-xs text-[#1A1918] focus:outline-none transition shadow-[2px_2px_0px_#1A1918]"
+                className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl px-3.5 py-2.5 text-xs text-[#1A1918] focus:outline-none transition shadow-sm"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block">
+              <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block">
                 Tipo / Disciplina
               </label>
               <select
                 value={type}
                 onChange={(e) => setType(e.target.value as BikeType)}
-                className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3.5 py-2.5 text-xs text-[#1A1918] font-bold focus:outline-none transition shadow-[2px_2px_0px_#1A1918] cursor-pointer"
+                className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl px-3.5 py-2.5 text-xs text-[#1A1918] font-bold focus:outline-none transition shadow-sm cursor-pointer"
               >
                 {BIKE_TYPES.map(t => (
                   <option key={t} value={t}>{t}</option>
@@ -230,8 +230,8 @@ export const EditMotorcycleModal: React.FC<EditMotorcycleModalProps> = ({
           {/* Year & Displacement */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block">
-                Año de Fabricación
+              <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block">
+                Año de fabricación
               </label>
               <input
                 type="number"
@@ -240,12 +240,12 @@ export const EditMotorcycleModal: React.FC<EditMotorcycleModalProps> = ({
                 value={year}
                 onChange={(e) => setYear(e.target.value === '' ? '' : parseInt(e.target.value))}
                 placeholder="2024"
-                className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3.5 py-2.5 text-xs text-[#1A1918] font-mono font-bold focus:outline-none transition shadow-[2px_2px_0px_#1A1918]"
+                className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl px-3.5 py-2.5 text-xs text-[#1A1918] font-mono font-bold focus:outline-none transition shadow-sm"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block">
+              <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block">
                 Cilindrada (CC)
               </label>
               <input
@@ -255,14 +255,14 @@ export const EditMotorcycleModal: React.FC<EditMotorcycleModalProps> = ({
                 value={displacementCc}
                 onChange={(e) => setDisplacementCc(e.target.value === '' ? '' : parseInt(e.target.value))}
                 placeholder="Ej. 411"
-                className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3.5 py-2.5 text-xs text-[#1A1918] font-mono font-bold focus:outline-none transition shadow-[2px_2px_0px_#1A1918]"
+                className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl px-3.5 py-2.5 text-xs text-[#1A1918] font-mono font-bold focus:outline-none transition shadow-sm"
               />
             </div>
           </div>
 
           {/* Tires */}
           <div className="space-y-1">
-            <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block">
+            <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block">
               Neumáticos / Compuesto Montado
             </label>
             <input
@@ -270,13 +270,13 @@ export const EditMotorcycleModal: React.FC<EditMotorcycleModalProps> = ({
               value={tires}
               onChange={(e) => setTires(e.target.value)}
               placeholder="Ej. Continental TKC80 (50/50), Motoz Tractionator RallZ"
-              className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3.5 py-2.5 text-xs text-[#1A1918] focus:outline-none transition shadow-[2px_2px_0px_#1A1918]"
+              className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl px-3.5 py-2.5 text-xs text-[#1A1918] focus:outline-none transition shadow-sm"
             />
           </div>
 
           {/* Modifications */}
           <div className="space-y-1">
-            <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block">
+            <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block">
               Modificaciones y Equipamiento de Ruta (Separadas por comas)
             </label>
             <input
@@ -284,13 +284,13 @@ export const EditMotorcycleModal: React.FC<EditMotorcycleModalProps> = ({
               value={modificationsInput}
               onChange={(e) => setModificationsInput(e.target.value)}
               placeholder="Ej. Skid plate aluminio, Defensas de motor, Escape Akrapovič, Faros auxiliares"
-              className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3.5 py-2.5 text-xs text-[#1A1918] focus:outline-none transition shadow-[2px_2px_0px_#1A1918]"
+              className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl px-3.5 py-2.5 text-xs text-[#1A1918] focus:outline-none transition shadow-sm"
             />
           </div>
 
           {/* Photo Selector from Device Gallery */}
-          <div className="space-y-3 border-t-2 border-[#1A1918] pt-4">
-            <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block flex items-center gap-1.5">
+          <div className="space-y-3 border-t border-[#1A1918]/10 pt-4">
+            <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block flex items-center gap-1.5">
               <Camera className="w-3.5 h-3.5 text-[#E6332A]" />
               <span>Fotografía de la Máquina (Galería de Fotos)</span>
             </label>
@@ -303,10 +303,10 @@ export const EditMotorcycleModal: React.FC<EditMotorcycleModalProps> = ({
               onChange={handleEditBikePhotoUpload}
             />
 
-            <div className="flex flex-col sm:flex-row items-center gap-4 bg-[#FAF6ED] border-2 border-[#1A1918] p-3.5 rounded-2xl shadow-[2px_2px_0px_#1A1918]">
+            <div className="flex flex-col sm:flex-row items-center gap-4 bg-[#FAF6ED] border border-[#1A1918]/10 p-3.5 rounded-2xl shadow-sm">
               <div 
                 onClick={() => editBikeFileInputRef.current?.click()}
-                className="relative w-full sm:w-36 h-24 rounded-xl overflow-hidden border-2 border-[#1A1918] bg-white cursor-pointer group shrink-0 flex items-center justify-center"
+                className="relative w-full sm:w-36 h-24 rounded-xl overflow-hidden border border-[#1A1918]/10 bg-white cursor-pointer group shrink-0 flex items-center justify-center"
               >
                 {photoUrl ? (
                   <>
@@ -326,13 +326,13 @@ export const EditMotorcycleModal: React.FC<EditMotorcycleModalProps> = ({
               </div>
 
               <div className="flex-1 space-y-2 text-center sm:text-left">
-                <p className="text-xs font-serif italic text-[#1A1918]/80 font-medium">
+                <p className="text-xs font-sans text-[#1A1918]/80 font-medium">
                   Sube una foto de tu propia moto desde la galería de tu dispositivo.
                 </p>
                 <button
                   type="button"
                   onClick={() => editBikeFileInputRef.current?.click()}
-                  className="px-4 py-2 bg-white hover:bg-[#FAF6ED] text-[#1A1918] border-2 border-[#1A1918] rounded-xl font-display font-black text-xs uppercase tracking-wider shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition inline-flex items-center gap-2 cursor-pointer"
+                  className="px-4 py-2 bg-white hover:bg-[#FAF6ED] text-[#1A1918] border border-[#1A1918]/10 rounded-xl font-sans font-semibold text-xs shadow-sm active:shadow-none transition inline-flex items-center gap-2 cursor-pointer"
                 >
                   <Upload className="w-3.5 h-3.5 text-[#E6332A]" />
                   <span>{photoUrl ? 'Cambiar Foto de Galería' : 'Subir Foto de Galería'}</span>
@@ -342,20 +342,20 @@ export const EditMotorcycleModal: React.FC<EditMotorcycleModalProps> = ({
           </div>
 
           {/* Modal Footer Buttons */}
-          <div className="flex items-center justify-end gap-3 pt-3 border-t-2 border-[#1A1918]">
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#1A1918]/10">
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2.5 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] font-display font-black text-xs uppercase tracking-wider rounded-xl border-2 border-[#1A1918] transition shadow-[2px_2px_0px_#1A1918] cursor-pointer"
+              className="px-5 py-2.5 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] font-sans font-semibold text-xs rounded-xl border border-[#1A1918]/10 transition shadow-sm cursor-pointer"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-6 py-2.5 bg-[#E6332A] hover:bg-[#d02c24] text-white font-display font-black text-xs uppercase tracking-wider rounded-xl border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition flex items-center gap-2 cursor-pointer"
+              className="px-6 py-2.5 bg-[#E6332A] hover:bg-[#d02c24] text-white font-sans font-semibold text-xs rounded-xl border border-[#1A1918]/10 shadow-sm active:shadow-none transition flex items-center gap-2 cursor-pointer"
             >
               <Check className="w-4 h-4 stroke-[3]" />
-              <span>Guardar Ficha Técnica</span>
+              <span>Guardar ficha técnica</span>
             </button>
           </div>
         </form>

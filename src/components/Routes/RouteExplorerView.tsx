@@ -46,58 +46,58 @@ export const RouteExplorerView: React.FC<RouteExplorerViewProps> = () => {
 
       {/* 2. CONTENEDOR HERO: INFORMACIÓN DE "PRÓXIMAMENTE" CON DISEÑO RISOGRAPH / BAUHAUS */}
       <div className="relative z-10 flex flex-col items-center justify-center h-full px-4 pointer-events-auto">
-        <div className="w-full max-w-md bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[24px] sm:rounded-[32px] p-5 sm:p-7 shadow-[5px_5px_0px_#1A1918] text-[#1A1918] space-y-3.5 sm:space-y-4 animate-scaleUp">
+        <div className="w-full max-w-md bg-[#FAF6ED] border border-[#1A1918]/10 rounded-[24px] sm:rounded-[32px] p-5 sm:p-7 shadow-sm text-[#1A1918] space-y-3.5 sm:space-y-4 animate-scaleUp">
           
           {/* Top Brand Stamp */}
-          <div className="flex items-center justify-between border-b-2 border-[#1A1918] pb-2 text-[10px] font-mono font-black uppercase tracking-widest text-[#E6332A]">
+          <div className="flex items-center justify-between border-b border-[#1A1918]/10 pb-2 text-[10px] font-mono font-semibold uppercase tracking-widest text-[#E6332A]">
             <div className="flex items-center gap-1.5">
               <Compass className="w-3.5 h-3.5 text-[#E6332A] stroke-[2.5]" />
-              <span>★ CARTOGRAFÍA // NAO CLUB ★</span>
+              <span>CARTOGRAFÍA · NAO CLUB</span>
             </div>
             <span className="text-[#1A1918]/60 font-mono text-[9px] bg-[#F4EEDB] px-1.5 py-0.5 rounded border border-[#1A1918]/40">FASE 2</span>
           </div>
 
           {/* Headline Section */}
           <div className="text-center sm:text-left space-y-1">
-            <h1 className="font-display font-black text-2xl sm:text-3xl uppercase tracking-tight text-[#1A1918] leading-none">
+            <h1 className="font-display font-semibold text-2xl sm:text-3xl tracking-tight text-[#1A1918] leading-none">
               Próximamente
             </h1>
-            <p className="font-display font-black text-xs text-[#E06423] uppercase tracking-wider">
+            <p className="font-sans font-semibold text-xs text-[#E06423]  ">
               Explorador de Rutas &amp; Navegación GPS
             </p>
           </div>
 
           {/* Description */}
-          <p className="text-xs text-[#1A1918]/80 font-serif italic leading-relaxed">
+          <p className="text-xs text-[#1A1918]/80 font-sans leading-relaxed">
             Mapas topográficos de curvas, capas de elevación 3D, rutas curadas por la comunidad y exportación a GPX para tableros y navegadores.
           </p>
 
           {/* Features Horizontal Ribbon (clean, not 3 huge stacked boxes) */}
           <div className="grid grid-cols-3 gap-2 pt-1 text-center">
-            <div className="p-2.5 bg-[#F4EEDB] border border-[#1A1918] rounded-xl">
+            <div className="p-2.5 bg-[#F4EEDB] border border-[#1A1918]/10 rounded-xl">
               <Mountain className="w-4 h-4 text-[#E06423] stroke-[2.5] mx-auto mb-1" />
-              <p className="font-display font-black text-[10px] uppercase text-[#1A1918]">Topografía</p>
+              <p className="font-sans font-semibold text-[10px] uppercase text-[#1A1918]">Topografía</p>
             </div>
-            <div className="p-2.5 bg-[#F4EEDB] border border-[#1A1918] rounded-xl">
+            <div className="p-2.5 bg-[#F4EEDB] border border-[#1A1918]/10 rounded-xl">
               <Users className="w-4 h-4 text-[#1D4477] stroke-[2.5] mx-auto mb-1" />
-              <p className="font-display font-black text-[10px] uppercase text-[#1A1918]">Curaduría</p>
+              <p className="font-sans font-semibold text-[10px] uppercase text-[#1A1918]">Curaduría</p>
             </div>
-            <div className="p-2.5 bg-[#F4EEDB] border border-[#1A1918] rounded-xl">
+            <div className="p-2.5 bg-[#F4EEDB] border border-[#1A1918]/10 rounded-xl">
               <FileCode2 className="w-4 h-4 text-[#E6332A] stroke-[2.5] mx-auto mb-1" />
-              <p className="font-display font-black text-[10px] uppercase text-[#1A1918]">GPX Sync</p>
+              <p className="font-sans font-semibold text-[10px] uppercase text-[#1A1918]">GPX sync</p>
             </div>
           </div>
 
           {/* Quick CTA */}
-          <div className="pt-2 border-t-2 border-[#1A1918] flex items-center justify-between gap-3">
+          <div className="pt-2 border-t border-[#1A1918]/10 flex items-center justify-between gap-3">
             <span className="text-[10px] font-mono text-[#1A1918]/60 font-bold">
               Explora rodadas activas:
             </span>
             <button
               onClick={() => setActiveNavTab('tribus')}
-              className="w-full sm:w-auto px-5 py-2.5 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border-2 border-[#1A1918] rounded-xl font-display font-black text-xs uppercase tracking-wider transition shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-5 py-2.5 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border border-[#1A1918]/10 rounded-xl font-sans font-semibold text-xs transition shadow-sm active:shadow-none flex items-center justify-center gap-2"
             >
-              <span>Ver Tribus</span>
+              <span>Ver tribus</span>
               <ArrowRight className="w-3.5 h-3.5 stroke-[3]" />
             </button>
           </div>

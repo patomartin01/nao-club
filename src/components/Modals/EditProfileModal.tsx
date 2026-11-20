@@ -233,25 +233,25 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-[#1A1918]/80 backdrop-blur-sm animate-fadeIn overflow-y-auto">
       <div 
-        className="w-full max-w-xl bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[28px] shadow-[8px_8px_0px_#1A1918] my-auto max-h-[88vh] sm:max-h-[90vh] overflow-y-auto overscroll-contain text-[#1A1918] font-sans animate-scaleUp p-5 sm:p-8 space-y-6 pb-24 sm:pb-8"
+        className="w-full max-w-xl bg-[#FAF6ED] border border-[#1A1918]/10 rounded-[28px] shadow-sm my-auto max-h-[88vh] sm:max-h-[90vh] overflow-y-auto overscroll-contain text-[#1A1918] font-sans animate-scaleUp p-5 sm:p-8 space-y-6 pb-24 sm:pb-8"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b-2 border-[#1A1918] pb-4 sticky top-0 bg-[#FAF6ED] z-10 pt-1 -mt-1">
+        <div className="flex items-center justify-between border-b border-[#1A1918]/10 pb-4 sticky top-0 bg-[#FAF6ED] z-10 pt-1 -mt-1">
           <div className="space-y-1">
-            <span className="text-[10px] font-mono uppercase font-black tracking-widest text-[#E6332A] flex items-center gap-1.5">
+            <span className="text-[10px] font-mono uppercase font-semibold tracking-widest text-[#E6332A] flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-[#E6332A]" />
-              EXPEDICIÓN // CREDENCIAL OFICIAL
+              EXPEDICIÓN · CREDENCIAL OFICIAL
             </span>
-            <h2 className="text-xl sm:text-2xl font-display font-black text-[#1A1918] uppercase tracking-wide">
-              Editar Perfil de Piloto
+            <h2 className="text-xl sm:text-2xl font-display font-semibold text-[#1A1918]  ">
+              Editar perfil de piloto
             </h2>
           </div>
 
           <button
             type="button"
             onClick={onClose}
-            className="p-2 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border-2 border-[#1A1918] rounded-xl shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition cursor-pointer"
+            className="p-2 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border border-[#1A1918]/10 rounded-xl shadow-sm active:shadow-none transition cursor-pointer"
             title="Cerrar"
           >
             <X className="w-4 h-4 stroke-[2.5]" />
@@ -260,12 +260,12 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
 
         {/* Modal Interactivo de Ajuste / Encuadre de Foto */}
         {cropModalOpen && rawPhotoSrc && (
-          <div className="bg-[#FAF6ED] border-2 border-[#E6332A] rounded-2xl p-4 shadow-[4px_4px_0px_#1A1918] space-y-3 animate-fadeIn">
+          <div className="bg-[#FAF6ED] border border-[#E6332A] rounded-2xl p-4 shadow-sm space-y-3 animate-fadeIn">
             <div className="flex items-center justify-between border-b border-[#1A1918]/20 pb-2">
               <div className="flex items-center gap-1.5">
                 <Crop className="w-4 h-4 text-[#E6332A]" />
-                <span className="text-xs font-display font-black uppercase text-[#1A1918]">
-                  Ajustar Encuadre Cuadrado
+                <span className="text-xs font-sans font-semibold text-[#1A1918]">
+                  Ajustar encuadre cuadrado
                 </span>
               </div>
               <span className="text-[10px] font-mono text-[#1A1918]/60">
@@ -275,7 +275,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
 
             {/* Vista previa en cuadrado exacto */}
             <div className="flex justify-center py-2">
-              <div className="w-36 h-36 sm:w-44 sm:h-44 rounded-2xl border-2 border-[#1A1918] overflow-hidden relative shadow-[3px_3px_0px_#1A1918] bg-black/5 flex items-center justify-center">
+              <div className="w-36 h-36 sm:w-44 sm:h-44 rounded-2xl border border-[#1A1918]/10 overflow-hidden relative shadow-sm bg-black/5 flex items-center justify-center">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={rawPhotoSrc}
@@ -338,7 +338,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
               <button
                 type="button"
                 onClick={() => setCropModalOpen(false)}
-                className="flex-1 py-2 px-3 bg-white text-[#1A1918] border border-[#1A1918] rounded-xl text-xs font-display font-black uppercase tracking-wider hover:bg-[#FAF6ED] transition cursor-pointer"
+                className="flex-1 py-2 px-3 bg-white text-[#1A1918] border border-[#1A1918]/10 rounded-xl text-xs font-sans font-semibold hover:bg-[#FAF6ED] transition cursor-pointer"
               >
                 Mantener Auto-Crop
               </button>
@@ -346,7 +346,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                 type="button"
                 onClick={handleApplyCrop}
                 disabled={isProcessingPhoto}
-                className="flex-1 py-2 px-3 bg-[#E6332A] text-white border border-[#1A1918] rounded-xl text-xs font-display font-black uppercase tracking-wider hover:bg-[#d02c24] shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition flex items-center justify-center gap-1 cursor-pointer"
+                className="flex-1 py-2 px-3 bg-[#E6332A] text-white border border-[#1A1918]/10 rounded-xl text-xs font-sans font-semibold hover:bg-[#d02c24] shadow-sm active:shadow-none transition flex items-center justify-center gap-1 cursor-pointer"
               >
                 <Check className="w-3.5 h-3.5 stroke-[3]" />
                 <span>Listo, Aplicar Foto</span>
@@ -358,9 +358,9 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
         <form onSubmit={handleSubmit} className="space-y-5">
           
           {/* Avatar Selector Section from Device Gallery */}
-          <div className="space-y-3 bg-[#F4EEDB] border-2 border-[#1A1918] p-4 rounded-2xl shadow-[3px_3px_0px_#1A1918]">
+          <div className="space-y-3 bg-[#F4EEDB] border border-[#1A1918]/10 p-4 rounded-2xl shadow-sm">
             <div className="flex items-center justify-between">
-              <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block">
+              <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block">
                 Foto de Perfil del Piloto (Galería de Fotos)
               </label>
               {isProcessingPhoto && (
@@ -383,7 +383,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                 htmlFor="edit-profile-avatar-file"
                 className="relative shrink-0 cursor-pointer group block"
               >
-                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] bg-[#FAF6ED] flex items-center justify-center">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border border-[#1A1918]/10 shadow-sm bg-[#FAF6ED] flex items-center justify-center">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img 
                     src={avatar} 
@@ -391,7 +391,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" 
                   />
                 </div>
-                <span className="absolute -bottom-1 -right-1 p-1.5 bg-[#E6332A] text-white rounded-lg border border-[#1A1918] shadow-[1px_1px_0px_#1A1918]">
+                <span className="absolute -bottom-1 -right-1 p-1.5 bg-[#E6332A] text-white rounded-lg border border-[#1A1918]/10 shadow-sm">
                   <Camera className="w-3.5 h-3.5" />
                 </span>
               </label>
@@ -399,12 +399,12 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
               <div className="flex-1 space-y-2">
                 <label
                   htmlFor="edit-profile-avatar-file"
-                  className="px-3.5 py-2.5 bg-white hover:bg-[#FAF6ED] text-[#1A1918] border-2 border-[#1A1918] rounded-xl font-display font-black text-xs uppercase tracking-wider shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition inline-flex items-center gap-2 cursor-pointer w-full sm:w-auto justify-center"
+                  className="px-3.5 py-2.5 bg-white hover:bg-[#FAF6ED] text-[#1A1918] border border-[#1A1918]/10 rounded-xl font-sans font-semibold text-xs shadow-sm active:shadow-none transition inline-flex items-center gap-2 cursor-pointer w-full sm:w-auto justify-center"
                 >
                   <Upload className="w-3.5 h-3.5 text-[#E6332A]" />
                   <span>Subir foto de mi galería</span>
                 </label>
-                <p className="text-[10px] font-serif italic text-[#1A1918]/70">
+                <p className="text-[10px] font-sans text-[#1A1918]/70">
                   Formato cuadrado automático (1:1), optimizado sin desbordes ni zoom forzado.
                 </p>
               </div>
@@ -414,7 +414,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
           {/* Name & Handle */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
+              <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block mb-1">
                 Nombre Completo *
               </label>
               <div className="relative">
@@ -425,13 +425,13 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Ej. Patricio Martin"
-                  className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl pl-9 pr-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]"
+                  className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl pl-9 pr-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-sm"
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
+              <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block mb-1">
                 Handle / Usuario *
               </label>
               <div className="relative">
@@ -445,7 +445,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                     if (handleError) setHandleError(null);
                   }}
                   placeholder="@patricio_adv"
-                  className={`w-full bg-[#FAF6ED] border-2 ${handleError ? 'border-[#E6332A] bg-[#FFF5F5]' : 'border-[#1A1918]'} focus:border-[#E6332A] rounded-xl pl-9 pr-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]`}
+                  className={`w-full bg-[#FAF6ED] border ${handleError ? 'border-[#E6332A] bg-[#FFF5F5]' : 'border-[#1A1918]/10'} focus:border-[#E6332A] rounded-xl pl-9 pr-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-sm`}
                 />
               </div>
               {handleError ? (
@@ -463,22 +463,22 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
 
           {/* Bio */}
           <div>
-            <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
-              Biografía de Piloto
+            <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block mb-1">
+              Biografía de piloto
             </label>
             <textarea
               rows={2}
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               placeholder="Ej. Apasionado por las brechas de montaña, el doble propósito y rodadas nocturnas..."
-              className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl p-3 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]"
+              className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl p-3 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-sm"
             />
           </div>
 
           {/* Location & Riding Level */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
+              <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block mb-1">
                 Ciudad / Base
               </label>
               <div className="relative">
@@ -488,21 +488,21 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   placeholder="Ej. Ciudad de México"
-                  className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl pl-9 pr-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]"
+                  className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl pl-9 pr-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-sm"
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
-                Nivel de Manejo
+              <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block mb-1">
+                Nivel de manejo
               </label>
               <div className="relative">
                 <ShieldCheck className="w-4 h-4 text-[#1A1918]/50 absolute left-3 top-1/2 -translate-y-1/2" />
                 <select
                   value={ridingLevel}
                   onChange={(e) => setRidingLevel(e.target.value as RidingLevel)}
-                  className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl pl-9 pr-3 py-2.5 text-xs text-[#1A1918] focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918] cursor-pointer"
+                  className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl pl-9 pr-3 py-2.5 text-xs text-[#1A1918] focus:outline-none transition font-sans font-medium shadow-sm cursor-pointer"
                 >
                   {RIDING_LEVELS.map(lvl => (
                     <option key={lvl} value={lvl}>{lvl}</option>
@@ -513,18 +513,18 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
           </div>
 
           {/* Safety & Emergency Contact Section */}
-          <div className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-2xl p-4 space-y-3 shadow-[3px_3px_0px_#1A1918]">
+          <div className="bg-[#FAF6ED] border border-[#1A1918]/10 rounded-2xl p-4 space-y-3 shadow-sm">
             <div className="flex items-center gap-2">
               <HeartPulse className="w-4 h-4 text-[#E6332A]" />
-              <span className="text-[10px] font-mono uppercase font-black text-[#E6332A] tracking-wider">
-                SEGURIDAD EN RUTA // CONTACTO DE EMERGENCIA
+              <span className="text-[10px] font-mono uppercase font-semibold text-[#E6332A] tracking-wider">
+                SEGURIDAD EN RUTA · CONTACTO DE EMERGENCIA
               </span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="text-[10px] font-mono uppercase font-bold text-[#1A1918] block mb-1">
-                  Tu Teléfono
+                  Tu teléfono
                 </label>
                 <div className="relative">
                   <Phone className="w-3.5 h-3.5 text-[#1A1918]/50 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -533,7 +533,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="+52 55 1234 5678"
-                    className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl pl-8 pr-3 py-2 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition shadow-[2px_2px_0px_#1A1918]"
+                    className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl pl-8 pr-3 py-2 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition shadow-sm"
                   />
                 </div>
               </div>
@@ -547,21 +547,21 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                   value={emergencyContact}
                   onChange={(e) => setEmergencyContact(e.target.value)}
                   placeholder="Ej. Sofía (Hermana): 55 9876 5432"
-                  className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3 py-2 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition shadow-[2px_2px_0px_#1A1918]"
+                  className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl px-3 py-2 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition shadow-sm"
                 />
               </div>
             </div>
           </div>
 
           {/* Hangar Callout */}
-          <div className="p-3 bg-[#F4EEDB] border-2 border-[#1A1918] rounded-2xl flex items-center justify-between gap-3 shadow-[2px_2px_0px_#1A1918]">
+          <div className="p-3 bg-[#F4EEDB] border border-[#1A1918]/10 rounded-2xl flex items-center justify-between gap-3 shadow-sm">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-[#FAF6ED] border-2 border-[#1A1918] flex items-center justify-center text-[#E6332A] shrink-0">
+              <div className="w-8 h-8 rounded-xl bg-[#FAF6ED] border border-[#1A1918]/10 flex items-center justify-center text-[#E6332A] shrink-0">
                 <Bike className="w-4 h-4" />
               </div>
               <div>
-                <p className="text-xs font-display font-black uppercase text-[#1A1918]">¿Deseas editar tus motocicletas?</p>
-                <p className="text-[10px] font-serif italic text-[#1A1918]/70">Ve a la pestaña &quot;Hangar&quot; de tu perfil o usa el botón &quot;Editar Hangar&quot;.</p>
+                <p className="text-xs font-sans font-semibold text-[#1A1918]">¿Deseas editar tus motocicletas?</p>
+                <p className="text-[10px] font-sans text-[#1A1918]/70">Ve a la pestaña &quot;Hangar&quot; de tu perfil o usa el botón &quot;Editar Hangar&quot;.</p>
               </div>
             </div>
           </div>
@@ -571,7 +571,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-3 px-4 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border-2 border-[#1A1918] rounded-xl font-display font-black text-xs uppercase tracking-wider transition shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer"
+              className="flex-1 py-3 px-4 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border border-[#1A1918]/10 rounded-xl font-sans font-semibold text-xs transition shadow-sm active:shadow-none cursor-pointer"
             >
               Cancelar
             </button>
@@ -579,19 +579,19 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
             <button
               type="submit"
               disabled={saving}
-              className="flex-2 py-3 px-6 bg-[#E6332A] hover:bg-[#d02c24] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none text-white border-2 border-[#1A1918] rounded-xl font-display font-black text-xs uppercase tracking-wider transition shadow-[3px_3px_0px_#1A1918] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+              className="flex-2 py-3 px-6 bg-[#E6332A] hover:bg-[#d02c24] active:shadow-none text-white border border-[#1A1918]/10 rounded-xl font-sans font-semibold text-xs transition shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
             >
               {success ? (
                 <>
                   <Check className="w-4 h-4 stroke-[3]" />
-                  <span>¡Cambios Guardados!</span>
+                  <span>¡Cambios guardados!</span>
                 </>
               ) : saving ? (
                 <span>Guardando...</span>
               ) : (
                 <>
                   <Sparkles className="w-4 h-4" />
-                  <span>Guardar Credencial</span>
+                  <span>Guardar credencial</span>
                 </>
               )}
             </button>

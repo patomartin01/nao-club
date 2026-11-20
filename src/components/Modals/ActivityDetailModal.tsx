@@ -165,7 +165,7 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-[9999] bg-[#1A1918]/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-y-auto animate-fadeIn">
-      <div className="border-2 border-[#1A1918] bg-[#FAF6ED] max-w-2xl w-full my-auto max-h-[94vh] overflow-y-auto shadow-[8px_8px_0px_#1A1918] relative text-[#1A1918] font-sans flex flex-col rounded-[28px] animate-scaleUp">
+      <div className="border border-[#1A1918]/10 bg-[#FAF6ED] max-w-2xl w-full my-auto max-h-[94vh] overflow-y-auto shadow-sm relative text-[#1A1918] font-sans flex flex-col rounded-[28px] animate-scaleUp">
         
         {/* Social Context Header ("Rodó con...") */}
         {(() => {
@@ -183,25 +183,25 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
                     onOpenPilotProfile(followedFriend.userId);
                   }
                 }}
-                className="px-5 py-2.5 bg-[#F4EEDB] border-b-2 border-[#1A1918] flex items-center justify-between text-xs hover:bg-[#EDE6D3] transition cursor-pointer rounded-t-[26px]"
+                className="px-5 py-2.5 bg-[#F4EEDB] border-b border-[#1A1918]/10 flex items-center justify-between text-xs hover:bg-[#EDE6D3] transition cursor-pointer rounded-t-[26px]"
                 title={`Ver perfil de ${followedFriend.name}`}
               >
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-5 h-5 rounded-full overflow-hidden border-2 border-[#1A1918] shrink-0">
+                  <div className="w-5 h-5 rounded-full overflow-hidden border border-[#1A1918]/10 shrink-0">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={followedFriend.avatar} alt={followedFriend.name} className="w-full h-full object-cover" />
                   </div>
                   <p className="truncate text-[11px]">
-                    <span className="text-[#1A1918] font-display font-black uppercase hover:underline">
+                    <span className="text-[#1A1918] font-sans font-semibold hover:underline">
                       {followedFriend.userId === currentUser.id ? 'Tú rodaste' : `${followedFriend.name} rodó`}
                     </span>
-                    <span className="text-[#1A1918]/70 font-serif italic ml-1.5 font-medium">
+                    <span className="text-[#1A1918]/70 font-sans ml-1.5 font-medium">
                       en esta salida grupal con {activity.pilotName}
                     </span>
                   </p>
                 </div>
                 {activity.groupInfo && (
-                  <span className="text-[9px] text-[#E6332A] font-mono font-black uppercase bg-[#FAF6ED] px-2 py-0.5 border border-[#1A1918] rounded shrink-0 hidden sm:inline-block shadow-[1px_1px_0px_#1A1918]">
+                  <span className="text-[9px] text-[#E6332A] font-mono font-semibold uppercase bg-[#FAF6ED] px-2 py-0.5 border border-[#1A1918]/10 rounded shrink-0 hidden sm:inline-block shadow-sm">
                     {resolvedCrewName}
                   </span>
                 )}
@@ -212,14 +212,14 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
         })()}
 
         {/* HEADER BAR */}
-        <div className="sticky top-0 bg-[#FAF6ED]/95 backdrop-blur-md border-b-2 border-[#1A1918] p-4 sm:p-5 flex items-center justify-between z-20 rounded-t-[26px]">
+        <div className="sticky top-0 bg-[#FAF6ED]/95 backdrop-blur-md border-b border-[#1A1918]/10 p-4 sm:p-5 flex items-center justify-between z-20 rounded-t-[26px]">
           <div className="flex items-center gap-3.5 min-w-0">
             <div 
               onClick={() => {
                 onClose();
                 onOpenPilotProfile(activity.pilotId);
               }}
-              className="w-12 h-12 rounded-2xl overflow-hidden border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] hover:translate-x-0.5 hover:translate-y-0.5 cursor-pointer transition shrink-0 bg-[#F4EEDB]"
+              className="w-12 h-12 rounded-2xl overflow-hidden border border-[#1A1918]/10 shadow-sm cursor-pointer transition shrink-0 bg-[#F4EEDB]"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={activity.pilotAvatar} alt={activity.pilotName} className="w-full h-full object-cover" />
@@ -231,18 +231,18 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
                     onClose();
                     onOpenPilotProfile(activity.pilotId);
                   }}
-                  className="font-display font-black text-base text-[#1A1918] hover:text-[#E6332A] cursor-pointer uppercase transition tracking-wide truncate"
+                  className="font-display font-semibold text-base text-[#1A1918] hover:text-[#E6332A] cursor-pointer transition truncate"
                 >
                   {activity.pilotName}
                 </span>
-                <span className="text-[9px] text-[#1A1918] bg-[#F7B32B] px-2 py-0.5 border-2 border-[#1A1918] font-mono font-black uppercase rounded-lg shadow-[1px_1px_0px_#1A1918]">
+                <span className="text-[9px] text-[#1A1918] bg-[#F7B32B] px-2 py-0.5 border border-[#1A1918]/10 font-mono font-semibold uppercase rounded-lg shadow-sm">
                   {activity.motoModel}
                 </span>
               </div>
               <div className="flex items-center gap-2 text-[11px] text-[#1A1918]/60 mt-0.5 font-mono">
                 <span>{activity.dateText}</span>
                 <span>•</span>
-                <span className="flex items-center gap-1 text-[10px] text-[#1A1918]/70 font-serif italic truncate">
+                <span className="flex items-center gap-1 text-[10px] text-[#1A1918]/70 font-sans truncate">
                   <MapPin className="w-3 h-3 text-[#E06423] shrink-0" />
                   {activity.location}
                 </span>
@@ -253,7 +253,7 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => setIsSaveModalOpen(true)}
-              className={`p-2.5 rounded-xl border-2 border-[#1A1918] transition flex items-center justify-center shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${
+              className={`p-2.5 rounded-xl border border-[#1A1918]/10 transition flex items-center justify-center shadow-sm active:shadow-none ${
                 (savedRouteIds.includes(activity.id) || routeLists.some(l => l.routeIds.includes(activity.id)))
                   ? 'bg-[#F7B32B] text-[#1A1918]'
                   : 'bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918]'
@@ -272,7 +272,7 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
                     onClose();
                   }
                 }}
-                className="p-2.5 rounded-xl border-2 border-[#1A1918] hover:bg-[#E6332A] hover:text-white text-[#1A1918]/70 transition flex items-center justify-center bg-[#FAF6ED] shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                className="p-2.5 rounded-xl border border-[#1A1918]/10 hover:bg-[#E6332A] hover:text-white text-[#1A1918]/70 transition flex items-center justify-center bg-[#FAF6ED] shadow-sm active:shadow-none"
                 title="Eliminar tu publicación"
               >
                 <Trash2 className="w-4 h-4" />
@@ -281,7 +281,7 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
 
             <button
               onClick={onClose}
-              className="p-2.5 rounded-xl border-2 border-[#1A1918] hover:bg-[#E6332A] hover:text-white text-[#1A1918] transition flex items-center justify-center bg-[#FAF6ED] shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+              className="p-2.5 rounded-xl border border-[#1A1918]/10 hover:bg-[#E6332A] hover:text-white text-[#1A1918] transition flex items-center justify-center bg-[#FAF6ED] shadow-sm active:shadow-none"
               title="Cerrar detalle"
             >
               <X className="w-4 h-4" />
@@ -295,21 +295,21 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
           {/* TITLE & DISCIPLINE */}
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <span className="text-[10px] text-white uppercase font-display font-black tracking-widest bg-[#E6332A] px-3 py-1 border-2 border-[#1A1918] rounded-lg shadow-[2px_2px_0px_#1A1918]">
-                ★ {activity.discipline} ★
+              <span className="text-[10px] text-white uppercase font-sans font-semibold tracking-widest bg-[#E6332A] px-3 py-1 border border-[#1A1918]/10 rounded-lg shadow-sm">
+                {activity.discipline}
               </span>
             </div>
-            <h2 className="font-display font-black text-2xl sm:text-3xl text-[#1A1918] uppercase tracking-wide leading-tight">
+            <h2 className="font-display font-semibold text-2xl sm:text-3xl text-[#1A1918] leading-tight">
               {activity.title}
             </h2>
           </div>
 
           {/* INTERACTIVE ROUTE MAP */}
-          <div className="relative border-2 border-[#1A1918] rounded-2xl overflow-hidden shadow-[4px_4px_0px_#1A1918]">
+          <div className="relative border border-[#1A1918]/10 rounded-2xl overflow-hidden shadow-sm">
             <div ref={mapContainerRef} className="w-full h-64 sm:h-80 z-0 bg-[#F4EEDB]" />
-            <div className="absolute bottom-3 left-3 bg-[#FAF6ED]/95 backdrop-blur px-3 py-1.5 text-[10px] text-[#1A1918] uppercase font-mono font-black border-2 border-[#1A1918] rounded-xl flex items-center gap-3 z-10 shadow-[2px_2px_0px_#1A1918]">
-              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500 border border-[#1A1918] inline-block"></span> Inicio</span>
-              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#E6332A] border border-[#1A1918] inline-block"></span> Fin</span>
+            <div className="absolute bottom-3 left-3 bg-[#FAF6ED]/95 backdrop-blur px-3 py-1.5 text-[10px] text-[#1A1918] uppercase font-mono font-semibold border border-[#1A1918]/10 rounded-xl flex items-center gap-3 z-10 shadow-sm">
+              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500 border border-[#1A1918]/10 inline-block"></span> Inicio</span>
+              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#E6332A] border border-[#1A1918]/10 inline-block"></span> Fin</span>
             </div>
           </div>
 
@@ -317,13 +317,13 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
           {activity.photos && activity.photos.length > 0 && (
             <div className="space-y-2.5">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] text-[#1A1918]/70 uppercase font-mono font-black tracking-widest block">
+                <span className="text-[10px] text-[#1A1918]/70 uppercase font-mono font-semibold tracking-widest block">
                   Capturas en Ruta ({activity.photos.length})
                 </span>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {activity.photos.map((photo, pIdx) => (
-                  <div key={pIdx} className="h-40 sm:h-48 overflow-hidden rounded-2xl border-2 border-[#1A1918] group/img relative bg-[#F4EEDB] shadow-[3px_3px_0px_#1A1918]">
+                  <div key={pIdx} className="h-40 sm:h-48 overflow-hidden rounded-2xl border border-[#1A1918]/10 group/img relative bg-[#F4EEDB] shadow-sm">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img 
                       src={photo} 
@@ -338,37 +338,37 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
 
           {/* TELEMETRY GAUGES GRID */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-            <div className="p-3.5 bg-[#F4EEDB] border-2 border-[#1A1918] rounded-2xl space-y-1 shadow-[3px_3px_0px_#1A1918]">
-              <span className="text-[10px] text-[#1A1918]/70 uppercase font-mono font-black tracking-wider block">Distancia</span>
-              <span className="font-mono font-black text-[#1A1918] text-lg sm:text-xl block">{activity.distanceKm} km</span>
+            <div className="p-3.5 bg-[#F4EEDB] border border-[#1A1918]/10 rounded-2xl space-y-1 shadow-sm">
+              <span className="text-[10px] text-[#1A1918]/70 uppercase font-mono font-semibold tracking-wider block">Distancia</span>
+              <span className="font-mono font-semibold text-[#1A1918] text-lg sm:text-xl block">{activity.distanceKm} km</span>
             </div>
-            <div className="p-3.5 bg-[#F4EEDB] border-2 border-[#1A1918] rounded-2xl space-y-1 shadow-[3px_3px_0px_#1A1918]">
-              <span className="text-[10px] text-[#1A1918]/70 uppercase font-mono font-black tracking-wider block">Desnivel +</span>
-              <span className="font-mono font-black text-[#E06423] text-lg sm:text-xl block">+{activity.elevationGainM} m</span>
+            <div className="p-3.5 bg-[#F4EEDB] border border-[#1A1918]/10 rounded-2xl space-y-1 shadow-sm">
+              <span className="text-[10px] text-[#1A1918]/70 uppercase font-mono font-semibold tracking-wider block">Desnivel +</span>
+              <span className="font-mono font-semibold text-[#E06423] text-lg sm:text-xl block">+{activity.elevationGainM} m</span>
             </div>
-            <div className="p-3.5 bg-[#F4EEDB] border-2 border-[#1A1918] rounded-2xl space-y-1 shadow-[3px_3px_0px_#1A1918]">
-              <span className="text-[10px] text-[#1A1918]/70 uppercase font-mono font-black tracking-wider block">Tiempo Rodando</span>
-              <span className="font-mono font-black text-[#1A1918] text-lg sm:text-xl block">{activity.durationText}</span>
+            <div className="p-3.5 bg-[#F4EEDB] border border-[#1A1918]/10 rounded-2xl space-y-1 shadow-sm">
+              <span className="text-[10px] text-[#1A1918]/70 uppercase font-mono font-semibold tracking-wider block">Tiempo rodando</span>
+              <span className="font-mono font-semibold text-[#1A1918] text-lg sm:text-xl block">{activity.durationText}</span>
             </div>
-            <div className="p-3.5 bg-[#F4EEDB] border-2 border-[#1A1918] rounded-2xl space-y-1 shadow-[3px_3px_0px_#1A1918]">
-              <span className="text-[10px] text-[#1A1918]/70 uppercase font-mono font-black tracking-wider block">Velocidad Prom.</span>
-              <span className="font-mono font-black text-[#1A1918] text-lg sm:text-xl block">{activity.avgSpeedKmh} km/h</span>
+            <div className="p-3.5 bg-[#F4EEDB] border border-[#1A1918]/10 rounded-2xl space-y-1 shadow-sm">
+              <span className="text-[10px] text-[#1A1918]/70 uppercase font-mono font-semibold tracking-wider block">Velocidad Prom.</span>
+              <span className="font-mono font-semibold text-[#1A1918] text-lg sm:text-xl block">{activity.avgSpeedKmh} km/h</span>
             </div>
           </div>
 
           {/* SURFACE & CURVES BREAKDOWN */}
           {activity.surfaceBreakdown && (
-            <div className="p-4 sm:p-5 bg-[#F4EEDB] border-2 border-[#1A1918] rounded-2xl space-y-3 shadow-[3px_3px_0px_#1A1918]">
+            <div className="p-4 sm:p-5 bg-[#F4EEDB] border border-[#1A1918]/10 rounded-2xl space-y-3 shadow-sm">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-[#1A1918] uppercase text-[11px] font-mono font-black flex items-center gap-1.5 tracking-wider">
+                <span className="text-[#1A1918] uppercase text-[11px] font-mono font-semibold flex items-center gap-1.5 tracking-wider">
                   <Layers className="w-3.5 h-3.5 text-[#E6332A]" />
-                  Desglose de Superficie
+                  Desglose de superficie
                 </span>
-                <span className="text-[#1A1918] font-mono font-black text-xs uppercase bg-[#FAF6ED] px-2 py-0.5 border-2 border-[#1A1918] rounded-lg shadow-[1px_1px_0px_#1A1918]">
+                <span className="text-[#1A1918] font-mono font-semibold text-xs bg-[#FAF6ED] px-2 py-0.5 border border-[#1A1918]/10 rounded-lg shadow-sm">
                   Curvas: {activity.surfaceBreakdown.curveDensity}
                 </span>
               </div>
-              <div className="w-full h-3.5 bg-[#FAF6ED] border-2 border-[#1A1918] rounded-full overflow-hidden flex shadow-[1px_1px_0px_#1A1918]">
+              <div className="w-full h-3.5 bg-[#FAF6ED] border border-[#1A1918]/10 rounded-full overflow-hidden flex shadow-sm">
                 <div 
                   className="bg-[#1A1918] h-full" 
                   style={{ width: `${activity.surfaceBreakdown.asphaltPercentage}%` }} 
@@ -381,29 +381,29 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
                 />
               </div>
               <div className="flex items-center justify-between text-xs font-mono font-bold text-[#1A1918]">
-                <span>Asfalto: <strong className="font-black text-[#1A1918]">{activity.surfaceBreakdown.asphaltPercentage}%</strong></span>
-                <span>Terracería / Brecha: <strong className="font-black text-[#E06423]">{activity.surfaceBreakdown.dirtPercentage}%</strong></span>
+                <span>Asfalto: <strong className="font-semibold text-[#1A1918]">{activity.surfaceBreakdown.asphaltPercentage}%</strong></span>
+                <span>Terracería / Brecha: <strong className="font-semibold text-[#E06423]">{activity.surfaceBreakdown.dirtPercentage}%</strong></span>
               </div>
             </div>
           )}
 
           {/* GROUP & PARTICIPANTS */}
           {activity.groupInfo && (
-            <div className="p-4 sm:p-5 bg-[#F4EEDB] border-2 border-[#1A1918] rounded-2xl space-y-3.5 shadow-[3px_3px_0px_#1A1918]">
+            <div className="p-4 sm:p-5 bg-[#F4EEDB] border border-[#1A1918]/10 rounded-2xl space-y-3.5 shadow-sm">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Users className="w-4 h-4 text-[#E6332A]" />
-                  <span className="text-xs font-display font-black text-[#1A1918] uppercase tracking-wide">
+                  <span className="text-xs font-sans font-semibold text-[#1A1918]  ">
                     Rodada en Grupo: {resolvedCrewName?.replace(/MotoMami/gi, 'NAO')}
                   </span>
                 </div>
-                <span className="text-[10px] text-[#1A1918] font-mono font-black bg-[#FAF6ED] px-2.5 py-1 border-2 border-[#1A1918] rounded-xl shadow-[1px_1px_0px_#1A1918]">
+                <span className="text-[10px] text-[#1A1918] font-mono font-semibold bg-[#FAF6ED] px-2.5 py-1 border border-[#1A1918]/10 rounded-xl shadow-sm">
                   {resolvedParticipants.length} pilotos
                 </span>
               </div>
 
               {activity.groupInfo.rodadaTitle && (
-                <p className="text-xs text-[#1A1918]/70 font-serif italic font-medium">
+                <p className="text-xs text-[#1A1918]/70 font-sans font-medium">
                   Salida: <span className="text-[#1A1918] font-sans font-bold not-italic">{activity.groupInfo.rodadaTitle}</span>
                 </p>
               )}
@@ -422,10 +422,10 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
                           onOpenPilotProfile(p.userId);
                         }
                       }}
-                      className={`p-3 border-2 border-[#1A1918] rounded-xl transition flex items-center justify-between gap-2.5 shadow-[2px_2px_0px_#1A1918] ${
+                      className={`p-3 border border-[#1A1918]/10 rounded-xl transition flex items-center justify-between gap-2.5 shadow-sm ${
                         isMe
                           ? 'bg-[#FAF6ED] cursor-default'
-                          : 'bg-[#FAF6ED] hover:bg-[#FAF6ED] hover:translate-x-0.5 hover:translate-y-0.5 cursor-pointer group'
+                          : 'bg-[#FAF6ED] hover:bg-[#FAF6ED] cursor-pointer group'
                       }`}
                     >
                       <div className="flex items-center gap-3 min-w-0">
@@ -433,15 +433,15 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
                         <img 
                           src={p.avatar} 
                           alt={p.name} 
-                          className="w-10 h-10 rounded-xl object-cover border-2 border-[#1A1918] shrink-0 bg-[#F4EEDB]"
+                          className="w-10 h-10 rounded-xl object-cover border border-[#1A1918]/10 shrink-0 bg-[#F4EEDB]"
                         />
                         <div className="min-w-0">
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="text-xs font-display font-black text-[#1A1918] uppercase truncate">
+                            <span className="text-xs font-sans font-semibold text-[#1A1918] truncate">
                               {p.name}
                             </span>
                             {isMe && (
-                              <span className="text-[8px] uppercase font-mono font-black text-[#E6332A] bg-[#FAF6ED] px-1.5 py-0.5 border border-[#E6332A] rounded">
+                              <span className="text-[8px] uppercase font-mono font-semibold text-[#E6332A] bg-[#FAF6ED] px-1.5 py-0.5 border border-[#E6332A] rounded">
                                 Tú
                               </span>
                             )}
@@ -453,7 +453,7 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
                         </div>
                       </div>
                       {!isMe ? (
-                        <span className="text-[9px] text-[#1A1918] group-hover:text-[#E6332A] uppercase font-mono font-black shrink-0 px-2 py-1 bg-[#F4EEDB] border-2 border-[#1A1918] rounded-lg shadow-[1px_1px_0px_#1A1918]">
+                        <span className="text-[9px] text-[#1A1918] group-hover:text-[#E6332A] uppercase font-mono font-semibold shrink-0 px-2 py-1 bg-[#F4EEDB] border border-[#1A1918]/10 rounded-lg shadow-sm">
                           Ver ↗
                         </span>
                       ) : null}
@@ -465,10 +465,10 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
           )}
 
           {/* ACTION BUTTONS: SALUDO BIKER, COMPARTIR */}
-          <div className="pt-2 border-t-2 border-[#1A1918] flex flex-col sm:flex-row gap-3">
+          <div className="pt-2 border-t border-[#1A1918]/10 flex flex-col sm:flex-row gap-3">
             <button
               onClick={handleSaludoClick}
-              className={`flex-1 py-3.5 px-4 uppercase font-display font-black text-xs tracking-wider transition flex items-center justify-center gap-2 rounded-xl border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${
+              className={`flex-1 py-3.5 px-4 font-sans font-semibold text-xs transition flex items-center justify-center gap-2 rounded-xl border border-[#1A1918]/10 shadow-sm active:shadow-none ${
                 activity.hasKudoed 
                   ? 'bg-[#E6332A] text-white' 
                   : 'bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918]'
@@ -476,12 +476,12 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
             >
               <BikerSaluteIcon className="w-5 h-5" active={activity.hasKudoed} />
               <span>{activity.hasKudoed ? 'Saludado' : 'Saludo'}</span>
-              <span className="text-xs font-mono font-black">({activity.kudosCount})</span>
+              <span className="text-xs font-mono font-semibold">({activity.kudosCount})</span>
             </button>
 
             <button
               onClick={handleShare}
-              className="py-3.5 px-6 border-2 border-[#1A1918] bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] uppercase font-display font-black text-xs tracking-wider transition flex items-center justify-center gap-2 rounded-xl shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+              className="py-3.5 px-6 border border-[#1A1918]/10 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] font-sans font-semibold text-xs transition flex items-center justify-center gap-2 rounded-xl shadow-sm active:shadow-none"
             >
               <Share2 className="w-4 h-4 text-[#1A1918]" />
               <span>{copiedLink ? 'Enlace Copiado' : 'Compartir'}</span>
@@ -489,26 +489,26 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
           </div>
 
           {/* SALUDOS SOCIAL ROSTER */}
-          <div className="p-3.5 bg-[#F4EEDB] border-2 border-[#1A1918] rounded-xl flex items-center justify-between text-xs shadow-[2px_2px_0px_#1A1918]">
+          <div className="p-3.5 bg-[#F4EEDB] border border-[#1A1918]/10 rounded-xl flex items-center justify-between text-xs shadow-sm">
             <div className="flex items-center gap-2.5">
               <div className="flex -space-x-2 overflow-hidden">
                 {activity.kudosAvatars.slice(0, 4).map((av, idx) => (
                   /* eslint-disable-next-line @next/next/no-img-element */
-                  <img key={idx} src={av} alt="saludo" className="w-7 h-7 rounded-full border-2 border-[#1A1918] object-cover bg-[#FAF6ED]" />
+                  <img key={idx} src={av} alt="saludo" className="w-7 h-7 rounded-full border border-[#1A1918]/10 object-cover bg-[#FAF6ED]" />
                 ))}
               </div>
               <span className="text-xs text-[#1A1918] font-mono font-bold">
                 {activity.kudosCount} {activity.kudosCount === 1 ? 'saludo recibido' : 'saludos recibidos'}
               </span>
             </div>
-            <span className="text-[10px] text-[#E6332A] uppercase font-mono font-black tracking-wider bg-[#FAF6ED] px-2 py-0.5 border border-[#1A1918] rounded shadow-[1px_1px_0px_#1A1918]">
-              Comunidad Activa
+            <span className="text-[10px] text-[#E6332A] uppercase font-mono font-semibold tracking-wider bg-[#FAF6ED] px-2 py-0.5 border border-[#1A1918]/10 rounded shadow-sm">
+              Comunidad activa
             </span>
           </div>
 
           {/* COMMENTS THREAD */}
           <div className="space-y-3 pt-2">
-            <div className="flex items-center gap-2 text-xs text-[#1A1918] uppercase font-mono font-black tracking-wider">
+            <div className="flex items-center gap-2 text-xs text-[#1A1918] font-mono font-semibold ">
               <MessageSquare className="w-4 h-4 text-[#E6332A]" />
               <span>Comentarios ({activity.commentsCount})</span>
             </div>
@@ -517,16 +517,16 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
             <div className="space-y-2.5 max-h-64 overflow-y-auto pr-1">
               {activity.comments && activity.comments.length > 0 ? (
                 activity.comments.map((comm) => (
-                  <div key={comm.id} className="p-3.5 bg-[#FAF6ED] border-2 border-[#1A1918] rounded-xl flex items-start gap-3 shadow-[2px_2px_0px_#1A1918]">
+                  <div key={comm.id} className="p-3.5 bg-[#FAF6ED] border border-[#1A1918]/10 rounded-xl flex items-start gap-3 shadow-sm">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img 
                       src={comm.userAvatar} 
                       alt={comm.userName} 
-                      className="w-8 h-8 rounded-xl object-cover border-2 border-[#1A1918] shrink-0 bg-[#F4EEDB]" 
+                      className="w-8 h-8 rounded-xl object-cover border border-[#1A1918]/10 shrink-0 bg-[#F4EEDB]" 
                     />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-xs font-display font-black text-[#1A1918] uppercase">{comm.userName}</span>
+                        <span className="text-xs font-sans font-semibold text-[#1A1918] ">{comm.userName}</span>
                         <span className="text-[10px] text-[#1A1918]/60 font-mono font-bold">{comm.createdAt}</span>
                       </div>
                       <p className="text-xs text-[#1A1918] mt-1 font-sans font-medium leading-relaxed">
@@ -536,7 +536,7 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
                   </div>
                 ))
               ) : (
-                <div className="p-4 bg-[#F4EEDB] border-2 border-[#1A1918] rounded-xl text-center text-xs text-[#1A1918]/70 font-serif italic font-medium shadow-[2px_2px_0px_#1A1918]">
+                <div className="p-4 bg-[#F4EEDB] border border-[#1A1918]/10 rounded-xl text-center text-xs text-[#1A1918]/70 font-sans font-medium shadow-sm">
                   Sé el primer piloto en comentar esta rodada.
                 </div>
               )}
@@ -548,11 +548,11 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
                 placeholder={`Escribe un comentario a ${activity.pilotName}...`}
-                className="flex-1 bg-[#FAF6ED] border-2 border-[#1A1918] px-3.5 py-2.5 text-[#1A1918] placeholder-[#1A1918]/50 text-xs focus:outline-none focus:border-[#E6332A] rounded-xl shadow-[2px_2px_0px_#1A1918] font-sans font-medium"
+                className="flex-1 bg-[#FAF6ED] border border-[#1A1918]/10 px-3.5 py-2.5 text-[#1A1918] placeholder-[#1A1918]/50 text-xs focus:outline-none focus:border-[#E6332A] rounded-xl shadow-sm font-sans font-medium"
               />
               <button
                 type="submit"
-                className="px-5 py-2.5 bg-[#E6332A] hover:bg-[#d02c24] text-white uppercase font-display font-black text-xs tracking-wider transition flex items-center gap-1.5 shrink-0 border-2 border-[#1A1918] rounded-xl shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                className="px-5 py-2.5 bg-[#E6332A] hover:bg-[#d02c24] text-white font-sans font-semibold text-xs transition flex items-center gap-1.5 shrink-0 border border-[#1A1918]/10 rounded-xl shadow-sm active:shadow-none"
               >
                 <Send className="w-3.5 h-3.5 text-white" />
                 <span>Enviar</span>

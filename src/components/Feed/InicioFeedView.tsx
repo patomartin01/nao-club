@@ -269,17 +269,17 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
         <aside className="hidden lg:block lg:col-span-3 space-y-6 sticky top-24">
           
           {/* Pilot Identity Card (Matchbook Dossier) */}
-          <div className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[24px] p-6 space-y-5 shadow-[4px_4px_0px_#1A1918] relative overflow-hidden">
+          <div className="bg-[#FAF6ED] border border-[#1A1918]/10 rounded-[24px] p-6 space-y-5 shadow-sm relative overflow-hidden">
             {/* Top vintage seal */}
-            <div className="flex items-center justify-between text-[10px] font-display uppercase tracking-widest text-[#1A1918] border-b-2 border-[#1A1918] pb-3">
-              <span className="text-[#E6332A] font-black">★ PILOT DOSSIER</span>
-              <span className="font-mono text-[9px] font-bold bg-[#F4EEDB] px-1.5 py-0.5 border border-[#1A1918] rounded">{pilotDossierNo}</span>
+            <div className="flex items-center justify-between text-[10px] font-sans uppercase tracking-widest text-[#1A1918] border-b border-[#1A1918]/10 pb-3">
+              <span className="text-[#E6332A] font-semibold">PILOT DOSSIER</span>
+              <span className="font-mono text-[9px] font-bold bg-[#F4EEDB] px-1.5 py-0.5 border border-[#1A1918]/10 rounded">{pilotDossierNo}</span>
             </div>
 
             <div className="flex items-center gap-4">
               <div 
                 onClick={() => setActiveNavTab('tu')}
-                className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] cursor-pointer group shrink-0"
+                className="w-14 h-14 rounded-2xl overflow-hidden border border-[#1A1918]/10 shadow-sm cursor-pointer group shrink-0"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img 
@@ -291,11 +291,11 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
               <div className="min-w-0">
                 <h3 
                   onClick={() => setActiveNavTab('tu')}
-                  className="text-base font-display font-black text-[#1A1918] uppercase tracking-wide truncate cursor-pointer hover:text-[#E6332A] transition"
+                  className="text-base font-display font-semibold text-[#1A1918] truncate cursor-pointer hover:text-[#E6332A] transition"
                 >
                   {currentUser.name}
                 </h3>
-                <p className="text-xs font-serif italic text-[#1A1918]/70 truncate">{currentUser.handle}</p>
+                <p className="text-xs font-sans text-[#1A1918]/70 truncate">{currentUser.handle}</p>
                 <p className="text-[11px] text-[#1A1918]/80 flex items-center gap-1 mt-0.5 font-sans font-semibold">
                   <MapPin className="w-3 h-3 text-[#E6332A]" />
                   <span>{currentUser.location || 'México'}</span>
@@ -304,18 +304,18 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
             </div>
 
             {/* Quick Metrics in High Contrast Matchbook Style (REAL DATA) */}
-            <div className="grid grid-cols-3 gap-2 border-2 border-[#1A1918] py-3 text-center bg-[#F4EEDB] rounded-xl shadow-[2px_2px_0px_#1A1918]">
+            <div className="grid grid-cols-3 gap-2 border border-[#1A1918]/10 py-3 text-center bg-[#F4EEDB] rounded-xl shadow-sm">
               <div>
-                <span className="text-[9px] font-display uppercase tracking-widest text-[#1A1918]/70 block font-black">Rodadas</span>
-                <span className="text-xl font-display font-black text-[#1A1918]">{realRidesCount}</span>
+                <span className="text-[9px] font-sans uppercase tracking-widest text-[#1A1918]/70 block font-semibold">Rodadas</span>
+                <span className="text-xl font-display font-semibold text-[#1A1918]">{realRidesCount}</span>
               </div>
-              <div className="border-x-2 border-[#1A1918]">
-                <span className="text-[9px] font-display uppercase tracking-widest text-[#1A1918]/70 block font-black">Km</span>
-                <span className="text-xl font-display font-black text-[#1A1918]">{realTotalKm}</span>
+              <div className="border-x border-[#1A1918]/10">
+                <span className="text-[9px] font-sans uppercase tracking-widest text-[#1A1918]/70 block font-semibold">Km</span>
+                <span className="text-xl font-display font-semibold text-[#1A1918]">{realTotalKm}</span>
               </div>
               <div>
-                <span className="text-[9px] font-display uppercase tracking-widest text-[#1A1918]/70 block font-black">Pilotos</span>
-                <span className="text-xl font-display font-black text-[#1A1918]">{realFollowersCount}</span>
+                <span className="text-[9px] font-sans uppercase tracking-widest text-[#1A1918]/70 block font-semibold">Pilotos</span>
+                <span className="text-xl font-display font-semibold text-[#1A1918]">{realFollowersCount}</span>
               </div>
             </div>
 
@@ -323,13 +323,13 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
             <div className="flex items-center justify-between text-xs pt-1">
               <div className="flex items-center gap-2 text-[#1A1918] min-w-0 flex-1 mr-2">
                 <Wrench className="w-3.5 h-3.5 text-[#E6332A] shrink-0" />
-                <span className="text-xs font-display font-black uppercase tracking-wider text-[#1A1918] truncate" title={activeBikeName}>
+                <span className="text-xs font-sans font-semibold text-[#1A1918] truncate" title={activeBikeName}>
                   {activeBikeName}
                 </span>
               </div>
               <button 
                 onClick={() => setActiveNavTab('garaje')}
-                className="text-[10px] font-display tracking-widest text-[#E6332A] uppercase hover:underline transition font-black shrink-0"
+                className="text-[10px] font-sans tracking-widest text-[#E6332A] uppercase hover:underline transition font-semibold shrink-0"
               >
                 Hangar &gt;
               </button>
@@ -337,22 +337,22 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
           </div>
 
           {/* Desktop "Tu serie" streak widget */}
-          <div className="bg-[#1A1918] text-[#FAF6ED] p-6 space-y-4 rounded-[24px] border-2 border-[#1A1918] shadow-[4px_4px_0px_#E6332A]">
+          <div className="bg-[#1A1918] text-[#FAF6ED] p-6 space-y-4 rounded-[24px] border border-[#1A1918]/10 shadow-sm">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Flame className="w-4 h-4 text-[#F7B32B] animate-pulse" />
-                <span className="text-xs font-display font-black uppercase tracking-widest text-[#FAF6ED]">Racha de Salidas</span>
+                <span className="text-xs font-sans font-semibold text-[#FAF6ED]">Racha de salidas</span>
               </div>
-              <span className="text-[10px] font-display font-black text-[#F7B32B] uppercase tracking-wider bg-[#FAF6ED]/10 px-2 py-0.5 rounded border border-[#F7B32B]/30">0 Semanas</span>
+              <span className="text-[10px] font-sans font-semibold text-[#F7B32B] uppercase tracking-wider bg-[#FAF6ED]/10 px-2 py-0.5 rounded border border-[#F7B32B]/30">0 Semanas</span>
             </div>
-            <p className="text-xs font-serif italic text-[#FAF6ED]/70 leading-relaxed font-medium">
+            <p className="text-xs font-sans text-[#FAF6ED]/70 leading-relaxed font-medium">
               &quot;In the endless pursuit of open throttle every weekend.&quot;
             </p>
             <button
               onClick={onOpenRecordRoute}
               className="btn-mustard w-full py-3 rounded-xl text-xs text-center"
             >
-              Registrar Rodada
+              Registrar rodada
             </button>
           </div>
 
@@ -365,39 +365,32 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
 
           {/* HERO CTA: INICIAR RODADA HOY / GRABAR RUTA EN VIVO GPS */}
           {!isGpsBannerDismissed && (
-            <div className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[24px] p-4 sm:p-5 shadow-[4px_4px_0px_#1A1918] relative overflow-hidden group">
-              {/* Top accent badge */}
-              <div className="flex items-center justify-between pb-2.5 border-b-2 border-[#1A1918] mb-3">
+            <div className="bg-[#FAF6ED] border border-[#1A1918]/10 rounded-[24px] p-4 sm:p-5 shadow-sm relative overflow-hidden group">
+              {/* Encabezado: indicador en vivo + cerrar */}
+              <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#E6332A] animate-pulse" />
-                  <span className="text-[10px] sm:text-xs font-mono font-black uppercase tracking-widest text-[#E6332A]">
-                    ★ SISTEMA GPS EN VIVO ★
+                  <span className="w-2 h-2 rounded-full bg-[#E6332A] animate-pulse" />
+                  <span className="text-[10px] font-mono font-semibold uppercase tracking-[0.15em] text-[#E6332A]">
+                    GPS en vivo
                   </span>
                 </div>
-
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-mono font-bold text-[#1A1918]/60 bg-[#F4EEDB] px-2 py-0.5 rounded-lg border border-[#1A1918]">
-                    HOY
-                  </span>
-                  {/* Tachesito discreto para cerrar */}
-                  <button
-                    type="button"
-                    onClick={handleDismissGpsBanner}
-                    title="Cerrar aviso"
-                    className="w-6 h-6 rounded-lg border border-[#1A1918]/30 hover:border-[#1A1918] bg-[#FAF6ED] hover:bg-[#F4EEDB] text-stone-500 hover:text-[#1A1918] flex items-center justify-center transition active:scale-90 cursor-pointer shadow-xs"
-                    aria-label="Cerrar aviso de GPS"
-                  >
-                    <X className="w-3.5 h-3.5 stroke-[2.5]" />
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={handleDismissGpsBanner}
+                  title="Cerrar aviso"
+                  className="w-7 h-7 -mr-1 rounded-lg text-[#1A1918]/40 hover:text-[#1A1918] hover:bg-[#1A1918]/5 flex items-center justify-center transition cursor-pointer"
+                  aria-label="Cerrar aviso de GPS"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
 
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5">
                 <div className="space-y-1 min-w-0 flex-1">
-                  <h2 className="font-display font-black text-lg sm:text-xl text-[#1A1918] uppercase tracking-wide leading-tight">
+                  <h2 className="font-display font-semibold text-lg sm:text-xl text-[#1A1918] leading-tight">
                     ¿Sales a rodar hoy? Graba tu ruta
                   </h2>
-                  <p className="text-xs text-[#1A1918]/70 font-serif italic leading-relaxed font-medium">
+                  <p className="text-xs text-[#1A1918]/70 font-sans leading-relaxed font-medium">
                     Registra tu recorrido GPS en vivo con paradas, tiempos y altitud. Al terminar, compártela en Google Maps o con tu tribu.
                   </p>
                 </div>
@@ -405,10 +398,10 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                 <button
                   type="button"
                   onClick={onOpenRecordRoute}
-                  className="shrink-0 py-3 px-4 sm:px-5 bg-[#E6332A] hover:bg-[#d02c24] text-white border-2 border-[#1A1918] rounded-xl font-display font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition touch-manipulation cursor-pointer"
+                  className="shrink-0 py-3 px-4 sm:px-5 bg-[#E6332A] hover:bg-[#d02c24] text-white border border-[#1A1918]/10 rounded-xl font-sans font-semibold text-xs flex items-center justify-center gap-2 shadow-sm active:shadow-none transition touch-manipulation cursor-pointer"
                 >
                   <Play className="w-4 h-4 fill-current text-[#F7B32B]" />
-                  <span>Empezar a Rodar</span>
+                  <span>Empezar a rodar</span>
                 </button>
               </div>
             </div>
@@ -420,10 +413,10 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
               <button
                 key={f.id}
                 onClick={() => setSelectedDiscipline(f.id)}
-                className={`px-3.5 py-1.5 text-[11px] sm:text-xs font-display uppercase tracking-wider shrink-0 transition rounded-xl border-2 active:scale-95 ${
+                className={`px-3.5 py-1.5 text-[11px] sm:text-xs font-sans shrink-0 transition rounded-xl border active:scale-95 ${
                   selectedDiscipline === f.id
-                    ? 'bg-[#E6332A] text-white border-[#1A1918] font-black shadow-[2px_2px_0px_#1A1918]'
-                    : 'bg-[#FAF6ED] text-[#1A1918] border-[#1A1918] hover:bg-[#F4EEDB] font-bold shadow-[1px_1px_0px_#1A1918]'
+                    ? 'bg-[#E6332A] text-white border-[#1A1918]/10 font-semibold shadow-sm'
+                    : 'bg-[#FAF6ED] text-[#1A1918] border-[#1A1918]/10 hover:bg-[#F4EEDB] font-bold shadow-sm'
                 }`}
               >
                 {f.label}
@@ -433,11 +426,11 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
 
           {/* Main Feed Content: Telemetry Table View vs Cards View */}
           {viewMode === 'table' ? (
-            <div className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[24px] overflow-hidden shadow-[5px_5px_0px_#1A1918]">
-              <div className="px-5 py-3.5 bg-[#1A1918] text-[#FAF6ED] flex items-center justify-between border-b-2 border-[#1A1918]">
+            <div className="bg-[#FAF6ED] border border-[#1A1918]/10 rounded-[24px] overflow-hidden shadow-sm">
+              <div className="px-5 py-3.5 bg-[#1A1918] text-[#FAF6ED] flex items-center justify-between border-b border-[#1A1918]/10">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="text-xs font-mono font-bold uppercase tracking-wider">CONSOLA DE TELEMETRÍA ({filteredActivities.length})</span>
+                  <span className="text-xs font-mono font-bold  ">CONSOLA DE TELEMETRÍA ({filteredActivities.length})</span>
                 </div>
                 <span className="text-[10px] font-mono text-[#F7B32B] uppercase font-bold">[ SISTEMA EN LÍNEA ]</span>
               </div>
@@ -445,7 +438,7 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr className="bg-[#F4EEDB] text-[#1A1918] font-mono uppercase text-[10px] tracking-wider border-b-2 border-[#1A1918]">
+                    <tr className="bg-[#F4EEDB] text-[#1A1918] font-mono uppercase text-[10px] tracking-wider border-b border-[#1A1918]/10">
                       <th className="py-3 px-4 font-bold">Piloto &amp; Montura</th>
                       <th className="py-3 px-4 font-bold">Expedición / Destino</th>
                       <th className="py-3 px-4 font-bold">Modalidad</th>
@@ -455,10 +448,10 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                       <th className="py-3 px-4 font-bold text-right">Detalle</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y-2 divide-[#1A1918]">
+                  <tbody className="divide-y divide-[#1A1918]/10">
                     {filteredActivities.length === 0 ? (
                       <tr>
-                        <td colSpan={7} className="py-8 text-center text-[#1A1918]/60 font-serif italic font-medium">
+                        <td colSpan={7} className="py-8 text-center text-[#1A1918]/60 font-sans font-medium">
                           No se encontraron expediciones con los filtros actuales.
                         </td>
                       </tr>
@@ -477,37 +470,37 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                             <td className="py-3.5 px-4">
                               <div className="flex items-center gap-2.5">
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={act.pilotAvatar} alt={act.pilotName} className="w-8 h-8 rounded-xl border-2 border-[#1A1918] object-cover shrink-0" />
+                                <img src={act.pilotAvatar} alt={act.pilotName} className="w-8 h-8 rounded-xl border border-[#1A1918]/10 object-cover shrink-0" />
                                 <div className="min-w-0">
-                                  <p className="font-display font-black text-[#1A1918] uppercase tracking-wide truncate">{act.pilotName}</p>
+                                  <p className="font-sans font-semibold text-[#1A1918] truncate">{act.pilotName}</p>
                                   <p className="text-[10px] font-mono text-[#E6332A] font-bold truncate">{resolvedGroup?.crewName || act.motoModel}</p>
                                 </div>
                               </div>
                             </td>
                             <td className="py-3.5 px-4">
-                              <p className="font-display font-black text-[#1A1918] uppercase tracking-wide">{act.title}</p>
-                              <p className="text-[11px] font-serif italic text-[#1A1918]/70 flex items-center gap-1 font-medium">
+                              <p className="font-sans font-semibold text-[#1A1918]  ">{act.title}</p>
+                              <p className="text-[11px] font-sans text-[#1A1918]/70 flex items-center gap-1 font-medium">
                                 <MapPin className="w-3 h-3 text-[#E6332A]" />
                                 <span>{act.location}</span>
                               </p>
                             </td>
                             <td className="py-3.5 px-4">
-                              <span className="px-2 py-0.5 bg-[#FAF6ED] border border-[#1A1918] rounded text-[10px] font-mono font-bold uppercase whitespace-nowrap">
+                              <span className="px-2 py-0.5 bg-[#FAF6ED] border border-[#1A1918]/10 rounded text-[10px] font-mono font-bold uppercase whitespace-nowrap">
                                 {act.discipline.split('/')[0]}
                               </span>
                             </td>
                             <td className="py-3.5 px-4">
-                              <p className="font-mono font-black text-[#1A1918] text-sm">{act.distanceKm} KM</p>
+                              <p className="font-mono font-semibold text-[#1A1918] text-sm">{act.distanceKm} KM</p>
                               <p className="text-[10px] text-[#1A1918]/70 font-mono font-semibold">DUR: {act.durationText}</p>
                             </td>
                             <td className="py-3.5 px-4">
                               <p className="font-mono font-bold text-[#E06423]">+{act.elevationGainM || 850}m</p>
-                              <p className="text-[10px] text-[#1A1918]/60 font-serif italic font-medium">Desnivel</p>
+                              <p className="text-[10px] text-[#1A1918]/60 font-sans font-medium">Desnivel</p>
                             </td>
                             <td className="py-3.5 px-4 text-center">
                               <button
                                 onClick={(e) => handleKudoClick(act, e)}
-                                className={`px-2.5 py-1 rounded-lg border-2 border-[#1A1918] text-xs font-mono font-bold shadow-[1px_1px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 ${
+                                className={`px-2.5 py-1 rounded-lg border border-[#1A1918]/10 text-xs font-mono font-bold shadow-sm ${
                                   act.hasKudoed ? 'bg-[#F7B32B] text-[#1A1918]' : 'bg-[#FAF6ED] text-[#1A1918] hover:bg-[#F4EEDB]'
                                 }`}
                               >
@@ -521,7 +514,7 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                                   setSelectedDetailActivity(act);
                                   setIsDetailModalOpen(true);
                                 }}
-                                className="px-3 py-1.5 bg-[#1A1918] hover:bg-[#E6332A] text-white font-display font-black text-[10px] uppercase rounded-xl transition border-2 border-[#1A1918] shadow-[1px_1px_0px_#1A1918]"
+                                className="px-3 py-1.5 bg-[#1A1918] hover:bg-[#E6332A] text-white font-sans font-semibold text-[10px] uppercase rounded-xl transition border border-[#1A1918]/10 shadow-sm"
                               >
                                 Detalle →
                               </button>
@@ -538,15 +531,15 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
             /* Cards Feed */
             <div className="space-y-4 sm:space-y-6">
               {filteredActivities.length === 0 ? (
-                <div className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[20px] p-5 sm:p-8 text-center space-y-3 shadow-[3px_3px_0px_#1A1918]">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-[#F7B32B] text-[#1A1918] border-2 border-[#1A1918] mx-auto flex items-center justify-center shadow-[2px_2px_0px_#1A1918]">
+                <div className="bg-[#FAF6ED] border border-[#1A1918]/10 rounded-[20px] p-5 sm:p-8 text-center space-y-3 shadow-sm">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-[#F7B32B] text-[#1A1918] border border-[#1A1918]/10 mx-auto flex items-center justify-center shadow-sm">
                     <Compass className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.5]" />
                   </div>
                   <div>
-                    <h3 className="font-display font-black text-base sm:text-lg uppercase text-[#1A1918]">
+                    <h3 className="font-display font-semibold text-base sm:text-lg text-[#1A1918]">
                       Sin rodadas aún
                     </h3>
-                    <p className="text-xs font-serif italic text-[#1A1918]/70 mt-0.5 max-w-sm mx-auto">
+                    <p className="text-xs font-sans text-[#1A1918]/70 mt-0.5 max-w-sm mx-auto">
                       Sé el primer piloto en registrar una salida o proponer una expedición para la comunidad.
                     </p>
                   </div>
@@ -554,17 +547,17 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                     <button
                       type="button"
                       onClick={() => onOpenRecordRoute && onOpenRecordRoute()}
-                      className="py-2.5 px-4 bg-[#E6332A] hover:bg-[#d02c24] text-white border-2 border-[#1A1918] rounded-xl text-xs font-display font-black uppercase tracking-wider shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition flex items-center gap-1.5 cursor-pointer"
+                      className="py-2.5 px-4 bg-[#E6332A] hover:bg-[#d02c24] text-white border border-[#1A1918]/10 rounded-xl text-xs font-sans font-semibold shadow-sm active:shadow-none transition flex items-center gap-1.5 cursor-pointer"
                     >
                       <Plus className="w-3.5 h-3.5 stroke-[3]" />
-                      <span>Grabar Rodada</span>
+                      <span>Grabar rodada</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => onOpenProposeRoute && onOpenProposeRoute()}
-                      className="py-2.5 px-4 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border-2 border-[#1A1918] rounded-xl text-xs font-display font-black uppercase tracking-wider shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition cursor-pointer"
+                      className="py-2.5 px-4 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border border-[#1A1918]/10 rounded-xl text-xs font-sans font-semibold shadow-sm active:shadow-none transition cursor-pointer"
                     >
-                      <span>Proponer Ruta</span>
+                      <span>Proponer ruta</span>
                     </button>
                   </div>
                 </div>
@@ -578,7 +571,7 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                       setSelectedDetailActivity(act);
                       setIsDetailModalOpen(true);
                     }}
-                    className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[24px] overflow-hidden shadow-[5px_5px_0px_#1A1918] hover:shadow-[7px_7px_0px_#1A1918] transition-all duration-300 cursor-pointer group"
+                    className="bg-[#FAF6ED] border border-[#1A1918]/10 rounded-[24px] overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer group"
                   >
                 {/* Social Context Header - Risograph Fellowship Dispatch */}
                 {(() => {
@@ -598,15 +591,15 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                             openPilotProfileById(followedFriend.userId);
                           }
                         }}
-                        className="px-5 py-2.5 bg-[#F4EEDB] border-b-2 border-[#1A1918] flex items-center justify-between text-xs hover:bg-[#FAF6ED] transition cursor-pointer"
+                        className="px-5 py-2.5 bg-[#F4EEDB] border-b border-[#1A1918]/10 flex items-center justify-between text-xs hover:bg-[#FAF6ED] transition cursor-pointer"
                         title={`Ver perfil de ${followedFriend.name}`}
                       >
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="w-6 h-6 rounded-lg overflow-hidden border border-[#1A1918] shrink-0">
+                          <div className="w-6 h-6 rounded-lg overflow-hidden border border-[#1A1918]/10 shrink-0">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img src={followedFriend.avatar} alt={followedFriend.name} className="w-full h-full object-cover" />
                           </div>
-                          <p className="truncate text-xs font-serif italic text-[#1A1918]">
+                          <p className="truncate text-xs font-sans text-[#1A1918]">
                             <span className="font-bold not-italic underline decoration-2">
                               {followedFriend.userId === currentUser.id ? 'Tú rodaste' : `${followedFriend.name} rodó`}
                             </span>
@@ -616,7 +609,7 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                           </p>
                         </div>
                         {resolvedGroup && (
-                          <span className="text-[10px] text-[#1A1918] font-display uppercase tracking-widest bg-[#FAF6ED] px-2.5 py-0.5 border border-[#1A1918] font-black shrink-0 hidden sm:inline-block shadow-[1px_1px_0px_#1A1918]">
+                          <span className="text-[10px] text-[#1A1918] font-sans uppercase tracking-widest bg-[#FAF6ED] px-2.5 py-0.5 border border-[#1A1918]/10 font-semibold shrink-0 hidden sm:inline-block shadow-sm">
                             {resolvedGroup.crewName}
                           </span>
                         )}
@@ -627,7 +620,7 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                 })()}
 
                 {/* Header: Pilot identity, time & machine */}
-                <div className="p-4 sm:p-5 flex items-start justify-between border-b-2 border-[#1A1918] bg-[#FAF6ED]">
+                <div className="p-4 sm:p-5 flex items-start justify-between border-b border-[#1A1918]/10 bg-[#FAF6ED]">
                   <div 
                     onClick={(e) => {
                       e.stopPropagation();
@@ -639,23 +632,23 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                     }}
                     className="flex items-center gap-3.5 cursor-pointer group/pilot"
                   >
-                    <div className="w-12 h-12 rounded-xl overflow-hidden border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] group-hover/pilot:ring-2 group-hover/pilot:ring-[#E6332A] transition shrink-0">
+                    <div className="w-12 h-12 rounded-xl overflow-hidden border border-[#1A1918]/10 shadow-sm group-hover/pilot:ring-2 group-hover/pilot:ring-[#E6332A] transition shrink-0">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={act.pilotAvatar} alt={act.pilotName} className="w-full h-full object-cover" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h4 className="text-base sm:text-lg font-display font-black text-[#1A1918] group-hover/pilot:text-[#E6332A] transition uppercase tracking-wide">
+                        <h4 className="text-base sm:text-lg font-display font-semibold text-[#1A1918] group-hover/pilot:text-[#E6332A] transition  ">
                           {act.pilotName}
                         </h4>
-                        <span className="text-[10px] font-display uppercase tracking-widest text-[#1A1918] bg-[#F4EEDB] px-2.5 py-0.5 border border-[#1A1918] font-black rounded shadow-[1px_1px_0px_#1A1918]">
+                        <span className="text-[10px] font-sans uppercase tracking-widest text-[#1A1918] bg-[#F4EEDB] px-2.5 py-0.5 border border-[#1A1918]/10 font-semibold rounded shadow-sm">
                           {act.discipline}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2 text-xs font-serif italic text-[#1A1918]/70 mt-0.5">
+                      <div className="flex items-center gap-2 text-xs font-sans text-[#1A1918]/70 mt-0.5">
                         <span>{act.dateText}</span>
                         <span>•</span>
-                        <span className="text-[#1A1918] font-sans not-italic text-xs font-bold uppercase tracking-wider">{act.motoModel}</span>
+                        <span className="text-[#1A1918] font-sans not-italic text-xs font-bold  ">{act.motoModel}</span>
                       </div>
                       <div className="flex items-center gap-1 text-[11px] font-sans text-[#1A1918]/70 mt-0.5 font-medium">
                         <MapPin className="w-3.5 h-3.5 text-[#E6332A]" />
@@ -672,7 +665,7 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                           e.stopPropagation();
                           toggleFollowUser(act.pilotId);
                         }}
-                        className={`text-[10px] font-display font-black uppercase tracking-widest px-3.5 py-2 transition-all duration-150 flex items-center gap-1.5 border-2 border-[#1A1918] rounded-xl shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer group ${
+                        className={`text-[10px] font-sans font-semibold uppercase tracking-widest px-3.5 py-2 transition-all duration-150 flex items-center gap-1.5 border border-[#1A1918]/10 rounded-xl shadow-sm active:shadow-none cursor-pointer group ${
                           isFollowingUser(act.pilotId)
                             ? 'bg-[#F4EEDB] hover:bg-[#E6332A] text-[#1A1918] hover:text-white'
                             : 'btn-carbon text-white'
@@ -702,7 +695,7 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                         e.stopPropagation();
                         setSaveRouteModalItem(act);
                       }}
-                      className={`p-2 transition border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] rounded-xl active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${
+                      className={`p-2 transition border border-[#1A1918]/10 shadow-sm rounded-xl active:shadow-none ${
                         (savedRouteIds.includes(act.id) || routeLists.some(l => l.routeIds.includes(act.id)))
                           ? 'bg-[#E6332A] text-white'
                           : 'bg-[#FAF6ED] text-[#1A1918] hover:bg-[#F7B32B]'
@@ -722,7 +715,7 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                             deleteActivity(act.id);
                           }
                         }}
-                        className="p-2 transition border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] rounded-xl bg-[#FAF6ED] text-[#1A1918]/60 hover:bg-[#E6332A] hover:text-white active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                        className="p-2 transition border border-[#1A1918]/10 shadow-sm rounded-xl bg-[#FAF6ED] text-[#1A1918]/60 hover:bg-[#E6332A] hover:text-white active:shadow-none"
                         title="Eliminar tu publicación"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -733,15 +726,15 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
 
                 {/* Title & Surface Tag */}
                 <div className="px-3.5 sm:px-5 pt-3 sm:pt-4 pb-2.5 sm:pb-3 bg-[#FAF6ED]">
-                  <h3 className="text-lg sm:text-2xl font-display font-black text-[#1A1918] uppercase tracking-wide group-hover:text-[#E6332A] transition">
+                  <h3 className="text-lg sm:text-2xl font-display font-semibold text-[#1A1918] group-hover:text-[#E6332A] transition">
                     {act.title}
                   </h3>
                   
                   {/* Clean row of tags: Surface & Group */}
                   <div className="mt-2.5 flex flex-wrap items-center gap-2">
                     {/* Surface breakdown pill */}
-                    <div className="inline-flex items-center gap-2 bg-[#F4EEDB] border-2 border-[#1A1918] rounded-xl px-3 py-1.5 text-xs text-[#1A1918] font-sans shadow-[2px_2px_0px_#1A1918]">
-                      <span className="text-[#1A1918]/60 uppercase text-[9px] tracking-wider font-display font-black">Superficie:</span>
+                    <div className="inline-flex items-center gap-2 bg-[#F4EEDB] border border-[#1A1918]/10 rounded-xl px-3 py-1.5 text-xs text-[#1A1918] font-sans shadow-sm">
+                      <span className="text-[#1A1918]/60 uppercase text-[9px] tracking-wider font-sans font-semibold">Superficie:</span>
                       <span className="flex items-center gap-1 text-[#1A1918] font-bold" title="Carretera / Asfalto">
                         <RoadIcon className="w-3.5 h-3.5 text-[#1A1918] shrink-0" />
                         <span>{act.surfaceBreakdown.asphaltPercentage}%</span>
@@ -772,7 +765,7 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                           setSelectedGroupInfo(resolvedGroup);
                           setIsGroupModalOpen(true);
                         }}
-                        className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#1A1918] hover:bg-[#E6332A] transition text-xs text-white border-2 border-[#1A1918] shadow-[2px_2px_0px_#F7B32B] rounded-xl group/grouppill active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                        className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#1A1918] hover:bg-[#E6332A] transition text-xs text-white border border-[#1A1918]/10 shadow-sm rounded-xl group/grouppill active:shadow-none"
                         title="Ver pilotos participantes"
                       >
                         <div className="flex -space-x-1.5 overflow-hidden items-center shrink-0">
@@ -786,7 +779,7 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                             />
                           ))}
                         </div>
-                        <span className="font-display font-black uppercase tracking-wider text-white">
+                        <span className="font-sans font-semibold text-white">
                           {resolvedGroup.crewName}
                         </span>
                         <span className="text-white/40">•</span>
@@ -800,29 +793,29 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                 </div>
 
                 {/* 3-Column Big Metrics with Risograph Woodblock Typography */}
-                <div className="px-3.5 sm:px-5 py-3 sm:py-4 grid grid-cols-3 gap-1.5 sm:gap-2 border-y-2 border-[#1A1918] bg-[#F4EEDB]">
+                <div className="px-3.5 sm:px-5 py-3 sm:py-4 grid grid-cols-3 gap-1.5 sm:gap-2 border-y border-[#1A1918]/10 bg-[#F4EEDB]">
                   <div>
-                    <span className="text-[9px] sm:text-[10px] font-display uppercase tracking-widest text-[#1A1918]/60 block font-black">Distancia</span>
-                    <span className="text-xl sm:text-3xl font-display font-black text-[#1A1918]">
+                    <span className="text-[9px] sm:text-[10px] font-sans uppercase tracking-widest text-[#1A1918]/60 block font-semibold">Distancia</span>
+                    <span className="text-xl sm:text-3xl font-display font-semibold text-[#1A1918]">
                       {act.distanceKm.toFixed(2)} <span className="text-[10px] sm:text-xs font-normal text-[#1A1918]/60 font-mono">km</span>
                     </span>
                   </div>
 
-                  <div className="border-x-2 border-[#1A1918] px-1.5 sm:px-4">
-                    <span className="text-[9px] sm:text-[10px] font-display uppercase tracking-widest text-[#1A1918]/60 block font-black">Desnivel</span>
-                    <span className="text-xl sm:text-3xl font-display font-black text-[#1A1918]">
+                  <div className="border-x border-[#1A1918]/10 px-1.5 sm:px-4">
+                    <span className="text-[9px] sm:text-[10px] font-sans uppercase tracking-widest text-[#1A1918]/60 block font-semibold">Desnivel</span>
+                    <span className="text-xl sm:text-3xl font-display font-semibold text-[#1A1918]">
                       {act.elevationGainM} <span className="text-[10px] sm:text-xs font-normal text-[#1A1918]/60 font-mono">m</span>
                     </span>
                   </div>
 
                   <div>
-                    <span className="text-[9px] sm:text-[10px] font-display uppercase tracking-widest text-[#1A1918]/60 block font-black">Duración</span>
+                    <span className="text-[9px] sm:text-[10px] font-sans uppercase tracking-widest text-[#1A1918]/60 block font-semibold">Duración</span>
                     <div className="flex items-center gap-1 sm:gap-1.5">
-                      <span className="text-xl sm:text-3xl font-display font-black text-[#E6332A]">
+                      <span className="text-xl sm:text-3xl font-display font-semibold text-[#E6332A]">
                         {act.durationText}
                       </span>
                       {act.trophiesCount && act.trophiesCount > 0 && (
-                        <span className="inline-flex items-center gap-0.5 text-xs text-[#E06423] font-black font-display">
+                        <span className="inline-flex items-center gap-0.5 text-xs text-[#E06423] font-semibold font-sans">
                           <Trophy className="w-3.5 h-3.5 text-[#E06423]" />
                           {act.trophiesCount}
                         </span>
@@ -920,7 +913,7 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                               />
                               {act.photos.length > 3 && (
                                 <div className="absolute inset-0 bg-black/65 backdrop-blur-[2px] flex flex-col items-center justify-center text-white transition group-hover/gallery:bg-black/50">
-                                  <div className="w-10 h-10 rounded-full bg-black/70 border-2 border-white/80 flex items-center justify-center mb-1 group-hover/gallery:scale-110 transition shadow-lg">
+                                  <div className="w-10 h-10 rounded-full bg-black/70 border border-white/80 flex items-center justify-center mb-1 group-hover/gallery:scale-110 transition shadow-lg">
                                     <Plus className="w-6 h-6 text-white stroke-[2.5]" />
                                   </div>
                                   <span className="font-mono text-[11px] font-extrabold uppercase tracking-wider text-white drop-shadow">
@@ -945,12 +938,12 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                             setIsDetailModalOpen(true);
                           }}
                           title="Ver mapa completo e interactivo de la ruta"
-                          className="absolute bottom-3 left-3 w-28 h-28 sm:w-36 sm:h-36 aspect-square rounded-2xl border-2 border-[#1A1918] bg-[#FAF6ED] shadow-[3px_3px_0px_#1A1918] overflow-hidden z-20 group/map transition-all duration-300 hover:scale-105"
+                          className="absolute bottom-3 left-3 w-28 h-28 sm:w-36 sm:h-36 aspect-square rounded-2xl border border-[#1A1918]/10 bg-[#FAF6ED] shadow-sm overflow-hidden z-20 group/map transition-all duration-300 hover:scale-105"
                         >
                           <MiniRouteMap coordinates={act.coordinates} />
 
                           {/* Radar / HUD Badge */}
-                          <div className="absolute top-1.5 left-1.5 px-2 py-0.5 bg-[#FAF6ED] border border-[#1A1918] text-[8px] font-display font-black text-[#1A1918] uppercase tracking-widest flex items-center gap-1 z-10 pointer-events-none rounded shadow-[1px_1px_0px_#1A1918]">
+                          <div className="absolute top-1.5 left-1.5 px-2 py-0.5 bg-[#FAF6ED] border border-[#1A1918]/10 text-[8px] font-sans font-semibold text-[#1A1918] uppercase tracking-widest flex items-center gap-1 z-10 pointer-events-none rounded shadow-sm">
                             <Compass className="w-2.5 h-2.5 text-[#E6332A] animate-pulse" />
                             <span>GPS RUTA</span>
                           </div>
@@ -970,21 +963,21 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                           <MiniRouteMap coordinates={act.coordinates} padding={[32, 32]} />
 
                           {/* Top Left GPS Satélite telemetry badge */}
-                          <div className="absolute top-3 left-3 px-2.5 py-1 bg-[#FAF6ED]/95 backdrop-blur-md border-2 border-[#1A1918] rounded-xl flex items-center gap-1.5 shadow-[2px_2px_0px_#1A1918] z-10">
-                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse border border-[#1A1918]" />
-                            <span className="text-[9px] font-display font-black text-[#1A1918] uppercase tracking-wider">
+                          <div className="absolute top-3 left-3 px-2.5 py-1 bg-[#FAF6ED]/95 backdrop-blur-md border border-[#1A1918]/10 rounded-xl flex items-center gap-1.5 shadow-sm z-10">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse border border-[#1A1918]/10" />
+                            <span className="text-[9px] font-sans font-semibold text-[#1A1918] uppercase tracking-wider">
                               GPS SATÉLITE • TRAZADO EN VIVO
                             </span>
                           </div>
 
                           {/* Bottom Left Legend */}
-                          <div className="absolute bottom-3 left-3 px-3 py-1.5 bg-[#FAF6ED]/95 backdrop-blur-md border-2 border-[#1A1918] rounded-xl flex items-center gap-3 text-[9px] font-mono font-black uppercase text-[#1A1918] shadow-[2px_2px_0px_#1A1918] z-10">
+                          <div className="absolute bottom-3 left-3 px-3 py-1.5 bg-[#FAF6ED]/95 backdrop-blur-md border border-[#1A1918]/10 rounded-xl flex items-center gap-3 text-[9px] font-mono font-semibold uppercase text-[#1A1918] shadow-sm z-10">
                             <span className="flex items-center gap-1.5">
-                              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 border border-[#1A1918]" />
+                              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 border border-[#1A1918]/10" />
                               Inicio
                             </span>
                             <span className="flex items-center gap-1.5">
-                              <span className="w-2.5 h-2.5 rounded-full bg-[#ef4444] border border-[#1A1918]" />
+                              <span className="w-2.5 h-2.5 rounded-full bg-[#ef4444] border border-[#1A1918]/10" />
                               Fin
                             </span>
                           </div>
@@ -1000,27 +993,27 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                       ) : (
                         <div className="w-full h-full flex flex-col items-center justify-center bg-[#1A1918] text-[#FAF6ED] p-6 text-center">
                           <Compass className="w-10 h-10 text-[#E6332A] mb-2 animate-spin-slow" />
-                          <span className="font-display font-black text-sm uppercase tracking-wider">Trazado GPS Registrado</span>
-                          <span className="text-xs font-serif italic text-white/60 mt-1">Toca para abrir la telemetría detallada</span>
+                          <span className="font-sans font-semibold text-sm  ">Trazado GPS registrado</span>
+                          <span className="text-xs font-sans text-white/60 mt-1">Toca para abrir la telemetría detallada</span>
                         </div>
                       )}
                     </div>
                   )}
 
                   {/* View Details Hint on Top Right */}
-                  <div className="absolute top-3 right-3 px-3 py-1.5 bg-[#FAF6ED] border-2 border-[#1A1918] text-[10px] font-display font-black text-[#1A1918] uppercase tracking-wider flex items-center gap-1.5 opacity-0 group-hover/gallery:opacity-100 transition z-20 rounded-xl shadow-[2px_2px_0px_#1A1918]">
+                  <div className="absolute top-3 right-3 px-3 py-1.5 bg-[#FAF6ED] border border-[#1A1918]/10 text-[10px] font-sans font-semibold text-[#1A1918] uppercase tracking-wider flex items-center gap-1.5 opacity-0 group-hover/gallery:opacity-100 transition z-20 rounded-xl shadow-sm">
                     <Maximize2 className="w-3 h-3 text-[#E6332A]" />
                     <span>Ver detalle</span>
                   </div>
                 </div>
 
                 {/* Social Proof: Kudos Avatars Counter */}
-                <div className="px-5 py-3 flex items-center justify-between text-xs text-[#1A1918] border-b-2 border-[#1A1918] bg-[#FAF6ED]">
+                <div className="px-5 py-3 flex items-center justify-between text-xs text-[#1A1918] border-b border-[#1A1918]/10 bg-[#FAF6ED]">
                   <div className="flex items-center gap-2">
                     <div className="flex -space-x-1.5 overflow-hidden">
                       {act.kudosAvatars.slice(0, 3).map((av, idx) => (
                         /* eslint-disable-next-line @next/next/no-img-element */
-                        <img key={idx} src={av} alt="saludo" className="w-5 h-5 rounded-full border border-[#1A1918] object-cover shadow-sm" />
+                        <img key={idx} src={av} alt="saludo" className="w-5 h-5 rounded-full border border-[#1A1918]/10 object-cover shadow-sm" />
                       ))}
                     </div>
                     <span className="text-xs font-sans font-bold">
@@ -1041,10 +1034,10 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                 </div>
 
                 {/* Action Buttons: Saludo Biker, Compartir */}
-                <div className="px-4 py-2.5 flex items-center justify-around text-xs border-b-2 border-[#1A1918] bg-[#FAF6ED] gap-2">
+                <div className="px-4 py-2.5 flex items-center justify-around text-xs border-b border-[#1A1918]/10 bg-[#FAF6ED] gap-2">
                   <button
                     onClick={(e) => handleKudoClick(act, e)}
-                    className={`flex-1 py-2.5 flex items-center justify-center gap-2 font-display uppercase tracking-wider text-xs font-black transition rounded-xl border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${
+                    className={`flex-1 py-2.5 flex items-center justify-center gap-2 font-sans text-xs font-semibold transition rounded-xl border border-[#1A1918]/10 shadow-sm active:shadow-none ${
                       act.hasKudoed ? 'bg-[#F7B32B] text-[#1A1918]' : 'bg-[#F4EEDB] hover:bg-[#FAF6ED] text-[#1A1918]'
                     }`}
                   >
@@ -1057,7 +1050,7 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                       e.stopPropagation();
                       setShareModalItem(act);
                     }}
-                    className="flex-1 py-2.5 flex items-center justify-center gap-2 text-[#1A1918] bg-[#F4EEDB] hover:bg-[#FAF6ED] font-display uppercase tracking-wider text-xs font-black transition rounded-xl border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                    className="flex-1 py-2.5 flex items-center justify-center gap-2 text-[#1A1918] bg-[#F4EEDB] hover:bg-[#FAF6ED] font-sans text-xs font-semibold transition rounded-xl border border-[#1A1918]/10 shadow-sm active:shadow-none"
                     title="Compartir rodada en tus tribus, redes o enlace"
                   >
                     <Share2 className="w-4 h-4 text-[#E6332A]" />
@@ -1069,25 +1062,25 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                 {activeCommentBox === act.id && (
                   <div 
                     onClick={(e) => e.stopPropagation()} 
-                    className="p-5 bg-[#F4EEDB] border-t-2 border-[#1A1918] space-y-3 cursor-default"
+                    className="p-5 bg-[#F4EEDB] border-t border-[#1A1918]/10 space-y-3 cursor-default"
                   >
                     {/* Render comments list if any */}
                     {act.comments && act.comments.length > 0 && (
                       <div className="space-y-2 mb-3">
-                        <span className="text-[10px] text-[#1A1918]/70 uppercase font-display font-black tracking-wider block">
+                        <span className="text-[10px] text-[#1A1918]/70 uppercase font-sans font-semibold tracking-wider block">
                           Comentarios ({act.comments.length})
                         </span>
                         {act.comments.map((comm) => (
-                          <div key={comm.id} className="p-3 bg-[#FAF6ED] border-2 border-[#1A1918] rounded-xl flex items-start gap-3 shadow-[2px_2px_0px_#1A1918]">
+                          <div key={comm.id} className="p-3 bg-[#FAF6ED] border border-[#1A1918]/10 rounded-xl flex items-start gap-3 shadow-sm">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img 
                               src={comm.userAvatar} 
                               alt={comm.userName} 
-                              className="w-8 h-8 rounded-lg object-cover border border-[#1A1918] shrink-0" 
+                              className="w-8 h-8 rounded-lg object-cover border border-[#1A1918]/10 shrink-0" 
                             />
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center justify-between gap-2">
-                                <span className="text-xs font-display font-black text-[#1A1918] uppercase tracking-wider">{comm.userName}</span>
+                                <span className="text-xs font-sans font-semibold text-[#1A1918]  ">{comm.userName}</span>
                                 <span className="text-[10px] text-[#1A1918]/60 font-mono font-bold">{comm.createdAt}</span>
                               </div>
                               <p className="text-xs text-[#1A1918] mt-0.5 font-sans leading-relaxed font-medium">
@@ -1106,7 +1099,7 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                         onChange={(e) => setCommentInput(e.target.value)}
                         onKeyDown={(e) => { if (e.key === 'Enter') handleSendComment(act.id); }}
                         placeholder="Escribe un comentario a la rodada..."
-                        className="flex-1 bg-[#FAF6ED] border-2 border-[#1A1918] px-4 py-2.5 text-[#1A1918] text-xs focus:outline-none focus:ring-1 focus:ring-[#1A1918] font-sans font-medium rounded-xl shadow-[2px_2px_0px_#1A1918]"
+                        className="flex-1 bg-[#FAF6ED] border border-[#1A1918]/10 px-4 py-2.5 text-[#1A1918] text-xs focus:outline-none focus:ring-1 focus:ring-[#1A1918] font-sans font-medium rounded-xl shadow-sm"
                       />
                       <button
                         onClick={() => handleSendComment(act.id)}
@@ -1133,15 +1126,15 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
         <aside className="hidden lg:block lg:col-span-3 space-y-6 sticky top-24">
           
           {/* Próximas Expediciones (Risograph Roadbooks) */}
-          <div className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[24px] p-6 space-y-4 shadow-[4px_4px_0px_#1A1918]">
-            <div className="flex items-center justify-between border-b-2 border-[#1A1918] pb-3">
+          <div className="bg-[#FAF6ED] border border-[#1A1918]/10 rounded-[24px] p-6 space-y-4 shadow-sm">
+            <div className="flex items-center justify-between border-b border-[#1A1918]/10 pb-3">
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-[#E6332A]" />
-                <h4 className="text-xs font-display font-black text-[#1A1918] uppercase tracking-widest">Calendario de Salidas</h4>
+                <h4 className="text-xs font-sans font-semibold text-[#1A1918]  ">Calendario de salidas</h4>
               </div>
               <button
                 onClick={() => setActiveNavTab('tribus')}
-                className="text-[10px] font-display font-black text-[#E6332A] uppercase tracking-wider hover:underline transition"
+                className="text-[10px] font-sans font-semibold text-[#E6332A] uppercase tracking-wider hover:underline transition"
               >
                 Ver &gt;
               </button>
@@ -1152,10 +1145,10 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                 <div 
                   key={r.id} 
                   onClick={() => enterRodada(r.id)}
-                  className="bg-[#F4EEDB] border-2 border-[#1A1918] rounded-xl p-3.5 space-y-1.5 hover:bg-[#FAF6ED] transition cursor-pointer group shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                  className="bg-[#F4EEDB] border border-[#1A1918]/10 rounded-xl p-3.5 space-y-1.5 hover:bg-[#FAF6ED] transition cursor-pointer group shadow-sm active:shadow-none"
                 >
-                  <span className="text-[10px] font-display uppercase tracking-widest text-[#E06423] font-black">{r.category}</span>
-                  <h5 className="text-xs font-display font-black text-[#1A1918] group-hover:text-[#E6332A] transition uppercase tracking-wide">{r.title}</h5>
+                  <span className="text-[10px] font-sans uppercase tracking-widest text-[#E06423] font-semibold">{r.category}</span>
+                  <h5 className="text-xs font-sans font-semibold text-[#1A1918] group-hover:text-[#E6332A] transition  ">{r.title}</h5>
                   <div className="flex items-center justify-between text-[11px] font-sans text-[#1A1918]/70 pt-1.5 border-t border-[#1A1918]/20 font-medium">
                     <span>{r.startDate}</span>
                     <span className="text-[#1A1918] font-bold font-mono">{r.attendees.length} pilotos</span>
@@ -1166,11 +1159,11 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
           </div>
 
           {/* Motorcycle Chapters / Clubs */}
-          <div className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[24px] p-6 space-y-3 shadow-[4px_4px_0px_#1A1918]">
-            <div className="flex items-center justify-between border-b-2 border-[#1A1918] pb-3">
+          <div className="bg-[#FAF6ED] border border-[#1A1918]/10 rounded-[24px] p-6 space-y-3 shadow-sm">
+            <div className="flex items-center justify-between border-b border-[#1A1918]/10 pb-3">
               <div className="flex items-center gap-2">
                 <Users className="w-4 h-4 text-[#E6332A]" />
-                <h4 className="text-xs font-display font-black text-[#1A1918] uppercase tracking-widest">Tus Tribus</h4>
+                <h4 className="text-xs font-sans font-semibold text-[#1A1918]  ">Tus tribus</h4>
               </div>
             </div>
 
@@ -1182,13 +1175,13 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                 <div 
                   key={c.id}
                   onClick={() => enterCrew(c.id)}
-                  className="flex items-center justify-between p-3 bg-[#F4EEDB] border-2 border-[#1A1918] rounded-xl hover:bg-[#FAF6ED] transition cursor-pointer group shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                  className="flex items-center justify-between p-3 bg-[#F4EEDB] border border-[#1A1918]/10 rounded-xl hover:bg-[#FAF6ED] transition cursor-pointer group shadow-sm active:shadow-none"
                 >
                   <div className="min-w-0">
-                    <p className="text-xs font-display font-black text-[#1A1918] uppercase tracking-wider group-hover:text-[#E6332A] transition truncate">{c.name}</p>
-                    <p className="text-[11px] font-serif italic text-[#1A1918]/70 font-medium">{c.members.length} miembros • {c.baseCity}</p>
+                    <p className="text-xs font-sans font-semibold text-[#1A1918] group-hover:text-[#E6332A] transition truncate">{c.name}</p>
+                    <p className="text-[11px] font-sans text-[#1A1918]/70 font-medium">{c.members.length} miembros • {c.baseCity}</p>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-[#1A1918]/50 group-hover:text-[#1A1918] group-hover:translate-x-0.5 transition shrink-0" />
+                  <ChevronRight className="w-4 h-4 text-[#1A1918]/50 group-hover:text-[#1A1918] transition shrink-0" />
                 </div>
               ))}
             </div>

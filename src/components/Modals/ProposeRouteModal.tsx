@@ -110,34 +110,34 @@ export const ProposeRouteModal: React.FC<ProposeRouteModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-[#1A1918]/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fadeIn">
-      <div className="border-2 border-[#1A1918] bg-[#FAF6ED] max-w-xl w-full p-6 sm:p-8 space-y-5 my-auto max-h-[94vh] overflow-y-auto shadow-[8px_8px_0px_#1A1918] relative text-[#1A1918] font-sans rounded-[28px] animate-scaleUp">
-        <div className="flex items-center justify-between border-b-2 border-[#1A1918] pb-4">
+      <div className="border border-[#1A1918]/10 bg-[#FAF6ED] max-w-xl w-full p-6 sm:p-8 space-y-5 my-auto max-h-[94vh] overflow-y-auto shadow-sm relative text-[#1A1918] font-sans rounded-[28px] animate-scaleUp">
+        <div className="flex items-center justify-between border-b border-[#1A1918]/10 pb-4">
           <div>
-            <span className="font-mono text-[10px] text-[#E6332A] uppercase tracking-widest font-black">
-              ★ NUEVA PROPUESTA DE RUTA ★
+            <span className="font-mono text-[10px] text-[#E6332A] uppercase tracking-widest font-semibold">
+              NUEVA PROPUESTA DE RUTA
             </span>
-            <h3 className="font-display font-black text-2xl text-[#1A1918] uppercase mt-1">
-              Proponer Variante al Grupo
+            <h3 className="font-display font-semibold text-2xl text-[#1A1918] mt-1">
+              Proponer variante al grupo
             </h3>
           </div>
           <button 
             onClick={onClose} 
-            className="w-8 h-8 border-2 border-[#1A1918] bg-[#F4EEDB] hover:bg-[#E6332A] hover:text-white text-[#1A1918] rounded-xl transition shadow-[2px_2px_0px_#1A1918] flex items-center justify-center"
+            className="w-8 h-8 border border-[#1A1918]/10 bg-[#F4EEDB] hover:bg-[#E6332A] hover:text-white text-[#1A1918] rounded-xl transition shadow-sm flex items-center justify-center"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {onOpenRecordRoute && (
-          <div className="p-3.5 bg-[#F4EEDB] border-2 border-[#1A1918] rounded-2xl flex items-center justify-between text-xs shadow-[3px_3px_0px_#1A1918]">
-            <span className="text-[#1A1918]/70 font-serif italic text-xs font-medium">¿Prefieres registrar las curvas conduciendo en moto?</span>
+          <div className="p-3.5 bg-[#F4EEDB] border border-[#1A1918]/10 rounded-2xl flex items-center justify-between text-xs shadow-sm">
+            <span className="text-[#1A1918]/70 font-sans text-xs font-medium">¿Prefieres registrar las curvas conduciendo en moto?</span>
             <button
               type="button"
               onClick={() => {
                 onClose();
                 onOpenRecordRoute();
               }}
-              className="text-[#E6332A] hover:text-[#1A1918] font-display font-black text-[10px] uppercase tracking-wider underline transition"
+              className="text-[#E6332A] hover:text-[#1A1918] font-sans font-semibold text-[10px] uppercase tracking-wider underline transition"
             >
               GPS en Vivo →
             </button>
@@ -146,71 +146,71 @@ export const ProposeRouteModal: React.FC<ProposeRouteModalProps> = ({
 
         <form onSubmit={handleSubmit} className="space-y-4 text-xs">
           <div>
-            <label className="text-[#1A1918]/70 uppercase font-display font-black text-[10px] block mb-1">Título de la Variante</label>
+            <label className="text-[#1A1918]/70 uppercase font-sans font-semibold text-[10px] block mb-1">Título de la variante</label>
             <input
               type="text"
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Ej. Bosques de Amanalco & Monte Alto por Los Saucos"
-              className="w-full bg-[#F4EEDB] border-2 border-[#1A1918] px-3.5 py-2.5 text-[#1A1918] focus:outline-none focus:border-[#E6332A] rounded-xl shadow-[2px_2px_0px_#1A1918] font-bold"
+              className="w-full bg-[#F4EEDB] border border-[#1A1918]/10 px-3.5 py-2.5 text-[#1A1918] focus:outline-none focus:border-[#E6332A] rounded-xl shadow-sm font-bold"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3.5">
             <div>
-              <label className="text-[#1A1918]/70 uppercase font-display font-black text-[10px] block mb-1">Destino / Zona</label>
+              <label className="text-[#1A1918]/70 uppercase font-sans font-semibold text-[10px] block mb-1">Destino / Zona</label>
               <input
                 type="text"
                 required
                 value={destination}
                 onChange={(e) => setDestination(e.target.value)}
                 placeholder="Ej. Corral de Piedra / Valle de Bravo"
-                className="w-full bg-[#F4EEDB] border-2 border-[#1A1918] px-3.5 py-2.5 text-[#1A1918] focus:outline-none focus:border-[#E6332A] rounded-xl shadow-[2px_2px_0px_#1A1918] font-bold"
+                className="w-full bg-[#F4EEDB] border border-[#1A1918]/10 px-3.5 py-2.5 text-[#1A1918] focus:outline-none focus:border-[#E6332A] rounded-xl shadow-sm font-bold"
               />
             </div>
 
             <div>
-              <label className="text-[#1A1918]/70 uppercase font-display font-black text-[10px] block mb-1">Estado</label>
+              <label className="text-[#1A1918]/70 uppercase font-sans font-semibold text-[10px] block mb-1">Estado</label>
               <input
                 type="text"
                 value={state}
                 onChange={(e) => setState(e.target.value)}
                 placeholder="Ej. Estado de México"
-                className="w-full bg-[#F4EEDB] border-2 border-[#1A1918] px-3.5 py-2.5 text-[#1A1918] focus:outline-none focus:border-[#E6332A] rounded-xl shadow-[2px_2px_0px_#1A1918] font-bold"
+                className="w-full bg-[#F4EEDB] border border-[#1A1918]/10 px-3.5 py-2.5 text-[#1A1918] focus:outline-none focus:border-[#E6332A] rounded-xl shadow-sm font-bold"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="text-[#1A1918]/70 uppercase font-display font-black text-[10px] block mb-1">Distancia (km)</label>
+              <label className="text-[#1A1918]/70 uppercase font-sans font-semibold text-[10px] block mb-1">Distancia (km)</label>
               <input
                 type="number"
                 value={totalKm}
                 onChange={(e) => setTotalKm(Number(e.target.value))}
-                className="w-full bg-[#F4EEDB] border-2 border-[#1A1918] px-3.5 py-2.5 text-[#1A1918] focus:outline-none focus:border-[#E6332A] rounded-xl shadow-[2px_2px_0px_#1A1918] font-mono font-black"
+                className="w-full bg-[#F4EEDB] border border-[#1A1918]/10 px-3.5 py-2.5 text-[#1A1918] focus:outline-none focus:border-[#E6332A] rounded-xl shadow-sm font-mono font-semibold"
               />
             </div>
 
             <div>
-              <label className="text-[#1A1918]/70 uppercase font-display font-black text-[10px] block mb-1">% Off-Road</label>
+              <label className="text-[#1A1918]/70 uppercase font-sans font-semibold text-[10px] block mb-1">% Off-Road</label>
               <input
                 type="number"
                 min="0"
                 max="100"
                 value={offroadPercentage}
                 onChange={(e) => setOffroadPercentage(Number(e.target.value))}
-                className="w-full bg-[#F4EEDB] border-2 border-[#1A1918] px-3.5 py-2.5 text-[#1A1918] focus:outline-none focus:border-[#E6332A] rounded-xl shadow-[2px_2px_0px_#1A1918] font-mono font-black"
+                className="w-full bg-[#F4EEDB] border border-[#1A1918]/10 px-3.5 py-2.5 text-[#1A1918] focus:outline-none focus:border-[#E6332A] rounded-xl shadow-sm font-mono font-semibold"
               />
             </div>
 
             <div>
-              <label className="text-[#1A1918]/70 uppercase font-display font-black text-[10px] block mb-1">Dificultad</label>
+              <label className="text-[#1A1918]/70 uppercase font-sans font-semibold text-[10px] block mb-1">Dificultad</label>
               <select
                 value={difficulty}
                 onChange={(e) => setDifficulty(e.target.value as any)}
-                className="w-full bg-[#F4EEDB] border-2 border-[#1A1918] px-3.5 py-2.5 text-[#1A1918] focus:outline-none focus:border-[#E6332A] rounded-xl shadow-[2px_2px_0px_#1A1918] font-display font-black"
+                className="w-full bg-[#F4EEDB] border border-[#1A1918]/10 px-3.5 py-2.5 text-[#1A1918] focus:outline-none focus:border-[#E6332A] rounded-xl shadow-sm font-sans font-semibold"
               >
                 <option value="Fácil (Fluida)">Fácil (Fluida)</option>
                 <option value="Intermedia">Intermedia</option>
@@ -220,29 +220,29 @@ export const ProposeRouteModal: React.FC<ProposeRouteModalProps> = ({
           </div>
 
           <div>
-            <label className="text-[#1A1918]/70 uppercase font-display font-black text-[10px] block mb-1">Descripción &amp; Brechas Destacadas</label>
+            <label className="text-[#1A1918]/70 uppercase font-sans font-semibold text-[10px] block mb-1">Descripción &amp; Brechas Destacadas</label>
             <textarea
               rows={2}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe el tipo de suelo (pinocha, grava, tierra compacta) y paradas de abastecimiento..."
-              className="w-full bg-[#F4EEDB] border-2 border-[#1A1918] px-3.5 py-2.5 text-[#1A1918] focus:outline-none focus:border-[#E6332A] rounded-xl shadow-[2px_2px_0px_#1A1918] resize-none font-medium"
+              className="w-full bg-[#F4EEDB] border border-[#1A1918]/10 px-3.5 py-2.5 text-[#1A1918] focus:outline-none focus:border-[#E6332A] rounded-xl shadow-sm resize-none font-medium"
             />
           </div>
 
-          <div className="pt-4 border-t-2 border-[#1A1918] flex gap-3">
+          <div className="pt-4 border-t border-[#1A1918]/10 flex gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="w-1/2 py-3 border-2 border-[#1A1918] bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] uppercase font-display font-black text-xs tracking-wider transition rounded-xl shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+              className="w-1/2 py-3 border border-[#1A1918]/10 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] font-sans font-semibold text-xs transition rounded-xl shadow-sm active:shadow-none"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="w-1/2 py-3 bg-[#E6332A] hover:bg-[#d02c24] text-white border-2 border-[#1A1918] uppercase font-display font-black text-xs tracking-widest transition rounded-xl shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+              className="w-1/2 py-3 bg-[#E6332A] hover:bg-[#d02c24] text-white border border-[#1A1918]/10 font-sans font-semibold text-xs transition rounded-xl shadow-sm active:shadow-none"
             >
-              Publicar Variante
+              Publicar variante
             </button>
           </div>
         </form>

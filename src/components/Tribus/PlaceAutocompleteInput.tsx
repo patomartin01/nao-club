@@ -232,11 +232,11 @@ export const PlaceAutocompleteInput: React.FC<PlaceAutocompleteInputProps> = ({
               >
                 <MapPin className="w-3.5 h-3.5 text-stone-400 group-hover:text-[#C84B31] shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <div className="text-[#141312] font-display font-bold uppercase truncate">
+                  <div className="text-[#141312] font-sans font-bold truncate">
                     {item.name}
                   </div>
                   {showAddress && (
-                    <div className="text-[10px] text-stone-500 font-serif italic truncate mt-0.5">
+                    <div className="text-[10px] text-stone-500 font-sans truncate mt-0.5">
                       {item.address}
                     </div>
                   )}

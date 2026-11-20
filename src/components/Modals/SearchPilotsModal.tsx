@@ -307,7 +307,7 @@ export const SearchPilotsModal: React.FC<SearchPilotsModalProps> = ({
       onClick={onClose}
     >
       <div 
-        className="bg-[#FAF6ED] sm:border-2 sm:border-[#1A1918] w-full sm:max-w-md h-full sm:h-auto sm:max-h-[85vh] sm:rounded-3xl overflow-hidden text-[#1A1918] sm:shadow-[6px_6px_0px_#1A1918] flex flex-col cursor-default"
+        className="bg-[#FAF6ED] sm:border sm:border-[#1A1918] w-full sm:max-w-md h-full sm:h-auto sm:max-h-[85vh] sm:rounded-3xl overflow-hidden text-[#1A1918] sm:shadow-sm flex flex-col cursor-default"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top App Header / Search Input (Instagram-style Clean & Simple) */}
@@ -337,7 +337,7 @@ export const SearchPilotsModal: React.FC<SearchPilotsModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="text-xs font-mono font-bold uppercase tracking-wider text-[#1A1918]/70 hover:text-[#E6332A] transition px-1 py-1"
+            className="text-xs font-mono font-bold text-[#1A1918]/70 hover:text-[#E6332A] transition px-1 py-1"
           >
             Listo
           </button>
@@ -349,7 +349,7 @@ export const SearchPilotsModal: React.FC<SearchPilotsModalProps> = ({
           {!query.trim() ? (
             <div className="py-20 text-center px-6">
               <Search className="w-8 h-8 text-[#1A1918]/30 mx-auto mb-3" />
-              <p className="text-xs font-mono uppercase tracking-widest text-[#1A1918]/50">
+              <p className="text-xs font-mono text-[#1A1918]/50">
                 Escribe un nombre o apodo
               </p>
             </div>
@@ -362,7 +362,7 @@ export const SearchPilotsModal: React.FC<SearchPilotsModalProps> = ({
           ) : filteredPilots.length === 0 ? (
             /* Sin resultados */
             <div className="py-16 text-center px-6 space-y-1">
-              <p className="font-display font-black text-sm uppercase text-[#1A1918]">
+              <p className="font-sans font-semibold text-sm text-[#1A1918]">
                 Sin resultados
               </p>
               <p className="text-xs text-[#1A1918]/60">
@@ -398,7 +398,7 @@ export const SearchPilotsModal: React.FC<SearchPilotsModalProps> = ({
                       className="w-11 h-11 rounded-full object-cover border border-[#1A1918]/20 shrink-0 bg-[#F4EEDB]"
                     />
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-display font-black text-[#1A1918] truncate leading-tight group-hover:text-[#E6332A] transition">
+                      <p className="text-sm font-sans font-semibold text-[#1A1918] truncate leading-tight group-hover:text-[#E6332A] transition">
                         {pilot.name}
                       </p>
                       <p className="text-xs font-mono text-[#1A1918]/60 truncate">
@@ -421,7 +421,7 @@ export const SearchPilotsModal: React.FC<SearchPilotsModalProps> = ({
                           onClose();
                           openPilotProfileById(pilot.id);
                         }}
-                        className="px-3 py-1.5 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] text-xs font-display font-bold uppercase rounded-lg border border-[#1A1918]/30 transition"
+                        className="px-3 py-1.5 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] text-xs font-sans font-bold rounded-lg border border-[#1A1918]/30 transition"
                       >
                         Ver
                       </button>
@@ -432,7 +432,7 @@ export const SearchPilotsModal: React.FC<SearchPilotsModalProps> = ({
                           e.stopPropagation();
                           toggleFollowUser(pilot.id);
                         }}
-                        className="px-3.5 py-1.5 bg-[#F4EEDB] hover:bg-[#E6332A] hover:text-white text-[#1A1918] text-xs font-display font-bold uppercase rounded-lg border border-[#1A1918]/20 transition group cursor-pointer"
+                        className="px-3.5 py-1.5 bg-[#F4EEDB] hover:bg-[#E6332A] hover:text-white text-[#1A1918] text-xs font-sans font-bold rounded-lg border border-[#1A1918]/20 transition group cursor-pointer"
                         title="Dejar de seguir"
                       >
                         <span className="group-hover:hidden">Siguiendo</span>
@@ -445,7 +445,7 @@ export const SearchPilotsModal: React.FC<SearchPilotsModalProps> = ({
                           e.stopPropagation();
                           toggleFollowUser(pilot.id);
                         }}
-                        className="px-4 py-1.5 bg-[#E6332A] hover:bg-[#d02c24] text-white text-xs font-display font-black uppercase rounded-lg shadow-sm transition active:scale-95 cursor-pointer"
+                        className="px-4 py-1.5 bg-[#E6332A] hover:bg-[#d02c24] text-white text-xs font-sans font-semibold rounded-lg shadow-sm transition active:scale-95 cursor-pointer"
                         title="Seguir a este piloto"
                       >
                         + Seguir

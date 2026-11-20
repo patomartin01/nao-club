@@ -229,7 +229,7 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
 
   return (
     <div className="fixed inset-0 z-50 bg-[#1A1918]/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-fadeIn">
-      <div className="border-2 border-[#1A1918] bg-[#FAF6ED] max-w-xl w-full p-6 sm:p-8 space-y-6 my-auto max-h-[94vh] overflow-y-auto font-sans text-[#1A1918] shadow-[8px_8px_0px_#1A1918] relative rounded-[28px] animate-scaleUp">
+      <div className="border border-[#1A1918]/10 bg-[#FAF6ED] max-w-xl w-full p-6 sm:p-8 space-y-6 my-auto max-h-[94vh] overflow-y-auto font-sans text-[#1A1918] shadow-sm relative rounded-[28px] animate-scaleUp">
         
         {/* ============================================================== */}
         {/* SUCCESS VIEW: POST-CREATION TWO-WAY BRIDGE                    */}
@@ -238,40 +238,40 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
           <div className="space-y-6 py-2 animate-in fade-in zoom-in-95 duration-200">
             {/* Header */}
             <div className="text-center space-y-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-display font-black uppercase tracking-widest bg-[#F7B32B] border-2 border-[#1A1918] text-[#1A1918] shadow-[2px_2px_0px_#1A1918]">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-sans font-semibold uppercase tracking-widest bg-[#F7B32B] border border-[#1A1918]/10 text-[#1A1918] shadow-sm">
                 <Sparkles className="w-3.5 h-3.5 text-[#1A1918]" />
-                Club Fundado con Éxito
+                Club fundado con éxito
               </span>
-              <h3 className="font-display font-black text-2xl sm:text-3xl text-[#1A1918] uppercase tracking-wide">
+              <h3 className="font-display font-semibold text-2xl sm:text-3xl text-[#1A1918]  ">
                 {createdCrew.name}
               </h3>
-              <p className="text-xs text-[#1A1918]/70 font-serif italic max-w-md mx-auto font-medium">
+              <p className="text-xs text-[#1A1918]/70 font-sans max-w-md mx-auto font-medium">
                 Comparte la clave o el enlace con tus pilotos para que entren a la tribu.
               </p>
             </div>
 
             {/* Crew Identity Card */}
-            <div className="border-2 border-[#1A1918] bg-[#F4EEDB] rounded-2xl p-4 space-y-3.5 shadow-[4px_4px_0px_#1A1918]">
-              <div className="flex items-center justify-between border-b-2 border-[#1A1918] pb-2.5">
+            <div className="border border-[#1A1918]/10 bg-[#F4EEDB] rounded-2xl p-4 space-y-3.5 shadow-sm">
+              <div className="flex items-center justify-between border-b border-[#1A1918]/10 pb-2.5">
                 <div className="flex items-center gap-2">
                   <Shield className="w-4 h-4 text-[#E6332A]" />
-                  <span className="text-xs font-display font-black text-[#1A1918] uppercase">{createdCrew.baseCity}</span>
+                  <span className="text-xs font-sans font-semibold text-[#1A1918] ">{createdCrew.baseCity}</span>
                 </div>
-                <span className="text-[10px] font-display font-black text-[#1A1918]/70 uppercase">
+                <span className="text-[10px] font-sans font-semibold text-[#1A1918]/70 uppercase">
                   1 Piloto (Admin)
                 </span>
               </div>
 
               {/* Clave de Acceso */}
-              <div className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-xl p-3 flex items-center justify-between gap-3 shadow-[2px_2px_0px_#1A1918]">
+              <div className="bg-[#FAF6ED] border border-[#1A1918]/10 rounded-xl p-3 flex items-center justify-between gap-3 shadow-sm">
                 <div>
-                  <span className="text-[9px] uppercase tracking-wider text-[#1A1918]/60 block font-display font-black">Clave del Club</span>
-                  <span className="text-xl font-display font-black text-[#1A1918] tracking-widest">{createdCrew.inviteCode}</span>
+                  <span className="text-[9px] uppercase tracking-wider text-[#1A1918]/60 block font-sans font-semibold">Clave del club</span>
+                  <span className="text-xl font-display font-semibold text-[#1A1918] tracking-widest">{createdCrew.inviteCode}</span>
                 </div>
                 <button
                   type="button"
                   onClick={handleCopyCode}
-                  className="px-3.5 py-2 rounded-xl border-2 border-[#1A1918] bg-[#F7B32B] hover:bg-[#e5a424] text-[#1A1918] text-xs font-display font-black uppercase flex items-center gap-1.5 transition cursor-pointer shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                  className="px-3.5 py-2 rounded-xl border border-[#1A1918]/10 bg-[#F7B32B] hover:bg-[#e5a424] text-[#1A1918] text-xs font-sans font-semibold flex items-center gap-1.5 transition cursor-pointer shadow-sm active:shadow-none"
                 >
                   {copiedCode ? (
                     <>
@@ -281,35 +281,35 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
                   ) : (
                     <>
                       <Copy className="w-3.5 h-3.5 text-[#1A1918]" />
-                      <span>Copiar Clave</span>
+                      <span>Copiar clave</span>
                     </>
                   )}
                 </button>
               </div>
 
               {/* Puente WhatsApp */}
-              <div className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-xl p-3.5 space-y-2 shadow-[2px_2px_0px_#1A1918]">
-                <div className="flex items-center gap-2 text-[#1A1918] text-xs font-display font-black uppercase">
+              <div className="bg-[#FAF6ED] border border-[#1A1918]/10 rounded-xl p-3.5 space-y-2 shadow-sm">
+                <div className="flex items-center gap-2 text-[#1A1918] text-xs font-sans font-semibold ">
                   <WhatsAppIcon className="w-4 h-4 text-[#1D4477]" />
                   <span>Enlace para WhatsApp</span>
                 </div>
-                <p className="text-[11px] text-[#1A1918]/80 leading-relaxed font-serif italic">
+                <p className="text-[11px] text-[#1A1918]/80 leading-relaxed font-sans ">
                   Pégalo en la <strong>descripción de tu grupo de WhatsApp</strong>:
                 </p>
                 <button
                   type="button"
                   onClick={handleCopyNaoShareLink}
-                  className="w-full py-2.5 px-3 rounded-xl bg-[#1D4477] hover:bg-[#15345b] text-white border-2 border-[#1A1918] font-display font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition shadow-[3px_3px_0px_#1A1918] cursor-pointer active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                  className="w-full py-2.5 px-3 rounded-xl bg-[#1D4477] hover:bg-[#15345b] text-white border border-[#1A1918]/10 font-sans font-semibold text-xs flex items-center justify-center gap-2 transition shadow-sm cursor-pointer active:shadow-none"
                 >
                   {copiedNaoLink ? (
                     <>
                       <Check className="w-4 h-4 text-white" />
-                      <span>¡Enlace Copiado!</span>
+                      <span>¡Enlace copiado!</span>
                     </>
                   ) : (
                     <>
                       <Copy className="w-4 h-4" />
-                      <span>Copiar Enlace para WhatsApp</span>
+                      <span>Copiar enlace para WhatsApp</span>
                     </>
                   )}
                 </button>
@@ -321,9 +321,9 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
               <button
                 type="button"
                 onClick={handleFinishAndEnterCrew}
-                className="w-full py-3.5 bg-[#E6332A] hover:bg-[#d02c24] text-white uppercase font-display font-black text-xs tracking-widest transition flex items-center justify-center gap-2 cursor-pointer border-2 border-[#1A1918] shadow-[4px_4px_0px_#1A1918] rounded-xl active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                className="w-full py-3.5 bg-[#E6332A] hover:bg-[#d02c24] text-white font-sans font-semibold text-xs transition flex items-center justify-center gap-2 cursor-pointer border border-[#1A1918]/10 shadow-sm rounded-xl active:shadow-none"
               >
-                <span>Entrar a la Tribu</span>
+                <span>Entrar a la tribu</span>
                 <ArrowRight className="w-4 h-4 text-[#F7B32B]" />
               </button>
             </div>
@@ -334,18 +334,18 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
           /* ============================================================== */
           <>
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b-2 border-[#1A1918] pb-3 gap-3">
+            <div className="flex items-center justify-between border-b border-[#1A1918]/10 pb-3 gap-3">
               <div>
-                <span className="font-display text-[10px] text-[#E6332A] uppercase tracking-[0.2em] font-black block">
-                  ★ NUEVA COMUNIDAD ★
+                <span className="font-sans text-[10px] text-[#E6332A] uppercase tracking-[0.2em] font-semibold block">
+                  NUEVA COMUNIDAD
                 </span>
-                <h3 className="font-display font-black text-2xl text-[#1A1918] uppercase tracking-wide">
-                  Fundar Club
+                <h3 className="font-display font-semibold text-2xl text-[#1A1918]  ">
+                  Fundar club
                 </h3>
               </div>
               <button 
                 onClick={onClose} 
-                className="w-8 h-8 rounded-xl bg-[#F4EEDB] border-2 border-[#1A1918] text-[#1A1918] hover:bg-[#E6332A] hover:text-white flex items-center justify-center transition shadow-[2px_2px_0px_#1A1918]"
+                className="w-8 h-8 rounded-xl bg-[#F4EEDB] border border-[#1A1918]/10 text-[#1A1918] hover:bg-[#E6332A] hover:text-white flex items-center justify-center transition shadow-sm"
                 title="Cerrar"
               >
                 <X className="w-4 h-4" />
@@ -353,7 +353,7 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
             </div>
 
             {/* LIVE CARD PREVIEW */}
-            <div className="border-2 border-[#1A1918] bg-[#F4EEDB] rounded-2xl overflow-hidden relative group shadow-[4px_4px_0px_#1A1918]">
+            <div className="border border-[#1A1918]/10 bg-[#F4EEDB] rounded-2xl overflow-hidden relative group shadow-sm">
               <div className="relative h-20 sm:h-24 w-full overflow-hidden">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img 
@@ -365,17 +365,17 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
                 
                 {/* Badges en la portada */}
                 <div className="absolute top-2 left-2.5 right-2.5 flex items-center justify-between text-[10px]">
-                  <span className="bg-[#FAF6ED] border-2 border-[#1A1918] text-[#1A1918] px-2 py-0.5 font-display font-black uppercase flex items-center gap-1 rounded-lg shadow-[1px_1px_0px_#1A1918]">
+                  <span className="bg-[#FAF6ED] border border-[#1A1918]/10 text-[#1A1918] px-2 py-0.5 font-sans font-semibold flex items-center gap-1 rounded-lg shadow-sm">
                     <Shield className="w-3 h-3 text-[#E6332A]" />
                     <span>{currentUser.name.split(' ')[0]}</span>
                   </span>
                   {isWhatsappValid ? (
-                    <span className="bg-[#1D4477] text-white border-2 border-[#1A1918] px-2 py-0.5 font-display font-black text-[9px] uppercase flex items-center gap-1 rounded-lg shadow-[1px_1px_0px_#1A1918]">
+                    <span className="bg-[#1D4477] text-white border border-[#1A1918]/10 px-2 py-0.5 font-sans font-semibold text-[9px] uppercase flex items-center gap-1 rounded-lg shadow-sm">
                       <WhatsAppIcon className="w-3 h-3 text-white" />
-                      <span>WhatsApp Conectado</span>
+                      <span>WhatsApp conectado</span>
                     </span>
                   ) : (
-                    <span className="bg-[#1A1918]/80 text-[#FAF6ED] border border-[#1A1918] px-2 py-0.5 text-[9px] font-display font-black uppercase rounded-lg">
+                    <span className="bg-[#1A1918]/80 text-[#FAF6ED] border border-[#1A1918]/10 px-2 py-0.5 text-[9px] font-sans font-semibold uppercase rounded-lg">
                       Sin WhatsApp
                     </span>
                   )}
@@ -383,10 +383,10 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
 
                 {/* Título en la tarjeta */}
                 <div className="absolute bottom-2 left-3 right-3 text-white">
-                  <h4 className="font-display font-black text-base text-white uppercase tracking-wide truncate drop-shadow-sm">
+                  <h4 className="font-display font-semibold text-base text-white truncate drop-shadow-sm">
                     {name.trim() || 'Nombre de tu Tribu'}
                   </h4>
-                  <p className="text-[10px] text-stone-200 font-serif italic truncate font-bold">
+                  <p className="text-[10px] text-stone-200 font-sans truncate font-bold">
                     {baseCity}
                   </p>
                 </div>
@@ -397,8 +397,8 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
               
               {/* Campo 1: Nombre */}
               <div>
-                <label className="text-[#1A1918]/70 uppercase text-[10px] font-display font-black block mb-1">
-                  Nombre de la Tribu <span className="text-[#E6332A]">*</span>
+                <label className="text-[#1A1918]/70 uppercase text-[10px] font-sans font-semibold block mb-1">
+                  Nombre de la tribu <span className="text-[#E6332A]">*</span>
                 </label>
                 <input
                   type="text"
@@ -406,19 +406,19 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Ej. Sierra Brava MC / Nao Dual-Sport"
-                  className="w-full bg-[#F4EEDB] border-2 border-[#1A1918] px-3.5 py-2.5 text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:border-[#E6332A] text-xs font-display font-black uppercase tracking-wider rounded-xl shadow-[2px_2px_0px_#1A1918]"
+                  className="w-full bg-[#F4EEDB] border border-[#1A1918]/10 px-3.5 py-2.5 text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:border-[#E6332A] text-xs font-sans font-semibold rounded-xl shadow-sm"
                 />
                 
                 {/* Sugerencias de Nombre */}
                 {!name && (
                   <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                    <span className="text-[10px] text-[#1A1918]/60 font-serif italic font-bold">Sugerencias:</span>
+                    <span className="text-[10px] text-[#1A1918]/60 font-sans font-bold">Sugerencias:</span>
                     {['Paso de Cortés Dual-Sport', 'Enduro Nevado Club', 'Brecha Brava MC'].map((sug) => (
                       <button
                         key={sug}
                         type="button"
                         onClick={() => setName(sug)}
-                        className="text-[10px] text-[#1A1918] hover:bg-[#F7B32B] border-2 border-[#1A1918] bg-[#FAF6ED] px-2 py-0.5 rounded-lg font-display font-black transition cursor-pointer shadow-[1px_1px_0px_#1A1918]"
+                        className="text-[10px] text-[#1A1918] hover:bg-[#F7B32B] border border-[#1A1918]/10 bg-[#FAF6ED] px-2 py-0.5 rounded-lg font-sans font-semibold transition cursor-pointer shadow-sm"
                       >
                         +{sug}
                       </button>
@@ -429,7 +429,7 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
 
               {/* Campo 2: Estilo / Tagline */}
               <div>
-                <label className="text-[#1A1918]/70 uppercase text-[10px] font-display font-black block mb-1">
+                <label className="text-[#1A1918]/70 uppercase text-[10px] font-sans font-semibold block mb-1">
                   Estilo &amp; Propósito
                 </label>
                 <input
@@ -437,7 +437,7 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
                   value={tagline}
                   onChange={(e) => setTagline(e.target.value)}
                   placeholder="Ej. Terracería y campamentos"
-                  className="w-full bg-[#F4EEDB] border-2 border-[#1A1918] px-3.5 py-2 text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:border-[#E6332A] text-xs rounded-xl shadow-[2px_2px_0px_#1A1918] font-medium"
+                  className="w-full bg-[#F4EEDB] border border-[#1A1918]/10 px-3.5 py-2 text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:border-[#E6332A] text-xs rounded-xl shadow-sm font-medium"
                 />
                 
                 {/* Chips de Vibe */}
@@ -447,10 +447,10 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
                       key={vp.label}
                       type="button"
                       onClick={() => setTagline(vp.tagline)}
-                      className={`text-[10px] text-left px-2.5 py-1.5 border-2 rounded-xl transition truncate cursor-pointer shadow-[1px_1px_0px_#1A1918] ${
+                      className={`text-[10px] text-left px-2.5 py-1.5 border rounded-xl transition truncate cursor-pointer shadow-sm ${
                         tagline === vp.tagline 
-                          ? 'border-[#1A1918] text-[#1A1918] bg-[#F7B32B] font-display font-black' 
-                          : 'border-[#1A1918] text-[#1A1918] hover:bg-[#F4EEDB] bg-[#FAF6ED] font-bold'
+                          ? 'border-[#1A1918]/10 text-[#1A1918] bg-[#F7B32B] font-sans font-semibold' 
+                          : 'border-[#1A1918]/10 text-[#1A1918] hover:bg-[#F4EEDB] bg-[#FAF6ED] font-bold'
                       }`}
                     >
                       {vp.label}
@@ -461,8 +461,8 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
 
               {/* Campo 3: Ciudad Base */}
               <div>
-                <label className="text-[#1A1918]/70 uppercase text-[10px] font-display font-black block mb-1">
-                  Ciudad Base
+                <label className="text-[#1A1918]/70 uppercase text-[10px] font-sans font-semibold block mb-1">
+                  Ciudad base
                 </label>
                 <div className="relative">
                   <MapPin className="w-3.5 h-3.5 text-[#E6332A] absolute left-3 top-1/2 -translate-y-1/2" />
@@ -471,7 +471,7 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
                     value={baseCity}
                     onChange={(e) => setBaseCity(e.target.value)}
                     placeholder="Ej. Interlomas / Valle de Bravo"
-                    className="w-full bg-[#F4EEDB] border-2 border-[#1A1918] pl-8 pr-3 py-2 text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:border-[#E6332A] text-xs rounded-xl shadow-[2px_2px_0px_#1A1918] font-bold"
+                    className="w-full bg-[#F4EEDB] border border-[#1A1918]/10 pl-8 pr-3 py-2 text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:border-[#E6332A] text-xs rounded-xl shadow-sm font-bold"
                   />
                 </div>
                 {/* Chips de ciudades */}
@@ -481,10 +481,10 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
                       key={cp}
                       type="button"
                       onClick={() => setBaseCity(cp)}
-                      className={`text-[10px] px-2.5 py-0.5 border-2 rounded-lg transition cursor-pointer font-display shadow-[1px_1px_0px_#1A1918] ${
+                      className={`text-[10px] px-2.5 py-0.5 border rounded-lg transition cursor-pointer font-sans shadow-sm ${
                         baseCity === cp
-                          ? 'border-[#1A1918] text-[#1A1918] bg-[#F7B32B] font-black'
-                          : 'border-[#1A1918] text-[#1A1918] hover:bg-[#F4EEDB] bg-[#FAF6ED] font-bold'
+                          ? 'border-[#1A1918]/10 text-[#1A1918] bg-[#F7B32B] font-semibold'
+                          : 'border-[#1A1918]/10 text-[#1A1918] hover:bg-[#F4EEDB] bg-[#FAF6ED] font-bold'
                       }`}
                     >
                       {cp}
@@ -496,9 +496,9 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
               {/* Campo 4: Fotografía de Portada (Galería o Patrón Aleatorio con Branding) */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-[#1A1918]/70 uppercase text-[10px] font-display font-black flex items-center gap-1.5">
+                  <label className="text-[#1A1918]/70 uppercase text-[10px] font-sans font-semibold flex items-center gap-1.5">
                     <ImageIcon className="w-3.5 h-3.5 text-[#E6332A]" />
-                    <span>Fotografía de Portada</span>
+                    <span>Fotografía de portada</span>
                   </label>
                   <div className="flex items-center gap-2">
                     {hasCustomCover && (
@@ -522,7 +522,7 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
                         setHasCustomCover(false);
                         setCoverImage(getRandomBrandingPattern());
                       }}
-                      className="text-[9px] font-mono text-[#1A1918]/70 hover:text-[#1A1918] bg-[#F4EEDB] border border-[#1A1918] px-2 py-0.5 rounded-lg flex items-center gap-1 cursor-pointer font-bold"
+                      className="text-[9px] font-mono text-[#1A1918]/70 hover:text-[#1A1918] bg-[#F4EEDB] border border-[#1A1918]/10 px-2 py-0.5 rounded-lg flex items-center gap-1 cursor-pointer font-bold"
                       title="Cambiar patrón aleatorio"
                     >
                       <Dices className="w-3 h-3 text-[#E6332A]" />
@@ -541,9 +541,9 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
 
                 <div 
                   onClick={() => fileInputRef.current?.click()}
-                  className="group relative cursor-pointer border-2 border-[#1A1918] rounded-2xl overflow-hidden bg-[#FAF6ED] shadow-[3px_3px_0px_#1A1918] hover:border-[#E6332A] transition p-3 flex flex-col sm:flex-row items-center gap-3.5"
+                  className="group relative cursor-pointer border border-[#1A1918]/10 rounded-2xl overflow-hidden bg-[#FAF6ED] shadow-sm hover:border-[#E6332A] transition p-3 flex flex-col sm:flex-row items-center gap-3.5"
                 >
-                  <div className="w-full sm:w-28 h-20 rounded-xl overflow-hidden border-2 border-[#1A1918] relative shrink-0 bg-[#F4EEDB]">
+                  <div className="w-full sm:w-28 h-20 rounded-xl overflow-hidden border border-[#1A1918]/10 relative shrink-0 bg-[#F4EEDB]">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img 
                       src={coverImage} 
@@ -556,16 +556,16 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
                   </div>
 
                   <div className="flex-1 text-center sm:text-left min-w-0">
-                    <div className="flex items-center justify-center sm:justify-start gap-1.5 text-xs font-display font-black text-[#1A1918] group-hover:text-[#E6332A] transition uppercase tracking-wide">
+                    <div className="flex items-center justify-center sm:justify-start gap-1.5 text-xs font-sans font-semibold text-[#1A1918] group-hover:text-[#E6332A] transition  ">
                       <Upload className="w-3.5 h-3.5 text-[#E6332A]" />
                       <span>{isUploadingCover ? 'Optimizando foto...' : 'Subir foto de tu galería'}</span>
                     </div>
-                    <p className="text-[10px] text-[#1A1918]/70 font-serif italic mt-0.5 leading-snug">
+                    <p className="text-[10px] text-[#1A1918]/70 font-sans mt-0.5 leading-snug">
                       {hasCustomCover 
                         ? '✓ Foto personalizada cargada desde tu dispositivo.' 
                         : 'Si no subes foto, se asigna automáticamente este patrón con los colores y la vibra del club.'}
                     </p>
-                    <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#1A1918] text-[#FAF6ED] rounded-lg text-[9px] font-display font-black uppercase tracking-wider group-hover:bg-[#E6332A] transition">
+                    <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#1A1918] text-[#FAF6ED] rounded-lg text-[9px] font-sans font-semibold uppercase tracking-wider group-hover:bg-[#E6332A] transition">
                       <span>{hasCustomCover ? 'Cambiar foto de galería' : 'Elegir de la galería (opcional)'}</span>
                     </div>
                   </div>
@@ -573,16 +573,16 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
               </div>
 
               {/* Campo 5: El Puente WhatsApp */}
-              <div className="p-3.5 bg-[#F4EEDB] border-2 border-[#1A1918] rounded-2xl space-y-2 shadow-[2px_2px_0px_#1A1918]">
+              <div className="p-3.5 bg-[#F4EEDB] border border-[#1A1918]/10 rounded-2xl space-y-2 shadow-sm">
                 <div className="flex items-center justify-between">
-                  <label className="text-[#1D4477] uppercase text-[10px] font-display font-black flex items-center gap-1.5">
+                  <label className="text-[#1D4477] uppercase text-[10px] font-sans font-semibold flex items-center gap-1.5">
                     <WhatsAppIcon className="w-3.5 h-3.5 text-[#1D4477]" />
                     <span>WhatsApp (Opcional)</span>
                   </label>
                   <button
                     type="button"
                     onClick={() => setShowWhatsappHelp(prev => !prev)}
-                    className="text-[#1A1918]/70 hover:text-[#1A1918] flex items-center gap-1 text-[10px] font-display font-black transition cursor-pointer"
+                    className="text-[#1A1918]/70 hover:text-[#1A1918] flex items-center gap-1 text-[10px] font-sans font-semibold transition cursor-pointer"
                   >
                     <HelpCircle className="w-3.5 h-3.5 text-[#1D4477]" />
                     <span>{showWhatsappHelp ? 'Ocultar' : '¿Cómo obtenerlo?'}</span>
@@ -595,13 +595,13 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
                     value={whatsappGroupUrl}
                     onChange={(e) => setWhatsappGroupUrl(e.target.value)}
                     placeholder="https://chat.whatsapp.com/..."
-                    className="flex-1 bg-[#FAF6ED] border-2 border-[#1A1918] px-3 py-2 text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:border-[#E6332A] text-xs rounded-xl shadow-[2px_2px_0px_#1A1918] font-bold"
+                    className="flex-1 bg-[#FAF6ED] border border-[#1A1918]/10 px-3 py-2 text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:border-[#E6332A] text-xs rounded-xl shadow-sm font-bold"
                   />
                   <button
                     type="button"
                     onClick={handlePasteWhatsapp}
                     title="Pegar enlace del portapapeles"
-                    className="px-3 py-2 bg-[#FAF6ED] hover:bg-[#F7B32B] border-2 border-[#1A1918] text-[#1A1918] text-[10px] font-display font-black uppercase transition flex items-center gap-1 cursor-pointer shrink-0 rounded-xl shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                    className="px-3 py-2 bg-[#FAF6ED] hover:bg-[#F7B32B] border border-[#1A1918]/10 text-[#1A1918] text-[10px] font-sans font-semibold uppercase transition flex items-center gap-1 cursor-pointer shrink-0 rounded-xl shadow-sm active:shadow-none"
                   >
                     <ClipboardPaste className="w-3.5 h-3.5 text-[#1A1918]" />
                     <span>Pegar</span>
@@ -610,21 +610,21 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
 
                 {/* Estado de validación */}
                 {isWhatsappValid ? (
-                  <div className="flex items-center gap-1.5 text-[#1D4477] text-[10px] font-display font-black">
+                  <div className="flex items-center gap-1.5 text-[#1D4477] text-[10px] font-sans font-semibold">
                     <Check className="w-3.5 h-3.5 text-[#1D4477]" />
                     <span>WhatsApp verificado</span>
                   </div>
                 ) : (
-                  <span className="text-[10px] text-[#1A1918]/60 font-serif italic block font-medium">
+                  <span className="text-[10px] text-[#1A1918]/60 font-sans block font-medium">
                     Opcional. Puedes añadirlo después.
                   </span>
                 )}
 
                 {/* Guía interactiva paso a paso */}
                 {showWhatsappHelp && (
-                  <div className="mt-2 p-3 bg-[#FAF6ED] border-2 border-[#1A1918] text-[10px] text-[#1A1918] space-y-1.5 rounded-xl shadow-[2px_2px_0px_#1A1918]">
-                    <p className="font-display font-black text-[#1A1918] uppercase">¿Cómo sacar el enlace de tu grupo de WhatsApp?</p>
-                    <ol className="list-decimal list-inside space-y-1 font-serif italic text-[#1A1918]/80 font-medium">
+                  <div className="mt-2 p-3 bg-[#FAF6ED] border border-[#1A1918]/10 text-[10px] text-[#1A1918] space-y-1.5 rounded-xl shadow-sm">
+                    <p className="font-sans font-semibold text-[#1A1918] ">¿Cómo sacar el enlace de tu grupo de WhatsApp?</p>
+                    <ol className="list-decimal list-inside space-y-1 font-sans text-[#1A1918]/80 font-medium">
                       <li>Abre tu grupo en WhatsApp y toca el nombre arriba.</li>
                       <li>Desplázate hasta <strong>&quot;Enlace de invitación al grupo&quot;</strong>.</li>
                       <li>Toca <strong>&quot;Copiar enlace&quot;</strong> y pégalo aquí.</li>
@@ -634,21 +634,21 @@ export const CreateCrewModal: React.FC<CreateCrewModalProps> = ({ isOpen, onClos
               </div>
 
               {/* Botones de acción */}
-              <div className="pt-3 border-t-2 border-[#1A1918] flex gap-3">
+              <div className="pt-3 border-t border-[#1A1918]/10 flex gap-3">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="w-1/3 py-3 border-2 border-[#1A1918] bg-[#FAF6ED] text-[#1A1918] uppercase font-display font-black tracking-wider hover:bg-[#F4EEDB] transition cursor-pointer text-xs rounded-xl shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                  className="w-1/3 py-3 border border-[#1A1918]/10 bg-[#FAF6ED] text-[#1A1918] font-sans font-semibold hover:bg-[#F4EEDB] transition cursor-pointer text-xs rounded-xl shadow-sm active:shadow-none"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={!name.trim()}
-                  className="w-2/3 py-3 bg-[#E6332A] hover:bg-[#d02c24] disabled:opacity-50 disabled:cursor-not-allowed text-white border-2 border-[#1A1918] uppercase font-display font-black text-xs tracking-widest transition flex items-center justify-center gap-2 cursor-pointer shadow-[3px_3px_0px_#1A1918] rounded-xl active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                  className="w-2/3 py-3 bg-[#E6332A] hover:bg-[#d02c24] disabled:opacity-50 disabled:cursor-not-allowed text-white border border-[#1A1918]/10 font-sans font-semibold text-xs transition flex items-center justify-center gap-2 cursor-pointer shadow-sm rounded-xl active:shadow-none"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-[#F7B32B]" />
-                  <span>Crear Club</span>
+                  <span>Crear club</span>
                 </button>
               </div>
             </form>

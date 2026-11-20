@@ -126,27 +126,27 @@ ${shareUrl}`;
     >
       <div 
         onClick={(e) => e.stopPropagation()}
-        className="bg-[#FAF6ED] border-2 border-[#1A1918] w-full max-w-lg shadow-[8px_8px_0px_#1A1918] rounded-[28px] relative text-[#1A1918] font-sans my-auto max-h-[92vh] flex flex-col overflow-hidden animate-scaleUp"
+        className="bg-[#FAF6ED] border border-[#1A1918]/10 w-full max-w-lg shadow-sm rounded-[28px] relative text-[#1A1918] font-sans my-auto max-h-[92vh] flex flex-col overflow-hidden animate-scaleUp"
       >
         {/* MODAL HEADER */}
-        <div className="p-5 flex items-center justify-between border-b-2 border-[#1A1918] shrink-0 bg-[#F4EEDB] rounded-t-[26px]">
+        <div className="p-5 flex items-center justify-between border-b border-[#1A1918]/10 shrink-0 bg-[#F4EEDB] rounded-t-[26px]">
           <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-[#FAF6ED] border-2 border-[#1A1918] flex items-center justify-center text-[#1A1918] shadow-[2px_2px_0px_#1A1918] shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-[#FAF6ED] border border-[#1A1918]/10 flex items-center justify-center text-[#1A1918] shadow-sm shrink-0">
               <Share2 className="w-5 h-5 text-[#E6332A]" />
             </div>
             <div>
-              <span className="font-mono text-[10px] text-[#E6332A] uppercase tracking-[0.2em] font-black block">
-                ★ ENLACE Y COMUNIDAD ★
+              <span className="font-mono text-[10px] text-[#E6332A] uppercase tracking-[0.2em] font-semibold block">
+                ENLACE Y COMUNIDAD
               </span>
-              <h3 className="font-display font-black text-xl text-[#1A1918] uppercase tracking-wide">
-                Compartir Rodada
+              <h3 className="font-display font-semibold text-xl text-[#1A1918]  ">
+                Compartir rodada
               </h3>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-xl flex items-center justify-center text-[#1A1918] hover:bg-[#E6332A] hover:text-white bg-[#FAF6ED] border-2 border-[#1A1918] transition shadow-[2px_2px_0px_#1A1918]"
+            className="w-8 h-8 rounded-xl flex items-center justify-center text-[#1A1918] hover:bg-[#E6332A] hover:text-white bg-[#FAF6ED] border border-[#1A1918]/10 transition shadow-sm"
             title="Cerrar"
           >
             <X className="w-4 h-4" />
@@ -154,10 +154,10 @@ ${shareUrl}`;
         </div>
 
         {/* ITEM PREVIEW CARD */}
-        <div className="p-4 bg-[#F4EEDB] border-b-2 border-[#1A1918] shrink-0">
+        <div className="p-4 bg-[#F4EEDB] border-b border-[#1A1918]/10 shrink-0">
           <div className="flex items-center gap-3.5">
             {item.coverImage ? (
-              <div className="w-16 h-16 rounded-xl overflow-hidden border-2 border-[#1A1918] shrink-0 relative group shadow-[2px_2px_0px_#1A1918] bg-[#FAF6ED]">
+              <div className="w-16 h-16 rounded-xl overflow-hidden border border-[#1A1918]/10 shrink-0 relative group shadow-sm bg-[#FAF6ED]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img 
                   src={item.coverImage} 
@@ -166,13 +166,13 @@ ${shareUrl}`;
                 />
               </div>
             ) : (
-              <div className="w-16 h-16 rounded-xl bg-[#FAF6ED] border-2 border-[#1A1918] flex items-center justify-center text-[#1A1918] shrink-0 shadow-[2px_2px_0px_#1A1918]">
+              <div className="w-16 h-16 rounded-xl bg-[#FAF6ED] border border-[#1A1918]/10 flex items-center justify-center text-[#1A1918] shrink-0 shadow-sm">
                 <Navigation className="w-7 h-7 text-[#F7B32B]" />
               </div>
             )}
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-[9px] uppercase font-mono font-black text-[#E6332A] bg-[#FAF6ED] px-2 py-0.5 rounded border border-[#1A1918] flex items-center gap-1 shadow-[1px_1px_0px_#1A1918]">
+                <span className="text-[9px] uppercase font-mono font-semibold text-[#E6332A] bg-[#FAF6ED] px-2 py-0.5 rounded border border-[#1A1918]/10 flex items-center gap-1 shadow-sm">
                   <Sparkles className="w-2.5 h-2.5 text-[#F7B32B]" />
                   {item.discipline || 'Ruta'}
                 </span>
@@ -183,15 +183,15 @@ ${shareUrl}`;
                   </span>
                 )}
               </div>
-              <h4 className="text-sm font-display font-black text-[#1A1918] uppercase tracking-wide truncate mt-1">
+              <h4 className="text-sm font-sans font-semibold text-[#1A1918] truncate mt-1">
                 {item.title}
               </h4>
               <div className="text-[11px] text-[#1A1918]/70 mt-0.5 flex items-center gap-2 flex-wrap">
-                <span className="font-serif italic text-[#1A1918] font-medium">{item.pilotName || currentUser.name}</span>
+                <span className="font-sans text-[#1A1918] font-medium">{item.pilotName || currentUser.name}</span>
                 {item.distanceKm && (
                   <>
                     <span className="text-[#1A1918]/40">•</span>
-                    <span className="text-[#1A1918] font-mono font-black bg-[#FAF6ED] px-1.5 py-0.2 rounded border border-[#1A1918] text-[10px] shadow-[1px_1px_0px_#1A1918]">
+                    <span className="text-[#1A1918] font-mono font-semibold bg-[#FAF6ED] px-1.5 py-0.2 rounded border border-[#1A1918]/10 text-[10px] shadow-sm">
                       {item.distanceKm.toFixed(1)} km
                     </span>
                   </>
@@ -210,13 +210,13 @@ ${shareUrl}`;
         </div>
 
         {/* NAVIGATION PILL TABS */}
-        <div className="p-3 border-b-2 border-[#1A1918] bg-[#FAF6ED] shrink-0">
-          <div className="grid grid-cols-2 gap-1.5 p-1 bg-[#F4EEDB] rounded-xl border-2 border-[#1A1918] text-xs font-display uppercase tracking-wider">
+        <div className="p-3 border-b border-[#1A1918]/10 bg-[#FAF6ED] shrink-0">
+          <div className="grid grid-cols-2 gap-1.5 p-1 bg-[#F4EEDB] rounded-xl border border-[#1A1918]/10 text-xs font-sans  ">
             <button
               onClick={() => setActiveTab('grupos')}
               className={`py-2 px-3 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 ${
                 activeTab === 'grupos'
-                  ? 'bg-[#E6332A] text-white shadow-[2px_2px_0px_#1A1918] font-black border border-[#1A1918]'
+                  ? 'bg-[#E6332A] text-white shadow-sm font-semibold border border-[#1A1918]/10'
                   : 'text-[#1A1918]/70 hover:text-[#1A1918] font-bold'
               }`}
             >
@@ -228,7 +228,7 @@ ${shareUrl}`;
               onClick={() => setActiveTab('compartir')}
               className={`py-2 px-3 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 ${
                 activeTab === 'compartir'
-                  ? 'bg-[#E6332A] text-white shadow-[2px_2px_0px_#1A1918] font-black border border-[#1A1918]'
+                  ? 'bg-[#E6332A] text-white shadow-sm font-semibold border border-[#1A1918]/10'
                   : 'text-[#1A1918]/70 hover:text-[#1A1918] font-bold'
               }`}
             >
@@ -244,11 +244,11 @@ ${shareUrl}`;
           {activeTab === 'grupos' && (
             <div className="space-y-3">
               <div className="flex items-center justify-between text-xs text-[#1A1918]/70">
-                <span className="flex items-center gap-1.5 uppercase font-mono font-black tracking-wider">
+                <span className="flex items-center gap-1.5 font-mono font-semibold ">
                   <Radio className="w-3.5 h-3.5 text-[#E6332A] animate-pulse" />
                   Compartir en el muro de tu tribu
                 </span>
-                <span className="text-[10px] text-[#1A1918] font-mono font-black bg-[#F4EEDB] px-2 py-0.5 border border-[#1A1918] rounded">
+                <span className="text-[10px] text-[#1A1918] font-mono font-semibold bg-[#F4EEDB] px-2 py-0.5 border border-[#1A1918]/10 rounded">
                   {availableCrews.length} disponibles
                 </span>
               </div>
@@ -259,7 +259,7 @@ ${shareUrl}`;
                   return (
                     <div
                       key={crew.id}
-                      className={`p-3.5 rounded-xl border-2 border-[#1A1918] transition-all duration-200 flex items-center justify-between gap-3 shadow-[2px_2px_0px_#1A1918] ${
+                      className={`p-3.5 rounded-xl border border-[#1A1918]/10 transition-all duration-200 flex items-center justify-between gap-3 shadow-sm ${
                         isShared 
                           ? 'bg-[#F4EEDB]' 
                           : 'bg-[#FAF6ED] hover:bg-[#F4EEDB]'
@@ -271,19 +271,19 @@ ${shareUrl}`;
                           <img 
                             src={crew.coverImage} 
                             alt={crew.name}
-                            className="w-12 h-12 rounded-xl object-cover border-2 border-[#1A1918] shadow-[1px_1px_0px_#1A1918] bg-[#F4EEDB]" 
+                            className="w-12 h-12 rounded-xl object-cover border border-[#1A1918]/10 shadow-sm bg-[#F4EEDB]" 
                           />
-                          <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-[#FAF6ED] border border-[#1A1918] flex items-center justify-center shadow-xs">
+                          <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-[#FAF6ED] border border-[#1A1918]/10 flex items-center justify-center shadow-xs">
                             <ShieldCheck className="w-2.5 h-2.5 text-[#E6332A]" />
                           </div>
                         </div>
 
                         <div className="min-w-0">
-                          <h5 className="text-sm font-display font-black text-[#1A1918] uppercase tracking-wide truncate">
+                          <h5 className="text-sm font-sans font-semibold text-[#1A1918] truncate">
                             {crew.name.replace(/MotoMami/gi, 'NAO')}
                           </h5>
                           <p className="text-[11px] text-[#1A1918]/70 truncate mt-0.5 flex items-center gap-1.5 font-mono">
-                            <span className="text-[#1A1918] not-italic font-black text-[10px] uppercase">{crew.members.length} pilotos</span>
+                            <span className="text-[#1A1918] not-italic font-semibold text-[10px] uppercase">{crew.members.length} pilotos</span>
                             <span>•</span>
                             <span className="truncate">
                               {crew.baseCity}
@@ -294,7 +294,7 @@ ${shareUrl}`;
 
                       <button
                         onClick={() => handleShareToGroup(crew.id)}
-                        className={`px-4 py-2 rounded-xl text-xs font-display font-black uppercase tracking-wider transition-all duration-200 shrink-0 flex items-center gap-1.5 border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${
+                        className={`px-4 py-2 rounded-xl text-xs font-sans font-semibold transition-all duration-200 shrink-0 flex items-center gap-1.5 border border-[#1A1918]/10 shadow-sm active:shadow-none ${
                           isShared
                             ? 'bg-[#1D4477] text-white cursor-default'
                             : 'bg-[#E6332A] hover:bg-[#d02c24] text-white'
@@ -318,11 +318,11 @@ ${shareUrl}`;
               </div>
 
               {sharedGroups.length > 0 && (
-                <div className="p-3.5 rounded-xl bg-[#F4EEDB] border-2 border-[#1A1918] text-[#1A1918] text-xs flex items-center gap-2.5 animate-fadeIn shadow-[2px_2px_0px_#1A1918]">
+                <div className="p-3.5 rounded-xl bg-[#F4EEDB] border border-[#1A1918]/10 text-[#1A1918] text-xs flex items-center gap-2.5 animate-fadeIn shadow-sm">
                   <div className="w-6 h-6 rounded-full bg-[#1D4477] text-white flex items-center justify-center shrink-0">
                     <Check className="w-3.5 h-3.5" />
                   </div>
-                  <span className="font-serif italic leading-snug font-medium">
+                  <span className="font-sans leading-snug font-medium">
                     ¡Rodada compartida con éxito! Los miembros de la tribu ya pueden ver el track y saludar en el muro.
                   </span>
                 </div>
@@ -335,11 +335,11 @@ ${shareUrl}`;
             <div className="space-y-4">
               {/* ENLACE PÚBLICO DIRECTO */}
               <div className="space-y-1.5">
-                <label className="text-[10px] uppercase font-mono font-black text-[#1A1918]/70 tracking-wider flex items-center gap-1.5">
+                <label className="text-[10px] uppercase font-mono font-semibold text-[#1A1918]/70 tracking-wider flex items-center gap-1.5">
                   <Copy className="w-3 h-3 text-[#E6332A]" />
                   Copiar enlace directo
                 </label>
-                <div className="flex items-center gap-2 p-2 bg-[#FAF6ED] border-2 border-[#1A1918] rounded-xl focus-within:border-[#E6332A] transition shadow-[2px_2px_0px_#1A1918]">
+                <div className="flex items-center gap-2 p-2 bg-[#FAF6ED] border border-[#1A1918]/10 rounded-xl focus-within:border-[#E6332A] transition shadow-sm">
                   <input 
                     type="text" 
                     readOnly 
@@ -348,7 +348,7 @@ ${shareUrl}`;
                   />
                   <button
                     onClick={handleCopyLink}
-                    className="px-4 py-2 bg-[#E6332A] hover:bg-[#d02c24] text-white font-display font-black text-xs uppercase tracking-wider transition-all shrink-0 flex items-center gap-1.5 rounded-lg border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                    className="px-4 py-2 bg-[#E6332A] hover:bg-[#d02c24] text-white font-sans font-semibold text-xs transition-all shrink-0 flex items-center gap-1.5 rounded-lg border border-[#1A1918]/10 shadow-sm active:shadow-none"
                   >
                     {copiedLink ? (
                       <>
@@ -368,10 +368,10 @@ ${shareUrl}`;
               {/* SEPARADOR */}
               <div className="relative py-1">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t-2 border-[#1A1918]" />
+                  <div className="w-full border-t border-[#1A1918]/10" />
                 </div>
-                <div className="relative flex justify-center text-[10px] uppercase font-mono font-black tracking-wider">
-                  <span className="bg-[#FAF6ED] px-3 text-[#1A1918]/60 border border-[#1A1918] rounded-full">o enviar vía</span>
+                <div className="relative flex justify-center text-[10px] uppercase font-mono font-semibold tracking-wider">
+                  <span className="bg-[#FAF6ED] px-3 text-[#1A1918]/60 border border-[#1A1918]/10 rounded-full">o enviar vía</span>
                 </div>
               </div>
 
@@ -380,56 +380,56 @@ ${shareUrl}`;
                 {/* WHATSAPP */}
                 <button
                   onClick={handleShareWhatsApp}
-                  className="p-3 bg-[#FAF6ED] hover:bg-[#F4EEDB] border-2 border-[#1A1918] font-display font-bold text-xs uppercase tracking-wider transition-all duration-200 flex items-center gap-3 rounded-xl active:translate-x-0.5 active:translate-y-0.5 active:shadow-none shadow-[2px_2px_0px_#1A1918]"
+                  className="p-3 bg-[#FAF6ED] hover:bg-[#F4EEDB] border border-[#1A1918]/10 font-sans font-bold text-xs transition-all duration-200 flex items-center gap-3 rounded-xl active:shadow-none shadow-sm"
                 >
-                  <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-sm shrink-0 border border-[#1A1918] shadow-[1px_1px_0px_#1A1918]">
+                  <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-sm shrink-0 border border-[#1A1918]/10 shadow-sm">
                     WA
                   </div>
                   <div className="text-left min-w-0">
-                    <span className="block text-[#1A1918] font-black">WhatsApp</span>
-                    <span className="text-[10px] text-[#1A1918]/60 font-serif italic truncate block">Chat directo o estado</span>
+                    <span className="block text-[#1A1918] font-semibold">WhatsApp</span>
+                    <span className="text-[10px] text-[#1A1918]/60 font-sans truncate block">Chat directo o estado</span>
                   </div>
                 </button>
 
                 {/* TELEGRAM */}
                 <button
                   onClick={handleShareTelegram}
-                  className="p-3 bg-[#FAF6ED] hover:bg-[#F4EEDB] border-2 border-[#1A1918] font-display font-bold text-xs uppercase tracking-wider transition-all duration-200 flex items-center gap-3 rounded-xl active:translate-x-0.5 active:translate-y-0.5 active:shadow-none shadow-[2px_2px_0px_#1A1918]"
+                  className="p-3 bg-[#FAF6ED] hover:bg-[#F4EEDB] border border-[#1A1918]/10 font-sans font-bold text-xs transition-all duration-200 flex items-center gap-3 rounded-xl active:shadow-none shadow-sm"
                 >
-                  <div className="w-9 h-9 rounded-xl bg-sky-600 text-white flex items-center justify-center font-bold text-sm shrink-0 border border-[#1A1918] shadow-[1px_1px_0px_#1A1918]">
+                  <div className="w-9 h-9 rounded-xl bg-sky-600 text-white flex items-center justify-center font-bold text-sm shrink-0 border border-[#1A1918]/10 shadow-sm">
                     TG
                   </div>
                   <div className="text-left min-w-0">
-                    <span className="block text-[#1A1918] font-black">Telegram</span>
-                    <span className="text-[10px] text-[#1A1918]/60 font-serif italic truncate block">Canales y chats de ruta</span>
+                    <span className="block text-[#1A1918] font-semibold">Telegram</span>
+                    <span className="text-[10px] text-[#1A1918]/60 font-sans truncate block">Canales y chats de ruta</span>
                   </div>
                 </button>
 
                 {/* X (TWITTER) */}
                 <button
                   onClick={handleShareTwitter}
-                  className="p-3 bg-[#FAF6ED] hover:bg-[#F4EEDB] border-2 border-[#1A1918] font-display font-bold text-xs uppercase tracking-wider transition-all duration-200 flex items-center gap-3 rounded-xl active:translate-x-0.5 active:translate-y-0.5 active:shadow-none shadow-[2px_2px_0px_#1A1918]"
+                  className="p-3 bg-[#FAF6ED] hover:bg-[#F4EEDB] border border-[#1A1918]/10 font-sans font-bold text-xs transition-all duration-200 flex items-center gap-3 rounded-xl active:shadow-none shadow-sm"
                 >
-                  <div className="w-9 h-9 rounded-xl bg-[#1A1918] text-white flex items-center justify-center font-bold text-sm shrink-0 border border-[#1A1918] shadow-[1px_1px_0px_#1A1918]">
+                  <div className="w-9 h-9 rounded-xl bg-[#1A1918] text-white flex items-center justify-center font-bold text-sm shrink-0 border border-[#1A1918]/10 shadow-sm">
                     𝕏
                   </div>
                   <div className="text-left min-w-0">
-                    <span className="block text-[#1A1918] font-black">X (Twitter)</span>
-                    <span className="text-[10px] text-[#1A1918]/60 font-serif italic truncate block">Publicar con telemetría</span>
+                    <span className="block text-[#1A1918] font-semibold">X (Twitter)</span>
+                    <span className="text-[10px] text-[#1A1918]/60 font-sans truncate block">Publicar con telemetría</span>
                   </div>
                 </button>
 
                 {/* FACEBOOK */}
                 <button
                   onClick={handleShareFacebook}
-                  className="p-3 bg-[#FAF6ED] hover:bg-[#F4EEDB] border-2 border-[#1A1918] font-display font-bold text-xs uppercase tracking-wider transition-all duration-200 flex items-center gap-3 rounded-xl active:translate-x-0.5 active:translate-y-0.5 active:shadow-none shadow-[2px_2px_0px_#1A1918]"
+                  className="p-3 bg-[#FAF6ED] hover:bg-[#F4EEDB] border border-[#1A1918]/10 font-sans font-bold text-xs transition-all duration-200 flex items-center gap-3 rounded-xl active:shadow-none shadow-sm"
                 >
-                  <div className="w-9 h-9 rounded-xl bg-[#1D4477] text-white flex items-center justify-center font-bold text-sm shrink-0 border border-[#1A1918] shadow-[1px_1px_0px_#1A1918]">
+                  <div className="w-9 h-9 rounded-xl bg-[#1D4477] text-white flex items-center justify-center font-bold text-sm shrink-0 border border-[#1A1918]/10 shadow-sm">
                     FB
                   </div>
                   <div className="text-left min-w-0">
-                    <span className="block text-[#1A1918] font-black">Facebook</span>
-                    <span className="text-[10px] text-[#1A1918]/60 font-serif italic truncate block">Muro o comunidad motera</span>
+                    <span className="block text-[#1A1918] font-semibold">Facebook</span>
+                    <span className="text-[10px] text-[#1A1918]/60 font-sans truncate block">Muro o comunidad motera</span>
                   </div>
                 </button>
               </div>
@@ -438,7 +438,7 @@ ${shareUrl}`;
               {typeof navigator !== 'undefined' && (
                 <button
                   onClick={handleNativeShare}
-                  className="w-full py-3.5 px-4 bg-[#F4EEDB] hover:bg-[#EDE6D3] border-2 border-[#1A1918] text-[#1A1918] font-display font-black text-xs uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2 rounded-xl active:translate-x-0.5 active:translate-y-0.5 active:shadow-none shadow-[2px_2px_0px_#1A1918]"
+                  className="w-full py-3.5 px-4 bg-[#F4EEDB] hover:bg-[#EDE6D3] border border-[#1A1918]/10 text-[#1A1918] font-sans font-semibold text-xs transition-all duration-200 flex items-center justify-center gap-2 rounded-xl active:shadow-none shadow-sm"
                 >
                   <Smartphone className="w-4 h-4 text-[#E6332A]" />
                   <span>Compartir con aplicaciones de tu teléfono</span>
@@ -450,10 +450,10 @@ ${shareUrl}`;
         </div>
 
         {/* MODAL FOOTER */}
-        <div className="p-4 bg-[#F4EEDB] border-t-2 border-[#1A1918] flex items-center justify-end shrink-0">
+        <div className="p-4 bg-[#F4EEDB] border-t border-[#1A1918]/10 flex items-center justify-end shrink-0">
           <button
             onClick={onClose}
-            className="px-6 py-2.5 rounded-xl bg-[#FAF6ED] hover:bg-[#EDE6D3] text-[#1A1918] border-2 border-[#1A1918] uppercase font-display font-black text-xs tracking-widest transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none shadow-[3px_3px_0px_#1A1918]"
+            className="px-6 py-2.5 rounded-xl bg-[#FAF6ED] hover:bg-[#EDE6D3] text-[#1A1918] border border-[#1A1918]/10 font-sans font-semibold text-xs transition-all active:shadow-none shadow-sm"
           >
             Listo
           </button>

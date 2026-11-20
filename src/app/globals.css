@@ -23,12 +23,6 @@ body {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   background-color: #F4EEDB;
-  /* Authentic unbleached paper grain & stipple */
-  background-image: 
-    radial-gradient(rgba(26, 25, 24, 0.055) 1px, transparent 1px),
-    radial-gradient(rgba(224, 100, 35, 0.025) 1px, transparent 1px);
-  background-size: 16px 16px, 32px 32px;
-  background-position: 0 0, 8px 8px;
 }
 
 /* Custom Risograph / Matchbook scrollbar */
@@ -40,12 +34,11 @@ body {
   background: #F4EEDB;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1A1918;
+  background: rgba(26, 25, 24, 0.25);
   border-radius: 9999px;
-  border: 1px solid #FAF6ED;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #E6332A;
+  background: rgba(26, 25, 24, 0.45);
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -60,127 +53,70 @@ body {
 /* RISOGRAPH, BAUHAUS & MATCHBOOK ART UI UTILITIES           */
 /* ========================================================= */
 
-/* Matchbook & Poster Containers */
+/* Tarjetas: superficie marfil, borde tenue y sombra suave (antes: borde 2px + sombra dura) */
 .matchbook-card {
   background-color: #FAF6ED;
-  border: 2px solid #1A1918;
-  box-shadow: 4px 4px 0px #1A1918;
-  border-radius: 24px;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid rgba(26, 25, 24, 0.10);
+  box-shadow: 0 1px 2px rgba(26, 25, 24, 0.05), 0 1px 3px rgba(26, 25, 24, 0.06);
+  border-radius: 20px;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .matchbook-card:hover {
-  box-shadow: 6px 6px 0px #1A1918;
-  transform: translate(-1px, -1px);
+  border-color: rgba(26, 25, 24, 0.16);
+  box-shadow: 0 4px 14px rgba(26, 25, 24, 0.08);
 }
 
 .matchbook-card-static {
   background-color: #FAF6ED;
-  border: 2px solid #1A1918;
-  box-shadow: 4px 4px 0px #1A1918;
-  border-radius: 24px;
+  border: 1px solid rgba(26, 25, 24, 0.10);
+  box-shadow: 0 1px 2px rgba(26, 25, 24, 0.05), 0 1px 3px rgba(26, 25, 24, 0.06);
+  border-radius: 20px;
 }
 
-/* Mechanical High-Contrast Pressed Buttons */
-.btn-vermillion {
-  background-color: #E6332A;
-  color: #FFFFFF;
-  border: 2px solid #1A1918;
-  box-shadow: 3px 3px 0px #1A1918;
-  font-family: var(--font-display, 'Oswald', sans-serif);
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  transition: all 0.12s ease-in-out;
-}
-.btn-vermillion:hover {
-  background-color: #D3271E;
-  box-shadow: 4px 4px 0px #1A1918;
-  transform: translate(-1px, -1px);
-}
-.btn-vermillion:active {
-  box-shadow: 0px 0px 0px #1A1918;
-  transform: translate(3px, 3px);
-}
-
-.btn-mustard {
-  background-color: #F7B32B;
-  color: #1A1918;
-  border: 2px solid #1A1918;
-  box-shadow: 3px 3px 0px #1A1918;
-  font-family: var(--font-display, 'Oswald', sans-serif);
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  transition: all 0.12s ease-in-out;
-}
-.btn-mustard:hover {
-  background-color: #EFA619;
-  box-shadow: 4px 4px 0px #1A1918;
-  transform: translate(-1px, -1px);
-}
-.btn-mustard:active {
-  box-shadow: 0px 0px 0px #1A1918;
-  transform: translate(3px, 3px);
-}
-
-.btn-cobalt {
-  background-color: #1D4477;
-  color: #FFFFFF;
-  border: 2px solid #1A1918;
-  box-shadow: 3px 3px 0px #1A1918;
-  font-family: var(--font-display, 'Oswald', sans-serif);
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  transition: all 0.12s ease-in-out;
-}
-.btn-cobalt:hover {
-  background-color: #163660;
-  box-shadow: 4px 4px 0px #1A1918;
-  transform: translate(-1px, -1px);
-}
-.btn-cobalt:active {
-  box-shadow: 0px 0px 0px #1A1918;
-  transform: translate(3px, 3px);
-}
-
+/* Botones: color plano de la marca, sin borde negro ni "hundimiento" */
+.btn-vermillion,
+.btn-mustard,
+.btn-cobalt,
 .btn-carbon {
-  background-color: #1A1918;
-  color: #FFFFFF;
-  border: 2px solid #1A1918;
-  box-shadow: 3px 3px 0px #1A1918;
-  font-family: var(--font-display, 'Oswald', sans-serif);
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  transition: all 0.12s ease-in-out;
+  border: 1px solid transparent;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+  transition: background-color 0.15s ease, transform 0.1s ease;
 }
-.btn-carbon:hover {
-  background-color: #2D2B29;
-  box-shadow: 4px 4px 0px #1A1918;
-  transform: translate(-1px, -1px);
-}
+.btn-vermillion:active,
+.btn-mustard:active,
+.btn-cobalt:active,
 .btn-carbon:active {
-  box-shadow: 0px 0px 0px #1A1918;
-  transform: translate(3px, 3px);
+  transform: scale(0.98);
 }
 
-/* Stamped Industrial & Risograph Badges */
+.btn-vermillion { background-color: #E6332A; color: #FFFFFF; }
+.btn-vermillion:hover { background-color: #D3271E; }
+
+.btn-mustard { background-color: #F7B32B; color: #1A1918; }
+.btn-mustard:hover { background-color: #EFA619; }
+
+.btn-cobalt { background-color: #1D4477; color: #FFFFFF; }
+.btn-cobalt:hover { background-color: #163660; }
+
+.btn-carbon { background-color: #1A1918; color: #FFFFFF; }
+.btn-carbon:hover { background-color: #2D2B29; }
+
+/* Etiquetas */
 .stamp-badge {
-  border: 1.5px solid #1A1918;
+  border: 1px solid rgba(26, 25, 24, 0.12);
   background-color: #FAF6ED;
-  box-shadow: 2px 2px 0px #1A1918;
 }
 
 .stamp-dashed {
-  border: 1.5px dashed #1A1918;
+  border: 1px dashed rgba(26, 25, 24, 0.25);
   background-color: #FAF6ED;
 }
 
-/* Vintage Perforated Ticket Divider */
+/* Separador tipo boleto, más discreto */
 .ticket-perforation {
-  border-top: 2px dashed #1A1918;
+  border-top: 1px dashed rgba(26, 25, 24, 0.20);
   position: relative;
 }
 .ticket-perforation::before,
@@ -192,7 +128,7 @@ body {
   height: 16px;
   border-radius: 50%;
   background-color: #F4EEDB;
-  border: 2px solid #1A1918;
+  border: 1px solid rgba(26, 25, 24, 0.12);
 }
 .ticket-perforation::before {
   left: -10px;
@@ -201,15 +137,17 @@ body {
   right: -10px;
 }
 
-/* 3D Extrusion Shadows for Big Sign-Painting Poster Headings */
-.text-shadow-retro {
-  text-shadow: 2px 2px 0px #1A1918;
-}
-.text-shadow-retro-lg {
-  text-shadow: 3px 3px 0px #1A1918;
-}
+/* Antes eran sombras de letrero; se dejan sin efecto para no romper clases existentes */
+.text-shadow-retro,
+.text-shadow-retro-lg,
 .text-shadow-white {
-  text-shadow: 2px 2px 0px #FAF6ED;
+  text-shadow: none;
+}
+
+/* Foco visible y consistente para teclado */
+:focus-visible {
+  outline: 2px solid rgba(230, 51, 42, 0.55);
+  outline-offset: 2px;
 }
 
 /* Leaflet map custom risograph paper styling */
@@ -220,7 +158,7 @@ body {
 
 .leaflet-bar a {
   background-color: #FAF6ED !important;
-  border-bottom: 2px solid #1A1918 !important;
+  border-bottom: 1px solid rgba(26, 25, 24, 0.10) !important;
   color: #1A1918 !important;
 }
 

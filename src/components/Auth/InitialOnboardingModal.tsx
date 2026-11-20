@@ -248,25 +248,25 @@ export const InitialOnboardingModal: React.FC = () => {
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center p-3 sm:p-4 bg-[#1A1918]/85 backdrop-blur-md animate-fadeIn overflow-y-auto">
       <div 
-        className="w-full max-w-xl bg-[#FAF6ED] border-3 border-[#1A1918] rounded-[32px] shadow-[10px_10px_0px_#1A1918] my-auto max-h-[88vh] overflow-y-auto overscroll-contain text-[#1A1918] font-sans animate-scaleUp p-5 sm:p-8 space-y-6 pb-8 relative"
+        className="w-full max-w-xl bg-[#FAF6ED] border-3 border-[#1A1918]/10 rounded-[32px] shadow-sm my-auto max-h-[88vh] overflow-y-auto overscroll-contain text-[#1A1918] font-sans animate-scaleUp p-5 sm:p-8 space-y-6 pb-8 relative"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Progress Step Indicator & Close Button */}
-        <div className="flex items-center justify-between border-b-2 border-[#1A1918] pb-4">
+        <div className="flex items-center justify-between border-b border-[#1A1918]/10 pb-4">
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-[#E6332A] animate-pulse" />
-            <span className="font-mono text-[10px] uppercase font-black tracking-widest text-[#E6332A]">
+            <span className="font-mono text-[10px] uppercase font-semibold tracking-widest text-[#E6332A]">
               PASO {step} DE 2 • {step === 1 ? 'FICHA DE PILOTO' : 'TU MÁQUINA PRINCIPAL'}
             </span>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 font-mono text-[11px] font-black text-[#1A1918]">
-              <span className={`w-6 h-6 rounded-lg flex items-center justify-center border-2 border-[#1A1918] ${step === 1 ? 'bg-[#E6332A] text-white shadow-[2px_2px_0px_#1A1918]' : 'bg-[#FAF6ED]'}`}>
+            <div className="flex items-center gap-1.5 font-mono text-[11px] font-semibold text-[#1A1918]">
+              <span className={`w-6 h-6 rounded-lg flex items-center justify-center border border-[#1A1918]/10 ${step === 1 ? 'bg-[#E6332A] text-white shadow-sm' : 'bg-[#FAF6ED]'}`}>
                 1
               </span>
               <span className="text-[#1A1918]/40">—</span>
-              <span className={`w-6 h-6 rounded-lg flex items-center justify-center border-2 border-[#1A1918] ${step === 2 ? 'bg-[#E6332A] text-white shadow-[2px_2px_0px_#1A1918]' : 'bg-[#FAF6ED]'}`}>
+              <span className={`w-6 h-6 rounded-lg flex items-center justify-center border border-[#1A1918]/10 ${step === 2 ? 'bg-[#E6332A] text-white shadow-sm' : 'bg-[#FAF6ED]'}`}>
                 2
               </span>
             </div>
@@ -288,16 +288,16 @@ export const InitialOnboardingModal: React.FC = () => {
         {step === 1 && (
           <form onSubmit={handleStep1Submit} className="space-y-6">
             <div className="space-y-1">
-              <h2 className="text-2xl sm:text-3xl font-display font-black text-[#1A1918] uppercase tracking-tight">
+              <h2 className="text-2xl sm:text-3xl font-display font-semibold text-[#1A1918] tracking-tight">
                 ¡Bienvenido a NAO! Configura tu credencial
               </h2>
-              <p className="text-xs font-serif italic text-[#1A1918]/80">
+              <p className="text-xs font-sans text-[#1A1918]/80">
                 Elige tu apodo de piloto y sube tu foto desde tu galería para identificarte en el club y las rutas.
               </p>
             </div>
 
             {/* Avatar Upload from Gallery / Camera */}
-            <div className="bg-[#F4EEDB] border-2 border-[#1A1918] p-4 sm:p-5 rounded-2xl shadow-[3px_3px_0px_#1A1918] flex items-center gap-4 sm:gap-5">
+            <div className="bg-[#F4EEDB] border border-[#1A1918]/10 p-4 sm:p-5 rounded-2xl shadow-sm flex items-center gap-4 sm:gap-5">
               <input
                 ref={avatarFileInputRef}
                 type="file"
@@ -308,7 +308,7 @@ export const InitialOnboardingModal: React.FC = () => {
               
               <div 
                 onClick={() => avatarFileInputRef.current?.click()}
-                className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] bg-white cursor-pointer group shrink-0"
+                className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border border-[#1A1918]/10 shadow-sm bg-white cursor-pointer group shrink-0"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img 
@@ -324,10 +324,10 @@ export const InitialOnboardingModal: React.FC = () => {
 
               <div className="flex-1 space-y-2">
                 <div>
-                  <h4 className="text-xs font-display font-black text-[#1A1918] uppercase tracking-wide">
-                    Foto de Perfil
+                  <h4 className="text-xs font-sans font-semibold text-[#1A1918]  ">
+                    Foto de perfil
                   </h4>
-                  <p className="text-[11px] font-serif italic text-[#1A1918]/70">
+                  <p className="text-[11px] font-sans text-[#1A1918]/70">
                     Sube tu foto favorita con casco, rodando o de tu galería.
                   </p>
                 </div>
@@ -335,7 +335,7 @@ export const InitialOnboardingModal: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => avatarFileInputRef.current?.click()}
-                  className="px-3 py-1.5 bg-white hover:bg-[#FAF6ED] text-[#1A1918] border-2 border-[#1A1918] rounded-xl font-display font-black text-[10px] uppercase tracking-wider shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition flex items-center gap-2 cursor-pointer"
+                  className="px-3 py-1.5 bg-white hover:bg-[#FAF6ED] text-[#1A1918] border border-[#1A1918]/10 rounded-xl font-sans font-semibold text-[10px] uppercase tracking-wider shadow-sm active:shadow-none transition flex items-center gap-2 cursor-pointer"
                 >
                   <Upload className="w-3.5 h-3.5 text-[#E6332A]" />
                   <span>Subir de mi galería</span>
@@ -346,7 +346,7 @@ export const InitialOnboardingModal: React.FC = () => {
             {/* Form Fields: Name & Handle */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
+                <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block mb-1">
                   Nombre Completo *
                 </label>
                 <div className="relative">
@@ -357,13 +357,13 @@ export const InitialOnboardingModal: React.FC = () => {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Ej. Roberto Sánchez"
-                    className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl pl-9 pr-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]"
+                    className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl pl-9 pr-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-sm"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
+                <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block mb-1">
                   Apodo / Handle de Piloto *
                 </label>
                 <div className="relative">
@@ -377,7 +377,7 @@ export const InitialOnboardingModal: React.FC = () => {
                       if (handleError) setHandleError(null);
                     }}
                     placeholder="roberto_gs"
-                    className={`w-full bg-[#FAF6ED] border-2 ${handleError ? 'border-[#E6332A] bg-[#FFF5F5]' : 'border-[#1A1918]'} focus:border-[#E6332A] rounded-xl pl-8 pr-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]`}
+                    className={`w-full bg-[#FAF6ED] border ${handleError ? 'border-[#E6332A] bg-[#FFF5F5]' : 'border-[#1A1918]/10'} focus:border-[#E6332A] rounded-xl pl-8 pr-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-sm`}
                   />
                 </div>
                 {handleError ? (
@@ -396,7 +396,7 @@ export const InitialOnboardingModal: React.FC = () => {
             {/* City & Riding Level */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
+                <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block mb-1">
                   Ciudad Base / Ubicación
                 </label>
                 <div className="relative">
@@ -406,19 +406,19 @@ export const InitialOnboardingModal: React.FC = () => {
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
                     placeholder="Ej. CDMX / Guadalajara / Mty"
-                    className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl pl-9 pr-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]"
+                    className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl pl-9 pr-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-sm"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
-                  Nivel de Manejo
+                <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block mb-1">
+                  Nivel de manejo
                 </label>
                 <select
                   value={ridingLevel}
                   onChange={(e) => setRidingLevel(e.target.value as RidingLevel)}
-                  className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3 py-2.5 text-xs text-[#1A1918] focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918] cursor-pointer"
+                  className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl px-3 py-2.5 text-xs text-[#1A1918] focus:outline-none transition font-sans font-medium shadow-sm cursor-pointer"
                 >
                   {RIDING_LEVELS.map(lvl => (
                     <option key={lvl} value={lvl}>{lvl}</option>
@@ -429,7 +429,7 @@ export const InitialOnboardingModal: React.FC = () => {
 
             {/* Bio */}
             <div>
-              <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
+              <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block mb-1">
                 Bio Breve (Opcional)
               </label>
               <textarea
@@ -437,7 +437,7 @@ export const InitialOnboardingModal: React.FC = () => {
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 placeholder="Ej. Rodando curvas los fines de semana y terracería ligera en las mañanas..."
-                className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl p-3 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]"
+                className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl p-3 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-sm"
               />
             </div>
 
@@ -446,7 +446,7 @@ export const InitialOnboardingModal: React.FC = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full sm:flex-1 py-3.5 bg-[#E6332A] hover:bg-[#d02c24] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none text-white border-2 border-[#1A1918] rounded-xl font-display font-black text-xs uppercase tracking-wider transition shadow-[3px_3px_0px_#1A1918] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+                className="w-full sm:flex-1 py-3.5 bg-[#E6332A] hover:bg-[#d02c24] active:shadow-none text-white border border-[#1A1918]/10 rounded-xl font-sans font-semibold text-xs transition shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
               >
                 <span>Continuar: Registrar mi Moto en el Hangar</span>
                 <ArrowRight className="w-4 h-4 stroke-[3]" />
@@ -455,7 +455,7 @@ export const InitialOnboardingModal: React.FC = () => {
               <button
                 type="button"
                 onClick={handleSkip}
-                className="w-full sm:w-auto px-5 py-3.5 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border-2 border-[#1A1918] rounded-xl font-display font-black text-xs uppercase tracking-wider transition shadow-[2px_2px_0px_#1A1918] cursor-pointer"
+                className="w-full sm:w-auto px-5 py-3.5 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border border-[#1A1918]/10 rounded-xl font-sans font-semibold text-xs transition shadow-sm cursor-pointer"
               >
                 Hacerlo más tarde
               </button>
@@ -469,16 +469,16 @@ export const InitialOnboardingModal: React.FC = () => {
         {step === 2 && (
           <form onSubmit={handleStep2Submit} className="space-y-6">
             <div className="space-y-1">
-              <h2 className="text-2xl sm:text-3xl font-display font-black text-[#1A1918] uppercase tracking-tight">
+              <h2 className="text-2xl sm:text-3xl font-display font-semibold text-[#1A1918] tracking-tight">
                 Añade tu máquina al Hangar
               </h2>
-              <p className="text-xs font-serif italic text-[#1A1918]/80">
+              <p className="text-xs font-sans text-[#1A1918]/80">
                 Tu moto aparecerá en tus estadísticas, bitácora y perfil oficial del club. Sube su foto real.
               </p>
             </div>
 
             {/* Bike Photo Upload from Gallery / Camera (No preset photos) */}
-            <div className="bg-[#F4EEDB] border-2 border-[#1A1918] p-4 sm:p-5 rounded-2xl shadow-[3px_3px_0px_#1A1918] space-y-3">
+            <div className="bg-[#F4EEDB] border border-[#1A1918]/10 p-4 sm:p-5 rounded-2xl shadow-sm space-y-3">
               <input
                 ref={bikeFileInputRef}
                 type="file"
@@ -490,7 +490,7 @@ export const InitialOnboardingModal: React.FC = () => {
               <div className="flex flex-col sm:flex-row items-center gap-4">
                 <div 
                   onClick={() => bikeFileInputRef.current?.click()}
-                  className="relative w-full sm:w-40 h-28 rounded-2xl overflow-hidden border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] bg-white cursor-pointer group shrink-0 flex items-center justify-center"
+                  className="relative w-full sm:w-40 h-28 rounded-2xl overflow-hidden border border-[#1A1918]/10 shadow-sm bg-white cursor-pointer group shrink-0 flex items-center justify-center"
                 >
                   {bikePhotoPreview ? (
                     <>
@@ -508,7 +508,7 @@ export const InitialOnboardingModal: React.FC = () => {
                   ) : (
                     <div className="flex flex-col items-center justify-center p-3 text-center text-[#1A1918]/60 group-hover:text-[#E6332A] transition">
                       <Bike className="w-8 h-8 mb-1" />
-                      <span className="text-[10px] font-mono uppercase font-black">
+                      <span className="text-[10px] font-mono uppercase font-semibold">
                         Tocar para subir foto
                       </span>
                     </div>
@@ -519,7 +519,7 @@ export const InitialOnboardingModal: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => bikeFileInputRef.current?.click()}
-                    className="px-4 py-2 bg-white hover:bg-[#FAF6ED] text-[#1A1918] border-2 border-[#1A1918] rounded-xl font-display font-black text-xs uppercase tracking-wider shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition inline-flex items-center gap-2 cursor-pointer"
+                    className="px-4 py-2 bg-white hover:bg-[#FAF6ED] text-[#1A1918] border border-[#1A1918]/10 rounded-xl font-sans font-semibold text-xs shadow-sm active:shadow-none transition inline-flex items-center gap-2 cursor-pointer"
                   >
                     <Upload className="w-4 h-4 text-[#E6332A]" />
                     <span>{bikePhotoPreview ? 'Cambiar Foto de Galería' : 'Subir Foto de Galería'}</span>
@@ -531,13 +531,13 @@ export const InitialOnboardingModal: React.FC = () => {
             {/* Brand & Model */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
+                <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block mb-1">
                   Marca *
                 </label>
                 <select
                   value={bikeBrand}
                   onChange={(e) => setBikeBrand(e.target.value)}
-                  className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3 py-2.5 text-xs text-[#1A1918] focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918] cursor-pointer"
+                  className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl px-3 py-2.5 text-xs text-[#1A1918] focus:outline-none transition font-sans font-medium shadow-sm cursor-pointer"
                 >
                   {['BMW', 'KTM', 'Honda', 'Yamaha', 'Ducati', 'Triumph', 'Husqvarna', 'Royal Enfield', 'Suzuki', 'Kawasaki', 'Harley-Davidson', 'Moto Guzzi', 'Aprilia', 'CFMOTO', 'Otro'].map(b => (
                     <option key={b} value={b}>{b}</option>
@@ -546,7 +546,7 @@ export const InitialOnboardingModal: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
+                <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block mb-1">
                   Modelo de la Moto *
                 </label>
                 <input
@@ -555,7 +555,7 @@ export const InitialOnboardingModal: React.FC = () => {
                   value={bikeModel}
                   onChange={(e) => setBikeModel(e.target.value)}
                   placeholder="Ej. R 1250 GS Adventure / Tenere 700"
-                  className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]"
+                  className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl px-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-sm"
                 />
               </div>
             </div>
@@ -563,7 +563,7 @@ export const InitialOnboardingModal: React.FC = () => {
             {/* Nickname, Year, CC */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
               <div>
-                <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
+                <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block mb-1">
                   Apodo (Opcional)
                 </label>
                 <input
@@ -571,13 +571,13 @@ export const InitialOnboardingModal: React.FC = () => {
                   value={bikeNickname}
                   onChange={(e) => setBikeNickname(e.target.value)}
                   placeholder="Ej. La Furia"
-                  className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]"
+                  className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl px-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-sm"
                 />
               </div>
 
               <div className="grid grid-cols-2 sm:contents gap-3">
                 <div>
-                  <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
+                  <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block mb-1">
                     Año *
                   </label>
                   <input
@@ -587,12 +587,12 @@ export const InitialOnboardingModal: React.FC = () => {
                     value={bikeYear}
                     onChange={(e) => setBikeYear(e.target.value === '' ? '' : Number(e.target.value))}
                     placeholder="2024"
-                    className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3 py-2.5 text-xs text-[#1A1918] focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]"
+                    className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl px-3 py-2.5 text-xs text-[#1A1918] focus:outline-none transition font-sans font-medium shadow-sm"
                   />
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
+                  <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block mb-1">
                     Cilindrada (cc) *
                   </label>
                   <input
@@ -602,7 +602,7 @@ export const InitialOnboardingModal: React.FC = () => {
                     value={bikeCc}
                     onChange={(e) => setBikeCc(e.target.value === '' ? '' : Number(e.target.value))}
                     placeholder="Ej. 411"
-                    className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3 py-2.5 text-xs text-[#1A1918] focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]"
+                    className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl px-3 py-2.5 text-xs text-[#1A1918] focus:outline-none transition font-sans font-medium shadow-sm"
                   />
                 </div>
               </div>
@@ -611,13 +611,13 @@ export const InitialOnboardingModal: React.FC = () => {
             {/* Type & Tires */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
-                  Tipo de Moto
+                <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block mb-1">
+                  Tipo de moto
                 </label>
                 <select
                   value={bikeType}
                   onChange={(e) => setBikeType(e.target.value as BikeType)}
-                  className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3 py-2.5 text-xs text-[#1A1918] focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918] cursor-pointer"
+                  className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl px-3 py-2.5 text-xs text-[#1A1918] focus:outline-none transition font-sans font-medium shadow-sm cursor-pointer"
                 >
                   {BIKE_TYPES.map(t => (
                     <option key={t} value={t}>{t}</option>
@@ -626,15 +626,15 @@ export const InitialOnboardingModal: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
-                  Neumáticos Instalados
+                <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block mb-1">
+                  Neumáticos instalados
                 </label>
                 <input
                   type="text"
                   value={bikeTires}
                   onChange={(e) => setBikeTires(e.target.value)}
                   placeholder="Ej. Continental TKC80 (50/50)"
-                  className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]"
+                  className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl px-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-sm"
                 />
               </div>
             </div>
@@ -644,7 +644,7 @@ export const InitialOnboardingModal: React.FC = () => {
               <button
                 type="submit"
                 disabled={isSubmitting || !bikeModel.trim()}
-                className="w-full sm:flex-1 py-3.5 bg-[#E6332A] hover:bg-[#d02c24] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none text-white border-2 border-[#1A1918] rounded-xl font-display font-black text-xs uppercase tracking-wider transition shadow-[3px_3px_0px_#1A1918] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+                className="w-full sm:flex-1 py-3.5 bg-[#E6332A] hover:bg-[#d02c24] active:shadow-none text-white border border-[#1A1918]/10 rounded-xl font-sans font-semibold text-xs transition shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
               >
                 <Check className="w-4 h-4 stroke-[3]" />
                 <span>Guardar Moto y Entrar al Hangar</span>
@@ -653,7 +653,7 @@ export const InitialOnboardingModal: React.FC = () => {
               <button
                 type="button"
                 onClick={handleSkip}
-                className="w-full sm:w-auto px-5 py-3.5 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border-2 border-[#1A1918] rounded-xl font-display font-black text-xs uppercase tracking-wider transition shadow-[2px_2px_0px_#1A1918] cursor-pointer"
+                className="w-full sm:w-auto px-5 py-3.5 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border border-[#1A1918]/10 rounded-xl font-sans font-semibold text-xs transition shadow-sm cursor-pointer"
               >
                 Hacerlo más tarde
               </button>

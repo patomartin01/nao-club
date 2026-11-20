@@ -110,15 +110,15 @@ export const AuthModal: React.FC = () => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#1A1918]/70 backdrop-blur-sm animate-in fade-in duration-200">
       <div 
-        className="w-full max-w-md bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[28px] shadow-[8px_8px_0px_#1A1918] p-5 sm:p-7 space-y-5 animate-scaleUp text-[#1A1918] font-sans"
+        className="w-full max-w-md bg-[#FAF6ED] border border-[#1A1918]/10 rounded-[28px] shadow-sm p-5 sm:p-7 space-y-5 animate-scaleUp text-[#1A1918] font-sans"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header Bar */}
-        <div className="flex items-center justify-end border-b-2 border-[#1A1918] pb-3">
+        <div className="flex items-center justify-end border-b border-[#1A1918]/10 pb-3">
           <button
             type="button"
             onClick={() => setAuthModalOpen(false)}
-            className="p-1.5 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border-2 border-[#1A1918] rounded-xl shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition"
+            className="p-1.5 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border border-[#1A1918]/10 rounded-xl shadow-sm active:shadow-none transition"
             title="Cerrar ventana"
           >
             <X className="w-4 h-4 stroke-[2.5]" />
@@ -127,14 +127,14 @@ export const AuthModal: React.FC = () => {
 
         {/* Messages */}
         {errorMessage && (
-          <div className="p-3 bg-[#FFEBEE] border-2 border-[#D32F2F] rounded-xl flex items-center gap-2 text-xs text-[#C62828] font-sans font-medium">
+          <div className="p-3 bg-[#FFEBEE] border border-[#D32F2F] rounded-xl flex items-center gap-2 text-xs text-[#C62828] font-sans font-medium">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{errorMessage}</span>
           </div>
         )}
 
         {successMessage && (
-          <div className="p-3 bg-[#E8F5E9] border-2 border-[#2E7D32] rounded-xl flex items-center gap-2 text-xs text-[#1B5E20] font-sans font-medium">
+          <div className="p-3 bg-[#E8F5E9] border border-[#2E7D32] rounded-xl flex items-center gap-2 text-xs text-[#1B5E20] font-sans font-medium">
             <Check className="w-4 h-4 shrink-0" />
             <span>{successMessage}</span>
           </div>
@@ -146,19 +146,19 @@ export const AuthModal: React.FC = () => {
         {currentUser.id !== 'guest' ? (
           <div className="space-y-4">
             {/* Tarjeta del Piloto Actual */}
-            <div className="p-4 bg-white border-2 border-[#1A1918] rounded-2xl shadow-[3px_3px_0px_#1A1918] space-y-3">
+            <div className="p-4 bg-white border border-[#1A1918]/10 rounded-2xl shadow-sm space-y-3">
               <div className="flex items-center gap-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img 
                   src={currentUser.avatar} 
                   alt={currentUser.name} 
-                  className="w-14 h-14 rounded-full object-cover border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] shrink-0" 
+                  className="w-14 h-14 rounded-full object-cover border border-[#1A1918]/10 shadow-sm shrink-0" 
                 />
                 <div className="min-w-0 flex-1">
-                  <span className="text-[9px] font-mono font-black uppercase text-white bg-[#1A1918] px-2 py-0.5 rounded tracking-wider">
-                    Sesión Activa
+                  <span className="text-[9px] font-mono font-semibold uppercase text-white bg-[#1A1918] px-2 py-0.5 rounded tracking-wider">
+                    Sesión activa
                   </span>
-                  <h3 className="text-base font-display font-black uppercase text-[#1A1918] truncate mt-1">
+                  <h3 className="text-base font-display font-semibold text-[#1A1918] truncate mt-1">
                     {currentUser.name}
                   </h3>
                   <p className="text-xs font-mono font-bold text-[#E6332A] truncate">
@@ -185,10 +185,10 @@ export const AuthModal: React.FC = () => {
                   setAuthModalOpen(false);
                 }, 800);
               }}
-              className="w-full py-3.5 bg-[#FFEBEE] hover:bg-[#FFCDD2] text-[#C62828] border-2 border-[#C62828] rounded-xl font-display font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-[3px_3px_0px_#C62828] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition cursor-pointer"
+              className="w-full py-3.5 bg-[#FFEBEE] hover:bg-[#FFCDD2] text-[#C62828] border border-[#C62828] rounded-xl font-sans font-semibold text-xs flex items-center justify-center gap-2 shadow-sm active:shadow-none transition cursor-pointer"
             >
               <LogOut className="w-4 h-4" />
-              <span>Cerrar Sesión</span>
+              <span>Cerrar sesión</span>
             </button>
           </div>
         ) : (
@@ -197,13 +197,13 @@ export const AuthModal: React.FC = () => {
           /* ========================================================= */
           <div className="space-y-4">
             {/* Tab Switcher */}
-            <div className="flex rounded-xl bg-[#F4EEDB] p-1 border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918]">
+            <div className="flex rounded-xl bg-[#F4EEDB] p-1 border border-[#1A1918]/10 shadow-sm">
               <button
                 type="button"
                 onClick={() => { setMode('signup'); setErrorMessage(null); }}
-                className={`flex-1 py-2 text-xs font-display font-black uppercase rounded-lg transition ${
+                className={`flex-1 py-2 text-xs font-sans font-semibold rounded-lg transition ${
                   mode === 'signup'
-                    ? 'bg-[#FAF6ED] text-[#1A1918] border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918]'
+                    ? 'bg-[#FAF6ED] text-[#1A1918] border border-[#1A1918]/10 shadow-sm'
                     : 'text-[#1A1918]/60 hover:text-[#1A1918]'
                 }`}
               >
@@ -212,9 +212,9 @@ export const AuthModal: React.FC = () => {
               <button
                 type="button"
                 onClick={() => { setMode('login'); setErrorMessage(null); }}
-                className={`flex-1 py-2 text-xs font-display font-black uppercase rounded-lg transition ${
+                className={`flex-1 py-2 text-xs font-sans font-semibold rounded-lg transition ${
                   mode === 'login'
-                    ? 'bg-[#FAF6ED] text-[#1A1918] border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918]'
+                    ? 'bg-[#FAF6ED] text-[#1A1918] border border-[#1A1918]/10 shadow-sm'
                     : 'text-[#1A1918]/60 hover:text-[#1A1918]'
                 }`}
               >
@@ -223,14 +223,14 @@ export const AuthModal: React.FC = () => {
               <button
                 type="button"
                 onClick={() => { setMode('demo'); setErrorMessage(null); }}
-                className={`py-2 px-3 text-xs font-display font-black uppercase rounded-lg transition ${
+                className={`py-2 px-3 text-xs font-sans font-semibold rounded-lg transition ${
                   mode === 'demo'
-                    ? 'bg-[#F7B32B] text-[#1A1918] border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918]'
+                    ? 'bg-[#F7B32B] text-[#1A1918] border border-[#1A1918]/10 shadow-sm'
                     : 'text-[#1A1918]/60 hover:text-[#1A1918]'
                 }`}
                 title="Cambiar entre perfiles demo de prueba"
               >
-                Pilotos Demo
+                Pilotos demo
               </button>
             </div>
 
@@ -250,7 +250,7 @@ export const AuthModal: React.FC = () => {
                   setGoogleLoading(false);
                 }
               }}
-              className="w-full py-3 px-4 bg-white hover:bg-[#FAF6ED] text-[#1A1918] border-2 border-[#1A1918] rounded-xl font-display font-black text-xs uppercase tracking-wider transition shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none flex items-center justify-center gap-3 cursor-pointer disabled:opacity-60"
+              className="w-full py-3 px-4 bg-white hover:bg-[#FAF6ED] text-[#1A1918] border border-[#1A1918]/10 rounded-xl font-sans font-semibold text-xs transition shadow-sm active:shadow-none flex items-center justify-center gap-3 cursor-pointer disabled:opacity-60"
             >
               <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                 <path
@@ -275,8 +275,8 @@ export const AuthModal: React.FC = () => {
 
             {/* SEPARATOR */}
             <div className="relative flex items-center justify-center my-2">
-              <div className="border-t-2 border-[#1A1918]/20 w-full" />
-              <span className="bg-[#FAF6ED] px-3 text-[10px] font-mono uppercase font-black text-[#1A1918]/60 absolute">
+              <div className="border-t border-[#1A1918]/20 w-full" />
+              <span className="bg-[#FAF6ED] px-3 text-[10px] font-mono uppercase font-semibold text-[#1A1918]/60 absolute">
                 o con correo y contraseña
               </span>
             </div>
@@ -285,8 +285,8 @@ export const AuthModal: React.FC = () => {
             {mode === 'signup' && (
               <>
                 <div>
-                  <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
-                    Nombre Completo
+                  <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block mb-1">
+                    Nombre completo
                   </label>
                   <div className="relative">
                     <User className="w-4 h-4 text-[#1A1918]/50 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -296,13 +296,13 @@ export const AuthModal: React.FC = () => {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Ej. Patricio Martin"
-                      className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl pl-9 pr-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]"
+                      className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl pl-9 pr-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-sm"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
+                  <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block mb-1">
                     Handle / Usuario
                   </label>
                   <div className="relative">
@@ -312,7 +312,7 @@ export const AuthModal: React.FC = () => {
                       value={handle}
                       onChange={(e) => setHandle(e.target.value)}
                       placeholder="@patricio_adv"
-                      className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl pl-9 pr-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]"
+                      className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl pl-9 pr-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-sm"
                     />
                   </div>
                 </div>
@@ -320,8 +320,8 @@ export const AuthModal: React.FC = () => {
             )}
 
             <div>
-              <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
-                Correo Electrónico
+              <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block mb-1">
+                Correo electrónico
               </label>
               <div className="relative">
                 <Mail className="w-4 h-4 text-[#1A1918]/50 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -331,13 +331,13 @@ export const AuthModal: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="piloto@ejemplo.com"
-                  className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl pl-9 pr-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]"
+                  className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl pl-9 pr-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-sm"
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-[10px] font-mono uppercase font-black text-[#1A1918] block mb-1">
+              <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block mb-1">
                 Contraseña
               </label>
               <div className="relative">
@@ -349,7 +349,7 @@ export const AuthModal: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Mínimo 6 caracteres"
-                  className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl pl-9 pr-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-[2px_2px_0px_#1A1918]"
+                  className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl pl-9 pr-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-sm"
                 />
               </div>
             </div>
@@ -357,7 +357,7 @@ export const AuthModal: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-2 py-3 bg-[#E6332A] hover:bg-[#d02c24] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none text-white border-2 border-[#1A1918] rounded-xl font-display font-black text-xs uppercase tracking-wider transition shadow-[3px_3px_0px_#1A1918] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+              className="w-full mt-2 py-3 bg-[#E6332A] hover:bg-[#d02c24] active:shadow-none text-white border border-[#1A1918]/10 rounded-xl font-sans font-semibold text-xs transition shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
             >
               {loading ? (
                 <span>Procesando...</span>
@@ -390,7 +390,7 @@ export const AuthModal: React.FC = () => {
                         confetti({ particleCount: 20, spread: 45 });
                       } catch {}
                     }}
-                    className={`w-full p-2.5 rounded-xl border-2 border-[#1A1918] flex items-center justify-between gap-3 text-left transition shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${
+                    className={`w-full p-2.5 rounded-xl border border-[#1A1918]/10 flex items-center justify-between gap-3 text-left transition shadow-sm active:shadow-none ${
                       isSelected 
                         ? 'bg-[#F7B32B]' 
                         : 'bg-[#FAF6ED] hover:bg-[#F4EEDB]'
@@ -401,19 +401,19 @@ export const AuthModal: React.FC = () => {
                       <img 
                         src={u.avatar} 
                         alt={u.name} 
-                        className="w-8 h-8 rounded-full object-cover border-2 border-[#1A1918]" 
+                        className="w-8 h-8 rounded-full object-cover border border-[#1A1918]/10" 
                       />
                       <div className="min-w-0">
-                        <p className="text-xs font-display font-black uppercase text-[#1A1918] truncate">{u.name}</p>
+                        <p className="text-xs font-sans font-semibold text-[#1A1918] truncate">{u.name}</p>
                         <p className="text-[10px] font-mono text-[#1A1918]/70">{u.handle}</p>
                       </div>
                     </div>
                     {isSelected ? (
-                      <span className="text-[10px] font-mono font-black uppercase bg-[#1A1918] text-white px-2 py-0.5 rounded-md">
+                      <span className="text-[10px] font-mono font-semibold uppercase bg-[#1A1918] text-white px-2 py-0.5 rounded-md">
                         Activo
                       </span>
                     ) : (
-                      <span className="text-[10px] font-display font-black uppercase text-[#1A1918]/70">
+                      <span className="text-[10px] font-sans font-semibold uppercase text-[#1A1918]/70">
                         Cambiar →
                       </span>
                     )}
@@ -427,8 +427,8 @@ export const AuthModal: React.FC = () => {
       )}
 
         {/* Footer info note */}
-        <div className="border-t-2 border-[#1A1918] pt-3 text-[10px] font-mono text-[#1A1918]/60 flex items-center justify-between">
-          <span>NAO v2.6 // PROD READY</span>
+        <div className="border-t border-[#1A1918]/10 pt-3 text-[10px] font-mono text-[#1A1918]/60 flex items-center justify-between">
+          <span>NAO v2.6 · PROD READY</span>
           <span className="font-bold">PILOTOS PRIVADOS & SEGUROS</span>
         </div>
       </div>

@@ -28,12 +28,12 @@ export const BrandShowcaseView: React.FC = () => {
         <div className="grid grid-cols-12 border-b border-white/10">
           <div className="col-span-12 md:col-span-8 p-6 sm:p-10 border-b md:border-b-0 md:border-r border-white/10">
             <span className="font-mono text-[10px] text-earth uppercase tracking-widest font-bold block mb-2">
-              [ 03 // REFUGIO ARQUITECTÓNICO & MANIFIESTO ]
+              [ 03 · REFUGIO ARQUITECTÓNICO & MANIFIESTO ]
             </span>
-            <h1 className="font-display font-extrabold text-3xl sm:text-5xl text-white uppercase tracking-tight leading-[0.95]">
+            <h1 className="font-display font-extrabold text-3xl sm:text-5xl text-white tracking-tight leading-[0.95]">
               Navana Cabins <span className="text-ash font-light">×</span> NAO
             </h1>
-            <p className="font-mono text-xs text-ash uppercase tracking-wider mt-4">
+            <p className="font-mono text-xs text-ash mt-4">
               AMANALCO / VALLE DE BRAVO_3 CABAÑAS EN EL BOSQUE_SAUNA NÓRDICO A 78°C_POZO DE FUEGO Y HANGAR TECHADO_
             </p>
           </div>
@@ -82,7 +82,7 @@ export const BrandShowcaseView: React.FC = () => {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
             <div className="absolute bottom-4 left-4 font-mono text-[11px] text-white">
-              CABAÑA EL MIRADOR // A-FRAME MADERA QUEMADA
+              CABAÑA EL MIRADOR · A-FRAME MADERA QUEMADA
             </div>
           </div>
 
@@ -94,7 +94,7 @@ export const BrandShowcaseView: React.FC = () => {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
             <div className="absolute bottom-4 left-4 font-mono text-[11px] text-white">
-              SAUNA DE CEDRO // INFUSIÓN DE EUCALIPTO (78°C)
+              SAUNA DE CEDRO · INFUSIÓN DE EUCALIPTO (78°C)
             </div>
           </div>
 
@@ -106,7 +106,7 @@ export const BrandShowcaseView: React.FC = () => {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
             <div className="absolute bottom-4 left-4 font-mono text-[11px] text-white">
-              POZO DE FUEGO // LEÑA SECA DE ENCINO & CAFÉ
+              POZO DE FUEGO · LEÑA SECA DE ENCINO & CAFÉ
             </div>
           </div>
         </div>
@@ -122,7 +122,7 @@ export const BrandShowcaseView: React.FC = () => {
               <span className="font-mono text-[10px] text-earth uppercase tracking-widest font-bold">
                 [ ESTADO DE AMENIDADES EN TIEMPO REAL ]
               </span>
-              <h2 className="font-display font-bold text-2xl text-white uppercase tracking-tight mt-1">
+              <h2 className="font-display font-bold text-2xl text-white tracking-tight mt-1">
                 Sincronización del Refugio para la Llegada
               </h2>
             </div>
@@ -177,9 +177,9 @@ export const BrandShowcaseView: React.FC = () => {
           <section className="border border-white/10 bg-[#0B0A09] p-6 sm:p-10 space-y-6">
             <div className="border-b border-white/10 pb-4">
               <span className="font-mono text-[10px] text-earth uppercase tracking-widest font-bold">
-                [ DISTRIBUCIÓN DE REFUGIOS // CAPACIDAD 6 PILOTOS ]
+                [ DISTRIBUCIÓN DE REFUGIOS · CAPACIDAD 6 PILOTOS ]
               </span>
-              <h3 className="font-display font-bold text-2xl text-white uppercase">
+              <h3 className="font-display font-bold text-2xl text-white ">
                 Asignación de Cabañas Navana
               </h3>
             </div>
@@ -188,7 +188,7 @@ export const BrandShowcaseView: React.FC = () => {
               <div className="p-5 border border-white/10 bg-white/[0.02] space-y-3">
                 <div className="flex justify-between items-center text-ash text-[10px]">
                   <span>CABAÑA 01</span>
-                  <span className="text-emerald-400 font-bold uppercase">Asignada</span>
+                  <span className="text-emerald-400 font-bold ">Asignada</span>
                 </div>
                 <h4 className="font-bold text-base text-white">El Mirador</h4>
                 <p className="text-ash text-[11px]">
@@ -199,7 +199,7 @@ export const BrandShowcaseView: React.FC = () => {
               <div className="p-5 border border-white/10 bg-white/[0.02] space-y-3">
                 <div className="flex justify-between items-center text-ash text-[10px]">
                   <span>CABAÑA 02</span>
-                  <span className="text-emerald-400 font-bold uppercase">Asignada</span>
+                  <span className="text-emerald-400 font-bold ">Asignada</span>
                 </div>
                 <h4 className="font-bold text-base text-white">El Encinar</h4>
                 <p className="text-ash text-[11px]">
@@ -210,7 +210,7 @@ export const BrandShowcaseView: React.FC = () => {
               <div className="p-5 border border-white/10 bg-white/[0.02] space-y-3">
                 <div className="flex justify-between items-center text-ash text-[10px]">
                   <span>CABAÑA 03</span>
-                  <span className="text-emerald-400 font-bold uppercase">Asignada</span>
+                  <span className="text-emerald-400 font-bold ">Asignada</span>
                 </div>
                 <h4 className="font-bold text-base text-white">La Cañada</h4>
                 <p className="text-ash text-[11px]">
@@ -223,12 +223,12 @@ export const BrandShowcaseView: React.FC = () => {
         </div>
       ) : (
         /* MODO NAVÍO: COCKPIT HUD PARA MANILLAR */
-        <section className="border-2 border-earth bg-black p-8 sm:p-12 space-y-8 font-mono select-none">
+        <section className="border border-earth bg-black p-8 sm:p-12 space-y-8 font-mono select-none">
           <div className="flex items-center justify-between border-b border-white/20 pb-4">
             <div className="flex items-center gap-3">
               <span className="w-3 h-3 bg-earth animate-ping" />
-              <span className="font-bold text-white text-sm uppercase tracking-widest">
-                MODO NAVÍO // COCKPIT TÁCTICO DE MANILLAR
+              <span className="font-bold text-white text-sm  ">
+                MODO NAVÍO · COCKPIT TÁCTICO DE MANILLAR
               </span>
             </div>
             <span className="text-ash text-xs">SOL DIRECTO ACTIVADO</span>
@@ -236,20 +236,20 @@ export const BrandShowcaseView: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center items-center">
             <div className="space-y-1">
-              <span className="text-ash text-xs uppercase">Rumbo Magnético</span>
-              <p className="font-display font-black text-6xl text-white">248° W</p>
+              <span className="text-ash text-xs ">Rumbo Magnético</span>
+              <p className="font-display font-semibold text-6xl text-white">248° W</p>
               <p className="text-earth text-xs">Hacia Amanalco de Becerra</p>
             </div>
 
             <div className="space-y-1 border-y md:border-y-0 md:border-x border-white/20 py-6 md:py-0">
-              <span className="text-ash text-xs uppercase">Distancia al Refugio</span>
-              <p className="font-display font-black text-7xl text-white">32.4</p>
-              <p className="text-ash text-xs uppercase">Kilómetros restantes</p>
+              <span className="text-ash text-xs ">Distancia al Refugio</span>
+              <p className="font-display font-semibold text-7xl text-white">32.4</p>
+              <p className="text-ash text-xs ">Kilómetros restantes</p>
             </div>
 
             <div className="space-y-1">
-              <span className="text-ash text-xs uppercase">Altitud GPS</span>
-              <p className="font-display font-black text-6xl text-white">2,640 M</p>
+              <span className="text-ash text-xs ">Altitud GPS</span>
+              <p className="font-display font-semibold text-6xl text-white">2,640 M</p>
               <p className="text-emerald-400 text-xs">Ascenso: +340 M a base</p>
             </div>
           </div>

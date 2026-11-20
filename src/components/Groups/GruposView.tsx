@@ -49,9 +49,9 @@ export const GruposView: React.FC<GruposViewProps> = ({
       <div className="flex border-b border-white/10 bg-[#0D0B0A] p-1">
         <button
           onClick={() => setActiveSubTab('eventos')}
-          className={`flex-1 py-2.5 text-xs font-bold uppercase tracking-wider text-center transition ${
+          className={`flex-1 py-2.5 text-xs font-bold text-center transition ${
             activeSubTab === 'eventos'
-              ? 'text-earth border-b-2 border-earth bg-earth/5'
+              ? 'text-earth border-b border-earth bg-earth/5'
               : 'text-ash hover:text-white'
           }`}
         >
@@ -60,9 +60,9 @@ export const GruposView: React.FC<GruposViewProps> = ({
 
         <button
           onClick={() => setActiveSubTab('tribus')}
-          className={`flex-1 py-2.5 text-xs font-bold uppercase tracking-wider text-center transition ${
+          className={`flex-1 py-2.5 text-xs font-bold text-center transition ${
             activeSubTab === 'tribus'
-              ? 'text-earth border-b-2 border-earth bg-earth/5'
+              ? 'text-earth border-b border-earth bg-earth/5'
               : 'text-ash hover:text-white'
           }`}
         >
@@ -77,14 +77,14 @@ export const GruposView: React.FC<GruposViewProps> = ({
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-base font-bold text-white uppercase tracking-tight">
-                Próximas Rodadas
+              <h2 className="text-base font-bold text-white tracking-tight">
+                Próximas rodadas
               </h2>
               <p className="text-xs text-ash">Salidas comunitarias, rallies y expediciones organizadas</p>
             </div>
             <button
               onClick={onOpenCreateRodada}
-              className="px-3 py-2 bg-earth hover:bg-earth/90 text-white text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition active:scale-95"
+              className="px-3 py-2 bg-earth hover:bg-earth/90 text-white text-xs font-bold flex items-center gap-1.5 transition active:scale-95"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Crear rodada</span>
@@ -103,7 +103,7 @@ export const GruposView: React.FC<GruposViewProps> = ({
                     <span className="text-[10px] text-earth uppercase tracking-widest font-bold">
                       {rodada.category}
                     </span>
-                    <h3 className="text-lg font-bold text-white uppercase tracking-tight group-hover:text-earth transition mt-0.5">
+                    <h3 className="text-lg font-bold text-white tracking-tight group-hover:text-earth transition mt-0.5">
                       {rodada.title}
                     </h3>
                     <p className="text-xs text-ash mt-1">{rodada.subtitle}</p>
@@ -119,7 +119,7 @@ export const GruposView: React.FC<GruposViewProps> = ({
                     <span className="text-white font-bold">{rodada.startDate}</span>
                   </div>
                   <div>
-                    <span className="text-[9px] uppercase tracking-wider text-ash block">Punto de Salida</span>
+                    <span className="text-[9px] uppercase tracking-wider text-ash block">Punto de salida</span>
                     <span className="text-white font-bold">{rodada.originPoint}</span>
                   </div>
                   <div className="col-span-2 sm:col-span-1">
@@ -131,13 +131,13 @@ export const GruposView: React.FC<GruposViewProps> = ({
                 <div className="flex items-center justify-between pt-1">
                   <div className="flex -space-x-2 overflow-hidden">
                     {rodada.attendees.slice(0, 4).map((att, idx) => (
-                      <div key={idx} className="w-7 h-7 rounded-full bg-earth/20 border-2 border-black flex items-center justify-center text-[10px] text-white font-bold">
+                      <div key={idx} className="w-7 h-7 rounded-full bg-earth/20 border border-black flex items-center justify-center text-[10px] text-white font-bold">
                         P{idx + 1}
                       </div>
                     ))}
                   </div>
 
-                  <span className="text-xs text-earth group-hover:translate-x-1 transition flex items-center gap-1 font-bold uppercase">
+                  <span className="text-xs text-earth group-hover:translate-x-1 transition flex items-center gap-1 font-bold ">
                     Ver sala de rodada <ChevronRight className="w-4 h-4" />
                   </span>
                 </div>
@@ -158,10 +158,10 @@ export const GruposView: React.FC<GruposViewProps> = ({
             
             <div className="flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-earth" />
-              <span className="text-[10px] text-earth uppercase font-bold tracking-widest">Comunidad Oficial</span>
+              <span className="text-[10px] text-earth uppercase font-bold tracking-widest">Comunidad oficial</span>
             </div>
 
-            <h3 className="text-lg font-bold text-white uppercase tracking-tight">
+            <h3 className="text-lg font-bold text-white tracking-tight">
               Crea tu propia tribu
             </h3>
 
@@ -172,14 +172,14 @@ export const GruposView: React.FC<GruposViewProps> = ({
             <div className="flex flex-wrap gap-2 pt-2">
               <button
                 onClick={onOpenCreateCrew}
-                className="px-4 py-2 bg-earth hover:bg-earth/90 text-white text-xs font-bold uppercase tracking-wider transition active:scale-95"
+                className="px-4 py-2 bg-earth hover:bg-earth/90 text-white text-xs font-bold transition active:scale-95"
               >
-                Comenzar Tribu
+                Comenzar tribu
               </button>
 
               <button
                 onClick={onOpenJoinCrew}
-                className="px-4 py-2 bg-white/[0.04] hover:bg-white/[0.08] border border-white/15 text-white text-xs uppercase tracking-wider flex items-center gap-1.5 transition active:scale-95"
+                className="px-4 py-2 bg-white/[0.04] hover:bg-white/[0.08] border border-white/15 text-white text-xs flex items-center gap-1.5 transition active:scale-95"
               >
                 <Key className="w-3.5 h-3.5 text-earth" />
                 <span>Unirme con código</span>
@@ -189,8 +189,8 @@ export const GruposView: React.FC<GruposViewProps> = ({
 
           {/* List of Clubs */}
           <div className="space-y-3">
-            <h4 className="text-xs font-bold text-ash uppercase tracking-wider">
-              Tus Tribus Activas
+            <h4 className="text-xs font-bold text-ash  ">
+              Tus tribus activas
             </h4>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -209,11 +209,11 @@ export const GruposView: React.FC<GruposViewProps> = ({
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <h5 className="text-sm font-bold text-white uppercase group-hover:text-earth transition">
+                          <h5 className="text-sm font-bold text-white group-hover:text-earth transition">
                             {crew.name}
                           </h5>
                           <span className="text-[9px] uppercase font-bold text-earth bg-earth/20 border border-earth/40 px-1.5 py-0.2">
-                            Mi Tribu
+                            Mi tribu
                           </span>
                         </div>
                         <p className="text-[11px] text-ash">{crew.tagline}</p>
@@ -229,7 +229,7 @@ export const GruposView: React.FC<GruposViewProps> = ({
                       <span className="text-[10px] text-ash bg-white/[0.04] px-2 py-1 border border-white/10 uppercase block font-mono">
                         Código: {crew.inviteCode}
                       </span>
-                      <span className="text-xs text-earth group-hover:translate-x-1 transition inline-flex items-center gap-0.5 mt-2 font-bold uppercase">
+                      <span className="text-xs text-earth group-hover:translate-x-1 transition inline-flex items-center gap-0.5 mt-2 font-bold ">
                         Entrar <ChevronRight className="w-3.5 h-3.5" />
                       </span>
                     </div>
@@ -246,11 +246,11 @@ export const GruposView: React.FC<GruposViewProps> = ({
                         {crew.name.substring(0, 3).toUpperCase()}
                       </div>
                       <div className="min-w-0">
-                        <h5 className="text-sm font-bold text-chalk uppercase truncate">
+                        <h5 className="text-sm font-bold text-chalk truncate">
                           {crew.name}
                         </h5>
                         <p className="text-[10px] text-ash/60 uppercase font-mono mt-0.5">
-                          Tribu Privada
+                          Tribu privada
                         </p>
                       </div>
                     </div>

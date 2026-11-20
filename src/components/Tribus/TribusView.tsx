@@ -761,10 +761,10 @@ export const TribusView: React.FC<TribusViewProps> = ({
       <div className="max-w-[1240px] w-full mx-auto pb-28 px-4 sm:px-6 font-sans">
         
         {/* Top Header: Risograph Motorcycle Chapters Editorial */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b-2 border-[#1A1918] pb-3 sm:pb-5 pt-1 sm:pt-3 gap-3 sm:gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#1A1918]/10 pb-3 sm:pb-5 pt-1 sm:pt-3 gap-3 sm:gap-4">
           <div>
-            <h1 className="font-display font-black text-2xl sm:text-4xl text-[#1A1918] uppercase tracking-wide">
-              TRIBUS
+            <h1 className="font-display font-semibold text-2xl sm:text-4xl text-[#1A1918]">
+              Tribus
             </h1>
           </div>
 
@@ -772,26 +772,26 @@ export const TribusView: React.FC<TribusViewProps> = ({
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={onOpenJoinCrew}
-              className="flex-1 sm:flex-none btn-mustard px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5"
+              className="flex-1 sm:flex-none px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs font-semibold bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border border-[#1A1918]/15 transition flex items-center justify-center gap-1.5"
             >
-              <Key className="w-3.5 h-3.5 text-[#1A1918]" />
-              <span>Unirse</span>
+              <Key className="w-3.5 h-3.5 text-[#1A1918]/70" />
+              <span>Unirme con clave</span>
             </button>
             <button
               onClick={onOpenCreateCrew}
               className="flex-1 sm:flex-none btn-vermillion px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5"
             >
               <Plus className="w-3.5 h-3.5 text-white" />
-              <span>Fundar Club</span>
+              <span>Fundar club</span>
             </button>
           </div>
         </div>
 
         {/* Directory Controls: Search Bar */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 py-4 border-b-2 border-[#1A1918]">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 py-4 border-b border-[#1A1918]/10">
           <div className="flex items-center gap-2">
-            <span className="font-mono text-[10px] text-[#E6332A] uppercase tracking-[0.2em] font-black">
-              ★ DIRECTORIO OFICIAL // MOTOCLUBS ({crews.length}) ★
+            <span className="font-mono text-[10px] text-[#1A1918]/55 uppercase tracking-[0.15em] font-semibold">
+              {crews.length} {crews.length === 1 ? 'motoclub' : 'motoclubs'}
             </span>
           </div>
 
@@ -803,7 +803,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
               value={searchTribuQuery}
               onChange={(e) => setSearchTribuQuery(e.target.value)}
               placeholder="Buscar por nombre, clave o ciudad..."
-              className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] pl-9 pr-3 py-2 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none focus:ring-1 focus:ring-[#1A1918] font-sans font-semibold rounded-xl shadow-[2px_2px_0px_#1A1918]"
+              className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 pl-9 pr-3 py-2 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none focus:ring-1 focus:ring-[#1A1918] font-sans font-semibold rounded-xl shadow-sm"
             />
           </div>
         </div>
@@ -870,10 +870,10 @@ export const TribusView: React.FC<TribusViewProps> = ({
                   setSelectedTribuId(crew.id);
                   setCurrentCrew(crew);
                 }}
-                className="group bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[24px] shadow-[4px_4px_0px_#1A1918] hover:shadow-[7px_7px_0px_#1A1918] transition-all duration-300 overflow-hidden cursor-pointer flex flex-col justify-between relative"
+                className="group bg-[#FAF6ED] border border-[#1A1918]/10 rounded-[24px] shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden cursor-pointer flex flex-col justify-between relative"
               >
                 {/* 1. Panoramic Cover Image Banner (Risograph Poster Header) */}
-                <div className="h-32 sm:h-36 w-full relative overflow-hidden bg-[#F4EEDB] border-b-2 border-[#1A1918]">
+                <div className="h-32 sm:h-36 w-full relative overflow-hidden bg-[#F4EEDB] border-b border-[#1A1918]/10">
                   {crew.coverImage ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img 
@@ -883,7 +883,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                     />
                   ) : (
                     <div className="w-full h-full bg-[#F4EEDB] flex items-center justify-center">
-                      <span className="font-display font-black text-5xl text-[#1A1918]/10 uppercase tracking-widest">
+                      <span className="font-display font-semibold text-5xl text-[#1A1918]/10  ">
                         {crew.name.slice(0, 4)}
                       </span>
                     </div>
@@ -902,7 +902,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                         setCopiedCodeCrewId(crew.id);
                         setTimeout(() => setCopiedCodeCrewId(null), 2000);
                       }}
-                      className="px-2.5 py-1 bg-[#FAF6ED] border-2 border-[#1A1918] text-[#1A1918] text-[10px] font-mono flex items-center gap-1.5 transition active:scale-95 shadow-[2px_2px_0px_#1A1918] font-bold rounded-lg"
+                      className="px-2.5 py-1 bg-[#FAF6ED] border border-[#1A1918]/10 text-[#1A1918] text-[10px] font-mono flex items-center gap-1.5 transition active:scale-95 shadow-sm font-bold rounded-lg"
                       title="Copiar clave de invitación de la tribu"
                     >
                       <Key className="w-3 h-3 text-[#E6332A]" />
@@ -912,12 +912,12 @@ export const TribusView: React.FC<TribusViewProps> = ({
 
                     {/* Role Pill */}
                     {isUserAdmin ? (
-                      <span className="px-2.5 py-1 text-[9px] font-display uppercase tracking-widest font-black bg-[#E6332A] text-white border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] rounded-lg flex items-center gap-1">
+                      <span className="px-2.5 py-1 text-[9px] font-sans uppercase tracking-widest font-semibold bg-[#E6332A] text-white border border-[#1A1918]/10 shadow-sm rounded-lg flex items-center gap-1">
                         <Shield className="w-3 h-3" />
                         <span>Admin</span>
                       </span>
                     ) : (
-                      <span className="px-2.5 py-1 text-[9px] font-display uppercase tracking-widest font-black bg-[#1A1918] text-white border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] rounded-lg">
+                      <span className="px-2.5 py-1 text-[9px] font-sans uppercase tracking-widest font-semibold bg-[#1A1918] text-white border border-[#1A1918]/10 shadow-sm rounded-lg">
                         Miembro
                       </span>
                     )}
@@ -930,12 +930,12 @@ export const TribusView: React.FC<TribusViewProps> = ({
                     {/* Avatar + Title + City */}
                     <div className="flex items-center gap-3.5">
                       {/* Emblem / Avatar */}
-                      <div className="w-12 h-12 rounded-xl overflow-hidden border-2 border-[#1A1918] bg-[#FAF6ED] shadow-[2px_2px_0px_#1A1918] shrink-0 group-hover:ring-2 group-hover:ring-[#E6332A] transition duration-300">
+                      <div className="w-12 h-12 rounded-xl overflow-hidden border border-[#1A1918]/10 bg-[#FAF6ED] shadow-sm shrink-0 group-hover:ring-2 group-hover:ring-[#E6332A] transition duration-300">
                         {crew.coverImage ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={crew.coverImage} alt={crew.name} className="w-full h-full object-cover" />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center font-display font-black text-sm text-[#1A1918] bg-[#F4EEDB]">
+                          <div className="w-full h-full flex items-center justify-center font-sans font-semibold text-sm text-[#1A1918] bg-[#F4EEDB]">
                             {crew.name.slice(0, 2).toUpperCase()}
                           </div>
                         )}
@@ -943,10 +943,10 @@ export const TribusView: React.FC<TribusViewProps> = ({
 
                       {/* Title & Location */}
                       <div className="min-w-0 flex-1">
-                        <h3 className="font-display font-black text-lg sm:text-xl text-[#1A1918] uppercase group-hover:text-[#E6332A] transition truncate tracking-wide leading-tight">
+                        <h3 className="font-display font-semibold text-lg sm:text-xl text-[#1A1918] group-hover:text-[#E6332A] transition truncate leading-tight">
                           {crew.name}
                         </h3>
-                        <div className="flex items-center gap-1.5 text-xs font-serif italic text-[#1A1918]/70 mt-0.5 font-medium">
+                        <div className="flex items-center gap-1.5 text-xs font-sans text-[#1A1918]/70 mt-0.5 font-medium">
                           <MapPin className="w-3.5 h-3.5 text-[#E6332A] shrink-0" />
                           <span className="truncate">{crew.baseCity}</span>
                         </div>
@@ -955,20 +955,20 @@ export const TribusView: React.FC<TribusViewProps> = ({
 
                     {/* Tagline / Subtitle */}
                     {crew.tagline && (
-                      <p className="text-xs font-serif italic text-[#1A1918]/80 mt-2.5 line-clamp-2 leading-relaxed font-medium">
+                      <p className="text-xs font-sans text-[#1A1918]/80 mt-2.5 line-clamp-2 leading-relaxed font-medium">
                         &quot;{crew.tagline}&quot;
                       </p>
                     )}
 
                     {/* Pilots Stack & Garage Brands */}
-                    <div className="mt-3.5 pt-3 border-t-2 border-[#1A1918] flex items-center justify-between text-xs">
+                    <div className="mt-3.5 pt-3 border-t border-[#1A1918]/10 flex items-center justify-between text-xs">
                       {/* Member Avatars */}
                       <div className="flex items-center gap-2">
                         <div className="flex -space-x-1.5 overflow-hidden">
                           {previewMembers.map((u, idx) => (
                             <div 
                               key={u?.id || idx}
-                              className="inline-block w-6 h-6 rounded-lg ring-1 ring-[#1A1918] bg-[#FAF6ED] overflow-hidden shadow-xs"
+                              className="inline-block w-6 h-6 rounded-lg ring-1 ring-[#1A1918]/10 bg-[#FAF6ED] overflow-hidden shadow-xs"
                             >
                               {u?.avatar ? (
                                 // eslint-disable-next-line @next/next/no-img-element
@@ -981,7 +981,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                             </div>
                           ))}
                         </div>
-                        <span className="text-[11px] font-display uppercase tracking-wider text-[#1A1918] font-black">
+                        <span className="text-[11px] font-sans text-[#1A1918] font-semibold">
                           {crew.members.length} {crew.members.length === 1 ? 'piloto' : 'pilotos'}
                         </span>
                       </div>
@@ -998,26 +998,26 @@ export const TribusView: React.FC<TribusViewProps> = ({
                     {/* Next Confirmed Ride Box (solo si existe fecha confirmada) */}
                     {nextConfirmedRide && (
                       <div className="mt-3">
-                        <div className="p-3 bg-[#F4EEDB] border-2 border-[#1A1918] rounded-xl group-hover:border-[#E6332A] transition shadow-[2px_2px_0px_#1A1918]">
+                        <div className="p-3 bg-[#F4EEDB] border border-[#1A1918]/10 rounded-xl group-hover:border-[#E6332A] transition shadow-sm">
                           <div className="flex items-center justify-between gap-2 mb-1 border-b border-[#1A1918]/20 pb-1">
-                            <span className="text-[10px] font-display uppercase tracking-widest text-[#E06423] font-black flex items-center gap-1">
+                            <span className="text-[10px] font-sans uppercase tracking-widest text-[#E06423] font-semibold flex items-center gap-1">
                               <Check className="w-3 h-3 text-[#E06423]" />
-                              <span>Salida Confirmada</span>
+                              <span>Salida confirmada</span>
                             </span>
 
                             {userAttendeeForRide?.status === 'confirmado' ? (
-                              <span className="text-[9px] font-display uppercase tracking-wider text-white bg-[#1A1918] px-2 py-0.5 border border-[#1A1918] font-black flex items-center gap-1 shadow-sm rounded">
+                              <span className="text-[9px] font-sans uppercase tracking-wider text-white bg-[#1A1918] px-2 py-0.5 border border-[#1A1918]/10 font-semibold flex items-center gap-1 shadow-sm rounded">
                                 <CheckCircle2 className="w-3 h-3 text-[#F7B32B]" />
                                 <span>Asistirás</span>
                               </span>
                             ) : (
-                              <span className="text-[9px] font-display uppercase tracking-wider text-[#1A1918] bg-[#F7B32B] px-2 py-0.5 border border-[#1A1918] font-black shadow-sm rounded">
+                              <span className="text-[9px] font-sans uppercase tracking-wider text-[#1A1918] bg-[#F7B32B] px-2 py-0.5 border border-[#1A1918]/10 font-semibold shadow-sm rounded">
                                 Pendiente
                               </span>
                             )}
                           </div>
 
-                          <h4 className="text-xs sm:text-sm font-display font-black text-[#1A1918] truncate uppercase tracking-wide">
+                          <h4 className="text-xs sm:text-sm font-sans font-semibold text-[#1A1918] truncate  ">
                             {winningRoute ? winningRoute.destination : nextConfirmedRide.title}
                           </h4>
 
@@ -1033,7 +1033,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                   </div>
 
                   {/* Card Action Footer */}
-                  <div className="mt-3 pt-2.5 border-t-2 border-[#1A1918] flex items-center justify-between text-xs">
+                  <div className="mt-3 pt-2.5 border-t border-[#1A1918]/10 flex items-center justify-between text-xs">
                     <div>
                       {isUserAdmin ? (
                         <button
@@ -1042,10 +1042,10 @@ export const TribusView: React.FC<TribusViewProps> = ({
                             e.stopPropagation();
                             handleDeleteCrew(crew.id);
                           }}
-                          className="px-2.5 py-1 text-[10px] font-display font-black uppercase text-[#E6332A] hover:bg-[#E6332A]/10 border border-[#E6332A]/40 hover:border-[#E6332A] rounded-lg transition flex items-center gap-1"
+                          className="px-2 py-1 text-[11px] font-sans font-medium text-[#1A1918]/50 hover:text-[#E6332A] hover:bg-[#E6332A]/5 rounded-lg transition flex items-center gap-1"
                           title="Eliminar este grupo definitivamente"
                         >
-                          <Trash2 className="w-3 h-3 text-[#E6332A]" />
+                          <Trash2 className="w-3 h-3" />
                           <span>Borrar</span>
                         </button>
                       ) : (
@@ -1055,7 +1055,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                             e.stopPropagation();
                             handleLeaveCrew(crew.id);
                           }}
-                          className="px-2.5 py-1 text-[10px] font-display font-black uppercase text-stone-500 hover:text-[#E6332A] hover:bg-stone-200/50 border border-stone-300 rounded-lg transition flex items-center gap-1"
+                          className="px-2 py-1 text-[11px] font-sans font-medium text-[#1A1918]/50 hover:text-[#E6332A] hover:bg-[#E6332A]/5 rounded-lg transition flex items-center gap-1"
                           title="Salirte de este grupo"
                         >
                           <LogOut className="w-3 h-3" />
@@ -1064,8 +1064,8 @@ export const TribusView: React.FC<TribusViewProps> = ({
                       )}
                     </div>
 
-                    <span className="text-[#1A1918] group-hover:text-[#E6332A] font-display font-black uppercase tracking-widest text-xs flex items-center gap-1 transition-transform group-hover:translate-x-1">
-                      <span>Entrar al Club</span>
+                    <span className="text-[#1A1918] group-hover:text-[#E6332A] font-sans font-semibold text-xs flex items-center gap-1 transition-transform group-hover:translate-x-1">
+                      <span>Entrar</span>
                       <ChevronRight className="w-3.5 h-3.5" />
                     </span>
                   </div>
@@ -1076,14 +1076,14 @@ export const TribusView: React.FC<TribusViewProps> = ({
         </div>
 
         {filteredCrews.length === 0 && (
-          <div className="p-12 text-center text-[#1A1918] text-xs space-y-3 bg-[#FAF6ED] border-2 border-[#1A1918] rounded-2xl mt-5 shadow-[4px_4px_0px_#1A1918]">
-            <p className="font-display font-black text-[#1A1918] text-base uppercase">No se encontraron motoclubs con ese criterio.</p>
-            <p className="font-serif italic text-[#1A1918]/70 text-xs max-w-sm mx-auto">Prueba con otro término de búsqueda por nombre, clave o ciudad base.</p>
+          <div className="p-12 text-center text-[#1A1918] text-xs space-y-3 bg-[#FAF6ED] border border-[#1A1918]/10 rounded-2xl mt-5 shadow-sm">
+            <p className="font-display font-semibold text-[#1A1918] text-base ">No se encontraron motoclubs con ese criterio.</p>
+            <p className="font-sans text-[#1A1918]/70 text-xs max-w-sm mx-auto">Prueba con otro término de búsqueda por nombre, clave o ciudad base.</p>
             <div className="flex items-center justify-center gap-3 pt-2">
               <button
                 type="button"
                 onClick={() => setSearchTribuQuery('')}
-                className="px-4 py-2 border-2 border-[#1A1918] bg-[#F4EEDB] text-[#1A1918] hover:bg-[#F7B32B] font-display font-black text-xs uppercase tracking-wider rounded-xl transition shadow-[2px_2px_0px_#1A1918] cursor-pointer"
+                className="px-4 py-2 border border-[#1A1918]/10 bg-[#F4EEDB] text-[#1A1918] hover:bg-[#F7B32B] font-sans font-semibold text-xs rounded-xl transition shadow-sm cursor-pointer"
               >
                 Limpiar búsqueda
               </button>
@@ -1091,7 +1091,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                 onClick={onOpenCreateCrew}
                 className="btn-vermillion px-5 py-2 rounded-xl text-xs flex items-center gap-2"
               >
-                Fundar Club
+                Fundar club
               </button>
             </div>
           </div>
@@ -1114,10 +1114,10 @@ export const TribusView: React.FC<TribusViewProps> = ({
           {/* Izquierda: Volver al directorio */}
           <button
             onClick={() => setSelectedTribuId(null)}
-            className="p-2 -ml-1 text-stone-500 hover:text-[#141312] transition group flex items-center gap-1.5 text-xs font-display font-bold uppercase tracking-wider shrink-0 bg-white border border-[#E5DFD5] rounded-xl shadow-xs hover:border-[#141312]"
+            className="p-2 -ml-1 text-stone-500 hover:text-[#141312] transition group flex items-center gap-1.5 text-xs font-sans font-bold shrink-0 bg-white border border-[#E5DFD5] rounded-xl shadow-xs hover:border-[#141312]"
             title="Ver todas las tribus"
           >
-            <ArrowLeft className="w-3.5 h-3.5 text-[#C84B31] group-hover:-translate-x-0.5 transition-transform" />
+            <ArrowLeft className="w-3.5 h-3.5 text-[#C84B31] transition-transform" />
             <span className="hidden sm:inline">Tribus</span>
           </button>
 
@@ -1140,7 +1140,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                   />
                 </div>
               )}
-              <span className="font-display font-black text-sm sm:text-base text-[#141312] uppercase tracking-wide truncate">
+              <span className="font-display font-semibold text-sm sm:text-base text-[#141312] truncate">
                 {activeTribu.name}
               </span>
               <ChevronDown className={`w-3.5 h-3.5 text-[#C84B31] shrink-0 transition-transform duration-200 ${showCrewDropdown ? 'rotate-180' : ''}`} />
@@ -1162,7 +1162,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                   <div className="px-1 flex items-center justify-between border-b border-[#E5DFD5] pb-2.5">
                     <div className="flex items-center gap-2">
                       <Users className="w-4 h-4 text-[#C84B31]" />
-                      <span className="text-xs font-display font-black text-[#141312] uppercase tracking-wider">Tus Clubs &amp; Tribus</span>
+                      <span className="text-xs font-sans font-semibold text-[#141312]  ">Tus Clubs &amp; Tribus</span>
                     </div>
                     <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#FAF8F5] text-stone-600 border border-[#E5DFD5] font-bold">
                       {crews.length} {crews.length === 1 ? 'grupo' : 'grupos'}
@@ -1207,15 +1207,15 @@ export const TribusView: React.FC<TribusViewProps> = ({
                                 className="w-full h-full object-cover" 
                               />
                             ) : (
-                              <span className={`font-display font-bold text-xs ${isCurrent ? 'text-[#C84B31]' : 'text-stone-500'}`}>
+                              <span className={`font-sans font-bold text-xs ${isCurrent ? 'text-[#C84B31]' : 'text-stone-500'}`}>
                                 {initials || 'TR'}
                               </span>
                             )}
                           </div>
 
                           <div className="flex-1 min-w-0">
-                            <p className="font-display font-bold text-sm text-[#141312] uppercase tracking-wide truncate">{c.name}</p>
-                            <p className="text-xs font-serif italic text-stone-500 truncate mt-0.5">
+                            <p className="font-sans font-bold text-sm text-[#141312] truncate">{c.name}</p>
+                            <p className="text-xs font-sans text-stone-500 truncate mt-0.5">
                               {c.baseCity} • {c.members.length} {c.members.length === 1 ? 'piloto' : 'pilotos'}
                             </p>
                           </div>
@@ -1225,7 +1225,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                               <Check className="w-3 h-3 text-white stroke-[3]" />
                             </div>
                           ) : (
-                            <span className="text-[11px] font-display font-bold text-stone-400 uppercase">Entrar</span>
+                            <span className="text-[11px] font-sans font-bold text-stone-400 ">Entrar</span>
                           )}
                         </button>
                       );
@@ -1239,7 +1239,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                         href={activeTribu.whatsappGroupUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-full text-left px-3 py-2 rounded-xl text-xs font-display font-bold uppercase tracking-wider text-[#25D366] hover:bg-[#25D366]/10 flex items-center gap-2.5 transition"
+                        className="w-full text-left px-3 py-2 rounded-xl text-xs font-sans font-bold text-[#25D366] hover:bg-[#25D366]/10 flex items-center gap-2.5 transition"
                       >
                         <WhatsAppIcon className="w-3.5 h-3.5 text-[#25D366]" />
                         <span>Abrir grupo de WhatsApp</span>
@@ -1250,7 +1250,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                           setShowCrewDropdown(false);
                           handleOpenEditCrew();
                         }}
-                        className="w-full text-left px-3 py-2 rounded-xl text-xs font-display font-bold uppercase tracking-wider text-[#25D366] hover:bg-[#25D366]/10 flex items-center gap-2.5 transition"
+                        className="w-full text-left px-3 py-2 rounded-xl text-xs font-sans font-bold text-[#25D366] hover:bg-[#25D366]/10 flex items-center gap-2.5 transition"
                       >
                         <WhatsAppIcon className="w-3.5 h-3.5 text-[#25D366]" />
                         <span>Conectar grupo de WhatsApp</span>
@@ -1261,7 +1261,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                         setShowCrewDropdown(false);
                         handleOpenEditCrew();
                       }}
-                      className="w-full text-left px-3 py-2 rounded-xl text-xs text-stone-600 hover:text-[#141312] hover:bg-[#FAF8F5] flex items-center gap-2.5 transition cursor-pointer font-display font-bold uppercase tracking-wider"
+                      className="w-full text-left px-3 py-2 rounded-xl text-xs text-stone-600 hover:text-[#141312] hover:bg-[#FAF8F5] flex items-center gap-2.5 transition cursor-pointer font-sans font-bold  "
                     >
                       <Pencil className="w-3.5 h-3.5 text-[#C84B31]" />
                       <span>Editar grupo</span>
@@ -1271,7 +1271,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                         setShowCrewDropdown(false);
                         handleShareCrewWithCode();
                       }}
-                      className="w-full text-left px-3 py-2 rounded-xl text-xs text-stone-600 hover:text-[#141312] hover:bg-[#FAF8F5] flex items-center gap-2.5 transition cursor-pointer font-display font-bold uppercase tracking-wider"
+                      className="w-full text-left px-3 py-2 rounded-xl text-xs text-stone-600 hover:text-[#141312] hover:bg-[#FAF8F5] flex items-center gap-2.5 transition cursor-pointer font-sans font-bold  "
                     >
                       <Share2 className="w-3.5 h-3.5 text-[#C84B31]" />
                       <span>Compartir clave ({activeTribu.inviteCode})</span>
@@ -1281,7 +1281,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                         setShowCrewDropdown(false);
                         onOpenCreateCrew();
                       }}
-                      className="w-full text-left px-3 py-2 rounded-xl text-xs font-display font-bold uppercase tracking-wider text-[#141312] hover:bg-[#FAF8F5] flex items-center gap-2.5 transition"
+                      className="w-full text-left px-3 py-2 rounded-xl text-xs font-sans font-bold text-[#141312] hover:bg-[#FAF8F5] flex items-center gap-2.5 transition"
                     >
                       <Plus className="w-3.5 h-3.5 text-[#C84B31]" />
                       <span>Crear nuevo grupo</span>
@@ -1297,7 +1297,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                           setShowCrewDropdown(false);
                           handleDeleteCrew();
                         }}
-                        className="w-full text-left px-3 py-2 rounded-xl text-xs font-display font-bold uppercase tracking-wider text-[#E6332A] hover:bg-[#E6332A]/10 flex items-center gap-2.5 transition cursor-pointer"
+                        className="w-full text-left px-3 py-2 rounded-xl text-xs font-sans font-bold text-[#E6332A] hover:bg-[#E6332A]/10 flex items-center gap-2.5 transition cursor-pointer"
                       >
                         <Trash2 className="w-3.5 h-3.5 text-[#E6332A]" />
                         <span>Eliminar grupo</span>
@@ -1308,7 +1308,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                           setShowCrewDropdown(false);
                           handleLeaveCrew();
                         }}
-                        className="w-full text-left px-3 py-2 rounded-xl text-xs font-display font-bold uppercase tracking-wider text-[#E6332A] hover:bg-[#E6332A]/10 flex items-center gap-2.5 transition cursor-pointer"
+                        className="w-full text-left px-3 py-2 rounded-xl text-xs font-sans font-bold text-[#E6332A] hover:bg-[#E6332A]/10 flex items-center gap-2.5 transition cursor-pointer"
                       >
                         <LogOut className="w-3.5 h-3.5 text-[#E6332A]" />
                         <span>Salirse del grupo</span>
@@ -1393,10 +1393,10 @@ export const TribusView: React.FC<TribusViewProps> = ({
                     <WhatsAppIcon className="w-3.5 h-3.5 text-stone-400" />
                   </div>
                   <div className="space-y-1 min-w-0 flex-1 text-left">
-                    <h5 className="text-xs font-display font-black text-[#141312] uppercase tracking-wider">
+                    <h5 className="text-xs font-sans font-semibold text-[#141312]  ">
                       Sin WhatsApp
                     </h5>
-                    <p className="text-xs text-stone-500 font-serif italic leading-relaxed">
+                    <p className="text-xs text-stone-500 font-sans leading-relaxed">
                       Este grupo aún no tiene enlace de WhatsApp vinculado.
                     </p>
                     <button
@@ -1405,7 +1405,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                         setShowWhatsappMissingNotice(false);
                         handleOpenEditCrew();
                       }}
-                      className="text-xs font-display font-bold text-[#C84B31] hover:underline pt-0.5 block cursor-pointer uppercase tracking-wider"
+                      className="text-xs font-sans font-bold text-[#C84B31] hover:underline pt-0.5 block cursor-pointer  "
                     >
                       Vincular en Ajustes ✏️ →
                     </button>
@@ -1428,18 +1428,18 @@ export const TribusView: React.FC<TribusViewProps> = ({
           <div className="w-full sm:w-auto inline-flex p-1 bg-[#FAF8F5] border border-[#DDD7CB] rounded-2xl gap-1 shadow-xs">
             <button
               onClick={() => setActiveTribuTab('proximas')}
-              className={`flex-1 sm:flex-initial px-5 sm:px-6 py-2 text-xs font-display font-black uppercase tracking-wider transition rounded-xl flex items-center justify-center gap-1.5 ${
+              className={`flex-1 sm:flex-initial px-5 sm:px-6 py-2 text-xs font-sans font-semibold transition rounded-xl flex items-center justify-center gap-1.5 ${
                 activeTribuTab === 'proximas'
                   ? 'bg-[#141312] text-white shadow-md'
                   : 'text-stone-600 hover:text-[#141312] hover:bg-[#F2EDE4]'
               }`}
             >
               <Calendar className="w-3.5 h-3.5" />
-              <span>Próximas Rutas</span>
+              <span>Próximas rutas</span>
             </button>
             <button
               onClick={() => setActiveTribuTab('pilotos')}
-              className={`flex-1 sm:flex-initial px-5 sm:px-6 py-2 text-xs font-display font-black uppercase tracking-wider transition rounded-xl flex items-center justify-center gap-1.5 ${
+              className={`flex-1 sm:flex-initial px-5 sm:px-6 py-2 text-xs font-sans font-semibold transition rounded-xl flex items-center justify-center gap-1.5 ${
                 activeTribuTab === 'pilotos'
                   ? 'bg-[#141312] text-white shadow-md'
                   : 'text-stone-600 hover:text-[#141312] hover:bg-[#F2EDE4]'
@@ -1450,7 +1450,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
             </button>
             <button
               onClick={() => setActiveTribuTab('historial')}
-              className={`flex-1 sm:flex-initial px-5 sm:px-6 py-2 text-xs font-display font-black uppercase tracking-wider transition rounded-xl flex items-center justify-center gap-1.5 ${
+              className={`flex-1 sm:flex-initial px-5 sm:px-6 py-2 text-xs font-sans font-semibold transition rounded-xl flex items-center justify-center gap-1.5 ${
                 activeTribuTab === 'historial'
                   ? 'bg-[#141312] text-white shadow-md'
                   : 'text-stone-600 hover:text-[#141312] hover:bg-[#F2EDE4]'
@@ -1498,11 +1498,11 @@ export const TribusView: React.FC<TribusViewProps> = ({
                 setSelectedConfirmedRodadaForPlan(confRodada);
                 setShowPlanCardModal(true);
               }}
-              className="group relative border-2 border-[#1A1918] bg-[#FAF6ED] transition-all duration-300 cursor-pointer shadow-[5px_5px_0px_#1A1918] hover:shadow-[8px_8px_0px_#1A1918] p-4 sm:p-7 rounded-[24px] sm:rounded-[28px]"
+              className="group relative border border-[#1A1918]/10 bg-[#FAF6ED] transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md p-4 sm:p-7 rounded-[24px] sm:rounded-[28px]"
               title="Click para ver el plan completo de la rodada"
             >
               {/* Ticket Top Strip Accent */}
-              <div className="absolute top-0 left-0 right-0 h-1.5 sm:h-2 bg-[#E6332A] border-b-2 border-[#1A1918] rounded-t-[22px] sm:rounded-t-[26px]" />
+              <div className="absolute top-0 left-0 right-0 h-1.5 sm:h-2 bg-[#E6332A] border-b border-[#1A1918]/10 rounded-t-[22px] sm:rounded-t-[26px]" />
 
               {/* Content Container: Editorial Risograph Ticket Layout */}
               <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-5 pt-1.5 sm:pt-2">
@@ -1513,7 +1513,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                   {isPastRodada && (
                     <div 
                       onClick={(e) => e.stopPropagation()}
-                      className="p-2.5 bg-[#F7B32B]/25 border-2 border-[#1A1918] rounded-xl flex items-center justify-between gap-2 shadow-[1.5px_1.5px_0px_#1A1918]"
+                      className="p-2.5 bg-[#F7B32B]/25 border border-[#1A1918]/10 rounded-xl flex items-center justify-between gap-2 shadow-sm"
                     >
                       <span className="text-[11px] font-mono font-bold text-[#1A1918] flex items-center gap-1.5">
                         <Clock className="w-3.5 h-3.5 text-[#E6332A] shrink-0" />
@@ -1528,7 +1528,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                           setNotificationToast('¡Rodada archivada en el Historial!');
                           setTimeout(() => setNotificationToast(null), 3000);
                         }}
-                        className="px-2.5 py-1 bg-[#1A1918] hover:bg-black text-[#FAF6ED] text-[10px] font-display font-black uppercase rounded-lg border border-[#1A1918] shadow-[1px_1px_0px_#1A1918] cursor-pointer"
+                        className="px-2.5 py-1 bg-[#1A1918] hover:bg-black text-[#FAF6ED] text-[10px] font-sans font-semibold uppercase rounded-lg border border-[#1A1918]/10 shadow-sm cursor-pointer"
                       >
                         Archivar al Historial ✓
                       </button>
@@ -1537,12 +1537,12 @@ export const TribusView: React.FC<TribusViewProps> = ({
 
                   {/* Status & Date Badges */}
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="inline-flex items-center gap-1.5 text-[9px] sm:text-[10px] font-display uppercase font-black px-2.5 py-1 bg-[#1A1918] text-[#FAF6ED] border border-[#1A1918] tracking-widest rounded-lg shadow-[1.5px_1.5px_0px_#1A1918]">
+                    <span className="inline-flex items-center gap-1.5 text-[9px] sm:text-[10px] font-sans uppercase font-semibold px-2.5 py-1 bg-[#1A1918] text-[#FAF6ED] border border-[#1A1918]/10 tracking-widest rounded-lg shadow-sm">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#F7B32B] animate-pulse" />
-                      Ruta Confirmada
+                      Ruta confirmada
                     </span>
 
-                    <span className="text-[11px] sm:text-xs font-mono text-[#1A1918] font-bold inline-flex items-center gap-1.5 bg-white px-2.5 py-1 border-2 border-[#1A1918] rounded-lg shadow-[1.5px_1.5px_0px_#1A1918]">
+                    <span className="text-[11px] sm:text-xs font-mono text-[#1A1918] font-bold inline-flex items-center gap-1.5 bg-white px-2.5 py-1 border border-[#1A1918]/10 rounded-lg shadow-sm">
                       <Calendar className="w-3.5 h-3.5 text-[#E6332A]" />
                       <span>{formatHumanDate(confRodada.startDate, confRodada.endDate, true)}</span>
                     </span>
@@ -1552,11 +1552,11 @@ export const TribusView: React.FC<TribusViewProps> = ({
                   <div className="flex items-start gap-2 pt-0.5">
                     <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-[#E6332A] shrink-0 mt-0.5" />
                     <div className="min-w-0">
-                      <h3 className="text-base sm:text-2xl font-display font-black text-[#1A1918] uppercase group-hover:text-[#E6332A] transition tracking-tight leading-snug break-words">
+                      <h3 className="text-base sm:text-2xl font-display font-semibold text-[#1A1918] group-hover:text-[#E6332A] transition tracking-tight leading-snug break-words">
                         {confWinning ? confWinning.destination : confRodada.title}
                       </h3>
                       {(confWinning?.title || confRodada.subtitle) && (
-                        <p className="text-xs sm:text-sm font-serif italic text-[#1A1918]/70 font-medium mt-0.5 leading-snug">
+                        <p className="text-xs sm:text-sm font-sans text-[#1A1918]/70 font-medium mt-0.5 leading-snug">
                           {confWinning?.title || confRodada.subtitle}
                         </p>
                       )}
@@ -1564,20 +1564,20 @@ export const TribusView: React.FC<TribusViewProps> = ({
                   </div>
 
                   {/* Compact Metrics Row */}
-                  <div className="flex items-center gap-2 text-xs font-display font-black flex-wrap pt-0.5">
+                  <div className="flex items-center gap-2 text-xs font-sans font-semibold flex-wrap pt-0.5">
                     {confWinning && (
-                      <span className="px-2.5 py-1 bg-[#F4EEDB] border-2 border-[#1A1918] text-[#1A1918] font-mono rounded-lg shadow-[1px_1px_0px_#1A1918]">
+                      <span className="px-2.5 py-1 bg-[#F4EEDB] border border-[#1A1918]/10 text-[#1A1918] font-mono rounded-lg shadow-sm">
                         {confWinning.totalKm} km
                       </span>
                     )}
                     {confWinning && (
-                      <span className="px-2.5 py-1 bg-[#F4EEDB] border-2 border-[#1A1918] text-[#E06423] flex items-center gap-1 rounded-lg shadow-[1px_1px_0px_#1A1918]">
+                      <span className="px-2.5 py-1 bg-[#F4EEDB] border border-[#1A1918]/10 text-[#E06423] flex items-center gap-1 rounded-lg shadow-sm">
                         <Mountain className="w-3.5 h-3.5 text-[#E06423] shrink-0" />
                         <span>{confWinning.offroadPercentage}% tierra</span>
                       </span>
                     )}
                     {confWinning?.difficulty && (
-                      <span className="px-2.5 py-1 bg-white border-2 border-[#1A1918] text-[#1A1918] uppercase rounded-lg shadow-[1px_1px_0px_#1A1918]">
+                      <span className="px-2.5 py-1 bg-white border border-[#1A1918]/10 text-[#1A1918] rounded-lg shadow-sm">
                         {confWinning.difficulty}
                       </span>
                     )}
@@ -1585,7 +1585,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                 </div>
 
                 {/* Right side: Action Bar & Pilots */}
-                <div className="pt-3 sm:pt-4 md:pt-0 border-t-2 md:border-t-0 border-[#1A1918]/15 md:border-transparent flex flex-wrap items-center justify-between md:justify-end gap-2.5 sm:gap-3 shrink-0">
+                <div className="pt-3 sm:pt-4 md:pt-0 border-t md:border-t-0 border-[#1A1918]/15 md:border-transparent flex flex-wrap items-center justify-between md:justify-end gap-2.5 sm:gap-3 shrink-0">
                   {/* Attendees (Only rendered when there are confirmed pilots) */}
                   {confCount > 0 && (
                     <div className="flex items-center gap-2 shrink-0">
@@ -1596,7 +1596,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                             src={att.userAvatar} 
                             alt={att.userName} 
                             title={att.userName}
-                            className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg border border-[#1A1918] object-cover shadow-xs" 
+                            className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg border border-[#1A1918]/10 object-cover shadow-xs" 
                           />
                         ))}
                       </div>
@@ -1616,7 +1616,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                           e.stopPropagation();
                           setRsvpDropdownOpenRodadaId(prev => prev === confRodada.id ? null : confRodada.id);
                         }}
-                        className={`px-3 py-2 font-display uppercase tracking-wider text-[11px] sm:text-xs font-black transition rounded-xl flex items-center gap-1.5 border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none select-none cursor-pointer ${
+                        className={`px-3 py-2 font-sans text-[11px] sm:text-xs font-semibold transition rounded-xl flex items-center gap-1.5 border border-[#1A1918]/10 shadow-sm active:shadow-none select-none cursor-pointer ${
                           userRsvpStatus === 'confirmado'
                             ? 'bg-[#1A1918] text-[#FAF6ED] hover:bg-black'
                             : userRsvpStatus === 'por_confirmar' || userRsvpStatus === 'interesado'
@@ -1661,22 +1661,22 @@ export const TribusView: React.FC<TribusViewProps> = ({
                           }}
                         >
                           <div 
-                            className="relative w-full max-w-sm bg-[#FAF6ED] border-2 border-[#1A1918] rounded-2xl shadow-[6px_6px_0px_#1A1918] p-4 space-y-3"
+                            className="relative w-full max-w-sm bg-[#FAF6ED] border border-[#1A1918]/10 rounded-2xl shadow-sm p-4 space-y-3"
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <div className="flex items-start justify-between border-b-2 border-[#1A1918] pb-2.5">
+                            <div className="flex items-start justify-between border-b border-[#1A1918]/10 pb-2.5">
                               <div>
-                                <span className="text-[10px] font-display uppercase tracking-widest text-[#1A1918]/60 font-black block">
-                                  Tu Asistencia al Convoy
+                                <span className="text-[10px] font-sans uppercase tracking-widest text-[#1A1918]/60 font-semibold block">
+                                  Tu asistencia al convoy
                                 </span>
-                                <h4 className="text-sm font-display font-black text-[#1A1918] uppercase leading-tight line-clamp-1 mt-0.5">
+                                <h4 className="text-sm font-sans font-semibold text-[#1A1918] leading-tight line-clamp-1 mt-0.5">
                                   {confWinning ? confWinning.destination : confRodada.title}
                                 </h4>
                               </div>
                               <button
                                 type="button"
                                 onClick={() => setRsvpDropdownOpenRodadaId(null)}
-                                className="p-1 rounded-lg border border-[#1A1918] bg-white text-[#1A1918] hover:bg-stone-100 transition active:translate-x-0.5 active:translate-y-0.5 cursor-pointer"
+                                className="p-1 rounded-lg border border-[#1A1918]/10 bg-white text-[#1A1918] hover:bg-stone-100 transition cursor-pointer"
                               >
                                 <X className="w-4 h-4" />
                               </button>
@@ -1692,7 +1692,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                                   }
                                   setRsvpDropdownOpenRodadaId(null);
                                 }}
-                                className={`w-full p-3 text-left transition rounded-xl flex items-start gap-3 border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer ${
+                                className={`w-full p-3 text-left transition rounded-xl flex items-start gap-3 border border-[#1A1918]/10 shadow-sm active:shadow-none cursor-pointer ${
                                   userRsvpStatus === 'confirmado'
                                     ? 'bg-[#1A1918] text-[#FAF6ED]'
                                     : 'bg-[#F4EEDB] hover:bg-white text-[#1A1918]'
@@ -1705,13 +1705,13 @@ export const TribusView: React.FC<TribusViewProps> = ({
                                 </div>
                                 <div className="min-w-0 flex-1">
                                   <div className="flex items-center justify-between">
-                                    <span className={`text-xs font-display font-black uppercase ${
+                                    <span className={`text-xs font-sans font-semibold ${
                                       userRsvpStatus === 'confirmado' ? 'text-[#FAF6ED]' : 'text-[#1A1918]'
                                     }`}>
                                       ¡Sí, asistiré!
                                     </span>
                                     {userRsvpStatus === 'confirmado' && (
-                                      <span className="text-[9px] font-display font-black text-[#F7B32B] uppercase">Confirmado</span>
+                                      <span className="text-[9px] font-sans font-semibold text-[#F7B32B] uppercase">Confirmado</span>
                                     )}
                                   </div>
                                   <span className={`text-[11px] block leading-tight mt-0.5 font-sans ${
@@ -1728,7 +1728,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                                   rsvpRodada(confRodada.id, userBikes[0]?.id || 'moto-default', 'por_confirmar');
                                   setRsvpDropdownOpenRodadaId(null);
                                 }}
-                                className={`w-full p-3 text-left transition rounded-xl flex items-start gap-3 border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer ${
+                                className={`w-full p-3 text-left transition rounded-xl flex items-start gap-3 border border-[#1A1918]/10 shadow-sm active:shadow-none cursor-pointer ${
                                   userRsvpStatus === 'por_confirmar' || userRsvpStatus === 'interesado'
                                     ? 'bg-[#F7B32B] text-[#1A1918]'
                                     : 'bg-[#F4EEDB] hover:bg-white text-[#1A1918]'
@@ -1739,11 +1739,11 @@ export const TribusView: React.FC<TribusViewProps> = ({
                                 </div>
                                 <div className="min-w-0 flex-1">
                                   <div className="flex items-center justify-between">
-                                    <span className="text-xs font-display font-black uppercase text-[#1A1918]">
+                                    <span className="text-xs font-sans font-semibold text-[#1A1918]">
                                       Por confirmar
                                     </span>
                                     {(userRsvpStatus === 'por_confirmar' || userRsvpStatus === 'interesado') && (
-                                      <span className="text-[9px] font-display font-black text-[#1A1918] uppercase">Seleccionado</span>
+                                      <span className="text-[9px] font-sans font-semibold text-[#1A1918] uppercase">Seleccionado</span>
                                     )}
                                   </div>
                                   <span className="text-[11px] text-[#1A1918]/70 block leading-tight mt-0.5 font-sans">
@@ -1758,7 +1758,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                                   rsvpRodada(confRodada.id, userBikes[0]?.id || 'moto-default', 'no_asistire');
                                   setRsvpDropdownOpenRodadaId(null);
                                 }}
-                                className={`w-full p-3 text-left transition rounded-xl flex items-start gap-3 border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer ${
+                                className={`w-full p-3 text-left transition rounded-xl flex items-start gap-3 border border-[#1A1918]/10 shadow-sm active:shadow-none cursor-pointer ${
                                   userRsvpStatus === 'no_asistire'
                                     ? 'bg-[#E6332A] text-white'
                                     : 'bg-[#F4EEDB] hover:bg-white text-[#1A1918]'
@@ -1771,13 +1771,13 @@ export const TribusView: React.FC<TribusViewProps> = ({
                                 </div>
                                 <div className="min-w-0 flex-1">
                                   <div className="flex items-center justify-between">
-                                    <span className={`text-xs font-display font-black uppercase ${
+                                    <span className={`text-xs font-sans font-semibold ${
                                       userRsvpStatus === 'no_asistire' ? 'text-white' : 'text-[#1A1918]'
                                     }`}>
                                       No asistiré
                                     </span>
                                     {userRsvpStatus === 'no_asistire' && (
-                                      <span className="text-[9px] font-display font-black text-white uppercase">Seleccionado</span>
+                                      <span className="text-[9px] font-sans font-semibold text-white uppercase">Seleccionado</span>
                                     )}
                                   </div>
                                   <span className={`text-[11px] block leading-tight mt-0.5 font-sans ${
@@ -1806,7 +1806,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                             setTimeout(() => setNotificationToast(null), 4000);
                           }
                         }}
-                        className="flex items-center gap-1.5 text-[11px] sm:text-xs font-display font-black text-white uppercase tracking-wider px-3 py-2 bg-emerald-600 hover:bg-emerald-700 transition-all rounded-xl border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none shrink-0 cursor-pointer"
+                        className="flex items-center gap-1.5 text-[11px] sm:text-xs font-sans font-semibold text-white px-3 py-2 bg-emerald-600 hover:bg-emerald-700 transition-all rounded-xl border border-[#1A1918]/10 shadow-sm active:shadow-none shrink-0 cursor-pointer"
                         title="Marcar rodada como completada y guardar en Historial"
                       >
                         <Check className="w-3.5 h-3.5 stroke-[3]" />
@@ -1822,7 +1822,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                           e.stopPropagation();
                           onOpenRecordRoute();
                         }}
-                        className="flex items-center gap-1.5 text-[11px] sm:text-xs font-display font-black text-white uppercase tracking-wider px-3 py-2 bg-[#E6332A] hover:bg-[#d02c24] transition-all rounded-xl border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none shrink-0 cursor-pointer"
+                        className="flex items-center gap-1.5 text-[11px] sm:text-xs font-sans font-semibold text-white px-3 py-2 bg-[#E6332A] hover:bg-[#d02c24] transition-all rounded-xl border border-[#1A1918]/10 shadow-sm active:shadow-none shrink-0 cursor-pointer"
                         title="Empezar a rodar y grabar esta ruta en vivo con GPS"
                       >
                         <Play className="w-3 h-3 fill-current text-[#F7B32B]" />
@@ -1837,7 +1837,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                           e.stopPropagation();
                           setEditingProposal(confWinning);
                         }}
-                        className="p-2 bg-[#FAF6ED] hover:bg-[#F7B32B] text-[#1A1918] border-2 border-[#1A1918] rounded-xl transition shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                        className="p-2 bg-[#FAF6ED] hover:bg-[#F7B32B] text-[#1A1918] border border-[#1A1918]/10 rounded-xl transition shadow-sm active:shadow-none"
                         title="Editar la ruta confirmada"
                       >
                         <Pencil className="w-3.5 h-3.5" />
@@ -1851,7 +1851,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                           e.stopPropagation();
                           unlockWinningRoute(confRodada.id);
                         }}
-                        className="text-[10px] font-display font-bold text-stone-400 hover:text-[#C84B31] uppercase px-1 transition"
+                        className="text-[10px] font-sans font-bold text-stone-400 hover:text-[#C84B31] uppercase px-1 transition"
                         title="Reabrir debate"
                       >
                         Reabrir
@@ -1868,7 +1868,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
         /* Caso 2: Varias rodadas confirmadas -> Cuadros con cover de foto */
         <div className="space-y-3">
           <div className="flex items-center justify-between pb-1">
-            <h3 className="font-display font-black text-sm uppercase tracking-wider text-earth">
+            <h3 className="font-sans font-semibold text-sm text-earth">
               Próximas Rodadas Confirmadas ({confirmedRodadas.length})
             </h3>
             <span className="text-[10px] text-ash font-mono hidden sm:inline">
@@ -1889,7 +1889,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                     setSelectedConfirmedRodadaForPlan(rodada);
                     setShowPlanCardModal(true);
                   }}
-                  className="group relative overflow-hidden bg-[#FAF6ED] border-2 border-[#1A1918] rounded-2xl p-4 transition-all duration-200 cursor-pointer flex flex-col justify-between space-y-3 shadow-[4px_4px_0px_#1A1918] hover:shadow-[6px_6px_0px_#1A1918] hover:-translate-y-0.5"
+                  className="group relative overflow-hidden bg-[#FAF6ED] border border-[#1A1918]/10 rounded-2xl p-4 transition-all duration-200 cursor-pointer flex flex-col justify-between space-y-3 shadow-sm hover:shadow-md "
                   title="Click para ver la tarjeta del plan"
                 >
                   {/* Background Tactical Topographic & GPS Vector Pattern */}
@@ -1907,10 +1907,10 @@ export const TribusView: React.FC<TribusViewProps> = ({
                   <div className="relative z-10 space-y-2">
                     {/* Fecha + Badge */}
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-xs font-mono font-black text-[#1A1918]">
+                      <span className="text-xs font-mono font-semibold text-[#1A1918]">
                         {formatHumanDate(rodada.startDate, rodada.endDate, true)}
                       </span>
-                      <span className="text-[9px] font-mono uppercase font-black px-2 py-0.5 bg-emerald-100 border border-[#1A1918] text-emerald-900 rounded shadow-[1px_1px_0px_#1A1918]">
+                      <span className="text-[9px] font-mono uppercase font-semibold px-2 py-0.5 bg-emerald-100 border border-[#1A1918]/10 text-emerald-900 rounded shadow-sm">
                         Confirmada
                       </span>
                     </div>
@@ -1918,21 +1918,21 @@ export const TribusView: React.FC<TribusViewProps> = ({
                     {/* Destino */}
                     <div className="flex items-start gap-1.5 pt-1">
                       <MapPin className="w-4 h-4 text-[#E6332A] shrink-0 mt-0.5" />
-                      <h4 className="text-sm sm:text-base font-display font-black text-[#1A1918] uppercase group-hover:text-[#E6332A] transition-colors leading-snug break-words line-clamp-2">
+                      <h4 className="text-sm sm:text-base font-display font-semibold text-[#1A1918] group-hover:text-[#E6332A] transition-colors leading-snug break-words line-clamp-2">
                         {winning ? winning.destination : rodada.title}
                       </h4>
                     </div>
                   </div>
 
                   {/* Asistentes & Ver Plan */}
-                  <div className="relative z-10 flex items-center justify-between pt-2.5 border-t-2 border-[#1A1918]/15 text-xs font-mono">
+                  <div className="relative z-10 flex items-center justify-between pt-2.5 border-t border-[#1A1918]/15 text-xs font-mono">
                     <div className="flex items-center gap-1.5 text-[#1A1918]/80 font-bold">
                       <Users className="w-3.5 h-3.5 text-[#E6332A]" />
-                      <span className="text-[#1A1918] font-black">{attendees.length}</span>
+                      <span className="text-[#1A1918] font-semibold">{attendees.length}</span>
                       <span>{attendees.length === 1 ? 'asistente' : 'asistentes'}</span>
                     </div>
-                    <span className="text-[#1A1918] text-[11px] font-display font-black uppercase tracking-wider group-hover:text-[#E6332A] group-hover:translate-x-0.5 transition-all flex items-center gap-0.5">
-                      Ver Plan <ChevronRight className="w-3.5 h-3.5" />
+                    <span className="text-[#1A1918] text-[11px] font-sans font-semibold group-hover:text-[#E6332A] transition-all flex items-center gap-0.5">
+                      Ver plan <ChevronRight className="w-3.5 h-3.5" />
                     </span>
                   </div>
                 </div>
@@ -1959,21 +1959,21 @@ export const TribusView: React.FC<TribusViewProps> = ({
         return (
           <div className="space-y-6 font-sans">
             {/* Header & Quick Action Toolbar (Risograph Paddock Look) */}
-            <div className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[26px] p-6 sm:p-7 shadow-[5px_5px_0px_#1A1918] space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-[#1A1918] pb-4">
+            <div className="bg-[#FAF6ED] border border-[#1A1918]/10 rounded-[26px] p-6 sm:p-7 shadow-sm space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#1A1918]/10 pb-4">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[10px] font-mono tracking-[0.2em] text-[#E6332A] uppercase font-black">
-                      ★ PADDOCK &amp; ESCUDERÍA ★
+                    <span className="text-[10px] font-mono tracking-[0.2em] text-[#E6332A] uppercase font-semibold">
+                      PADDOCK &amp; ESCUDERÍA
                     </span>
                   </div>
-                  <h3 className="font-display font-black text-2xl sm:text-3xl text-[#1A1918] uppercase tracking-wide flex items-center gap-2.5">
-                    <span>Roster de Pilotos</span>
-                    <span className="text-xs font-mono font-black px-2.5 py-0.5 bg-[#F4EEDB] border-2 border-[#1A1918] text-[#1A1918] rounded-md shadow-[1px_1px_0px_#1A1918]">
+                  <h3 className="font-display font-semibold text-2xl sm:text-3xl text-[#1A1918] flex items-center gap-2.5">
+                    <span>Roster de pilotos</span>
+                    <span className="text-xs font-mono font-semibold px-2.5 py-0.5 bg-[#F4EEDB] border border-[#1A1918]/10 text-[#1A1918] rounded-md shadow-sm">
                       {activeTribu.members.length}
                     </span>
                   </h3>
-                  <p className="text-xs font-serif italic text-[#1A1918]/70 mt-0.5 font-medium">
+                  <p className="text-xs font-sans text-[#1A1918]/70 mt-0.5 font-medium">
                     {activeTribu.members.length} {activeTribu.members.length === 1 ? 'piloto activo' : 'pilotos activos'} en la tribu
                   </p>
                 </div>
@@ -1984,7 +1984,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                       href={activeTribu.whatsappGroupUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-3.5 py-2 bg-[#FAF6ED] hover:bg-[#F4EEDB] border-2 border-[#1A1918] text-emerald-700 text-xs font-display uppercase tracking-wider font-black flex items-center gap-1.5 transition rounded-xl shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                      className="px-3.5 py-2 bg-[#FAF6ED] hover:bg-[#F4EEDB] border border-[#1A1918]/10 text-emerald-700 text-xs font-sans font-semibold flex items-center gap-1.5 transition rounded-xl shadow-sm active:shadow-none"
                       title="Abrir chat grupal en WhatsApp"
                     >
                       <WhatsAppIcon className="w-3.5 h-3.5 text-emerald-600" />
@@ -1994,18 +1994,18 @@ export const TribusView: React.FC<TribusViewProps> = ({
                   ) : (
                     <button
                       onClick={handleOpenEditCrew}
-                      className="px-3.5 py-2 bg-[#FAF6ED] hover:bg-[#F4EEDB] border-2 border-[#1A1918] text-[#1A1918] text-xs font-display uppercase tracking-wider font-black flex items-center gap-1.5 transition rounded-xl shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer"
+                      className="px-3.5 py-2 bg-[#FAF6ED] hover:bg-[#F4EEDB] border border-[#1A1918]/10 text-[#1A1918] text-xs font-sans font-semibold flex items-center gap-1.5 transition rounded-xl shadow-sm active:shadow-none cursor-pointer"
                       title="Vincular grupo de WhatsApp del club"
                     >
                       <WhatsAppIcon className="w-3.5 h-3.5 text-emerald-600" />
-                      <span>+ WhatsApp</span>
+                      <span>WhatsApp</span>
                     </button>
                   )}
 
                   <button
                     type="button"
                     onClick={handleCopyNaoLink}
-                    className="px-3.5 py-2 bg-[#FAF6ED] hover:bg-[#F4EEDB] border-2 border-[#1A1918] text-[#1A1918] text-xs font-display uppercase tracking-wider font-black transition flex items-center gap-1.5 rounded-xl shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer"
+                    className="px-3.5 py-2 bg-[#FAF6ED] hover:bg-[#F4EEDB] border border-[#1A1918]/10 text-[#1A1918] text-xs font-sans font-semibold transition flex items-center gap-1.5 rounded-xl shadow-sm active:shadow-none cursor-pointer"
                     title="Copiar link de invitación al club"
                   >
                     <Copy className="w-3.5 h-3.5" />
@@ -2014,10 +2014,10 @@ export const TribusView: React.FC<TribusViewProps> = ({
 
                   <button
                     onClick={() => setShowAddPilotModal(true)}
-                    className="px-4 py-2 bg-[#E6332A] hover:bg-[#d02c24] text-white text-xs font-display uppercase tracking-widest font-black flex items-center gap-1.5 transition rounded-xl border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer"
+                    className="px-4 py-2 bg-[#E6332A] hover:bg-[#d02c24] text-white text-xs font-sans font-semibold flex items-center gap-1.5 transition rounded-xl border border-[#1A1918]/10 shadow-sm active:shadow-none cursor-pointer"
                   >
                     <UserPlus className="w-3.5 h-3.5" />
-                    <span>+ Reclutar Piloto</span>
+                    <span>Reclutar piloto</span>
                   </button>
                 </div>
               </div>
@@ -2031,7 +2031,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                     value={pilotSearchQuery}
                     onChange={(e) => setPilotSearchQuery(e.target.value)}
                     placeholder="Buscar piloto o máquina..."
-                    className="w-full pl-9 pr-3.5 py-2.5 text-xs font-mono bg-[#FAF6ED] border-2 border-[#1A1918] text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none focus:border-[#E6332A] rounded-xl shadow-[2px_2px_0px_#1A1918]"
+                    className="w-full pl-9 pr-3.5 py-2.5 text-xs font-mono bg-[#FAF6ED] border border-[#1A1918]/10 text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none focus:border-[#E6332A] rounded-xl shadow-sm"
                   />
                 </div>
               </div>
@@ -2052,13 +2052,13 @@ export const TribusView: React.FC<TribusViewProps> = ({
                     <div 
                       key={member.userId}
                       onClick={() => openPilotProfileById(member.userId)}
-                      className="p-5 bg-[#FAF6ED] hover:bg-[#F4EEDB] border-2 border-[#1A1918] rounded-[24px] transition-all cursor-pointer group flex flex-col justify-between relative shadow-[4px_4px_0px_#1A1918] hover:shadow-[6px_6px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5"
+                      className="p-5 bg-[#FAF6ED] hover:bg-[#F4EEDB] border border-[#1A1918]/10 rounded-[24px] transition-all cursor-pointer group flex flex-col justify-between relative shadow-sm hover:shadow-md  "
                     >
                       {/* Top: Avatar + Identity */}
                       <div className="space-y-3.5">
                         <div className="flex items-start gap-3.5">
                           {/* Avatar with Risograph border */}
-                          <div className={`w-14 h-14 rounded-2xl overflow-hidden shrink-0 border-2 border-[#1A1918] bg-[#F4EEDB] relative shadow-[2px_2px_0px_#1A1918] ${
+                          <div className={`w-14 h-14 rounded-2xl overflow-hidden shrink-0 border border-[#1A1918]/10 bg-[#F4EEDB] relative shadow-sm ${
                             isCreator 
                               ? 'ring-2 ring-[#E6332A]' 
                               : ''
@@ -2066,7 +2066,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                             {avatar ? (
                               <img src={avatar} alt={displayName} className="w-full h-full object-cover" />
                             ) : (
-                              <div className="w-full h-full flex items-center justify-center font-display font-black text-[#1A1918] text-xs bg-[#F4EEDB]">
+                              <div className="w-full h-full flex items-center justify-center font-sans font-semibold text-[#1A1918] text-xs bg-[#F4EEDB]">
                                 {member.userId.slice(0, 2).toUpperCase()}
                               </div>
                             )}
@@ -2075,17 +2075,17 @@ export const TribusView: React.FC<TribusViewProps> = ({
                           {/* Identity Info */}
                           <div className="min-w-0 flex-1 pt-0.5">
                             <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className="font-display font-black text-sm text-[#1A1918] uppercase group-hover:text-[#E6332A] transition truncate tracking-wide">
+                              <span className="font-sans font-semibold text-sm text-[#1A1918] group-hover:text-[#E6332A] transition truncate ">
                                 {displayName}
                               </span>
                               {isCreator && (
-                                <span className="text-[9px] font-display uppercase tracking-widest font-black text-white bg-[#E6332A] px-1.5 py-0.5 rounded border border-[#1A1918] shadow-[1px_1px_0px_#1A1918]">
+                                <span className="text-[9px] font-sans uppercase tracking-widest font-semibold text-white bg-[#E6332A] px-1.5 py-0.5 rounded border border-[#1A1918]/10 shadow-sm">
                                   ADMIN
                                 </span>
                               )}
                             </div>
                             
-                            <span className="text-xs font-serif italic text-[#1A1918]/70 block truncate mt-0.5 font-medium">
+                            <span className="text-xs font-sans text-[#1A1918]/70 block truncate mt-0.5 font-medium">
                               {u?.handle || '@piloto'} {u?.location ? `• ${u.location}` : ''}
                             </span>
 
@@ -2100,12 +2100,12 @@ export const TribusView: React.FC<TribusViewProps> = ({
                         </div>
 
                         {/* Middle: Moto / Workshop plaque */}
-                        <div className="bg-[#F4EEDB] border-2 border-[#1A1918] rounded-xl p-2.5 shadow-[2px_2px_0px_#1A1918] flex items-center gap-2.5">
-                          <div className="w-8 h-8 rounded-lg bg-[#FAF6ED] flex items-center justify-center shrink-0 border border-[#1A1918]">
+                        <div className="bg-[#F4EEDB] border border-[#1A1918]/10 rounded-xl p-2.5 shadow-sm flex items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-lg bg-[#FAF6ED] flex items-center justify-center shrink-0 border border-[#1A1918]/10">
                             <Bike className="w-4 h-4 text-[#E6332A]" />
                           </div>
                           <div className="min-w-0 flex-1">
-                            <span className="font-display font-black text-[#1A1918] block truncate text-xs uppercase tracking-wide">
+                            <span className="font-sans font-semibold text-[#1A1918] block truncate text-xs  ">
                               {bike ? `${bike.brand} ${bike.model}` : 'Sin máquina registrada'}
                             </span>
                             {bike?.displacementCc ? (
@@ -2118,33 +2118,33 @@ export const TribusView: React.FC<TribusViewProps> = ({
                       </div>
 
                       {/* Bottom: Next Rodada RSVP Status & Profile Action */}
-                      <div className="mt-4 pt-3 border-t-2 border-[#1A1918] flex items-center justify-between text-xs">
+                      <div className="mt-4 pt-3 border-t border-[#1A1918]/10 flex items-center justify-between text-xs">
                         {nextConfirmedRide ? (
                           <div className="flex items-center gap-1.5">
                             {memberRsvp?.status === 'confirmado' ? (
-                              <span className="text-emerald-700 font-display uppercase tracking-wider font-black flex items-center gap-1 text-[10px]">
+                              <span className="text-emerald-700 font-sans uppercase tracking-wider font-semibold flex items-center gap-1 text-[10px]">
                                 <CheckCircle2 className="w-3 h-3 text-emerald-700 shrink-0" />
                                 <span>Asistirá</span>
                               </span>
                             ) : memberRsvp?.status === 'por_confirmar' || memberRsvp?.status === 'interesado' ? (
-                              <span className="text-[#F7B32B] font-display uppercase tracking-wider font-black flex items-center gap-1 text-[10px]">
+                              <span className="text-[#F7B32B] font-sans uppercase tracking-wider font-semibold flex items-center gap-1 text-[10px]">
                                 <HelpCircle className="w-3 h-3 text-[#F7B32B] shrink-0" />
                                 <span>Por confirmar</span>
                               </span>
                             ) : memberRsvp?.status === 'no_asistire' ? (
-                              <span className="text-[#E6332A] font-display uppercase tracking-wider font-black flex items-center gap-1 text-[10px]">
+                              <span className="text-[#E6332A] font-sans uppercase tracking-wider font-semibold flex items-center gap-1 text-[10px]">
                                 <XCircle className="w-3 h-3 text-[#E6332A] shrink-0" />
                                 <span>No asistirá</span>
                               </span>
                             ) : (
-                              <span className="text-[#1A1918]/50 text-[10px] font-serif italic font-medium">Sin confirmar</span>
+                              <span className="text-[#1A1918]/50 text-[10px] font-sans font-medium">Sin confirmar</span>
                             )}
                           </div>
                         ) : (
-                          <span className="text-[#1A1918]/60 text-[10px] font-serif italic font-medium">Miembro activo</span>
+                          <span className="text-[#1A1918]/60 text-[10px] font-sans font-medium">Miembro activo</span>
                         )}
 
-                        <span className="font-display uppercase tracking-widest text-[10px] text-[#1A1918] group-hover:text-[#E6332A] flex items-center gap-1 ml-auto transition-transform group-hover:translate-x-0.5 font-black">
+                        <span className="font-sans uppercase tracking-widest text-[10px] text-[#1A1918] group-hover:text-[#E6332A] flex items-center gap-1 ml-auto transition-transform font-semibold">
                           Dossier →
                         </span>
                       </div>
@@ -2153,12 +2153,12 @@ export const TribusView: React.FC<TribusViewProps> = ({
                 })}
               </div>
             ) : (
-              <div className="p-8 border-2 border-dashed border-[#1A1918] bg-[#FAF6ED] rounded-[24px] text-center space-y-2">
-                <p className="text-[#1A1918]/70 font-serif italic text-xs font-medium">No se encontraron pilotos con ese filtro de búsqueda.</p>
+              <div className="p-8 border border-dashed border-[#1A1918]/10 bg-[#FAF6ED] rounded-[24px] text-center space-y-2">
+                <p className="text-[#1A1918]/70 font-sans text-xs font-medium">No se encontraron pilotos con ese filtro de búsqueda.</p>
                 <button
                   type="button"
                   onClick={() => setPilotSearchQuery('')}
-                  className="text-xs font-display uppercase tracking-wider text-[#E6332A] hover:underline font-black cursor-pointer"
+                  className="text-xs font-sans text-[#E6332A] hover:underline font-semibold cursor-pointer"
                 >
                   Limpiar búsqueda
                 </button>
@@ -2175,20 +2175,20 @@ export const TribusView: React.FC<TribusViewProps> = ({
         <div className="space-y-5">
           
           {/* Header de convocatorias estilo editorial */}
-          <div className="flex items-center justify-between gap-3 pb-3 border-b-2 border-[#1A1918]">
+          <div className="flex items-center justify-between gap-3 pb-3 border-b border-[#1A1918]/10">
             <div className="flex items-center gap-2.5">
-              <span className="w-3 h-3 bg-[#E6332A] border-2 border-[#1A1918] shadow-[1px_1px_0px_#1A1918]" />
-              <h2 className="font-display font-black text-xl sm:text-2xl text-[#1A1918] uppercase tracking-wide">
+              <span className="w-3 h-3 bg-[#E6332A] border border-[#1A1918]/10 shadow-sm" />
+              <h2 className="font-display font-semibold text-xl sm:text-2xl text-[#1A1918]  ">
                 Convocatorias &amp; Calendario
               </h2>
             </div>
 
             <button
               onClick={() => setShowConvokeModal(true)}
-              className="px-4 py-2 bg-[#F7B32B] hover:bg-[#e0a020] text-[#1A1918] border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] text-xs font-display font-black uppercase tracking-wider rounded-xl flex items-center gap-1.5 transition active:translate-x-0.5 active:translate-y-0.5 active:shadow-none shrink-0"
+              className="px-4 py-2 bg-[#F7B32B] hover:bg-[#e0a020] text-[#1A1918] border border-[#1A1918]/10 shadow-sm text-xs font-sans font-semibold rounded-xl flex items-center gap-1.5 transition active:shadow-none shrink-0"
             >
               <Plus className="w-4 h-4 stroke-[3]" />
-              <span>+ Convocar Rodada</span>
+              <span>Convocar rodada</span>
             </button>
           </div>
 
@@ -2209,38 +2209,38 @@ export const TribusView: React.FC<TribusViewProps> = ({
                 <button
                   key={rodada.id}
                   onClick={() => setSelectedRodadaId(rodada.id)}
-                  className={`text-left px-4 py-3 border-2 border-[#1A1918] rounded-2xl transition-all duration-150 flex items-center gap-3 shrink-0 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${
+                  className={`text-left px-4 py-3 border border-[#1A1918]/10 rounded-2xl transition-all duration-150 flex items-center gap-3 shrink-0 active:shadow-none ${
                     isSelected
-                      ? 'bg-[#E6332A] text-white shadow-[4px_4px_0px_#1A1918]'
-                      : 'bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] shadow-[2px_2px_0px_#1A1918]'
+                      ? 'bg-[#E6332A] text-white shadow-sm'
+                      : 'bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] shadow-sm'
                   }`}
                 >
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className={`text-xs font-mono font-black tracking-wider uppercase ${
+                      <span className={`text-xs font-mono font-semibold ${
                         isSelected ? 'text-white' : 'text-[#1A1918]'
                       }`}>
                         {formatHumanDate(rodada.startDate, rodada.endDate, true)}
                       </span>
                       {isConfirmed ? (
-                        <span className={`text-[9px] font-mono uppercase font-black px-1.5 py-0.5 rounded border ${
+                        <span className={`text-[9px] font-mono uppercase font-semibold px-1.5 py-0.5 rounded border ${
                           isSelected 
                             ? 'bg-white/25 border-white text-white' 
-                            : 'bg-emerald-100 border-[#1A1918] text-emerald-900'
+                            : 'bg-emerald-100 border-[#1A1918]/10 text-emerald-900'
                         }`}>
                           Confirmada
                         </span>
                       ) : (
-                        <span className={`text-[9px] font-mono uppercase font-black px-1.5 py-0.5 rounded border ${
+                        <span className={`text-[9px] font-mono uppercase font-semibold px-1.5 py-0.5 rounded border ${
                           isSelected 
                             ? 'bg-white/20 border-white text-white' 
-                            : 'bg-[#F7B32B] border-[#1A1918] text-[#1A1918]'
+                            : 'bg-[#F7B32B] border-[#1A1918]/10 text-[#1A1918]'
                         }`}>
                           {rodadaProposals.length} {rodadaProposals.length === 1 ? 'ruta' : 'rutas'}
                         </span>
                       )}
                     </div>
-                    <p className={`text-xs font-display font-black uppercase line-clamp-1 mt-1 tracking-wide ${
+                    <p className={`text-xs font-sans font-semibold line-clamp-1 mt-1 ${
                       isSelected ? 'text-white' : 'text-[#1A1918]'
                     }`}>
                       {rodada.title}
@@ -2256,12 +2256,12 @@ export const TribusView: React.FC<TribusViewProps> = ({
             <div className="space-y-4 pt-2">
               
               {/* Header de Propuestas estilo Cartel Serigráfico */}
-              <div className="flex items-center justify-between gap-3 pb-3 border-b-2 border-[#1A1918]">
+              <div className="flex items-center justify-between gap-3 pb-3 border-b border-[#1A1918]/10">
                 <div className="flex items-center gap-2.5">
-                  <h3 className="font-display font-black text-xl sm:text-2xl text-[#1A1918] uppercase tracking-wide">
+                  <h3 className="font-display font-semibold text-xl sm:text-2xl text-[#1A1918]  ">
                     Propuestas
                   </h3>
-                  <span className="text-xs font-mono font-black text-[#1A1918] bg-[#F7B32B] border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] px-2.5 py-0.5 rounded-lg">
+                  <span className="text-xs font-mono font-semibold text-[#1A1918] bg-[#F7B32B] border border-[#1A1918]/10 shadow-sm px-2.5 py-0.5 rounded-lg">
                     {activeProposals.length} {activeProposals.length === 1 ? 'OPCIÓN' : 'OPCIONES'}
                   </span>
                 </div>
@@ -2280,11 +2280,11 @@ export const TribusView: React.FC<TribusViewProps> = ({
                             setTimeout(() => setNotificationToast(null), 3500);
                           }
                         }}
-                        className="p-2 bg-[#FAF6ED] hover:bg-[#F7B32B] text-[#1A1918] border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] rounded-xl text-xs font-mono font-bold flex items-center gap-1 transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                        className="p-2 bg-[#FAF6ED] hover:bg-[#F7B32B] text-[#1A1918] border border-[#1A1918]/10 shadow-sm rounded-xl text-xs font-mono font-bold flex items-center gap-1 transition-all active:shadow-none"
                         title="Editar nombre de la convocatoria"
                       >
                         <Pencil className="w-3.5 h-3.5" />
-                        <span className="hidden sm:inline text-[11px] font-display uppercase tracking-wider">Editar Fecha</span>
+                        <span className="hidden sm:inline text-[11px] font-sans  ">Editar fecha</span>
                       </button>
 
                       <button
@@ -2297,7 +2297,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                             setTimeout(() => setNotificationToast(null), 3500);
                           }
                         }}
-                        className="p-2 bg-[#FAF6ED] hover:bg-[#E6332A] hover:text-white text-stone-500 border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] rounded-xl text-xs font-mono font-bold flex items-center gap-1 transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                        className="p-2 bg-[#FAF6ED] hover:bg-[#E6332A] hover:text-white text-stone-500 border border-[#1A1918]/10 shadow-sm rounded-xl text-xs font-mono font-bold flex items-center gap-1 transition-all active:shadow-none"
                         title="Borrar esta convocatoria"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -2307,7 +2307,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
 
                   <button
                     onClick={() => setShowInteractiveProposeModal(true)}
-                    className="px-4 py-2 bg-[#E6332A] hover:bg-[#d02c24] text-white border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] text-xs font-display font-black uppercase tracking-wider rounded-xl flex items-center gap-1.5 transition active:translate-x-0.5 active:translate-y-0.5 active:shadow-none shrink-0"
+                    className="px-4 py-2 bg-[#E6332A] hover:bg-[#d02c24] text-white border border-[#1A1918]/10 shadow-sm text-xs font-sans font-semibold rounded-xl flex items-center gap-1.5 transition active:shadow-none shrink-0"
                   >
                     <Plus className="w-4 h-4 stroke-[3]" />
                     <span>+ Proponer</span>
@@ -2329,12 +2329,12 @@ export const TribusView: React.FC<TribusViewProps> = ({
                   return (
                     <div
                       key={proposal.id}
-                      className={`bg-[#FAF6ED] border-2 border-[#1A1918] rounded-2xl transition-all duration-200 flex flex-col justify-between overflow-hidden group ${
+                      className={`bg-[#FAF6ED] border border-[#1A1918]/10 rounded-2xl transition-all duration-200 flex flex-col justify-between overflow-hidden group ${
                         isWinner 
-                          ? 'shadow-[6px_6px_0px_#E6332A] ring-2 ring-[#E6332A]'
+                          ? 'shadow-sm ring-2 ring-[#E6332A]'
                           : isLeader
-                          ? 'shadow-[5px_5px_0px_#F7B32B] hover:shadow-[7px_7px_0px_#F7B32B]'
-                          : 'shadow-[4px_4px_0px_#1A1918] hover:shadow-[6px_6px_0px_#1A1918]'
+                          ? 'shadow-sm hover:shadow-md'
+                          : 'shadow-sm hover:shadow-md'
                       }`}
                     >
                       <div>
@@ -2358,7 +2358,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                           <div>
                             <h3 
                               onClick={() => setDetailProposalId(proposal.id)}
-                              className="font-display font-black text-lg text-[#1A1918] uppercase tracking-wide group-hover:text-[#E6332A] transition-colors cursor-pointer leading-snug line-clamp-1"
+                              className="font-display font-semibold text-lg text-[#1A1918] group-hover:text-[#E6332A] transition-colors cursor-pointer leading-snug line-clamp-1"
                               title={proposal.title}
                             >
                               {proposal.title}
@@ -2369,13 +2369,13 @@ export const TribusView: React.FC<TribusViewProps> = ({
                           </div>
 
                           {/* Proposer row */}
-                          <div className="flex items-center justify-between text-xs text-[#1A1918]/80 border-y-2 border-[#1A1918]/15 py-2 font-mono">
+                          <div className="flex items-center justify-between text-xs text-[#1A1918]/80 border-y border-[#1A1918]/15 py-2 font-mono">
                             <div className="flex items-center gap-2 truncate">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img
                                 src={proposal.proposedByAvatar}
                                 alt={proposal.proposedByName}
-                                className="w-5 h-5 rounded-full object-cover border border-[#1A1918] shrink-0 bg-[#F4EEDB]"
+                                className="w-5 h-5 rounded-full object-cover border border-[#1A1918]/10 shrink-0 bg-[#F4EEDB]"
                               />
                               <span className="truncate font-bold text-[#1A1918]">Por {proposal.proposedByName}</span>
                             </div>
@@ -2387,7 +2387,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                       </div>
 
                       {/* Card Bottom: Collaborative Voting Toolbar */}
-                      <div className="p-3 bg-[#F4EEDB] border-t-2 border-[#1A1918] flex items-center justify-between gap-2">
+                      <div className="p-3 bg-[#F4EEDB] border-t border-[#1A1918]/10 flex items-center justify-between gap-2">
                         
                         {/* Thumbs Up & Thumbs Down Buttons */}
                         <div className="flex items-center gap-1.5">
@@ -2397,10 +2397,10 @@ export const TribusView: React.FC<TribusViewProps> = ({
                               e.stopPropagation();
                               voteRoute(proposal.id);
                             }}
-                            className={`px-3 py-1.5 border-2 border-[#1A1918] rounded-xl text-xs font-mono font-black flex items-center gap-1.5 transition-all ${
+                            className={`px-3 py-1.5 border border-[#1A1918]/10 rounded-xl text-xs font-mono font-semibold flex items-center gap-1.5 transition-all ${
                               hasUpvoted
-                                ? 'bg-[#F7B32B] text-[#1A1918] shadow-none translate-x-0.5 translate-y-0.5'
-                                : 'bg-[#FAF6ED] text-[#1A1918] shadow-[2px_2px_0px_#1A1918] hover:bg-[#F7B32B] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none'
+                                ? 'bg-[#F7B32B] text-[#1A1918] shadow-none '
+                                : 'bg-[#FAF6ED] text-[#1A1918] shadow-sm hover:bg-[#F7B32B] active:shadow-none'
                             }`}
                             title="Votar a favor (Manita arriba)"
                           >
@@ -2414,10 +2414,10 @@ export const TribusView: React.FC<TribusViewProps> = ({
                               e.stopPropagation();
                               downvoteRoute(proposal.id);
                             }}
-                            className={`px-2.5 py-1.5 border-2 border-[#1A1918] rounded-xl text-xs font-mono font-black flex items-center gap-1 transition-all ${
+                            className={`px-2.5 py-1.5 border border-[#1A1918]/10 rounded-xl text-xs font-mono font-semibold flex items-center gap-1 transition-all ${
                               hasDownvoted
-                                ? 'bg-[#E6332A] text-white shadow-none translate-x-0.5 translate-y-0.5'
-                                : 'bg-[#FAF6ED] text-[#1A1918] shadow-[2px_2px_0px_#1A1918] hover:bg-[#E6332A] hover:text-white active:translate-x-0.5 active:translate-y-0.5 active:shadow-none'
+                                ? 'bg-[#E6332A] text-white shadow-none '
+                                : 'bg-[#FAF6ED] text-[#1A1918] shadow-sm hover:bg-[#E6332A] hover:text-white active:shadow-none'
                             }`}
                             title="Votar en contra (Manita abajo)"
                           >
@@ -2426,11 +2426,11 @@ export const TribusView: React.FC<TribusViewProps> = ({
                           </button>
 
                           {/* Net score */}
-                          <span className={`text-xs font-mono font-black px-2 py-1 rounded-md border border-[#1A1918] ${
+                          <span className={`text-xs font-mono font-semibold px-2 py-1 rounded-md border border-[#1A1918]/10 ${
                             netScore > 0 
-                              ? 'bg-[#FAF6ED] text-[#E06423] shadow-[1px_1px_0px_#1A1918]' 
+                              ? 'bg-[#FAF6ED] text-[#E06423] shadow-sm' 
                               : netScore < 0 
-                              ? 'bg-[#FAF6ED] text-[#E6332A] shadow-[1px_1px_0px_#1A1918]' 
+                              ? 'bg-[#FAF6ED] text-[#E6332A] shadow-sm' 
                               : 'bg-[#FAF6ED] text-[#1A1918]/60'
                           }`}>
                             {netScore > 0 ? `+${netScore}` : netScore}
@@ -2442,7 +2442,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                           {/* View Detail & Comments Button */}
                           <button
                             onClick={() => setDetailProposalId(proposal.id)}
-                            className="px-2.5 py-1.5 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] rounded-xl text-xs font-mono font-bold flex items-center gap-1.5 transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                            className="px-2.5 py-1.5 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border border-[#1A1918]/10 shadow-sm rounded-xl text-xs font-mono font-bold flex items-center gap-1.5 transition-all active:shadow-none"
                             title="Ver detalle y comentarios"
                           >
                             <MessageSquare className="w-3.5 h-3.5 text-[#1A1918]" />
@@ -2458,7 +2458,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                                   e.stopPropagation();
                                   unlockWinningRoute(activeRodada.id);
                                 }}
-                                className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] rounded-xl text-[10px] font-display font-black uppercase tracking-wider flex items-center gap-1 transition-all active:translate-x-0.5 active:translate-y-0.5"
+                                className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white border border-[#1A1918]/10 shadow-sm rounded-xl text-[10px] font-sans font-semibold uppercase tracking-wider flex items-center gap-1 transition-all  "
                                 title="Rodada confirmada. Clic para reabrir votación"
                               >
                                 <Check className="w-3 h-3 stroke-[3]" />
@@ -2471,7 +2471,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                                   e.stopPropagation();
                                   handleLockRoute(proposal.id);
                                 }}
-                                className="px-2.5 py-1.5 bg-[#E6332A] hover:bg-[#d02c24] text-white border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] rounded-xl text-[10px] font-display font-black uppercase tracking-wider flex items-center gap-1 transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                                className="px-2.5 py-1.5 bg-[#E6332A] hover:bg-[#d02c24] text-white border border-[#1A1918]/10 shadow-sm rounded-xl text-[10px] font-sans font-semibold uppercase tracking-wider flex items-center gap-1 transition-all active:shadow-none"
                                 title="Confirmar esta opción como la rodada oficial"
                               >
                                 <Check className="w-3 h-3 stroke-[3]" />
@@ -2493,7 +2493,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                                   setTimeout(() => setNotificationToast(null), 3500);
                                 }
                               }}
-                              className="p-1.5 bg-[#FAF6ED] hover:bg-emerald-100 text-[#1A1918]/60 hover:text-emerald-700 border-2 border-[#1A1918] rounded-xl transition-all shadow-[1.5px_1.5px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5"
+                              className="p-1.5 bg-[#FAF6ED] hover:bg-emerald-100 text-[#1A1918]/60 hover:text-emerald-700 border border-[#1A1918]/10 rounded-xl transition-all shadow-sm  "
                               title="Marcar como ya rodada y guardar en Historial"
                             >
                               <Check className="w-3.5 h-3.5" />
@@ -2508,7 +2508,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                                   e.stopPropagation();
                                   setEditingProposal(proposal);
                                 }}
-                                className="p-1.5 bg-[#FAF6ED] hover:bg-[#F7B32B] text-[#1A1918]/70 hover:text-[#1A1918] border-2 border-[#1A1918] rounded-xl transition-all shadow-[1.5px_1.5px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                                className="p-1.5 bg-[#FAF6ED] hover:bg-[#F7B32B] text-[#1A1918]/70 hover:text-[#1A1918] border border-[#1A1918]/10 rounded-xl transition-all shadow-sm active:shadow-none"
                                 title="Editar tu propuesta"
                               >
                                 <Pencil className="w-3.5 h-3.5" />
@@ -2521,7 +2521,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                                     deleteRouteProposal(proposal.id);
                                   }
                                 }}
-                                className="p-1.5 bg-[#FAF6ED] hover:bg-[#E6332A] text-[#1A1918]/60 hover:text-white border-2 border-[#1A1918] rounded-xl transition-all shadow-[1.5px_1.5px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                                className="p-1.5 bg-[#FAF6ED] hover:bg-[#E6332A] text-[#1A1918]/60 hover:text-white border border-[#1A1918]/10 rounded-xl transition-all shadow-sm active:shadow-none"
                                 title="Eliminar tu propuesta"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
@@ -2537,13 +2537,13 @@ export const TribusView: React.FC<TribusViewProps> = ({
 
               {/* Si solo hay 1 opción, invitar a proponer alternativas */}
               {activeProposals.length === 1 && (
-                <div className="p-5 border-2 border-[#1A1918] bg-[#F4EEDB] rounded-2xl shadow-[4px_4px_0px_#1A1918] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="p-5 border border-[#1A1918]/10 bg-[#F4EEDB] rounded-2xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <span className="p-2.5 bg-[#FAF6ED] text-[#E6332A] border-2 border-[#1A1918] rounded-xl shadow-[2px_2px_0px_#1A1918] shrink-0">
+                    <span className="p-2.5 bg-[#FAF6ED] text-[#E6332A] border border-[#1A1918]/10 rounded-xl shadow-sm shrink-0">
                       <Plus className="w-5 h-5 stroke-[2.5]" />
                     </span>
                     <div>
-                      <h4 className="font-display font-black text-sm text-[#1A1918] uppercase">¿Tienes otra ruta en mente para esta fecha?</h4>
+                      <h4 className="font-sans font-semibold text-sm text-[#1A1918] ">¿Tienes otra ruta en mente para esta fecha?</h4>
                       <p className="text-[#1A1918]/80 text-xs mt-0.5 font-sans">
                         Propón un trazado alternativo para que la tribu debata y vote antes de rodar.
                       </p>
@@ -2551,7 +2551,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                   </div>
                   <button
                     onClick={() => setShowInteractiveProposeModal(true)}
-                    className="px-4 py-2.5 bg-[#F7B32B] hover:bg-[#e0a020] text-[#1A1918] border-2 border-[#1A1918] font-display font-black uppercase text-xs tracking-wider rounded-xl shadow-[2px_2px_0px_#1A1918] shrink-0 transition active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                    className="px-4 py-2.5 bg-[#F7B32B] hover:bg-[#e0a020] text-[#1A1918] border border-[#1A1918]/10 font-sans font-semibold text-xs rounded-xl shadow-sm shrink-0 transition active:shadow-none"
                   >
                     + Proponer Alternativa
                   </button>
@@ -2559,14 +2559,14 @@ export const TribusView: React.FC<TribusViewProps> = ({
               )}
 
               {activeProposals.length === 0 && (
-                <div className="p-10 border-2 border-[#1A1918] bg-[#FAF6ED] rounded-2xl shadow-[4px_4px_0px_#1A1918] text-center space-y-4">
+                <div className="p-10 border border-[#1A1918]/10 bg-[#FAF6ED] rounded-2xl shadow-sm text-center space-y-4">
                   <Compass className="w-10 h-10 text-[#E6332A] mx-auto animate-spin-slow" />
                   <p className="text-sm font-sans font-bold text-[#1A1918]">Aún no hay opciones de ruta propuestas para esta fecha.</p>
                   <button
                     onClick={() => setShowInteractiveProposeModal(true)}
-                    className="px-5 py-2.5 bg-[#E6332A] text-white border-2 border-[#1A1918] font-display font-black uppercase text-xs rounded-xl shadow-[3px_3px_0px_#1A1918]"
+                    className="px-5 py-2.5 bg-[#E6332A] text-white border border-[#1A1918]/10 font-sans font-semibold text-xs rounded-xl shadow-sm"
                   >
-                    Proponer la Primera Opción
+                    Proponer la primera opción
                   </button>
                 </div>
               )}
@@ -2580,11 +2580,11 @@ export const TribusView: React.FC<TribusViewProps> = ({
       {activeTribuTab === 'historial' && (
         <div className="space-y-6">
           {/* Header de la bitácora */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b-2 border-[#1A1918] gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-[#1A1918]/10 gap-3">
             <div className="flex items-center gap-2.5">
-              <span className="w-3 h-3 bg-[#1A1918] border-2 border-[#1A1918] shadow-[1px_1px_0px_#1A1918]" />
+              <span className="w-3 h-3 bg-[#1A1918] border border-[#1A1918]/10 shadow-sm" />
               <div>
-                <h2 className="font-display font-black text-xl sm:text-2xl text-[#1A1918] uppercase tracking-wide">
+                <h2 className="font-display font-semibold text-xl sm:text-2xl text-[#1A1918]  ">
                   Historial de Rutas ({allTribuRoutes.length})
                 </h2>
                 <p className="text-xs text-[#1A1918]/70 font-sans mt-0.5">
@@ -2597,7 +2597,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
               <button
                 type="button"
                 onClick={onOpenRecordRoute}
-                className="px-4 py-2 bg-[#E6332A] hover:bg-[#d02c24] text-white border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] text-xs font-display font-black uppercase tracking-wider rounded-xl flex items-center justify-center gap-1.5 transition active:translate-x-0.5 active:translate-y-0.5 active:shadow-none shrink-0"
+                className="px-4 py-2 bg-[#E6332A] hover:bg-[#d02c24] text-white border border-[#1A1918]/10 shadow-sm text-xs font-sans font-semibold rounded-xl flex items-center justify-center gap-1.5 transition active:shadow-none shrink-0"
               >
                 <Play className="w-3.5 h-3.5 fill-current text-[#F7B32B]" />
                 <span>+ Grabar Nueva Ruta</span>
@@ -2616,22 +2616,22 @@ export const TribusView: React.FC<TribusViewProps> = ({
                   <div
                     key={route.id}
                     onClick={() => setDetailProposalId(route.id)}
-                    className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-2xl shadow-[4px_4px_0px_#1A1918] hover:shadow-[6px_6px_0px_#1A1918] transition-all duration-200 flex flex-col justify-between overflow-hidden group cursor-pointer"
+                    className="bg-[#FAF6ED] border border-[#1A1918]/10 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between overflow-hidden group cursor-pointer"
                   >
                     <div>
                       {/* Map preview */}
-                      <div className="h-44 w-full relative bg-[#1A1918] overflow-hidden border-b-2 border-[#1A1918]">
+                      <div className="h-44 w-full relative bg-[#1A1918] overflow-hidden border-b border-[#1A1918]/10">
                         <RouteTacticalMapCard
                           proposal={route}
                           className="w-full h-full pointer-events-none group-hover:scale-105 transition-transform duration-500"
                         />
                         <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 z-10">
-                          <span className="px-2 py-0.5 bg-[#FAF6ED] border-2 border-[#1A1918] text-[#1A1918] text-[9px] font-mono font-black uppercase rounded shadow-[1.5px_1.5px_0px_#1A1918]">
+                          <span className="px-2 py-0.5 bg-[#FAF6ED] border border-[#1A1918]/10 text-[#1A1918] text-[9px] font-mono font-semibold uppercase rounded shadow-sm">
                             {route.difficulty || 'Intermedia'}
                           </span>
                         </div>
                         <div className="absolute top-2.5 right-2.5 z-10">
-                          <span className="px-2.5 py-0.5 bg-[#1A1918] text-[#FAF6ED] border border-[#1A1918] text-[10px] font-mono font-black rounded shadow-[1.5px_1.5px_0px_#1A1918]">
+                          <span className="px-2.5 py-0.5 bg-[#1A1918] text-[#FAF6ED] border border-[#1A1918]/10 text-[10px] font-mono font-semibold rounded shadow-sm">
                             {route.totalKm} KM
                           </span>
                         </div>
@@ -2644,7 +2644,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                             <MapPin className="w-3.5 h-3.5 shrink-0" />
                             <span className="truncate">{route.destination || 'Ruta del Club'}</span>
                           </div>
-                          <h3 className="font-display font-black text-base text-[#1A1918] uppercase tracking-wide group-hover:text-[#E6332A] transition-colors leading-snug line-clamp-1 mt-1">
+                          <h3 className="font-display font-semibold text-base text-[#1A1918] group-hover:text-[#E6332A] transition-colors leading-snug line-clamp-1 mt-1">
                             {route.title}
                           </h3>
                           {route.description && (
@@ -2673,7 +2673,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                             <img
                               src={route.proposedByAvatar || proposer?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200'}
                               alt={route.proposedByName}
-                              className="w-5 h-5 rounded-full object-cover border border-[#1A1918] shrink-0"
+                              className="w-5 h-5 rounded-full object-cover border border-[#1A1918]/10 shrink-0"
                             />
                             <span className="truncate font-bold text-[#1A1918]">Por {route.proposedByName}</span>
                           </div>
@@ -2685,16 +2685,16 @@ export const TribusView: React.FC<TribusViewProps> = ({
                     </div>
 
                     {/* Footer Actions: Google Maps & Ver Detalle */}
-                    <div className="p-3 bg-[#F4EEDB] border-t-2 border-[#1A1918] flex items-center justify-between gap-2">
+                    <div className="p-3 bg-[#F4EEDB] border-t border-[#1A1918]/10 flex items-center justify-between gap-2">
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           setDetailProposalId(route.id);
                         }}
-                        className="px-3 py-1.5 bg-[#FAF6ED] hover:bg-white text-[#1A1918] border-2 border-[#1A1918] rounded-xl text-xs font-display font-black uppercase tracking-wider transition-all shadow-[1.5px_1.5px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                        className="px-3 py-1.5 bg-[#FAF6ED] hover:bg-white text-[#1A1918] border border-[#1A1918]/10 rounded-xl text-xs font-sans font-semibold transition-all shadow-sm active:shadow-none"
                       >
-                        Ver Detalle
+                        Ver detalle
                       </button>
 
                       <div className="flex items-center gap-1.5">
@@ -2703,7 +2703,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={(e) => e.stopPropagation()}
-                          className="px-3 py-1.5 bg-[#1A1918] hover:bg-black text-white border-2 border-[#1A1918] rounded-xl text-xs font-display font-black uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-[1.5px_1.5px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                          className="px-3 py-1.5 bg-[#1A1918] hover:bg-black text-white border border-[#1A1918]/10 rounded-xl text-xs font-sans font-semibold flex items-center gap-1.5 transition-all shadow-sm active:shadow-none"
                           title="Abrir recorrido completo en Google Maps"
                         >
                           <ExternalLink className="w-3 h-3 text-[#F7B32B]" />
@@ -2719,7 +2719,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                                 e.stopPropagation();
                                 setEditingProposal(route);
                               }}
-                              className="p-1.5 bg-[#FAF6ED] hover:bg-[#F7B32B] text-[#1A1918]/70 hover:text-[#1A1918] border-2 border-[#1A1918] rounded-xl transition-all shadow-[1.5px_1.5px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                              className="p-1.5 bg-[#FAF6ED] hover:bg-[#F7B32B] text-[#1A1918]/70 hover:text-[#1A1918] border border-[#1A1918]/10 rounded-xl transition-all shadow-sm active:shadow-none"
                               title="Editar tu ruta"
                             >
                               <Pencil className="w-3.5 h-3.5" />
@@ -2732,7 +2732,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                                   deleteRouteProposal(route.id);
                                 }
                               }}
-                              className="p-1.5 bg-[#FAF6ED] hover:bg-[#E6332A] text-[#1A1918]/60 hover:text-white border-2 border-[#1A1918] rounded-xl transition-all shadow-[1.5px_1.5px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                              className="p-1.5 bg-[#FAF6ED] hover:bg-[#E6332A] text-[#1A1918]/60 hover:text-white border border-[#1A1918]/10 rounded-xl transition-all shadow-sm active:shadow-none"
                               title="Eliminar tu ruta del historial"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -2746,12 +2746,12 @@ export const TribusView: React.FC<TribusViewProps> = ({
               })}
             </div>
           ) : (
-            <div className="p-12 border-2 border-[#1A1918] bg-[#FAF6ED] rounded-[24px] shadow-[4px_4px_0px_#1A1918] text-center space-y-4 max-w-lg mx-auto">
-              <div className="w-14 h-14 mx-auto rounded-2xl bg-[#F4EEDB] border-2 border-[#1A1918] flex items-center justify-center shadow-[2px_2px_0px_#1A1918]">
+            <div className="p-12 border border-[#1A1918]/10 bg-[#FAF6ED] rounded-[24px] shadow-sm text-center space-y-4 max-w-lg mx-auto">
+              <div className="w-14 h-14 mx-auto rounded-2xl bg-[#F4EEDB] border border-[#1A1918]/10 flex items-center justify-center shadow-sm">
                 <Map className="w-7 h-7 text-[#E6332A]" />
               </div>
               <div className="space-y-1">
-                <h3 className="font-display font-black text-lg text-[#1A1918] uppercase tracking-wide">
+                <h3 className="font-display font-semibold text-lg text-[#1A1918]  ">
                   Sin rutas rodadas aún
                 </h3>
                 <p className="text-xs text-[#1A1918]/70 font-sans leading-relaxed">
@@ -2762,10 +2762,10 @@ export const TribusView: React.FC<TribusViewProps> = ({
                 <button
                   type="button"
                   onClick={onOpenRecordRoute}
-                  className="px-5 py-2.5 bg-[#E6332A] hover:bg-[#d02c24] text-white border-2 border-[#1A1918] font-display font-black uppercase text-xs rounded-xl shadow-[3px_3px_0px_#1A1918] inline-flex items-center gap-2 transition active:translate-x-0.5 active:translate-y-0.5"
+                  className="px-5 py-2.5 bg-[#E6332A] hover:bg-[#d02c24] text-white border border-[#1A1918]/10 font-sans font-semibold text-xs rounded-xl shadow-sm inline-flex items-center gap-2 transition  "
                 >
                   <Play className="w-3.5 h-3.5 fill-current text-[#F7B32B]" />
-                  <span>Grabar la Primera Ruta</span>
+                  <span>Grabar la primera ruta</span>
                 </button>
               )}
             </div>
@@ -2778,15 +2778,15 @@ export const TribusView: React.FC<TribusViewProps> = ({
       {/* =================================================================== */}
       {selectedProposalForDetail && (
         <div className="fixed inset-0 z-[70] bg-[#1A1918]/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-          <div className="border-2 border-[#1A1918] bg-[#FAF6ED] rounded-[28px] max-w-2xl w-full p-4 sm:p-6 space-y-4 sm:space-y-5 my-auto max-h-[88vh] overflow-y-auto overscroll-contain font-sans text-[#1A1918] shadow-[6px_6px_0px_#1A1918] pb-8">
+          <div className="border border-[#1A1918]/10 bg-[#FAF6ED] rounded-[28px] max-w-2xl w-full p-4 sm:p-6 space-y-4 sm:space-y-5 my-auto max-h-[88vh] overflow-y-auto overscroll-contain font-sans text-[#1A1918] shadow-sm pb-8">
             
             {/* Modal Header */}
-            <div className="flex items-start justify-between border-b-2 border-[#1A1918] pb-4 gap-3">
+            <div className="flex items-start justify-between border-b border-[#1A1918]/10 pb-4 gap-3">
               <div>
-                <span className="text-[10px] font-mono text-[#E6332A] uppercase font-black tracking-widest block mb-1">
-                  {activeTribuTab === 'historial' ? '★ RUTA RODADA • HISTORIAL ★' : '★ DETALLE DE RUTA • PROPUESTA ★'}
+                <span className="text-[10px] font-mono text-[#E6332A] uppercase font-semibold tracking-widest block mb-1">
+                  {activeTribuTab === 'historial' ? 'RUTA RODADA • HISTORIAL' : 'DETALLE DE RUTA • PROPUESTA'}
                 </span>
-                <h3 className="font-display font-black text-2xl sm:text-3xl text-[#1A1918] uppercase tracking-wide leading-tight">
+                <h3 className="font-display font-semibold text-2xl sm:text-3xl text-[#1A1918] leading-tight">
                   {selectedProposalForDetail.title}
                 </h3>
                 <p className="text-xs font-mono font-bold text-[#1A1918]/70 mt-1">
@@ -2802,7 +2802,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                         setEditingProposal(selectedProposalForDetail);
                         setDetailProposalId(null);
                       }}
-                      className="p-2 bg-[#FAF6ED] hover:bg-[#F7B32B] text-[#1A1918]/80 hover:text-[#1A1918] border-2 border-[#1A1918] rounded-xl shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition"
+                      className="p-2 bg-[#FAF6ED] hover:bg-[#F7B32B] text-[#1A1918]/80 hover:text-[#1A1918] border border-[#1A1918]/10 rounded-xl shadow-sm active:shadow-none transition"
                       title="Editar tu propuesta"
                     >
                       <Pencil className="w-5 h-5 stroke-[2.5]" />
@@ -2815,7 +2815,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                           setDetailProposalId(null);
                         }
                       }}
-                      className="p-2 bg-[#FAF6ED] hover:bg-[#E6332A] text-[#1A1918]/70 hover:text-white border-2 border-[#1A1918] rounded-xl shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition"
+                      className="p-2 bg-[#FAF6ED] hover:bg-[#E6332A] text-[#1A1918]/70 hover:text-white border border-[#1A1918]/10 rounded-xl shadow-sm active:shadow-none transition"
                       title="Eliminar tu ruta"
                     >
                       <Trash2 className="w-5 h-5 stroke-[2.5]" />
@@ -2824,7 +2824,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                 )}
                 <button
                   onClick={() => setDetailProposalId(null)}
-                  className="p-2 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border-2 border-[#1A1918] rounded-xl shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition"
+                  className="p-2 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border border-[#1A1918]/10 rounded-xl shadow-sm active:shadow-none transition"
                   title="Cerrar modal"
                 >
                   <X className="w-5 h-5 stroke-[2.5]" />
@@ -2833,7 +2833,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
             </div>
 
             {/* Tactical Topo Map & Quick Metrics in Detail Modal */}
-            <div className="border-2 border-[#1A1918] rounded-2xl overflow-hidden shadow-[3px_3px_0px_#1A1918]">
+            <div className="border border-[#1A1918]/10 rounded-2xl overflow-hidden shadow-sm">
               <RouteTacticalMapCard
                 proposal={selectedProposalForDetail}
                 heightClass="h-52"
@@ -2843,11 +2843,11 @@ export const TribusView: React.FC<TribusViewProps> = ({
 
             {/* Voting Bar in Detail Modal (Solo para propuestas en votación de rodadas) */}
             {activeTribuTab !== 'historial' && activeRodada && activeRodada.status !== 'completada' && (
-              <div className="bg-[#FAF6ED] border-2 border-[#1A1918] rounded-2xl p-3 sm:p-3.5 shadow-[2px_2px_0px_#1A1918] space-y-3">
+              <div className="bg-[#FAF6ED] border border-[#1A1918]/10 rounded-2xl p-3 sm:p-3.5 shadow-sm space-y-3">
                 {/* Row 1: Community Vote */}
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2.5">
-                    <span className={`text-sm font-mono font-black px-2.5 py-1 rounded-xl border-2 border-[#1A1918] bg-[#F4EEDB] shadow-[1px_1px_0px_#1A1918] ${
+                    <span className={`text-sm font-mono font-semibold px-2.5 py-1 rounded-xl border border-[#1A1918]/10 bg-[#F4EEDB] shadow-sm ${
                       ((selectedProposalForDetail.votes?.length || 0) - (selectedProposalForDetail.downvotes?.length || 0)) > 0
                         ? 'text-[#E06423]'
                         : ((selectedProposalForDetail.votes?.length || 0) - (selectedProposalForDetail.downvotes?.length || 0)) < 0
@@ -2859,7 +2859,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                         : (selectedProposalForDetail.votes?.length || 0) - (selectedProposalForDetail.downvotes?.length || 0)}
                     </span>
 
-                    <div className="flex items-center gap-2 text-xs font-mono font-black text-[#1A1918]/70">
+                    <div className="flex items-center gap-2 text-xs font-mono font-semibold text-[#1A1918]/70">
                       <span className="flex items-center gap-1" title="Votos a favor">
                         <ThumbsUp className="w-3.5 h-3.5 text-emerald-700" />
                         <span>{selectedProposalForDetail.votes?.length || 0}</span>
@@ -2877,10 +2877,10 @@ export const TribusView: React.FC<TribusViewProps> = ({
                       type="button"
                       onClick={() => voteRoute(selectedProposalForDetail.id)}
                       title="Votar a favor"
-                      className={`px-3 py-1.5 border-2 border-[#1A1918] rounded-xl text-xs font-mono font-black flex items-center gap-1.5 transition cursor-pointer active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${
+                      className={`px-3 py-1.5 border border-[#1A1918]/10 rounded-xl text-xs font-mono font-semibold flex items-center gap-1.5 transition cursor-pointer active:shadow-none ${
                         selectedProposalForDetail.votes?.includes(currentUser.id)
-                          ? 'bg-[#F7B32B] text-[#1A1918] shadow-none translate-x-0.5 translate-y-0.5'
-                          : 'bg-[#F4EEDB] text-[#1A1918] shadow-[2px_2px_0px_#1A1918] hover:bg-[#F7B32B]'
+                          ? 'bg-[#F7B32B] text-[#1A1918] shadow-none '
+                          : 'bg-[#F4EEDB] text-[#1A1918] shadow-sm hover:bg-[#F7B32B]'
                       }`}
                     >
                       <ThumbsUp className="w-3.5 h-3.5" />
@@ -2891,10 +2891,10 @@ export const TribusView: React.FC<TribusViewProps> = ({
                       type="button"
                       onClick={() => downvoteRoute(selectedProposalForDetail.id)}
                       title="Votar en contra"
-                      className={`p-2 border-2 border-[#1A1918] rounded-xl text-xs font-mono font-black flex items-center justify-center transition cursor-pointer active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${
+                      className={`p-2 border border-[#1A1918]/10 rounded-xl text-xs font-mono font-semibold flex items-center justify-center transition cursor-pointer active:shadow-none ${
                         selectedProposalForDetail.downvotes?.includes(currentUser.id)
-                          ? 'bg-[#E6332A] text-white shadow-none translate-x-0.5 translate-y-0.5'
-                          : 'bg-[#F4EEDB] text-[#1A1918] shadow-[2px_2px_0px_#1A1918] hover:bg-[#E6332A] hover:text-white'
+                          ? 'bg-[#E6332A] text-white shadow-none '
+                          : 'bg-[#F4EEDB] text-[#1A1918] shadow-sm hover:bg-[#E6332A] hover:text-white'
                       }`}
                     >
                       <ThumbsDown className="w-3.5 h-3.5" />
@@ -2911,7 +2911,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                       onClick={() => {
                         unlockWinningRoute(activeRodada.id);
                       }}
-                      className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-display font-black uppercase tracking-wider border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] rounded-xl transition flex items-center justify-center gap-1.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                      className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-sans font-semibold border border-[#1A1918]/10 shadow-sm rounded-xl transition flex items-center justify-center gap-1.5 active:shadow-none"
                       title="Esta ruta ya es la oficial. Clic para reabrir votaciones"
                     >
                       <Check className="w-4 h-4 stroke-[3]" />
@@ -2926,11 +2926,11 @@ export const TribusView: React.FC<TribusViewProps> = ({
                           setDetailProposalId(null);
                         }
                       }}
-                      className="px-4 py-2.5 bg-[#E6332A] hover:bg-[#d02c24] text-white text-xs font-display font-black uppercase tracking-wider border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] rounded-xl transition flex items-center justify-center gap-1.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                      className="px-4 py-2.5 bg-[#E6332A] hover:bg-[#d02c24] text-white text-xs font-sans font-semibold border border-[#1A1918]/10 shadow-sm rounded-xl transition flex items-center justify-center gap-1.5 active:shadow-none"
                       title="Seleccionar esta propuesta como la ruta ganadora de la rodada"
                     >
                       <Check className="w-4 h-4 stroke-[3]" />
-                      <span>★ Elegir como Ruta Ganadora</span>
+                      <span>Elegir como Ruta Ganadora</span>
                     </button>
                   )}
 
@@ -2940,7 +2940,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                       href={buildOrderedGoogleMapsUrl(selectedProposalForDetail)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex-1 sm:flex-initial px-3 py-2 bg-[#F4EEDB] hover:bg-[#1A1918] hover:text-white text-[#1A1918] text-xs font-mono font-bold border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] rounded-xl transition flex items-center justify-center gap-1.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                      className="flex-1 sm:flex-initial px-3 py-2 bg-[#F4EEDB] hover:bg-[#1A1918] hover:text-white text-[#1A1918] text-xs font-mono font-bold border border-[#1A1918]/10 shadow-sm rounded-xl transition flex items-center justify-center gap-1.5 active:shadow-none"
                       title="Abrir este trazado en Google Maps"
                     >
                       <Compass className="w-3.5 h-3.5" />
@@ -2954,7 +2954,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                           setDetailProposalId(null);
                           onOpenRecordRoute();
                         }}
-                        className="flex-1 sm:flex-initial px-3 py-2 bg-[#F4EEDB] hover:bg-[#F7B32B] text-[#1A1918] text-xs font-mono font-bold border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] rounded-xl transition flex items-center justify-center gap-1.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                        className="flex-1 sm:flex-initial px-3 py-2 bg-[#F4EEDB] hover:bg-[#F7B32B] text-[#1A1918] text-xs font-mono font-bold border border-[#1A1918]/10 shadow-sm rounded-xl transition flex items-center justify-center gap-1.5 active:shadow-none"
                         title="Iniciar grabación GPS de la rodada"
                       >
                         <Play className="w-3.5 h-3.5 fill-current text-[#E6332A]" />
@@ -2970,7 +2970,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                           setDetailProposalId(null);
                         }
                       }}
-                      className="flex-1 sm:flex-initial px-3 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-mono font-bold border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] rounded-xl transition flex items-center justify-center gap-1.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                      className="flex-1 sm:flex-initial px-3 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-mono font-bold border border-[#1A1918]/10 shadow-sm rounded-xl transition flex items-center justify-center gap-1.5 active:shadow-none"
                       title="Marcar como ya rodada y pasar al Historial"
                     >
                       <Check className="w-3.5 h-3.5 stroke-[3]" />
@@ -2987,7 +2987,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                             setDetailProposalId(null);
                             setEditingProposal(p);
                           }}
-                          className="p-2 bg-[#F4EEDB] hover:bg-[#F7B32B] text-[#1A1918] border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] rounded-xl transition active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                          className="p-2 bg-[#F4EEDB] hover:bg-[#F7B32B] text-[#1A1918] border border-[#1A1918]/10 shadow-sm rounded-xl transition active:shadow-none"
                           title="Editar propuesta"
                         >
                           <Pencil className="w-3.5 h-3.5" />
@@ -3000,7 +3000,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                               setDetailProposalId(null);
                             }
                           }}
-                          className="p-2 bg-[#F4EEDB] hover:bg-[#E6332A] hover:text-white text-[#1A1918]/70 border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] rounded-xl transition active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                          className="p-2 bg-[#F4EEDB] hover:bg-[#E6332A] hover:text-white text-[#1A1918]/70 border border-[#1A1918]/10 shadow-sm rounded-xl transition active:shadow-none"
                           title="Eliminar propuesta"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -3014,7 +3014,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
 
             {/* Acciones para ruta ya grabada en el historial */}
             {activeTribuTab === 'historial' && (
-              <div className="p-3 bg-[#FAF6ED] border-2 border-[#1A1918] rounded-2xl shadow-[2px_2px_0px_#1A1918] flex items-center justify-between gap-2 flex-wrap">
+              <div className="p-3 bg-[#FAF6ED] border border-[#1A1918]/10 rounded-2xl shadow-sm flex items-center justify-between gap-2 flex-wrap">
                 <span className="text-xs font-mono font-bold text-[#1A1918]/80 flex items-center gap-1.5">
                   <Check className="w-3.5 h-3.5 text-emerald-600" />
                   <span>Ruta archivada en el historial de {activeTribu.name}</span>
@@ -3028,7 +3028,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                         setDetailProposalId(null);
                       }
                     }}
-                    className="px-3 py-1.5 bg-[#F4EEDB] hover:bg-[#F7B32B] text-[#1A1918] text-xs font-mono font-bold border-2 border-[#1A1918] shadow-[1.5px_1.5px_0px_#1A1918] rounded-xl transition flex items-center gap-1.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                    className="px-3 py-1.5 bg-[#F4EEDB] hover:bg-[#F7B32B] text-[#1A1918] text-xs font-mono font-bold border border-[#1A1918]/10 shadow-sm rounded-xl transition flex items-center gap-1.5 active:shadow-none"
                     title="Volver a mover a propuestas activas"
                   >
                     <span>↺ Mover a Propuestas</span>
@@ -3037,7 +3037,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                     href={buildOrderedGoogleMapsUrl(selectedProposalForDetail)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-3.5 py-1.5 bg-[#1A1918] hover:bg-black text-white text-xs font-display font-black uppercase tracking-wider border-2 border-[#1A1918] shadow-[1.5px_1.5px_0px_#1A1918] rounded-xl transition flex items-center gap-1.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none shrink-0"
+                    className="px-3.5 py-1.5 bg-[#1A1918] hover:bg-black text-white text-xs font-sans font-semibold border border-[#1A1918]/10 shadow-sm rounded-xl transition flex items-center gap-1.5 active:shadow-none shrink-0"
                   >
                     <Compass className="w-3.5 h-3.5 text-[#F7B32B]" />
                     <span>Google Maps ↗</span>
@@ -3048,24 +3048,24 @@ export const TribusView: React.FC<TribusViewProps> = ({
 
             {/* Description & Technical Itinerary */}
             <div className="space-y-2 text-xs">
-              <span className="text-[11px] font-mono text-[#1A1918] uppercase tracking-wider block font-black">
+              <span className="text-[11px] font-mono text-[#1A1918] uppercase tracking-wider block font-semibold">
                 Descripción &amp; Plan de Ruta
               </span>
-              <p className="text-[#1A1918] leading-relaxed bg-[#FAF6ED] border-2 border-[#1A1918] rounded-2xl p-4 font-sans font-medium shadow-[2px_2px_0px_#1A1918]">
+              <p className="text-[#1A1918] leading-relaxed bg-[#FAF6ED] border border-[#1A1918]/10 rounded-2xl p-4 font-sans font-medium shadow-sm">
                 {selectedProposalForDetail.description}
               </p>
               {selectedProposalForDetail.itinerary && selectedProposalForDetail.itinerary[0] && (
-                <div className="text-xs text-[#1A1918] bg-[#F4EEDB] border-2 border-[#1A1918] rounded-2xl p-4 space-y-1.5 shadow-[2px_2px_0px_#1A1918] font-sans">
-                  <p><strong className="font-display font-black uppercase tracking-wide text-[#1A1918]">Terreno:</strong> {selectedProposalForDetail.itinerary[0].terrainType}</p>
-                  <p><strong className="font-display font-black uppercase tracking-wide text-[#1A1918]">Itinerario:</strong> {selectedProposalForDetail.itinerary[0].description}</p>
+                <div className="text-xs text-[#1A1918] bg-[#F4EEDB] border border-[#1A1918]/10 rounded-2xl p-4 space-y-1.5 shadow-sm font-sans">
+                  <p><strong className="font-sans font-semibold text-[#1A1918]">Terreno:</strong> {selectedProposalForDetail.itinerary[0].terrainType}</p>
+                  <p><strong className="font-sans font-semibold text-[#1A1918]">Itinerario:</strong> {selectedProposalForDetail.itinerary[0].description}</p>
                 </div>
               )}
             </div>
 
             {/* Collaborative Comments Section */}
-            <div className="border-t-2 border-[#1A1918] pt-4 space-y-3">
+            <div className="border-t border-[#1A1918]/10 pt-4 space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                <span className="text-xs font-mono text-[#1A1918] uppercase tracking-wider font-black">
+                <span className="text-xs font-mono text-[#1A1918] font-semibold">
                   Comentarios del Grupo ({selectedProposalForDetail.comments?.length || 0})
                 </span>
                 <span className="text-[10px] sm:text-[11px] font-mono text-[#1A1918]/60 font-bold">
@@ -3077,16 +3077,16 @@ export const TribusView: React.FC<TribusViewProps> = ({
               <div className="space-y-2.5 max-h-48 overflow-y-auto pr-1">
                 {selectedProposalForDetail.comments && selectedProposalForDetail.comments.length > 0 ? (
                   selectedProposalForDetail.comments.map(c => (
-                    <div key={c.id} className="p-3 bg-[#FAF6ED] border-2 border-[#1A1918] rounded-xl text-xs space-y-1 shadow-[2px_2px_0px_#1A1918]">
+                    <div key={c.id} className="p-3 bg-[#FAF6ED] border border-[#1A1918]/10 rounded-xl text-xs space-y-1 shadow-sm">
                       <div className="flex items-center justify-between text-[11px] font-mono">
-                        <span className="font-black text-[#1A1918]">{c.userName}</span>
+                        <span className="font-semibold text-[#1A1918]">{c.userName}</span>
                         <span className="text-[#1A1918]/60 font-bold">{c.createdAt}</span>
                       </div>
                       <p className="text-[#1A1918]/90 font-sans leading-normal font-medium">{c.text}</p>
                     </div>
                   ))
                 ) : (
-                  <p className="text-xs text-[#1A1918]/60 font-serif italic py-2">
+                  <p className="text-xs text-[#1A1918]/60 font-sans py-2">
                     Aún no hay comentarios sobre esta ruta. Sé el primero en dejar una sugerencia o nota.
                   </p>
                 )}
@@ -3105,13 +3105,13 @@ export const TribusView: React.FC<TribusViewProps> = ({
                     }
                   }}
                   placeholder="Añade un comentario sobre esta opción..."
-                  className="flex-1 bg-[#FAF6ED] border-2 border-[#1A1918] rounded-xl px-3.5 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:border-[#E6332A] font-sans font-medium"
+                  className="flex-1 bg-[#FAF6ED] border border-[#1A1918]/10 rounded-xl px-3.5 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:border-[#E6332A] font-sans font-medium"
                 />
                 <button
                   type="button"
                   onClick={handleSendComment}
                   disabled={!commentInput.trim()}
-                  className="px-4 py-2.5 bg-[#E6332A] hover:bg-[#d02c24] disabled:opacity-40 text-white text-xs font-bold uppercase transition border-2 border-[#1A1918] rounded-xl shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none shrink-0"
+                  className="px-4 py-2.5 bg-[#E6332A] hover:bg-[#d02c24] disabled:opacity-40 text-white text-xs font-bold transition border border-[#1A1918]/10 rounded-xl shadow-sm active:shadow-none shrink-0"
                 >
                   <Send className="w-4 h-4 stroke-[2.5]" />
                 </button>
@@ -3119,11 +3119,11 @@ export const TribusView: React.FC<TribusViewProps> = ({
             </div>
 
             {/* Modal Footer */}
-            <div className="border-t-2 border-[#1A1918] pt-3 flex justify-end">
+            <div className="border-t border-[#1A1918]/10 pt-3 flex justify-end">
               <button
                 type="button"
                 onClick={() => setDetailProposalId(null)}
-                className="px-5 py-2 bg-[#FAF6ED] hover:bg-[#F4EEDB] border-2 border-[#1A1918] rounded-xl text-[#1A1918] uppercase text-xs font-display font-black shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition"
+                className="px-5 py-2 bg-[#FAF6ED] hover:bg-[#F4EEDB] border border-[#1A1918]/10 rounded-xl text-[#1A1918] text-xs font-sans font-semibold shadow-sm active:shadow-none transition"
               >
                 Cerrar
               </button>
@@ -3137,24 +3137,24 @@ export const TribusView: React.FC<TribusViewProps> = ({
       {/* =================================================================== */}
       {showProposeModal && (
         <div className="fixed inset-0 z-[70] bg-[#1A1918]/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-          <div className="border-2 border-[#1A1918] bg-[#FAF6ED] rounded-[28px] max-w-lg w-full p-5 sm:p-6 space-y-4 my-auto max-h-[92vh] overflow-y-auto font-sans text-[#1A1918] shadow-[6px_6px_0px_#1A1918]">
+          <div className="border border-[#1A1918]/10 bg-[#FAF6ED] rounded-[28px] max-w-lg w-full p-5 sm:p-6 space-y-4 my-auto max-h-[92vh] overflow-y-auto font-sans text-[#1A1918] shadow-sm">
             
-            <div className="flex items-center justify-between border-b-2 border-[#1A1918] pb-3">
+            <div className="flex items-center justify-between border-b border-[#1A1918]/10 pb-3">
               <div>
-                <span className="font-mono text-[10px] text-[#E6332A] uppercase tracking-widest font-black flex items-center gap-1.5">
+                <span className="font-mono text-[10px] text-[#E6332A] uppercase tracking-widest font-semibold flex items-center gap-1.5">
                   <Bell className="w-3.5 h-3.5" />
-                  ★ PROPONER RUTA ALTERNATIVA ★
+                  PROPONER RUTA ALTERNATIVA
                 </span>
-                <h3 className="font-display font-black text-xl text-[#1A1918] uppercase tracking-wide mt-0.5">
+                <h3 className="font-display font-semibold text-xl text-[#1A1918] mt-0.5">
                   Alternativa para el {formatHumanDate(activeRodada.startDate, activeRodada.endDate, true)}
                 </h3>
-                <p className="text-xs font-serif italic text-[#1A1918]/70 mt-0.5 font-medium">
+                <p className="text-xs font-sans text-[#1A1918]/70 mt-0.5 font-medium">
                   Al enviar tu propuesta, se notificará a los celulares de los pilotos de la tribu para que voten entre las opciones.
                 </p>
               </div>
               <button 
                 onClick={() => setShowProposeModal(false)} 
-                className="p-1.5 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border-2 border-[#1A1918] rounded-xl shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition shrink-0"
+                className="p-1.5 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border border-[#1A1918]/10 rounded-xl shadow-sm active:shadow-none transition shrink-0"
               >
                 <X className="w-4 h-4 stroke-[2.5]" />
               </button>
@@ -3162,108 +3162,108 @@ export const TribusView: React.FC<TribusViewProps> = ({
 
             <form onSubmit={handleQuickProposeSubmit} className="space-y-3.5 text-xs">
               <div>
-                <label className="text-[#1A1918] uppercase text-[10px] font-mono font-black block mb-1">Título de la Ruta</label>
+                <label className="text-[#1A1918] uppercase text-[10px] font-mono font-semibold block mb-1">Título de la ruta</label>
                 <input
                   type="text"
                   required
                   value={propTitle}
                   onChange={(e) => setPropTitle(e.target.value)}
                   placeholder="Ej. Brecha de los Volcanes & Paso de Cortés"
-                  className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] rounded-xl px-3.5 py-2.5 text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:border-[#E6332A] font-sans font-medium"
+                  className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 rounded-xl px-3.5 py-2.5 text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:border-[#E6332A] font-sans font-medium"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[#1A1918] uppercase text-[10px] font-mono font-black block mb-1">Destino Principal</label>
+                  <label className="text-[#1A1918] uppercase text-[10px] font-mono font-semibold block mb-1">Destino principal</label>
                   <input
                     type="text"
                     required
                     value={propDestination}
                     onChange={(e) => setPropDestination(e.target.value)}
                     placeholder="Ej. Paso de Cortés"
-                    className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] rounded-xl px-3.5 py-2.5 text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:border-[#E6332A] font-sans font-medium"
+                    className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 rounded-xl px-3.5 py-2.5 text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:border-[#E6332A] font-sans font-medium"
                   />
                 </div>
                 <div>
-                  <label className="text-[#1A1918] uppercase text-[10px] font-mono font-black block mb-1">Estado</label>
+                  <label className="text-[#1A1918] uppercase text-[10px] font-mono font-semibold block mb-1">Estado</label>
                   <input
                     type="text"
                     value={propState}
                     onChange={(e) => setPropState(e.target.value)}
-                    className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] rounded-xl px-3.5 py-2.5 text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:border-[#E6332A] font-sans font-medium"
+                    className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 rounded-xl px-3.5 py-2.5 text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:border-[#E6332A] font-sans font-medium"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[#1A1918] uppercase text-[10px] font-mono font-black block mb-1">Distancia Total (km)</label>
+                  <label className="text-[#1A1918] uppercase text-[10px] font-mono font-semibold block mb-1">Distancia Total (km)</label>
                   <input
                     type="number"
                     value={propKm}
                     onChange={(e) => setPropKm(e.target.value)}
-                    className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] rounded-xl px-3.5 py-2.5 text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:border-[#E6332A] font-sans font-medium"
+                    className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 rounded-xl px-3.5 py-2.5 text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:border-[#E6332A] font-sans font-medium"
                   />
                 </div>
                 <div>
-                  <label className="text-[#1A1918] uppercase text-[10px] font-mono font-black block mb-1">% Terracería (Off-Road)</label>
+                  <label className="text-[#1A1918] uppercase text-[10px] font-mono font-semibold block mb-1">% Terracería (Off-Road)</label>
                   <input
                     type="number"
                     min="0"
                     max="100"
                     value={propOffroad}
                     onChange={(e) => setPropOffroad(e.target.value)}
-                    className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] rounded-xl px-3.5 py-2.5 text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:border-[#E6332A] font-sans font-medium"
+                    className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 rounded-xl px-3.5 py-2.5 text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:border-[#E6332A] font-sans font-medium"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[#1A1918] uppercase text-[10px] font-mono font-black block mb-1">Hora de Salida</label>
+                  <label className="text-[#1A1918] uppercase text-[10px] font-mono font-semibold block mb-1">Hora de salida</label>
                   <input
                     type="text"
                     value={propMeetingTime}
                     onChange={(e) => setPropMeetingTime(e.target.value)}
-                    className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] rounded-xl px-3.5 py-2.5 text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:border-[#E6332A] font-sans font-medium"
+                    className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 rounded-xl px-3.5 py-2.5 text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:border-[#E6332A] font-sans font-medium"
                   />
                 </div>
                 <div>
-                  <label className="text-[#1A1918] uppercase text-[10px] font-mono font-black block mb-1">Punto de Encuentro</label>
+                  <label className="text-[#1A1918] uppercase text-[10px] font-mono font-semibold block mb-1">Punto de encuentro</label>
                   <input
                     type="text"
                     value={propMeetingPoint}
                     onChange={(e) => setPropMeetingPoint(e.target.value)}
-                    className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] rounded-xl px-3.5 py-2.5 text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:border-[#E6332A] font-sans font-medium"
+                    className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 rounded-xl px-3.5 py-2.5 text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:border-[#E6332A] font-sans font-medium"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-[#1A1918] uppercase text-[10px] font-mono font-black block mb-1">Plan / Resumen de la Ruta</label>
+                <label className="text-[#1A1918] uppercase text-[10px] font-mono font-semibold block mb-1">Plan / Resumen de la Ruta</label>
                 <textarea
                   rows={2}
                   value={propPlan}
                   onChange={(e) => setPropPlan(e.target.value)}
                   placeholder="Por qué propones esta ruta, tipo de motos y parada a comer..."
-                  className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] rounded-xl p-3 text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:border-[#E6332A] font-sans font-medium resize-none"
+                  className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 rounded-xl p-3 text-[#1A1918] placeholder-[#1A1918]/50 focus:outline-none focus:border-[#E6332A] font-sans font-medium resize-none"
                 />
               </div>
 
-              <div className="pt-3 border-t-2 border-[#1A1918] flex gap-3">
+              <div className="pt-3 border-t border-[#1A1918]/10 flex gap-3">
                 <button
                   type="button"
                   onClick={() => setShowProposeModal(false)}
-                  className="w-1/2 py-2.5 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border-2 border-[#1A1918] rounded-xl font-display font-black uppercase text-xs tracking-wider shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition"
+                  className="w-1/2 py-2.5 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border border-[#1A1918]/10 rounded-xl font-sans font-semibold text-xs shadow-sm active:shadow-none transition"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="w-1/2 py-2.5 bg-[#E6332A] hover:bg-[#d02c24] text-white border-2 border-[#1A1918] rounded-xl font-display font-black uppercase text-xs tracking-wider shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition"
+                  className="w-1/2 py-2.5 bg-[#E6332A] hover:bg-[#d02c24] text-white border border-[#1A1918]/10 rounded-xl font-sans font-semibold text-xs shadow-sm active:shadow-none transition"
                 >
-                  Proponer a la Tribu
+                  Proponer a la tribu
                 </button>
               </div>
             </form>
@@ -3354,23 +3354,23 @@ export const TribusView: React.FC<TribusViewProps> = ({
       {/* =================================================================== */}
       {showAddPilotModal && activeTribu && (
         <div className="fixed inset-0 z-[70] bg-[#1A1918]/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-          <div className="border-2 border-[#1A1918] bg-[#FAF6ED] rounded-[28px] max-w-lg w-full p-5 sm:p-6 space-y-5 my-auto max-h-[92vh] overflow-y-auto font-sans text-[#1A1918] shadow-[6px_6px_0px_#1A1918]">
+          <div className="border border-[#1A1918]/10 bg-[#FAF6ED] rounded-[28px] max-w-lg w-full p-5 sm:p-6 space-y-5 my-auto max-h-[92vh] overflow-y-auto font-sans text-[#1A1918] shadow-sm">
             {/* Header */}
-            <div className="flex items-start justify-between border-b-2 border-[#1A1918] pb-4 gap-3">
+            <div className="flex items-start justify-between border-b border-[#1A1918]/10 pb-4 gap-3">
               <div>
-                <span className="text-[10px] font-mono text-[#E6332A] uppercase font-black tracking-widest block mb-1">
-                  ★ AÑADIR O INVITAR PILOTOS ★
+                <span className="text-[10px] font-mono text-[#E6332A] uppercase font-semibold tracking-widest block mb-1">
+                  AÑADIR O INVITAR PILOTOS
                 </span>
-                <h3 className="font-display font-black text-xl text-[#1A1918] uppercase tracking-wide">
+                <h3 className="font-display font-semibold text-xl text-[#1A1918]  ">
                   Añadir Piloto a {activeTribu.name}
                 </h3>
-                <p className="text-xs font-serif italic text-[#1A1918]/70 mt-0.5 font-medium">
+                <p className="text-xs font-sans text-[#1A1918]/70 mt-0.5 font-medium">
                   Los nuevos pilotos se reflejarán de inmediato en los posts y rodadas de la tribu.
                 </p>
               </div>
               <button
                 onClick={() => setShowAddPilotModal(false)}
-                className="p-1.5 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border-2 border-[#1A1918] rounded-xl shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition shrink-0"
+                className="p-1.5 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border border-[#1A1918]/10 rounded-xl shadow-sm active:shadow-none transition shrink-0"
                 title="Cerrar"
               >
                 <X className="w-4 h-4 stroke-[2.5]" />
@@ -3378,23 +3378,23 @@ export const TribusView: React.FC<TribusViewProps> = ({
             </div>
 
             {/* Invite code quick copy */}
-            <div className="p-3.5 bg-[#F4EEDB] border-2 border-[#1A1918] rounded-xl flex items-center justify-between gap-3 shadow-[2px_2px_0px_#1A1918]">
+            <div className="p-3.5 bg-[#F4EEDB] border border-[#1A1918]/10 rounded-xl flex items-center justify-between gap-3 shadow-sm">
               <div>
-                <span className="text-[10px] font-mono text-[#1A1918]/70 uppercase block font-black">Clave de Invitación de la Tribu</span>
-                <span className="text-sm font-black text-[#1A1918] tracking-wider font-mono">{activeTribu.inviteCode}</span>
+                <span className="text-[10px] font-mono text-[#1A1918]/70 uppercase block font-semibold">Clave de Invitación de la Tribu</span>
+                <span className="text-sm font-semibold text-[#1A1918] tracking-wider font-mono">{activeTribu.inviteCode}</span>
               </div>
               <button
                 onClick={() => handleCopyCode(activeTribu.inviteCode)}
-                className="px-3 py-1.5 bg-[#F7B32B] hover:bg-[#e0a020] text-[#1A1918] border-2 border-[#1A1918] rounded-lg shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none text-xs font-mono font-black transition flex items-center gap-1.5 shrink-0"
+                className="px-3 py-1.5 bg-[#F7B32B] hover:bg-[#e0a020] text-[#1A1918] border border-[#1A1918]/10 rounded-lg shadow-sm active:shadow-none text-xs font-mono font-semibold transition flex items-center gap-1.5 shrink-0"
               >
                 <Key className="w-3.5 h-3.5 text-[#1A1918]" />
-                <span>Copiar Clave</span>
+                <span>Copiar clave</span>
               </button>
             </div>
 
             {/* Available community riders */}
             <div className="space-y-3">
-              <span className="text-[11px] font-mono text-[#1A1918] uppercase font-black tracking-wider block">
+              <span className="text-[11px] font-mono text-[#1A1918] uppercase font-semibold tracking-wider block">
                 Pilotos disponibles en NAO ({users.filter(u => !activeTribu.members.some(m => m.userId === u.id)).length})
               </span>
 
@@ -3402,7 +3402,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                 const available = users.filter(u => !activeTribu.members.some(m => m.userId === u.id));
                 if (available.length === 0) {
                   return (
-                    <div className="p-4 text-center border-2 border-dashed border-[#1A1918]/30 rounded-xl text-xs text-[#1A1918]/70 font-sans font-medium">
+                    <div className="p-4 text-center border border-dashed border-[#1A1918]/30 rounded-xl text-xs text-[#1A1918]/70 font-sans font-medium">
                       Todos los pilotos registrados ya forman parte de esta tribu.
                     </div>
                   );
@@ -3415,17 +3415,17 @@ export const TribusView: React.FC<TribusViewProps> = ({
                       return (
                         <div 
                           key={u.id}
-                          className="p-3 bg-[#FAF6ED] border-2 border-[#1A1918] rounded-xl flex items-center justify-between gap-3 shadow-[2px_2px_0px_#1A1918] hover:bg-[#F4EEDB] transition"
+                          className="p-3 bg-[#FAF6ED] border border-[#1A1918]/10 rounded-xl flex items-center justify-between gap-3 shadow-sm hover:bg-[#F4EEDB] transition"
                         >
                           <div className="flex items-center gap-2.5 min-w-0">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img 
                               src={u.avatar} 
                               alt={u.name} 
-                              className="w-9 h-9 rounded-full object-cover border-2 border-[#1A1918] shrink-0" 
+                              className="w-9 h-9 rounded-full object-cover border border-[#1A1918]/10 shrink-0" 
                             />
                             <div className="min-w-0">
-                              <p className="text-xs font-display font-black text-[#1A1918] uppercase truncate">{u.name}</p>
+                              <p className="text-xs font-sans font-semibold text-[#1A1918] truncate">{u.name}</p>
                               <p className="text-[10px] font-mono text-[#1A1918]/70 truncate font-bold">
                                 {bike ? `${bike.brand} ${bike.model}` : u.handle}
                               </p>
@@ -3440,7 +3440,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                                 confetti({ particleCount: 25, spread: 60 });
                               } catch {}
                             }}
-                            className="px-3 py-1.5 bg-[#E6332A] hover:bg-[#d02c24] text-white border-2 border-[#1A1918] rounded-lg shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none text-[11px] font-display font-black uppercase transition flex items-center gap-1 shrink-0"
+                            className="px-3 py-1.5 bg-[#E6332A] hover:bg-[#d02c24] text-white border border-[#1A1918]/10 rounded-lg shadow-sm active:shadow-none text-[11px] font-sans font-semibold transition flex items-center gap-1 shrink-0"
                           >
                             <UserPlus className="w-3 h-3 stroke-[2.5]" />
                             <span>+ Añadir</span>
@@ -3454,10 +3454,10 @@ export const TribusView: React.FC<TribusViewProps> = ({
             </div>
 
             {/* Footer */}
-            <div className="border-t-2 border-[#1A1918] pt-4 flex justify-end">
+            <div className="border-t border-[#1A1918]/10 pt-4 flex justify-end">
               <button
                 onClick={() => setShowAddPilotModal(false)}
-                className="px-5 py-2 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border-2 border-[#1A1918] rounded-xl font-display font-black uppercase text-xs shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition"
+                className="px-5 py-2 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border border-[#1A1918]/10 rounded-xl font-sans font-semibold text-xs shadow-sm active:shadow-none transition"
               >
                 Listo
               </button>
@@ -3469,17 +3469,17 @@ export const TribusView: React.FC<TribusViewProps> = ({
       {/* MODAL: EDITAR NOMBRE Y FOTO DEL GRUPO */}
       {showEditCrewModal && activeTribu && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-[#1A1918]/70 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-md bg-[#FAF6ED] border-2 border-[#1A1918] rounded-[28px] shadow-[6px_6px_0px_#1A1918] p-5 sm:p-6 space-y-5 animate-in zoom-in-95 duration-200 font-sans text-[#1A1918]">
+          <div className="w-full max-w-md bg-[#FAF6ED] border border-[#1A1918]/10 rounded-[28px] shadow-sm p-5 sm:p-6 space-y-5 animate-in zoom-in-95 duration-200 font-sans text-[#1A1918]">
             
-            <div className="flex items-center justify-between border-b-2 border-[#1A1918] pb-3">
+            <div className="flex items-center justify-between border-b border-[#1A1918]/10 pb-3">
               <div className="flex items-center gap-2">
                 <Pencil className="w-4 h-4 text-[#E6332A]" />
-                <h3 className="text-base font-display font-black text-[#1A1918] uppercase tracking-wide">Editar Tribu</h3>
+                <h3 className="text-base font-display font-semibold text-[#1A1918]  ">Editar tribu</h3>
               </div>
               <button
                 type="button"
                 onClick={() => setShowEditCrewModal(false)}
-                className="p-1.5 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border-2 border-[#1A1918] rounded-xl shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition"
+                className="p-1.5 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border border-[#1A1918]/10 rounded-xl shadow-sm active:shadow-none transition"
               >
                 <X className="w-4 h-4 stroke-[2.5]" />
               </button>
@@ -3488,25 +3488,25 @@ export const TribusView: React.FC<TribusViewProps> = ({
             <div className="space-y-4">
               {/* Nombre de la Tribu */}
               <div>
-                <label className="text-[11px] font-mono uppercase text-[#1A1918] block mb-1.5 font-black tracking-wider">
-                  Nombre de la Tribu
+                <label className="text-[11px] font-mono uppercase text-[#1A1918] block mb-1.5 font-semibold tracking-wider">
+                  Nombre de la tribu
                 </label>
                 <input
                   type="text"
                   value={editedCrewName}
                   onChange={(e) => setEditedCrewName(e.target.value)}
                   placeholder="Ej. NAO Adventure Crew"
-                  className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3.5 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium"
+                  className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl px-3.5 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium"
                 />
               </div>
 
               {/* Portada de la Tribu */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-[11px] font-mono uppercase text-[#1A1918] font-black tracking-wider">
+                  <label className="text-[11px] font-mono uppercase text-[#1A1918] font-semibold tracking-wider">
                     Portada
                   </label>
-                  <label className="cursor-pointer text-[11px] font-display font-black uppercase text-[#1A1918] hover:bg-[#F4EEDB] transition flex items-center gap-1.5 px-2.5 py-1 bg-[#FAF6ED] border-2 border-[#1A1918] rounded-lg shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none">
+                  <label className="cursor-pointer text-[11px] font-sans font-semibold text-[#1A1918] hover:bg-[#F4EEDB] transition flex items-center gap-1.5 px-2.5 py-1 bg-[#FAF6ED] border border-[#1A1918]/10 rounded-lg shadow-sm active:shadow-none">
                     <Upload className="w-3 h-3 text-[#1A1918]" />
                     <span>Subir foto</span>
                     <input
@@ -3535,7 +3535,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                 </div>
                 
                 {/* Banner Preview */}
-                <div className="relative h-24 w-full rounded-xl overflow-hidden border-2 border-[#1A1918] bg-[#F4EEDB] shadow-[2px_2px_0px_#1A1918]">
+                <div className="relative h-24 w-full rounded-xl overflow-hidden border border-[#1A1918]/10 bg-[#F4EEDB] shadow-sm">
                   {editedCrewCover ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img 
@@ -3544,7 +3544,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-[#1A1918]/60 text-xs font-serif italic">
+                    <div className="w-full h-full flex items-center justify-center text-[#1A1918]/60 text-xs font-sans ">
                       <Camera className="w-5 h-5 mr-2 text-[#1A1918]/40" />
                       <span>Sin imagen</span>
                     </div>
@@ -3567,10 +3567,10 @@ export const TribusView: React.FC<TribusViewProps> = ({
                           key={idx}
                           type="button"
                           onClick={() => setEditedCrewCover(imgUrl)}
-                          className={`relative w-12 h-8 rounded-lg overflow-hidden border-2 transition shrink-0 cursor-pointer ${
+                          className={`relative w-12 h-8 rounded-lg overflow-hidden border transition shrink-0 cursor-pointer ${
                             isSelected 
                               ? 'border-[#E6332A] ring-2 ring-[#E6332A]' 
-                              : 'border-[#1A1918] opacity-70 hover:opacity-100'
+                              : 'border-[#1A1918]/10 opacity-70 hover:opacity-100'
                           }`}
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -3587,10 +3587,10 @@ export const TribusView: React.FC<TribusViewProps> = ({
               </div>
 
               {/* Vínculo de WhatsApp */}
-              <div className="p-3.5 rounded-xl bg-[#F4EEDB] border-2 border-[#1A1918] space-y-3 shadow-[2px_2px_0px_#1A1918]">
+              <div className="p-3.5 rounded-xl bg-[#F4EEDB] border border-[#1A1918]/10 space-y-3 shadow-sm">
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-[11px] font-mono uppercase text-[#1A1918] font-black flex items-center gap-1.5">
+                    <label className="text-[11px] font-mono uppercase text-[#1A1918] font-semibold flex items-center gap-1.5">
                       <WhatsAppIcon className="w-3.5 h-3.5 text-[#25D366]" />
                       <span>Chat de WhatsApp</span>
                     </label>
@@ -3610,7 +3610,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                     value={editedCrewWhatsapp}
                     onChange={(e) => setEditedCrewWhatsapp(e.target.value)}
                     placeholder="https://chat.whatsapp.com/..."
-                    className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] focus:border-[#E6332A] rounded-xl px-3 py-2 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-mono"
+                    className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl px-3 py-2 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-mono"
                   />
                   <span className="text-[10px] text-[#1A1918]/60 mt-1 block font-sans">
                     Pega el enlace de invitación de tu grupo para que tus pilotos se unan con 1 toque.
@@ -3625,7 +3625,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                   <button
                     type="button"
                     onClick={handleCopyNaoLink}
-                    className="px-3 py-1.5 rounded-lg bg-[#FAF6ED] hover:bg-[#F4EEDB] border-2 border-[#1A1918] text-[#1A1918] text-xs font-mono font-bold transition shrink-0 flex items-center gap-1.5 cursor-pointer shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                    className="px-3 py-1.5 rounded-lg bg-[#FAF6ED] hover:bg-[#F4EEDB] border border-[#1A1918]/10 text-[#1A1918] text-xs font-mono font-bold transition shrink-0 flex items-center gap-1.5 cursor-pointer shadow-sm active:shadow-none"
                   >
                     <Copy className="w-3 h-3 text-[#1A1918]" />
                     <span>{copiedNaoLink ? '✓ Copiado' : 'Copiar link'}</span>
@@ -3635,17 +3635,17 @@ export const TribusView: React.FC<TribusViewProps> = ({
             </div>
 
             {/* Actions */}
-            <div className="flex items-center justify-between gap-2 pt-3 border-t-2 border-[#1A1918]">
+            <div className="flex items-center justify-between gap-2 pt-3 border-t border-[#1A1918]/10">
               <div>
                 {activeTribu.creatorId === currentUser.id && (
                   <button
                     type="button"
                     onClick={() => handleDeleteCrew(activeTribu.id)}
-                    className="px-3.5 py-2 rounded-xl text-xs font-display font-black uppercase text-[#E6332A] hover:bg-[#E6332A]/10 border-2 border-[#E6332A] shadow-[2px_2px_0px_#E6332A] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition flex items-center gap-1.5 cursor-pointer"
+                    className="px-3.5 py-2 rounded-xl text-xs font-sans font-semibold text-[#E6332A] hover:bg-[#E6332A]/10 border border-[#E6332A] shadow-sm active:shadow-none transition flex items-center gap-1.5 cursor-pointer"
                     title="Eliminar este grupo definitivamente"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
-                    <span>Eliminar Grupo</span>
+                    <span>Eliminar grupo</span>
                   </button>
                 )}
               </div>
@@ -3654,7 +3654,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowEditCrewModal(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-display font-black uppercase text-[#1A1918] hover:bg-[#F4EEDB] border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition"
+                  className="px-4 py-2 rounded-xl text-xs font-sans font-semibold text-[#1A1918] hover:bg-[#F4EEDB] border border-[#1A1918]/10 shadow-sm active:shadow-none transition"
                 >
                   Cancelar
                 </button>
@@ -3662,7 +3662,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                   type="button"
                   onClick={handleSaveCrewDetails}
                   disabled={!editedCrewName.trim()}
-                  className="px-5 py-2 rounded-xl bg-[#E6332A] hover:bg-[#d02c24] disabled:opacity-50 text-white text-xs font-display font-black uppercase tracking-wider transition flex items-center gap-1.5 border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                  className="px-5 py-2 rounded-xl bg-[#E6332A] hover:bg-[#d02c24] disabled:opacity-50 text-white text-xs font-sans font-semibold transition flex items-center gap-1.5 border border-[#1A1918]/10 shadow-sm active:shadow-none"
                 >
                   <Check className="w-3.5 h-3.5 stroke-[2.5]" />
                   <span>Guardar</span>

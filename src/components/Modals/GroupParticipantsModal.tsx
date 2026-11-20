@@ -45,23 +45,23 @@ export const GroupParticipantsModal: React.FC<GroupParticipantsModalProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-[#C84B31] uppercase font-display font-black tracking-widest bg-white px-2 py-0.5 border border-[#E5DFD5] rounded-md shadow-xs">
+                <span className="text-[10px] text-[#C84B31] uppercase font-sans font-semibold tracking-widest bg-white px-2 py-0.5 border border-[#E5DFD5] rounded-md shadow-xs">
                   {isMyClub ? 'Mi Tribu' : 'Tribu de Motos'}
                 </span>
                 {!isMyClub && (
-                  <span className="text-[9px] text-stone-500 uppercase font-display font-bold bg-[#FAF8F5] px-1.5 py-0.5 border border-[#E5DFD5] rounded">
+                  <span className="text-[9px] text-stone-500 uppercase font-sans font-bold bg-[#FAF8F5] px-1.5 py-0.5 border border-[#E5DFD5] rounded">
                     Privado
                   </span>
                 )}
-                <span className="text-[10px] text-stone-500 font-serif italic">
+                <span className="text-[10px] text-stone-500 font-sans ">
                   {groupInfo.participants.length} pilotos
                 </span>
               </div>
-              <h3 className="font-display font-black text-xl text-[#141312] uppercase tracking-wide mt-1">
+              <h3 className="font-display font-semibold text-xl text-[#141312] mt-1">
                 {displayCrewName}
               </h3>
               {groupInfo.rodadaTitle && (
-                <p className="text-xs text-stone-500 font-serif italic truncate mt-0.5">
+                <p className="text-xs text-stone-500 font-sans truncate mt-0.5">
                   Salida: {groupInfo.rodadaTitle}
                 </p>
               )}
@@ -79,7 +79,7 @@ export const GroupParticipantsModal: React.FC<GroupParticipantsModalProps> = ({
 
         {/* PARTICIPANTS ROSTER */}
         <div className="p-5 sm:p-6 overflow-y-auto space-y-3 bg-white">
-          <span className="text-[10px] text-stone-500 uppercase font-display font-bold tracking-wider block mb-1">
+          <span className="text-[10px] text-stone-500 uppercase font-sans font-bold tracking-wider block mb-1">
             Pilotos que rodaron juntos:
           </span>
 
@@ -111,16 +111,16 @@ export const GroupParticipantsModal: React.FC<GroupParticipantsModalProps> = ({
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-display font-black text-[#141312] uppercase truncate">
+                        <span className="text-sm font-sans font-semibold text-[#141312] truncate">
                           {p.name}
                         </span>
                         {isCurrentUser && (
-                          <span className="text-[9px] uppercase font-display font-black text-[#C84B31] bg-white border border-[#DDD7CB] px-1.5 py-0.5 rounded">
+                          <span className="text-[9px] uppercase font-sans font-semibold text-[#C84B31] bg-white border border-[#DDD7CB] px-1.5 py-0.5 rounded">
                             Tú
                           </span>
                         )}
                       </div>
-                      <div className="flex items-center gap-2 text-[11px] text-stone-500 font-serif italic mt-0.5">
+                      <div className="flex items-center gap-2 text-[11px] text-stone-500 font-sans mt-0.5">
                         <span>{p.handle}</span>
                         {p.motoModel && (
                           <>
@@ -144,7 +144,7 @@ export const GroupParticipantsModal: React.FC<GroupParticipantsModalProps> = ({
                             e.stopPropagation();
                             toggleFollowUser(p.userId);
                           }}
-                          className={`text-[10px] font-display font-black uppercase tracking-wider px-3 py-1 rounded-full transition-all duration-150 flex items-center gap-1 shadow-xs cursor-pointer group/btn ${
+                          className={`text-[10px] font-sans font-semibold uppercase tracking-wider px-3 py-1 rounded-full transition-all duration-150 flex items-center gap-1 shadow-xs cursor-pointer group/btn ${
                             isFollowingUser(p.userId)
                               ? 'bg-[#FAF8F5] hover:bg-[#E6332A] text-stone-600 hover:text-white border border-[#DDD7CB] hover:border-[#E6332A]'
                               : 'bg-[#141312] hover:bg-black text-white'
@@ -166,7 +166,7 @@ export const GroupParticipantsModal: React.FC<GroupParticipantsModalProps> = ({
                           )}
                         </button>
                         <div className="flex items-center gap-1 text-xs text-stone-400 group-hover:text-[#141312] transition">
-                          <ChevronRight className="w-4 h-4 text-stone-400 group-hover:text-[#141312] group-hover:translate-x-0.5 transition" />
+                          <ChevronRight className="w-4 h-4 text-stone-400 group-hover:text-[#141312] transition" />
                         </div>
                       </>
                     ) : null}
@@ -182,7 +182,7 @@ export const GroupParticipantsModal: React.FC<GroupParticipantsModalProps> = ({
           <div className="p-4 bg-[#FAF8F5] border-t border-[#E5DFD5] flex items-center justify-between gap-3 shrink-0">
             {isMyClub && onEnterCrew ? (
               <>
-                <span className="text-[11px] text-stone-500 font-serif italic">
+                <span className="text-[11px] text-stone-500 font-sans ">
                   Eres miembro activo de esta tribu
                 </span>
                 <button
@@ -190,19 +190,19 @@ export const GroupParticipantsModal: React.FC<GroupParticipantsModalProps> = ({
                     onClose();
                     onEnterCrew(groupInfo.crewId!);
                   }}
-                  className="px-4 py-2 bg-[#141312] hover:bg-black text-white uppercase font-display font-black text-xs tracking-wider transition flex items-center gap-1.5 rounded-xl shadow-md"
+                  className="px-4 py-2 bg-[#141312] hover:bg-black text-white font-sans font-semibold text-xs transition flex items-center gap-1.5 rounded-xl shadow-md"
                 >
-                  <span>Ver Mi Tribu</span>
+                  <span>Ver mi tribu</span>
                   <ChevronRight className="w-3.5 h-3.5 text-[#F2B705]" />
                 </button>
               </>
             ) : (
               <div className="w-full flex items-center justify-between text-stone-500 text-[11px]">
-                <span className="flex items-center gap-1.5 font-serif italic">
+                <span className="flex items-center gap-1.5 font-sans ">
                   <Shield className="w-3.5 h-3.5 text-stone-400" />
                   Tribu Privada • Solo miembros autorizados
                 </span>
-                <span className="text-[10px] text-stone-400 uppercase font-display font-bold">
+                <span className="text-[10px] text-stone-400 uppercase font-sans font-bold">
                   Sin acceso
                 </span>
               </div>

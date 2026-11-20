@@ -115,6 +115,8 @@ export const RouteMap: React.FC<RouteMapProps> = ({
     const initMap = async () => {
       if (typeof window === 'undefined' || !mapContainerRef.current) return;
       const L = (await import('leaflet')).default;
+      // Si el componente se desmontó mientras cargaba Leaflet, no crear un mapa huérfano
+      if (!isMounted || !mapContainerRef.current) return;
 
       // Ensure leaflet styles
       if (!document.getElementById('leaflet-css')) {
@@ -129,6 +131,8 @@ export const RouteMap: React.FC<RouteMapProps> = ({
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
+      // El grupo de capas pertenecía al mapa anterior (ya destruido): crear uno nuevo para este mapa
+      tileLayerGroupRef.current = null;
 
       // Default center around user location or Central Mexico
       const defaultCenter: [number, number] = userLocation 
@@ -187,6 +191,7 @@ export const RouteMap: React.FC<RouteMapProps> = ({
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
+      tileLayerGroupRef.current = null;
     };
   }, []);
 
@@ -248,7 +253,7 @@ export const RouteMap: React.FC<RouteMapProps> = ({
             <div class="relative flex items-center justify-center transform -translate-x-1/2 -translate-y-1/2 cursor-pointer group">
               <span class="absolute w-8 h-8 rounded-full bg-cyan-400/30 animate-ping"></span>
               <span class="absolute w-6 h-6 rounded-full bg-cyan-400/50 animate-pulse"></span>
-              <div class="w-4 h-4 rounded-full bg-cyan-400 border-2 border-white shadow-[0_0_15px_#22d3ee] flex items-center justify-center">
+              <div class="w-4 h-4 rounded-full bg-cyan-400 border border-white shadow-[0_0_15px_#22d3ee] flex items-center justify-center">
                 <div class="w-1.5 h-1.5 rounded-full bg-black"></div>
               </div>
               <div class="absolute -bottom-6 px-2 py-0.5 rounded bg-black/95 text-cyan-300 font-mono text-[9px] font-bold uppercase tracking-wider border border-cyan-400/40 whitespace-nowrap shadow-xl backdrop-blur-sm pointer-events-none">
@@ -291,7 +296,7 @@ export const RouteMap: React.FC<RouteMapProps> = ({
             className: 'custom-pilot-marker',
             html: `
               <div class="relative group cursor-pointer flex items-center justify-center transform -translate-x-1/2 -translate-y-1/2 transition-transform duration-200 hover:scale-125 z-40">
-                <div class="w-7 h-7 rounded-full overflow-hidden border-2 border-white/60 ring-2 ring-black shadow-2xl">
+                <div class="w-7 h-7 rounded-full overflow-hidden border border-white/60 ring-2 ring-black shadow-2xl">
                   <img src="${act.pilotAvatar}" alt="${act.pilotName}" class="w-full h-full object-cover" />
                 </div>
                 <div class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[#FF5500] border border-black shadow">
@@ -405,7 +410,7 @@ export const RouteMap: React.FC<RouteMapProps> = ({
           className: 'custom-leaflet-marker',
           html: `
             <div class="flex items-center gap-1.5 transform -translate-x-1/2 -translate-y-1/2 group cursor-pointer">
-              <div class="w-4 h-4 rounded-full ${fill} border-2 ${border} shadow-xl flex items-center justify-center animate-pulse">
+              <div class="w-4 h-4 rounded-full ${fill} border ${border} shadow-xl flex items-center justify-center animate-pulse">
               </div>
               <span class="px-2 py-0.5 rounded bg-black/90 text-white font-mono text-[9px] uppercase tracking-wider border border-white/20 whitespace-nowrap shadow-lg backdrop-blur-sm">
                 ${label}
@@ -464,7 +469,7 @@ export const RouteMap: React.FC<RouteMapProps> = ({
           <div className="bg-black/90 backdrop-blur-md border border-white/20 p-1 rounded-xl flex items-center gap-1 font-mono text-[9px] sm:text-[10px] shadow-xl">
             <button
               onClick={() => handleLayerChange('satellite')}
-              className={`px-2.5 py-1 rounded-lg uppercase font-bold tracking-wider transition touch-manipulation ${
+              className={`px-2.5 py-1 rounded-lg font-bold transition touch-manipulation ${
                 currentLayer === 'satellite'
                   ? 'bg-earth text-white'
                   : 'text-ash hover:text-white'
@@ -474,7 +479,7 @@ export const RouteMap: React.FC<RouteMapProps> = ({
             </button>
             <button
               onClick={() => handleLayerChange('topo')}
-              className={`px-2.5 py-1 rounded-lg uppercase font-bold tracking-wider transition touch-manipulation ${
+              className={`px-2.5 py-1 rounded-lg font-bold transition touch-manipulation ${
                 currentLayer === 'topo'
                   ? 'bg-earth text-white'
                   : 'text-ash hover:text-white'
@@ -484,7 +489,7 @@ export const RouteMap: React.FC<RouteMapProps> = ({
             </button>
             <button
               onClick={() => handleLayerChange('roads')}
-              className={`px-2.5 py-1 rounded-lg uppercase font-bold tracking-wider transition touch-manipulation ${
+              className={`px-2.5 py-1 rounded-lg font-bold transition touch-manipulation ${
                 currentLayer === 'roads'
                   ? 'bg-earth text-white'
                   : 'text-ash hover:text-white'
@@ -502,7 +507,7 @@ export const RouteMap: React.FC<RouteMapProps> = ({
               title="Centrar mapa en tu ubicación actual"
             >
               <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
-              <span>Mi Ubicación</span>
+              <span>Mi ubicación</span>
             </button>
           )}
 
@@ -534,7 +539,7 @@ export const RouteMap: React.FC<RouteMapProps> = ({
               title="Alternar mapa de calor y trazados de actividad"
             >
               <Flame className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Mapa de Actividad</span>
+              <span className="hidden sm:inline">Mapa de actividad</span>
             </button>
           )}
 
@@ -558,7 +563,7 @@ export const RouteMap: React.FC<RouteMapProps> = ({
         <div className="absolute bottom-3 left-3 right-3 sm:left-auto sm:right-4 sm:top-4 sm:bottom-auto z-10 bg-black/90 backdrop-blur-md border border-white/20 p-3.5 rounded-xl sm:max-w-xs text-white shadow-2xl">
           <div className="flex items-center gap-2 mb-1.5">
             <span className="inline-block w-2 h-2 rounded-full bg-earth animate-pulse" />
-            <h4 className="font-display font-bold text-xs text-white uppercase tracking-wider line-clamp-1">
+            <h4 className="font-sans font-bold text-xs text-white line-clamp-1">
               {route.title}
             </h4>
           </div>
@@ -596,7 +601,7 @@ export const RouteMap: React.FC<RouteMapProps> = ({
                 className="w-9 h-9 rounded-full object-cover border border-earth shrink-0" 
               />
               <div className="min-w-0">
-                <h5 className="font-bold text-xs text-white uppercase truncate">
+                <h5 className="font-bold text-xs text-white truncate">
                   {selectedActivity.pilotName}
                 </h5>
                 <p className="text-[10px] text-earth font-mono">
@@ -650,7 +655,7 @@ export const RouteMap: React.FC<RouteMapProps> = ({
                 {activeWaypoint.type === 'start' && <Navigation className="w-4 h-4" />}
               </span>
               <div>
-                <h5 className="font-bold text-xs text-white uppercase tracking-wider">{activeWaypoint.name}</h5>
+                <h5 className="font-bold text-xs text-white  ">{activeWaypoint.name}</h5>
                 <p className="text-[10px] font-mono text-earth uppercase">{activeWaypoint.type}</p>
               </div>
             </div>
@@ -678,7 +683,7 @@ export const RouteMap: React.FC<RouteMapProps> = ({
         <div className="absolute bottom-4 left-4 hidden md:flex items-center gap-3 bg-black/90 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-white/15 text-[10px] font-mono text-white/80 z-10 shadow-lg">
           {userLocation && (
             <span className="flex items-center gap-1.5 text-cyan-300">
-              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" /> Tu Posición
+              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" /> Tu posición
             </span>
           )}
           <span className="flex items-center gap-1.5">
@@ -688,7 +693,7 @@ export const RouteMap: React.FC<RouteMapProps> = ({
             <span className="w-2 h-2 rounded-full bg-earth shadow-sm" /> Basecamp
           </span>
           <span className="flex items-center gap-1.5 text-amber-400">
-            <span className="w-2 h-2 rounded-full bg-amber-400 shadow-sm" /> Pilotos en la Zona
+            <span className="w-2 h-2 rounded-full bg-amber-400 shadow-sm" /> Pilotos en la zona
           </span>
         </div>
       )}

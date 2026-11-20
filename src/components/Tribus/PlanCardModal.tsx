@@ -180,23 +180,23 @@ export const PlanCardModal: React.FC<PlanCardModalProps> = ({
         <div className="shrink-0 px-6 py-4.5 border-b border-[#E5DFD5] flex items-start justify-between gap-3 bg-[#FAF8F5]">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-[10px] font-display text-[#C84B31] uppercase font-black tracking-[0.2em]">
-                ★ PLAN DE RODADA ★
+              <span className="text-[10px] font-sans text-[#C84B31] uppercase font-semibold tracking-[0.2em]">
+                PLAN DE RODADA
               </span>
               {rodada.status === 'fijada' ? (
-                <span className="text-[9px] font-display uppercase font-black px-2 py-0.5 bg-white border border-[#E5DFD5] text-emerald-700 rounded-md shadow-xs">
-                  Ruta Confirmada
+                <span className="text-[9px] font-sans uppercase font-semibold px-2 py-0.5 bg-white border border-[#E5DFD5] text-emerald-700 rounded-md shadow-xs">
+                  Ruta confirmada
                 </span>
               ) : (
-                <span className="text-[9px] font-display uppercase font-black px-2 py-0.5 bg-white border border-[#E5DFD5] text-[#D49B35] rounded-md shadow-xs">
-                  En Votación
+                <span className="text-[9px] font-sans uppercase font-semibold px-2 py-0.5 bg-white border border-[#E5DFD5] text-[#D49B35] rounded-md shadow-xs">
+                  En votación
                 </span>
               )}
             </div>
-            <h2 className="font-display font-black text-2xl sm:text-3xl text-[#141312] uppercase tracking-wide">
+            <h2 className="font-display font-semibold text-2xl sm:text-3xl text-[#141312]  ">
               {winningRoute ? winningRoute.destination : rodada.title}
             </h2>
-            <p className="text-xs text-stone-500 mt-0.5 font-serif italic">
+            <p className="text-xs text-stone-500 mt-0.5 font-sans ">
               {rodada.subtitle || winningRoute?.title || rodada.description}
             </p>
           </div>
@@ -225,21 +225,21 @@ export const PlanCardModal: React.FC<PlanCardModalProps> = ({
           {/* Métricas Principales de la Rodada */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 border border-[#E5DFD5] bg-[#FAF8F5] p-3.5 rounded-xl shadow-xs">
             <div className="p-2.5 border border-[#E5DFD5] bg-white rounded-lg shadow-xs">
-              <span className="text-[9px] text-stone-500 uppercase font-display font-bold tracking-wider block">Fecha</span>
-              <span className="text-xs font-display font-black text-[#141312] block mt-0.5">
+              <span className="text-[9px] text-stone-500 uppercase font-sans font-bold tracking-wider block">Fecha</span>
+              <span className="text-xs font-sans font-semibold text-[#141312] block mt-0.5">
                 {formatHumanDate(rodada.startDate, rodada.endDate, true)}
               </span>
             </div>
 
             <div className="p-2.5 border border-[#E5DFD5] bg-white rounded-lg shadow-xs">
-              <span className="text-[9px] text-stone-500 uppercase font-display font-bold tracking-wider block">Distancia Total</span>
-              <span className="text-xs font-display font-black text-[#141312] block mt-0.5">
+              <span className="text-[9px] text-stone-500 uppercase font-sans font-bold tracking-wider block">Distancia total</span>
+              <span className="text-xs font-sans font-semibold text-[#141312] block mt-0.5">
                 {winningRoute ? `${winningRoute.totalKm} km` : 'Por definir'}
               </span>
             </div>
 
             <div className="p-2.5 border border-[#E5DFD5] bg-white rounded-lg shadow-xs">
-              <span className="text-[9px] text-stone-500 uppercase font-display font-bold tracking-wider block">Terreno</span>
+              <span className="text-[9px] text-stone-500 uppercase font-sans font-bold tracking-wider block">Terreno</span>
               {winningRoute ? (
                 <div className="flex items-center gap-2 mt-1">
                   <span className="flex items-center gap-1 text-xs font-mono font-bold text-[#C84B31]" title="Montaña / Terracería">
@@ -252,13 +252,13 @@ export const PlanCardModal: React.FC<PlanCardModalProps> = ({
                   </span>
                 </div>
               ) : (
-                <span className="text-xs font-display font-bold text-[#141312] block mt-0.5">Mix</span>
+                <span className="text-xs font-sans font-bold text-[#141312] block mt-0.5">Mix</span>
               )}
             </div>
 
             <div className="p-2.5 border border-[#E5DFD5] bg-white rounded-lg shadow-xs">
-              <span className="text-[9px] text-stone-500 uppercase font-display font-bold tracking-wider block">Salida</span>
-              <span className="text-xs font-display font-black text-[#141312] block mt-0.5 truncate" title={rodada.originPoint}>
+              <span className="text-[9px] text-stone-500 uppercase font-sans font-bold tracking-wider block">Salida</span>
+              <span className="text-xs font-sans font-semibold text-[#141312] block mt-0.5 truncate" title={rodada.originPoint}>
                 {winningRoute?.waypoints[0]?.name || rodada.originPoint}
               </span>
             </div>
@@ -267,16 +267,16 @@ export const PlanCardModal: React.FC<PlanCardModalProps> = ({
           {/* Trazado y Puntos del Plan */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-display text-[#C84B31] uppercase font-black tracking-widest flex items-center gap-1.5">
+              <span className="text-[10px] font-sans text-[#C84B31] uppercase font-semibold tracking-widest flex items-center gap-1.5">
                 <Compass className="w-3.5 h-3.5" />
-                Itinerario y Paradas del Recorrido
+                Itinerario y paradas del recorrido
               </span>
               {mapsUrl && (
                 <a
                   href={mapsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[10px] text-[#141312] hover:text-[#C84B31] uppercase font-display font-black tracking-wider flex items-center gap-1 transition"
+                  className="text-[10px] text-[#141312] hover:text-[#C84B31] uppercase font-sans font-semibold tracking-wider flex items-center gap-1 transition"
                 >
                   Abrir en Google Maps <ExternalLink className="w-3 h-3 text-[#F2B705]" />
                 </a>
@@ -291,12 +291,12 @@ export const PlanCardModal: React.FC<PlanCardModalProps> = ({
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-display font-black text-[#141312] uppercase tracking-wide">
+                    <span className="text-xs font-sans font-semibold text-[#141312]  ">
                       Salida: {winningRoute?.waypoints[0]?.name || rodada.originPoint}
                     </span>
                     <span className="text-[10px] font-mono text-stone-500 font-bold">07:30 AM</span>
                   </div>
-                  <p className="text-[11px] text-stone-500 font-serif italic mt-0.5">
+                  <p className="text-[11px] text-stone-500 font-sans mt-0.5">
                     Punto de reunión oficial. Tanque lleno y presión de llantas revisada.
                   </p>
                 </div>
@@ -311,15 +311,15 @@ export const PlanCardModal: React.FC<PlanCardModalProps> = ({
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-xs font-display font-bold text-[#141312] uppercase">
+                        <span className="text-xs font-sans font-bold text-[#141312] ">
                           Parada {idx + 1}: {wp.name}
                         </span>
-                        <span className="text-[9px] font-display uppercase font-bold px-1.5 py-0.5 bg-[#FAF8F5] text-stone-600 border border-[#E5DFD5] rounded">
+                        <span className="text-[9px] font-sans uppercase font-bold px-1.5 py-0.5 bg-[#FAF8F5] text-stone-600 border border-[#E5DFD5] rounded">
                           {wp.type}
                         </span>
                       </div>
                       {(wp.notes || wp.description) && (
-                        <p className="text-[11px] text-stone-500 font-serif italic mt-0.5">
+                        <p className="text-[11px] text-stone-500 font-sans mt-0.5">
                           {wp.notes || wp.description}
                         </p>
                       )}
@@ -332,10 +332,10 @@ export const PlanCardModal: React.FC<PlanCardModalProps> = ({
                     <Utensils className="w-3.5 h-3.5 text-[#C84B31]" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className="text-xs font-display font-bold text-[#141312] uppercase">
+                    <span className="text-xs font-sans font-bold text-[#141312] ">
                       Parada Intermedia: Desayuno & Mirador
                     </span>
-                    <p className="text-[11px] text-stone-500 font-serif italic mt-0.5">
+                    <p className="text-[11px] text-stone-500 font-sans mt-0.5">
                       Parada en el trayecto para reagrupar, tomar café caliente y fotos del paisaje.
                     </p>
                   </div>
@@ -348,10 +348,10 @@ export const PlanCardModal: React.FC<PlanCardModalProps> = ({
                   <Flag className="w-3.5 h-3.5 text-[#C84B31]" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <span className="text-xs font-display font-black text-[#141312] uppercase tracking-wide">
+                  <span className="text-xs font-sans font-semibold text-[#141312]  ">
                     Destino: {winningRoute ? winningRoute.destination : rodada.title}
                   </span>
-                  <p className="text-[11px] text-stone-500 font-serif italic mt-0.5">
+                  <p className="text-[11px] text-stone-500 font-sans mt-0.5">
                     {winningRoute?.campsite?.name 
                       ? `Campamento base en ${winningRoute.campsite.name} (${winningRoute.campsite.elevationMeters} msnm).`
                       : 'Meta final y punto de pernocta / descanso del grupo.'}
@@ -364,19 +364,19 @@ export const PlanCardModal: React.FC<PlanCardModalProps> = ({
           {/* Pilotos y Asistencia Clasificada */}
           <div className="space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <span className="text-[10px] font-display text-[#C84B31] uppercase font-black tracking-widest flex items-center gap-1.5">
+              <span className="text-[10px] font-sans text-[#C84B31] uppercase font-semibold tracking-widest flex items-center gap-1.5">
                 <Users className="w-3.5 h-3.5" />
-                Asistencia de la Tribu
+                Asistencia de la tribu
               </span>
 
               {/* Segmented filter pills */}
-              <div className="inline-flex rounded-xl border border-[#E5DFD5] bg-[#FAF8F5] p-1 text-[11px] font-display">
+              <div className="inline-flex rounded-xl border border-[#E5DFD5] bg-[#FAF8F5] p-1 text-[11px] font-sans">
                 <button
                   type="button"
                   onClick={() => setAttendeeTab('confirmados')}
-                  className={`px-3 py-1 rounded-lg uppercase transition flex items-center gap-1.5 ${
+                  className={`px-3 py-1 rounded-lg transition flex items-center gap-1.5 ${
                     attendeeTab === 'confirmados'
-                      ? 'bg-[#141312] text-white font-black shadow-xs'
+                      ? 'bg-[#141312] text-white font-semibold shadow-xs'
                       : 'text-stone-500 hover:text-[#141312] font-bold'
                   }`}
                 >
@@ -386,9 +386,9 @@ export const PlanCardModal: React.FC<PlanCardModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setAttendeeTab('por_confirmar')}
-                  className={`px-3 py-1 rounded-lg uppercase transition flex items-center gap-1.5 ${
+                  className={`px-3 py-1 rounded-lg transition flex items-center gap-1.5 ${
                     attendeeTab === 'por_confirmar'
-                      ? 'bg-[#141312] text-white font-black shadow-xs'
+                      ? 'bg-[#141312] text-white font-semibold shadow-xs'
                       : 'text-stone-500 hover:text-[#141312] font-bold'
                   }`}
                 >
@@ -398,9 +398,9 @@ export const PlanCardModal: React.FC<PlanCardModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setAttendeeTab('no_asistire')}
-                  className={`px-3 py-1 rounded-lg uppercase transition flex items-center gap-1.5 ${
+                  className={`px-3 py-1 rounded-lg transition flex items-center gap-1.5 ${
                     attendeeTab === 'no_asistire'
-                      ? 'bg-[#141312] text-white font-black shadow-xs'
+                      ? 'bg-[#141312] text-white font-semibold shadow-xs'
                       : 'text-stone-500 hover:text-[#141312] font-bold'
                   }`}
                 >
@@ -422,8 +422,8 @@ export const PlanCardModal: React.FC<PlanCardModalProps> = ({
                     />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-1">
-                        <span className="text-xs font-display font-black text-[#141312] truncate">{att.userName}</span>
-                        <span className={`text-[9px] font-display px-2 py-0.5 rounded-full uppercase font-black shrink-0 ${
+                        <span className="text-xs font-sans font-semibold text-[#141312] truncate">{att.userName}</span>
+                        <span className={`text-[9px] font-sans px-2 py-0.5 rounded-full uppercase font-semibold shrink-0 ${
                           att.status === 'confirmado'
                             ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                             : att.status === 'no_asistire'
@@ -433,7 +433,7 @@ export const PlanCardModal: React.FC<PlanCardModalProps> = ({
                           {att.status === 'confirmado' ? 'Asistirá' : att.status === 'no_asistire' ? 'No asiste' : 'Por confirmar'}
                         </span>
                       </div>
-                      <span className="text-[10px] text-stone-500 font-serif italic block truncate">
+                      <span className="text-[10px] text-stone-500 font-sans block truncate">
                         {att.userHandle} • {att.ridingLevel}
                       </span>
                     </div>
@@ -441,7 +441,7 @@ export const PlanCardModal: React.FC<PlanCardModalProps> = ({
                 ))}
               </div>
             ) : (
-              <div className="p-6 border border-dashed border-[#DDD7CB] bg-[#FAF8F5] text-center text-xs text-stone-500 font-serif italic rounded-xl">
+              <div className="p-6 border border-dashed border-[#DDD7CB] bg-[#FAF8F5] text-center text-xs text-stone-500 font-sans rounded-xl">
                 {attendeeTab === 'confirmados' && 'Aún no hay pilotos confirmados.'}
                 {attendeeTab === 'por_confirmar' && 'No hay pilotos por confirmar.'}
                 {attendeeTab === 'no_asistire' && 'Ningún piloto ha declinado esta rodada.'}
@@ -455,7 +455,7 @@ export const PlanCardModal: React.FC<PlanCardModalProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={handleShare}
-              className="px-3.5 py-2 border border-[#E5DFD5] hover:border-[#141312] bg-white text-stone-600 hover:text-[#141312] text-xs uppercase font-display font-bold tracking-wider flex items-center gap-1.5 transition rounded-xl shadow-xs"
+              className="px-3.5 py-2 border border-[#E5DFD5] hover:border-[#141312] bg-white text-stone-600 hover:text-[#141312] text-xs font-sans font-bold flex items-center gap-1.5 transition rounded-xl shadow-xs"
               title="Copiar enlace del plan"
             >
               {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Share2 className="w-3.5 h-3.5" />}
@@ -469,11 +469,11 @@ export const PlanCardModal: React.FC<PlanCardModalProps> = ({
                   onClose();
                   onOpenRecordRoute();
                 }}
-                className="px-3.5 py-2 border border-[#E6332A] bg-[#E6332A] text-white hover:bg-[#d02c24] text-xs uppercase font-display font-black tracking-wider flex items-center gap-1.5 transition rounded-xl shadow-xs"
+                className="px-3.5 py-2 border border-[#E6332A] bg-[#E6332A] text-white hover:bg-[#d02c24] text-xs font-sans font-semibold flex items-center gap-1.5 transition rounded-xl shadow-xs"
                 title="Empezar a rodar y grabar esta ruta en vivo con GPS"
               >
                 <Play className="w-3.5 h-3.5 fill-current text-[#F7B32B]" />
-                <span>Grabar Rodada</span>
+                <span>Grabar rodada</span>
               </button>
             )}
 
@@ -482,7 +482,7 @@ export const PlanCardModal: React.FC<PlanCardModalProps> = ({
                 href={mapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-3.5 py-2 border border-[#141312] bg-[#141312] text-white hover:bg-black text-xs uppercase font-display font-black tracking-wider flex items-center gap-1.5 transition rounded-xl shadow-xs"
+                className="px-3.5 py-2 border border-[#141312] bg-[#141312] text-white hover:bg-black text-xs font-sans font-semibold flex items-center gap-1.5 transition rounded-xl shadow-xs"
               >
                 <Compass className="w-3.5 h-3.5 text-[#F2B705]" />
                 <span>Google Maps ↗</span>
@@ -492,14 +492,14 @@ export const PlanCardModal: React.FC<PlanCardModalProps> = ({
 
           {/* 3 Opciones de Asistencia: Asistiré, Por confirmar, No asistiré */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 justify-end">
-            <span className="text-[10px] text-stone-500 font-display uppercase font-black tracking-wider hidden lg:inline">
+            <span className="text-[10px] text-stone-500 font-sans uppercase font-semibold tracking-wider hidden lg:inline">
               Tu Asistencia:
             </span>
             <div className="grid grid-cols-3 sm:flex items-center rounded-xl border border-[#E5DFD5] bg-white p-1 gap-1 w-full sm:w-auto shadow-xs">
               <button
                 type="button"
                 onClick={() => onRsvp(rodada.id, userBikes[0]?.id || 'moto-1', 'confirmado')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-display font-black uppercase transition flex items-center justify-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-sans font-semibold transition flex items-center justify-center gap-1.5 ${
                   currentStatus === 'confirmado'
                     ? 'bg-[#141312] text-white shadow-xs'
                     : 'text-stone-500 hover:text-[#141312]'
@@ -513,7 +513,7 @@ export const PlanCardModal: React.FC<PlanCardModalProps> = ({
               <button
                 type="button"
                 onClick={() => onRsvp(rodada.id, userBikes[0]?.id || 'moto-1', 'por_confirmar')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-display font-black uppercase transition flex items-center justify-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-sans font-semibold transition flex items-center justify-center gap-1.5 ${
                   currentStatus === 'por_confirmar' || currentStatus === 'interesado'
                     ? 'bg-[#141312] text-white shadow-xs'
                     : 'text-stone-500 hover:text-[#141312]'
@@ -528,7 +528,7 @@ export const PlanCardModal: React.FC<PlanCardModalProps> = ({
               <button
                 type="button"
                 onClick={() => onRsvp(rodada.id, userBikes[0]?.id || 'moto-1', 'no_asistire')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-display font-black uppercase transition flex items-center justify-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-sans font-semibold transition flex items-center justify-center gap-1.5 ${
                   currentStatus === 'no_asistire'
                     ? 'bg-[#141312] text-white shadow-xs'
                     : 'text-stone-500 hover:text-[#141312]'

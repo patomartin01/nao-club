@@ -152,7 +152,7 @@ export const RouteTacticalMapCard: React.FC<RouteTacticalMapCardProps> = ({
 
   return (
     <div
-      className={`relative w-full ${heightClass} overflow-hidden select-none ${palette.bg} border-b-2 border-[#1A1918] ${className}`}
+      className={`relative w-full ${heightClass} overflow-hidden select-none ${palette.bg} border-b border-[#1A1918]/10 ${className}`}
     >
       {/* 1. Malla Cartográfica de Topografía Editorial */}
       <svg
@@ -375,22 +375,22 @@ export const RouteTacticalMapCard: React.FC<RouteTacticalMapCardProps> = ({
       {showOverlayBadges && (
         <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between pointer-events-none z-10 gap-2">
           {isWinner ? (
-            <span className="text-[9px] font-mono uppercase font-black px-2.5 py-1 bg-[#E6332A] text-white border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] rounded-md flex items-center gap-1">
-              <span>★</span>
+            <span className="text-[9px] font-mono uppercase font-semibold px-2.5 py-1 bg-[#E6332A] text-white border border-[#1A1918]/10 shadow-sm rounded-md flex items-center gap-1">
+              <span></span>
               <span>RUTA SELECCIONADA</span>
             </span>
           ) : isLeader ? (
-            <span className="text-[9px] font-mono uppercase font-black px-2.5 py-1 bg-[#F7B32B] text-[#1A1918] border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] rounded-md flex items-center gap-1">
-              <span>★</span>
+            <span className="text-[9px] font-mono uppercase font-semibold px-2.5 py-1 bg-[#F7B32B] text-[#1A1918] border border-[#1A1918]/10 shadow-sm rounded-md flex items-center gap-1">
+              <span></span>
               <span>#1 LÍDER EN APOYO</span>
             </span>
           ) : (
-            <span className="text-[9px] font-mono uppercase font-black px-2.5 py-1 bg-[#FAF6ED] text-[#1A1918] border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] rounded-md">
+            <span className="text-[9px] font-mono uppercase font-semibold px-2.5 py-1 bg-[#FAF6ED] text-[#1A1918] border border-[#1A1918]/10 shadow-sm rounded-md">
               OPCIÓN #{typeof optionIndex === 'number' ? optionIndex + 1 : 1}
             </span>
           )}
 
-          <span className="text-[9px] font-mono uppercase px-2.5 py-1 bg-[#FAF6ED] border-2 border-[#1A1918] text-[#1A1918] font-black shadow-[2px_2px_0px_#1A1918] rounded-md flex items-center gap-1.5">
+          <span className="text-[9px] font-mono uppercase px-2.5 py-1 bg-[#FAF6ED] border border-[#1A1918]/10 text-[#1A1918] font-semibold shadow-sm rounded-md flex items-center gap-1.5">
             <span>{proposal.totalKm} KM</span>
             <span className="text-[#1A1918]/30">•</span>
             <span className="text-[#E06423]" title="Terracería">
@@ -407,11 +407,11 @@ export const RouteTacticalMapCard: React.FC<RouteTacticalMapCardProps> = ({
       {/* Destino y Dificultad al pie del mapa */}
       {showOverlayBadges && (
         <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between pointer-events-none z-10 gap-2">
-          <span className="text-[11px] font-mono font-black text-[#1A1918] bg-[#FAF6ED]/95 px-2.5 py-0.5 border border-[#1A1918] shadow-[1px_1px_0px_#1A1918] rounded-md flex items-center gap-1.5 truncate max-w-[220px]">
+          <span className="text-[11px] font-mono font-semibold text-[#1A1918] bg-[#FAF6ED]/95 px-2.5 py-0.5 border border-[#1A1918]/10 shadow-sm rounded-md flex items-center gap-1.5 truncate max-w-[220px]">
             <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: palette.trailColor }} />
             <span className="truncate">{proposal.destination}</span>
           </span>
-          <span className="text-[10px] font-mono font-black text-[#1A1918] bg-[#FAF6ED]/95 px-2 py-0.5 border border-[#1A1918] shadow-[1px_1px_0px_#1A1918] rounded-md shrink-0">
+          <span className="text-[10px] font-mono font-semibold text-[#1A1918] bg-[#FAF6ED]/95 px-2 py-0.5 border border-[#1A1918]/10 shadow-sm rounded-md shrink-0">
             {proposal.difficulty}
           </span>
         </div>

@@ -88,7 +88,7 @@ export const BottomBar: React.FC<BottomBarProps> = ({ onOpenRecordRoute }) => {
   return (
     <aside 
       aria-label="Navegación de aplicación"
-      className="fixed bottom-0 left-0 right-0 z-50 bg-[#FAF6ED]/95 backdrop-blur-xl border-t-2 border-[#1A1918] shadow-[0_-4px_20px_rgba(26,25,24,0.06)] select-none"
+      className="fixed bottom-0 left-0 right-0 z-50 bg-[#FAF6ED]/95 backdrop-blur-xl border-t border-[#1A1918]/10 shadow-[0_-4px_20px_rgba(26,25,24,0.06)] select-none"
     >
       {/* 5-column dock with clean, slim Risograph styling */}
       <div className="max-w-md mx-auto px-3 py-1 flex items-center justify-between">
@@ -104,7 +104,7 @@ export const BottomBar: React.FC<BottomBarProps> = ({ onOpenRecordRoute }) => {
           <div className="relative">
             <Home className={`w-4 h-4 transition-transform ${isInicio ? 'scale-110 stroke-[2.5]' : 'group-hover:text-[#1A1918]'}`} />
           </div>
-          <span className={`font-display uppercase tracking-wider text-[9px] mt-0.5 ${isInicio ? 'text-[#E6332A] font-black' : 'font-bold'}`}>
+          <span className={`font-sans uppercase tracking-wider text-[9px] mt-0.5 ${isInicio ? 'text-[#E6332A] font-semibold' : 'font-bold'}`}>
             Despacho
           </span>
         </button>
@@ -118,7 +118,7 @@ export const BottomBar: React.FC<BottomBarProps> = ({ onOpenRecordRoute }) => {
           }`}
         >
           <Compass className={`w-4 h-4 transition-transform ${isMapas ? 'scale-110 stroke-[2.5]' : 'group-hover:text-[#1A1918]'}`} />
-          <span className={`font-display uppercase tracking-wider text-[9px] mt-0.5 ${isMapas ? 'text-[#E6332A] font-black' : 'font-bold'}`}>
+          <span className={`font-sans uppercase tracking-wider text-[9px] mt-0.5 ${isMapas ? 'text-[#E6332A] font-semibold' : 'font-bold'}`}>
             Rutas
           </span>
         </button>
@@ -130,14 +130,14 @@ export const BottomBar: React.FC<BottomBarProps> = ({ onOpenRecordRoute }) => {
           className="flex-1 min-h-[42px] flex flex-col items-center justify-center py-0.5 transition-all active:scale-95 group touch-manipulation cursor-pointer -mt-3"
           title="Registrar rodada en vivo"
         >
-          <div className={`w-10 h-10 rounded-xl border-2 border-[#1A1918] flex items-center justify-center transition-all shadow-[2px_2px_0px_#1A1918] group-active:translate-x-[1px] group-active:translate-y-[1px] group-active:shadow-none ${
+          <div className={`w-10 h-10 rounded-xl border border-[#1A1918]/10 flex items-center justify-center transition-all shadow-sm group-active:shadow-none ${
             isRegistrar 
               ? 'bg-[#E6332A] text-white' 
               : 'bg-[#F7B32B] hover:bg-[#E6332A] text-[#1A1918]'
           }`}>
             <Circle className="w-4 h-4 fill-current" />
           </div>
-          <span className="font-display uppercase tracking-wider text-[8px] mt-0.5 text-[#1A1918] font-black">
+          <span className="font-sans uppercase tracking-wider text-[8px] mt-0.5 text-[#1A1918] font-semibold">
             Grabar
           </span>
         </button>
@@ -153,12 +153,12 @@ export const BottomBar: React.FC<BottomBarProps> = ({ onOpenRecordRoute }) => {
           <div className="relative">
             <Users className={`w-4 h-4 transition-transform ${isTribus ? 'scale-110 stroke-[2.5]' : 'group-hover:text-[#1A1918]'}`} />
             {unreadTribusCount > 0 && (
-              <span className="absolute -top-1 -right-2 text-[7px] font-mono px-1 bg-[#F7B32B] text-[#1A1918] font-black border border-[#1A1918] rounded-full animate-pulse">
+              <span className="absolute -top-1 -right-2 text-[7px] font-mono px-1 bg-[#F7B32B] text-[#1A1918] font-semibold border border-[#1A1918]/10 rounded-full animate-pulse">
                 {unreadTribusCount}
               </span>
             )}
           </div>
-          <span className={`font-display uppercase tracking-wider text-[9px] mt-0.5 ${isTribus ? 'text-[#E6332A] font-black' : 'font-bold'}`}>
+          <span className={`font-sans uppercase tracking-wider text-[9px] mt-0.5 ${isTribus ? 'text-[#E6332A] font-semibold' : 'font-bold'}`}>
             Tribus
           </span>
         </button>
@@ -171,7 +171,7 @@ export const BottomBar: React.FC<BottomBarProps> = ({ onOpenRecordRoute }) => {
             isTu ? 'text-[#E6332A]' : 'text-[#1A1918]/60 hover:text-[#1A1918]'
           }`}
         >
-          <div className={`w-6 h-6 rounded-lg overflow-hidden border-2 border-[#1A1918] transition-all shadow-[1px_1px_0px_#1A1918] ${
+          <div className={`w-6 h-6 rounded-lg overflow-hidden border border-[#1A1918]/10 transition-all shadow-sm ${
             isTu ? 'ring-2 ring-[#E6332A] scale-105' : 'group-hover:border-[#E6332A]'
           }`}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -181,7 +181,7 @@ export const BottomBar: React.FC<BottomBarProps> = ({ onOpenRecordRoute }) => {
               className="w-full h-full object-cover" 
             />
           </div>
-          <span className={`font-display uppercase tracking-wider text-[9px] mt-0.5 ${isTu ? 'text-[#E6332A] font-black' : 'font-bold'}`}>
+          <span className={`font-sans uppercase tracking-wider text-[9px] mt-0.5 ${isTu ? 'text-[#E6332A] font-semibold' : 'font-bold'}`}>
             Piloto
           </span>
         </button>

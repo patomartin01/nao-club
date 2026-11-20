@@ -54,10 +54,10 @@ export default function Home() {
   if (isAuthLoading) {
     return (
       <div className="min-h-screen bg-[#F4EEDB] text-[#1A1918] flex flex-col items-center justify-center p-6 antialiased">
-        <div className="w-12 h-12 rounded-2xl bg-[#E6332A] flex items-center justify-center border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] animate-bounce">
-          <span className="font-display font-black text-white text-xl">N</span>
+        <div className="w-12 h-12 rounded-2xl bg-[#E6332A] flex items-center justify-center border border-[#1A1918]/10 shadow-sm animate-bounce">
+          <span className="font-display font-semibold text-white text-xl">N</span>
         </div>
-        <p className="mt-4 font-mono text-xs uppercase font-bold tracking-widest text-[#1A1918]/60">
+        <p className="mt-4 font-mono text-xs font-bold text-[#1A1918]/60">
           CONECTANDO CON EL CLUB...
         </p>
       </div>

@@ -54,10 +54,10 @@ export const GarageView: React.FC = () => {
     <div className="space-y-12 pb-32 text-[#141312] font-sans">
       
       {/* 01. DEUS WORKSHOP PILOT DOSSIER */}
-      <section className="border-2 border-[#1A1918] bg-[#FAF6ED] rounded-[28px] shadow-[6px_6px_0px_#1A1918] overflow-hidden">
-        <div className="grid grid-cols-12 border-b-2 border-[#1A1918]">
-          <div className="col-span-12 md:col-span-8 p-6 sm:p-10 border-b-2 md:border-b-0 md:border-r-2 border-[#1A1918] flex flex-col sm:flex-row items-start sm:items-center gap-6">
-            <div className="w-24 h-24 rounded-2xl overflow-hidden border-2 border-[#1A1918] shadow-[4px_4px_0px_#1A1918] shrink-0 bg-[#F4EEDB]">
+      <section className="border border-[#1A1918]/10 bg-[#FAF6ED] rounded-[28px] shadow-sm overflow-hidden">
+        <div className="grid grid-cols-12 border-b border-[#1A1918]/10">
+          <div className="col-span-12 md:col-span-8 p-6 sm:p-10 border-b md:border-b-0 md:border-r border-[#1A1918]/10 flex flex-col sm:flex-row items-start sm:items-center gap-6">
+            <div className="w-24 h-24 rounded-2xl overflow-hidden border border-[#1A1918]/10 shadow-sm shrink-0 bg-[#F4EEDB]">
               <img 
                 src={currentUser.avatar} 
                 alt={currentUser.name} 
@@ -66,17 +66,17 @@ export const GarageView: React.FC = () => {
             </div>
             <div className="space-y-1.5">
               <div className="flex items-center gap-2">
-                <span className="font-display text-[10px] text-[#E6332A] uppercase tracking-[0.2em] font-black">
-                  ★ EXPEDITION WORKSHOP &amp; FLEET ★
+                <span className="font-sans text-[10px] text-[#E6332A] uppercase tracking-[0.2em] font-semibold">
+                  EXPEDITION WORKSHOP &amp; FLEET
                 </span>
-                <span className="text-[9px] font-mono bg-[#FAF6ED] px-2.5 py-0.5 border-2 border-[#1A1918] rounded-md font-black text-[#1A1918] shadow-[1px_1px_0px_#1A1918]">
+                <span className="text-[9px] font-mono bg-[#FAF6ED] px-2.5 py-0.5 border border-[#1A1918]/10 rounded-md font-semibold text-[#1A1918] shadow-sm">
                   TALLER NO. 01
                 </span>
               </div>
-              <h1 className="font-display font-black text-3xl sm:text-5xl text-[#1A1918] uppercase tracking-wide">
+              <h1 className="font-display font-semibold text-3xl sm:text-5xl text-[#1A1918]  ">
                 {currentUser.name}
               </h1>
-              <p className="font-serif italic text-sm text-[#1A1918]/70 font-medium">
+              <p className="font-sans text-sm text-[#1A1918]/70 font-medium">
                 {currentUser.location} — {currentUser.bio}
               </p>
             </div>
@@ -84,71 +84,71 @@ export const GarageView: React.FC = () => {
 
           <div className="col-span-12 md:col-span-4 p-6 sm:p-8 flex flex-col justify-between bg-[#F4EEDB] font-sans text-xs">
             <div className="space-y-3">
-              <div className="flex justify-between text-[#1A1918]/80 border-b-2 border-[#1A1918] pb-2">
-                <span className="font-serif italic font-bold">NIVEL DE MANEJO:</span>
-                <span className="text-[#1A1918] font-display font-black uppercase tracking-wider">{currentUser.ridingLevel}</span>
+              <div className="flex justify-between text-[#1A1918]/80 border-b border-[#1A1918]/10 pb-2">
+                <span className="font-sans font-bold">NIVEL DE MANEJO:</span>
+                <span className="text-[#1A1918] font-sans font-semibold  ">{currentUser.ridingLevel}</span>
               </div>
-              <div className="flex justify-between text-[#1A1918]/80 border-b-2 border-[#1A1918] pb-2">
-                <span className="font-serif italic font-bold">ESTATUS TALLER:</span>
-                <span className="text-[#E6332A] font-display font-black tracking-wider">MÁQUINAS LISTAS</span>
+              <div className="flex justify-between text-[#1A1918]/80 border-b border-[#1A1918]/10 pb-2">
+                <span className="font-sans font-bold">ESTATUS TALLER:</span>
+                <span className="text-[#E6332A] font-sans font-semibold tracking-wider">MÁQUINAS LISTAS</span>
               </div>
               <div className="flex justify-between text-[#1A1918]/80">
-                <span className="font-serif italic font-bold">MÁQUINAS ACTIVAS:</span>
-                <span className="text-[#1A1918] font-display font-black tracking-wider">{userBikes.length} UNIDADES</span>
+                <span className="font-sans font-bold">MÁQUINAS ACTIVAS:</span>
+                <span className="text-[#1A1918] font-sans font-semibold tracking-wider">{userBikes.length} UNIDADES</span>
               </div>
             </div>
 
             <div className="pt-6">
               <button
                 onClick={() => setShowAddBikeModal(true)}
-                className="w-full py-3.5 bg-[#E6332A] hover:bg-[#d02c24] text-white font-display text-xs uppercase font-black tracking-widest transition rounded-xl flex items-center justify-center gap-2 border-2 border-[#1A1918] shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                className="w-full py-3.5 bg-[#E6332A] hover:bg-[#d02c24] text-white font-sans text-xs font-semibold transition rounded-xl flex items-center justify-center gap-2 border border-[#1A1918]/10 shadow-sm active:shadow-none"
               >
                 <Plus className="w-4 h-4 text-white" />
-                <span>+ Registrar Máquina</span>
+                <span>Registrar máquina</span>
               </button>
             </div>
           </div>
         </div>
 
         {/* Workshop Telemetry cells */}
-        <div className="grid grid-cols-2 md:grid-cols-4 divide-y-2 md:divide-y-0 md:divide-x-2 divide-[#1A1918] font-sans text-xs bg-[#FAF6ED]">
+        <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x-2 divide-[#1A1918]/10 font-sans text-xs bg-[#FAF6ED]">
           <div className="p-6">
-            <span className="text-[10px] text-[#1A1918]/70 font-serif italic uppercase tracking-wider block font-bold">ID Registro</span>
-            <p className="font-display font-black text-[#1A1918] text-lg mt-1 uppercase tracking-wider">PILOT-01</p>
+            <span className="text-[10px] text-[#1A1918]/70 font-sans uppercase tracking-wider block font-bold">ID registro</span>
+            <p className="font-display font-semibold text-[#1A1918] text-lg mt-1  ">PILOT-01</p>
           </div>
           <div className="p-6">
-            <span className="text-[10px] text-[#1A1918]/70 font-serif italic uppercase tracking-wider block font-bold">Disciplina</span>
-            <p className="font-display font-black text-[#E06423] text-lg mt-1 uppercase tracking-wider">Dual-Sport / Trail</p>
+            <span className="text-[10px] text-[#1A1918]/70 font-sans uppercase tracking-wider block font-bold">Disciplina</span>
+            <p className="font-display font-semibold text-[#E06423] text-lg mt-1  ">Dual-Sport / Trail</p>
           </div>
           <div className="p-6">
-            <span className="text-[10px] text-[#1A1918]/70 font-serif italic uppercase tracking-wider block font-bold">Basecamp Habitual</span>
-            <p className="font-display font-black text-[#1A1918] text-base mt-1 uppercase tracking-wide truncate">Huixquilucan, CDMX</p>
+            <span className="text-[10px] text-[#1A1918]/70 font-sans uppercase tracking-wider block font-bold">Basecamp habitual</span>
+            <p className="font-display font-semibold text-[#1A1918] text-base mt-1 truncate">Huixquilucan, CDMX</p>
           </div>
           <div className="p-6">
-            <span className="text-[10px] text-[#1A1918]/70 font-serif italic uppercase tracking-wider block font-bold">Rango</span>
-            <p className="font-display font-black text-[#E6332A] text-lg mt-1 uppercase tracking-wider">Rider Titular</p>
+            <span className="text-[10px] text-[#1A1918]/70 font-sans uppercase tracking-wider block font-bold">Rango</span>
+            <p className="font-display font-semibold text-[#E6332A] text-lg mt-1  ">Rider titular</p>
           </div>
         </div>
       </section>
 
       {/* 02. WORKSHOP STABLE / MACHINES */}
       <section className="space-y-6">
-        <div className="flex items-center justify-between border-b-2 border-[#1A1918] pb-4">
+        <div className="flex items-center justify-between border-b border-[#1A1918]/10 pb-4">
           <div>
-            <span className="font-display text-[10px] text-[#E6332A] uppercase tracking-[0.2em] font-black">
-              ★ CUSTOM STABLE &amp; FLEET ★
+            <span className="font-sans text-[10px] text-[#E6332A] uppercase tracking-[0.2em] font-semibold">
+              CUSTOM STABLE &amp; FLEET
             </span>
-            <h2 className="font-display font-black text-2xl sm:text-4xl text-[#1A1918] uppercase tracking-wide mt-1">
-              Máquinas en Garaje
+            <h2 className="font-display font-semibold text-2xl sm:text-4xl text-[#1A1918] mt-1">
+              Máquinas en garaje
             </h2>
           </div>
 
           <button
             onClick={() => setShowAddBikeModal(true)}
-            className="px-4 py-2.5 border-2 border-[#1A1918] bg-[#F7B32B] hover:bg-[#e5a424] text-[#1A1918] font-display text-xs uppercase tracking-widest font-black transition rounded-xl shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none flex items-center gap-2"
+            className="px-4 py-2.5 border border-[#1A1918]/10 bg-[#F7B32B] hover:bg-[#e5a424] text-[#1A1918] font-sans text-xs font-semibold transition rounded-xl shadow-sm active:shadow-none flex items-center gap-2"
           >
             <Plus className="w-3.5 h-3.5 text-[#1A1918]" />
-            <span>+ Añadir al Taller</span>
+            <span>Añadir al taller</span>
           </button>
         </div>
 
@@ -156,25 +156,25 @@ export const GarageView: React.FC = () => {
           {userBikes.map((bike) => (
             <div 
               key={bike.id} 
-              className="border-2 border-[#1A1918] bg-[#FAF6ED] rounded-[24px] transition duration-200 flex flex-col justify-between overflow-hidden shadow-[4px_4px_0px_#1A1918] hover:shadow-[7px_7px_0px_#1A1918] group"
+              className="border border-[#1A1918]/10 bg-[#FAF6ED] rounded-[24px] transition duration-200 flex flex-col justify-between overflow-hidden shadow-sm hover:shadow-md group"
             >
-              <div className="h-64 w-full relative overflow-hidden bg-[#F4EEDB] border-b-2 border-[#1A1918]">
+              <div className="h-64 w-full relative overflow-hidden bg-[#F4EEDB] border-b border-[#1A1918]/10">
                 <img 
                   src={bike.photoUrl} 
                   alt={bike.model} 
                   className="w-full h-full object-cover group-hover:scale-105 transition duration-700 opacity-95"
                 />
                 
-                <div className="absolute top-4 left-4 bg-[#FAF6ED] px-3.5 py-1.5 font-display uppercase tracking-widest text-[11px] text-[#1A1918] border-2 border-[#1A1918] font-black shadow-[2px_2px_0px_#1A1918] rounded-lg">
+                <div className="absolute top-4 left-4 bg-[#FAF6ED] px-3.5 py-1.5 font-sans text-[11px] text-[#1A1918] border border-[#1A1918]/10 font-semibold shadow-sm rounded-lg">
                   {bike.brand.toUpperCase()} • {bike.displacementCc} CC
                 </div>
 
-                <div className="absolute bottom-4 left-4 font-mono text-[9px] uppercase font-black text-[#FAF6ED] bg-[#1A1918] px-2.5 py-1 rounded-md border border-[#FAF6ED]/20 shadow-[2px_2px_0px_#1A1918]">
-                  INSPECCIÓN TÉCNICA // OK
+                <div className="absolute bottom-4 left-4 font-mono text-[9px] uppercase font-semibold text-[#FAF6ED] bg-[#1A1918] px-2.5 py-1 rounded-md border border-[#FAF6ED]/20 shadow-sm">
+                  INSPECCIÓN TÉCNICA · OK
                 </div>
 
                 {bike.nickname && (
-                  <div className="absolute top-4 right-4 bg-[#E6332A] text-white px-3 py-1 font-display text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_#1A1918] border-2 border-[#1A1918] rounded-lg">
+                  <div className="absolute top-4 right-4 bg-[#E6332A] text-white px-3 py-1 font-sans text-xs font-semibold shadow-sm border border-[#1A1918]/10 rounded-lg">
                     &quot;{bike.nickname}&quot;
                   </div>
                 )}
@@ -182,7 +182,7 @@ export const GarageView: React.FC = () => {
                 {/* Quick Edit shortcut on photo */}
                 <button
                   onClick={() => setEditingBike(bike)}
-                  className="absolute bottom-4 right-4 bg-[#FAF6ED] hover:bg-[#F7B32B] text-[#1A1918] px-2.5 py-1 font-display text-[10px] font-black uppercase tracking-wider shadow-[2px_2px_0px_#1A1918] border-2 border-[#1A1918] rounded-lg flex items-center gap-1 transition cursor-pointer"
+                  className="absolute bottom-4 right-4 bg-[#FAF6ED] hover:bg-[#F7B32B] text-[#1A1918] px-2.5 py-1 font-sans text-[10px] font-semibold uppercase tracking-wider shadow-sm border border-[#1A1918]/10 rounded-lg flex items-center gap-1 transition cursor-pointer"
                   title="Editar ficha de la moto"
                 >
                   <Wrench className="w-3 h-3 text-[#E6332A]" />
@@ -192,23 +192,23 @@ export const GarageView: React.FC = () => {
 
               <div className="p-6 sm:p-7 space-y-4">
                 <div>
-                  <h3 className="font-display font-black text-xl sm:text-2xl text-[#1A1918] uppercase tracking-wide group-hover:text-[#E6332A] transition">
+                  <h3 className="font-display font-semibold text-xl sm:text-2xl text-[#1A1918] group-hover:text-[#E6332A] transition">
                     {bike.brand} {bike.model} ({bike.year})
                   </h3>
-                  <p className="font-serif italic text-xs text-[#1A1918]/70 mt-1 font-medium">
+                  <p className="font-sans text-xs text-[#1A1918]/70 mt-1 font-medium">
                     Compuesto &amp; Neumáticos: <strong className="text-[#1A1918] font-sans font-bold">{bike.tires}</strong>
                   </p>
                 </div>
 
-                <div className="border-t-2 border-[#1A1918] pt-3">
-                  <span className="font-display uppercase tracking-wider text-[10px] text-[#1A1918]/70 font-black block mb-2">
+                <div className="border-t border-[#1A1918]/10 pt-3">
+                  <span className="font-sans uppercase tracking-wider text-[10px] text-[#1A1918]/70 font-semibold block mb-2">
                     Preparación &amp; Modificaciones de Taller
                   </span>
                   <div className="flex flex-wrap gap-1.5">
                     {bike.modifications.map((mod, i) => (
                       <span 
                         key={i} 
-                        className="font-sans text-xs bg-[#F4EEDB] border-2 border-[#1A1918] px-3 py-1 text-[#1A1918] rounded-lg font-bold shadow-[1px_1px_0px_#1A1918]"
+                        className="font-sans text-xs bg-[#F4EEDB] border border-[#1A1918]/10 px-3 py-1 text-[#1A1918] rounded-lg font-bold shadow-sm"
                       >
                         {mod}
                       </span>
@@ -216,18 +216,18 @@ export const GarageView: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="pt-3 border-t-2 border-[#1A1918] flex items-center justify-between gap-2">
+                <div className="pt-3 border-t border-[#1A1918]/10 flex items-center justify-between gap-2">
                   <button
                     onClick={() => setEditingBike(bike)}
-                    className="px-3.5 py-1.5 bg-[#F4EEDB] hover:bg-[#F7B32B] text-[#1A1918] font-display font-black text-xs uppercase tracking-wider rounded-xl border-2 border-[#1A1918] shadow-[2px_2px_0px_#1A1918] flex items-center gap-1.5 transition active:translate-x-0.5 active:translate-y-0.5 cursor-pointer"
+                    className="px-3.5 py-1.5 bg-[#F4EEDB] hover:bg-[#F7B32B] text-[#1A1918] font-sans font-semibold text-xs rounded-xl border border-[#1A1918]/10 shadow-sm flex items-center gap-1.5 transition cursor-pointer"
                     title="Editar ficha técnica de la máquina"
                   >
                     <Wrench className="w-3.5 h-3.5 text-[#E6332A]" />
-                    <span>Editar Ficha Moto</span>
+                    <span>Editar ficha moto</span>
                   </button>
 
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono uppercase text-[#1A1918]/70 font-black">
+                    <span className="text-[10px] font-mono uppercase text-[#1A1918]/70 font-semibold">
                       #{bike.id.slice(0, 8)}
                     </span>
                     <button
@@ -252,19 +252,19 @@ export const GarageView: React.FC = () => {
       {/* 03. ADD BIKE MODAL (DEUS WORKSHOP REGISTER) */}
       {showAddBikeModal && (
         <div className="fixed inset-0 z-50 bg-[#1A1918]/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="border-2 border-[#1A1918] bg-[#FAF6ED] rounded-[28px] max-w-lg w-full p-6 sm:p-8 space-y-6 shadow-[8px_8px_0px_#1A1918] animate-in fade-in-0 zoom-in-95">
-            <div className="flex items-center justify-between border-b-2 border-[#1A1918] pb-4">
+          <div className="border border-[#1A1918]/10 bg-[#FAF6ED] rounded-[28px] max-w-lg w-full p-6 sm:p-8 space-y-6 shadow-sm animate-in fade-in-0 zoom-in-95">
+            <div className="flex items-center justify-between border-b border-[#1A1918]/10 pb-4">
               <div>
-                <span className="font-display text-[10px] text-[#E6332A] uppercase tracking-[0.2em] font-black block mb-1">
-                  ★ REGISTRO OFICIAL DE TALLER ★
+                <span className="font-sans text-[10px] text-[#E6332A] uppercase tracking-[0.2em] font-semibold block mb-1">
+                  REGISTRO OFICIAL DE TALLER
                 </span>
-                <h3 className="font-display font-black text-2xl text-[#1A1918] uppercase tracking-wide">
-                  Registrar Máquina
+                <h3 className="font-display font-semibold text-2xl text-[#1A1918]  ">
+                  Registrar máquina
                 </h3>
               </div>
               <button 
                 onClick={() => setShowAddBikeModal(false)}
-                className="text-[#1A1918] hover:bg-[#E6332A] hover:text-white p-1.5 transition rounded-lg border-2 border-transparent hover:border-[#1A1918]"
+                className="text-[#1A1918] hover:bg-[#E6332A] hover:text-white p-1.5 transition rounded-lg border border-transparent hover:border-[#1A1918]"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -273,11 +273,11 @@ export const GarageView: React.FC = () => {
             <form onSubmit={handleCreateBike} className="space-y-4 font-sans text-xs">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[#1A1918]/80 uppercase text-[10px] block mb-1 font-display font-black tracking-wider">Marca</label>
+                  <label className="text-[#1A1918]/80 uppercase text-[10px] block mb-1 font-sans font-semibold tracking-wider">Marca</label>
                   <select
                     value={brand}
                     onChange={(e) => setBrand(e.target.value)}
-                    className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] rounded-xl px-3 py-2.5 text-[#1A1918] font-bold focus:outline-none focus:ring-2 focus:ring-[#E6332A] shadow-[2px_2px_0px_#1A1918]"
+                    className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 rounded-xl px-3 py-2.5 text-[#1A1918] font-bold focus:outline-none focus:ring-2 focus:ring-[#E6332A] shadow-sm"
                   >
                     <option value="BMW">BMW Motorrad</option>
                     <option value="KTM">KTM</option>
@@ -293,75 +293,75 @@ export const GarageView: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="text-[#1A1918]/80 uppercase text-[10px] block mb-1 font-display font-black tracking-wider">Modelo</label>
+                  <label className="text-[#1A1918]/80 uppercase text-[10px] block mb-1 font-sans font-semibold tracking-wider">Modelo</label>
                   <input
                     type="text"
                     required
                     placeholder="Ej. R 1250 GS, Ténéré 700"
                     value={model}
                     onChange={(e) => setModel(e.target.value)}
-                    className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] rounded-xl px-3 py-2.5 text-[#1A1918] font-bold placeholder-[#1A1918]/40 focus:outline-none focus:ring-2 focus:ring-[#E6332A] shadow-[2px_2px_0px_#1A1918]"
+                    className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 rounded-xl px-3 py-2.5 text-[#1A1918] font-bold placeholder-[#1A1918]/40 focus:outline-none focus:ring-2 focus:ring-[#E6332A] shadow-sm"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[#1A1918]/80 uppercase text-[10px] block mb-1 font-display font-black tracking-wider">Año</label>
+                  <label className="text-[#1A1918]/80 uppercase text-[10px] block mb-1 font-sans font-semibold tracking-wider">Año</label>
                   <input
                     type="number"
                     value={year}
                     onChange={(e) => setYear(Number(e.target.value))}
-                    className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] rounded-xl px-3 py-2.5 text-[#1A1918] font-bold focus:outline-none focus:ring-2 focus:ring-[#E6332A] shadow-[2px_2px_0px_#1A1918]"
+                    className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 rounded-xl px-3 py-2.5 text-[#1A1918] font-bold focus:outline-none focus:ring-2 focus:ring-[#E6332A] shadow-sm"
                   />
                 </div>
 
                 <div>
-                  <label className="text-[#1A1918]/80 uppercase text-[10px] block mb-1 font-display font-black tracking-wider">Cilindrada (cc)</label>
+                  <label className="text-[#1A1918]/80 uppercase text-[10px] block mb-1 font-sans font-semibold tracking-wider">Cilindrada (cc)</label>
                   <input
                     type="number"
                     value={displacementCc}
                     onChange={(e) => setDisdisplacementCc(Number(e.target.value))}
-                    className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] rounded-xl px-3 py-2.5 text-[#1A1918] font-bold focus:outline-none focus:ring-2 focus:ring-[#E6332A] shadow-[2px_2px_0px_#1A1918]"
+                    className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 rounded-xl px-3 py-2.5 text-[#1A1918] font-bold focus:outline-none focus:ring-2 focus:ring-[#E6332A] shadow-sm"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-[#1A1918]/80 uppercase text-[10px] block mb-1 font-display font-black tracking-wider">Neumáticos Montados</label>
+                <label className="text-[#1A1918]/80 uppercase text-[10px] block mb-1 font-sans font-semibold tracking-wider">Neumáticos montados</label>
                 <input
                   type="text"
                   value={tires}
                   onChange={(e) => setTires(e.target.value)}
                   placeholder="Ej. Metzeler Karoo 4 (50/50)"
-                  className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] rounded-xl px-3 py-2.5 text-[#1A1918] font-bold placeholder-[#1A1918]/40 focus:outline-none focus:ring-2 focus:ring-[#E6332A] shadow-[2px_2px_0px_#1A1918]"
+                  className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 rounded-xl px-3 py-2.5 text-[#1A1918] font-bold placeholder-[#1A1918]/40 focus:outline-none focus:ring-2 focus:ring-[#E6332A] shadow-sm"
                 />
               </div>
 
               <div>
-                <label className="text-[#1A1918]/80 uppercase text-[10px] block mb-1 font-display font-black tracking-wider">Modificaciones &amp; Protecciones (separadas por coma)</label>
+                <label className="text-[#1A1918]/80 uppercase text-[10px] block mb-1 font-sans font-semibold tracking-wider">Modificaciones &amp; Protecciones (separadas por coma)</label>
                 <input
                   type="text"
                   value={modificationsInput}
                   onChange={(e) => setModificationsInput(e.target.value)}
                   placeholder="Skid plate, Faros auxiliares, Escape Akrapovic"
-                  className="w-full bg-[#FAF6ED] border-2 border-[#1A1918] rounded-xl px-3 py-2.5 text-[#1A1918] font-bold placeholder-[#1A1918]/40 focus:outline-none focus:ring-2 focus:ring-[#E6332A] shadow-[2px_2px_0px_#1A1918]"
+                  className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 rounded-xl px-3 py-2.5 text-[#1A1918] font-bold placeholder-[#1A1918]/40 focus:outline-none focus:ring-2 focus:ring-[#E6332A] shadow-sm"
                 />
               </div>
 
-              <div className="pt-4 border-t-2 border-[#1A1918] flex gap-3">
+              <div className="pt-4 border-t border-[#1A1918]/10 flex gap-3">
                 <button
                   type="button"
                   onClick={() => setShowAddBikeModal(false)}
-                  className="w-1/2 py-3 border-2 border-[#1A1918] bg-[#F4EEDB] text-[#1A1918] uppercase font-display text-xs tracking-widest hover:bg-[#FAF6ED] transition font-black rounded-xl shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                  className="w-1/2 py-3 border border-[#1A1918]/10 bg-[#F4EEDB] text-[#1A1918] font-sans text-xs hover:bg-[#FAF6ED] transition font-semibold rounded-xl shadow-sm active:shadow-none"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="w-1/2 py-3 bg-[#E6332A] hover:bg-[#d02c24] text-white uppercase font-display text-xs font-black tracking-widest transition shadow-[3px_3px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none border-2 border-[#1A1918] rounded-xl"
+                  className="w-1/2 py-3 bg-[#E6332A] hover:bg-[#d02c24] text-white font-sans text-xs font-semibold transition shadow-sm active:shadow-none border border-[#1A1918]/10 rounded-xl"
                 >
-                  Guardar en Garaje
+                  Guardar en garaje
                 </button>
               </div>
             </form>

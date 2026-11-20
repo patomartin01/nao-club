@@ -96,9 +96,9 @@ export const CrewView: React.FC<CrewViewProps> = ({
         <p>NO SE ENCONTRÓ NINGÚN GRUPO SELECCIONADO.</p>
         <button 
           onClick={() => setActiveNavTab('home')} 
-          className="px-6 py-3 bg-white text-obsidian uppercase font-bold text-xs"
+          className="px-6 py-3 bg-white text-obsidian font-bold text-xs"
         >
-          Volver a Mis Grupos
+          Volver a mis grupos
         </button>
       </div>
     );
@@ -214,14 +214,14 @@ ${gpxPoints}
       <div className="flex items-center justify-between border-b border-white/10 pb-4 font-mono text-xs">
         <button 
           onClick={() => setActiveNavTab('home')}
-          className="flex items-center gap-2 text-ash hover:text-white uppercase font-bold transition group"
+          className="flex items-center gap-2 text-ash hover:text-white font-bold transition group"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          <span>Volver a Mis Grupos</span>
+          <span>Volver a mis grupos</span>
         </button>
 
         <span className="text-[10px] uppercase text-earth tracking-widest font-bold">
-          SALA DE TRIBU // {currentCrew.name}
+          SALA DE TRIBU · {currentCrew.name}
         </span>
       </div>
 
@@ -245,9 +245,9 @@ ${gpxPoints}
         <div className="p-6 sm:p-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-2 max-w-2xl">
             <span className="font-mono text-[10px] text-earth uppercase tracking-widest font-bold block">
-              [ COMUNIDAD OFF-ROAD // TRIBU ]
+              [ COMUNIDAD OFF-ROAD · TRIBU ]
             </span>
-            <h1 className="font-display font-extrabold text-3xl sm:text-4xl text-white uppercase tracking-tight">
+            <h1 className="font-display font-extrabold text-3xl sm:text-4xl text-white tracking-tight">
               {currentCrew.name}
             </h1>
             <p className="font-mono text-xs text-ash leading-relaxed font-light">
@@ -258,7 +258,7 @@ ${gpxPoints}
           {/* Shareable Invite Code Pill */}
           <div className="p-4 border border-white/10 bg-[#0E0C0A] font-mono text-xs space-y-2 shrink-0 md:min-w-[260px]">
             <span className="text-[10px] text-ash uppercase tracking-wider block">
-              Clave Única de Invitación
+              Clave única de invitación
             </span>
             <div className="flex items-center justify-between gap-2 bg-white/[0.03] p-2.5 border border-white/15">
               <code className="text-earth font-bold text-base tracking-widest">
@@ -300,7 +300,7 @@ ${gpxPoints}
         {/* Member metrics */}
         <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-white/10 border-t border-white/10 font-mono text-xs bg-[#0E0C0A]">
           <div className="p-4 sm:p-5">
-            <span className="text-[10px] text-ash uppercase tracking-wider block">Total Miembros</span>
+            <span className="text-[10px] text-ash uppercase tracking-wider block">Total miembros</span>
             <p className="font-bold text-white text-base mt-0.5">{currentCrew.members.length} Pilotos</p>
           </div>
           <div className="p-4 sm:p-5">
@@ -322,7 +322,7 @@ ${gpxPoints}
       <div className="flex items-center gap-2 border-b border-white/15 pb-2 font-mono text-xs overflow-x-auto">
         <button
           onClick={() => setActiveTab('rodada')}
-          className={`px-4 py-2 uppercase font-bold transition flex items-center gap-2 shrink-0 ${
+          className={`px-4 py-2 font-bold transition flex items-center gap-2 shrink-0 ${
             activeTab === 'rodada'
               ? 'bg-earth text-white border border-earth'
               : 'border border-white/10 text-ash hover:text-white bg-white/[0.02]'
@@ -334,7 +334,7 @@ ${gpxPoints}
 
         <button
           onClick={() => setActiveTab('rutas')}
-          className={`px-4 py-2 uppercase font-bold transition flex items-center gap-2 shrink-0 ${
+          className={`px-4 py-2 font-bold transition flex items-center gap-2 shrink-0 ${
             activeTab === 'rutas'
               ? 'bg-earth text-white border border-earth'
               : 'border border-white/10 text-ash hover:text-white bg-white/[0.02]'
@@ -346,7 +346,7 @@ ${gpxPoints}
 
         <button
           onClick={() => setActiveTab('pilotos')}
-          className={`px-4 py-2 uppercase font-bold transition flex items-center gap-2 shrink-0 ${
+          className={`px-4 py-2 font-bold transition flex items-center gap-2 shrink-0 ${
             activeTab === 'pilotos'
               ? 'bg-earth text-white border border-earth'
               : 'border border-white/10 text-ash hover:text-white bg-white/[0.02]'
@@ -358,7 +358,7 @@ ${gpxPoints}
 
         <button
           onClick={() => setActiveTab('historial')}
-          className={`px-4 py-2 uppercase font-bold transition flex items-center gap-2 shrink-0 ${
+          className={`px-4 py-2 font-bold transition flex items-center gap-2 shrink-0 ${
             activeTab === 'historial'
               ? 'bg-earth text-white border border-earth'
               : 'border border-white/10 text-ash hover:text-white bg-white/[0.02]'
@@ -378,7 +378,7 @@ ${gpxPoints}
               <div className="border border-white/10 bg-[#0B0A09] p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="space-y-2">
                   <div className="flex flex-wrap items-center gap-3 font-mono text-[10px]">
-                    <span className="px-2 py-0.5 bg-earth/20 border border-earth text-earth font-bold uppercase tracking-widest">
+                    <span className="px-2 py-0.5 bg-earth/20 border border-earth text-earth font-bold  ">
                       {activeRodada.status === 'votacion' ? 'FASE: VOTACIÓN DE RUTAS EN CONSENSO' : 'RUTA GANADORA FIJADA'}
                     </span>
                     <span className="text-ash">·</span>
@@ -386,7 +386,7 @@ ${gpxPoints}
                       {activeRodada.category}
                     </span>
                   </div>
-                  <h2 className="font-display font-extrabold text-2xl sm:text-4xl text-white uppercase">
+                  <h2 className="font-display font-extrabold text-2xl sm:text-4xl text-white ">
                     {activeRodada.title}
                   </h2>
                   <p className="font-mono text-xs text-ash font-light">
@@ -401,7 +401,7 @@ ${gpxPoints}
                   </div>
                   <button
                     onClick={handleToggleRsvp}
-                    className={`px-4 py-2.5 font-mono text-xs uppercase font-bold tracking-wider transition border ${
+                    className={`px-4 py-2.5 font-mono text-xs font-bold transition border ${
                       isUserConfirmed
                         ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500'
                         : 'bg-earth text-white border-earth hover:bg-earth-bright'
@@ -419,7 +419,7 @@ ${gpxPoints}
                     <span className="font-mono text-[10px] text-earth uppercase tracking-widest font-bold">
                       [ VARIANTES DE RUTA PROPUESTAS POR EL GRUPO ]
                     </span>
-                    <h3 className="font-display font-bold text-xl text-white uppercase mt-0.5">
+                    <h3 className="font-display font-bold text-xl text-white mt-0.5">
                       Vota la Opción que Prefieras ({crewRoutes.length})
                     </h3>
                   </div>
@@ -457,7 +457,7 @@ ${gpxPoints}
                             </span>
                           </div>
 
-                          <h4 className="font-display font-bold text-base text-white uppercase group-hover:text-earth transition line-clamp-1">
+                          <h4 className="font-display font-bold text-base text-white group-hover:text-earth transition line-clamp-1">
                             {route.title}
                           </h4>
 
@@ -467,7 +467,7 @@ ${gpxPoints}
 
                           <div className="grid grid-cols-3 gap-2 pt-2 border-t border-white/10 font-mono text-[10px]">
                             <div>
-                              <span className="text-ash block">Km Total</span>
+                              <span className="text-ash block">Km total</span>
                               <span className="text-white font-bold">{route.totalKm} km</span>
                             </div>
                             <div>
@@ -529,7 +529,7 @@ ${gpxPoints}
                       <span className="font-mono text-[10px] text-earth uppercase tracking-widest font-bold">
                         [ REVISANDO VARIANTE ACTIVA ]
                       </span>
-                      <h3 className="font-display font-extrabold text-2xl text-white uppercase mt-0.5">
+                      <h3 className="font-display font-extrabold text-2xl text-white mt-0.5">
                         {activeRoute.title}
                       </h3>
                       <p className="font-mono text-xs text-ash mt-1">
@@ -540,7 +540,7 @@ ${gpxPoints}
                     <div className="flex flex-wrap items-center gap-2 font-mono text-xs">
                       <button
                         onClick={handleVote}
-                        className={`px-4 py-2 uppercase font-bold transition flex items-center gap-2 border ${
+                        className={`px-4 py-2 font-bold transition flex items-center gap-2 border ${
                           userHasVoted
                             ? 'bg-emerald-500 text-obsidian border-emerald-400 font-extrabold'
                             : 'bg-white hover:bg-earth text-obsidian hover:text-white border-white'
@@ -570,7 +570,7 @@ ${gpxPoints}
                                 setActiveTab('historial');
                               }
                             }}
-                            className="px-3 py-2 bg-emerald-500 hover:bg-emerald-600 text-obsidian font-black uppercase text-[10px] flex items-center gap-1.5 transition shadow-[0_0_15px_rgba(16,185,129,0.3)]"
+                            className="px-3 py-2 bg-emerald-500 hover:bg-emerald-600 text-obsidian font-semibold uppercase text-[10px] flex items-center gap-1.5 transition shadow-[0_0_15px_rgba(16,185,129,0.3)]"
                             title="Marcar como ya rodada y archivar al historial"
                           >
                             <Check className="w-3.5 h-3.5 stroke-[3]" />
@@ -617,7 +617,7 @@ ${gpxPoints}
                   {/* Route Telemetry Bar */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 border border-white/10 bg-white/[0.01] font-mono text-xs">
                     <div>
-                      <span className="text-[10px] text-ash uppercase block">Distancia Total</span>
+                      <span className="text-[10px] text-ash uppercase block">Distancia total</span>
                       <p className="text-lg font-bold text-white">{activeRoute.totalKm} km</p>
                     </div>
                     <div>
@@ -634,11 +634,11 @@ ${gpxPoints}
                       </div>
                     </div>
                     <div>
-                      <span className="text-[10px] text-ash uppercase block">Altitud Campamento</span>
+                      <span className="text-[10px] text-ash uppercase block">Altitud campamento</span>
                       <p className="text-lg font-bold text-white">{activeRoute.campsite.elevationMeters} msnm</p>
                     </div>
                     <div>
-                      <span className="text-[10px] text-ash uppercase block">Temperatura Nocturna</span>
+                      <span className="text-[10px] text-ash uppercase block">Temperatura nocturna</span>
                       <p className="text-lg font-bold text-cyan-400">{activeRoute.campsite.minTempNight}</p>
                     </div>
                   </div>
@@ -655,14 +655,14 @@ ${gpxPoints}
                       <span className="font-mono text-[10px] text-earth uppercase tracking-widest font-bold">
                         [ FLOTILLA CONFIRMADA ]
                       </span>
-                      <h3 className="font-display font-bold text-xl text-white uppercase">
+                      <h3 className="font-display font-bold text-xl text-white ">
                         Pilotos en Esta Rodada ({activeRodada.attendees.length})
                       </h3>
                     </div>
 
                     <button
                       onClick={handleToggleRsvp}
-                      className={`px-3 py-1.5 font-mono text-xs uppercase font-bold tracking-wider transition border ${
+                      className={`px-3 py-1.5 font-mono text-xs font-bold transition border ${
                         isUserConfirmed
                           ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500'
                           : 'bg-white text-obsidian border-white hover:bg-earth hover:text-white'
@@ -688,7 +688,7 @@ ${gpxPoints}
                             />
                             <div>
                               <div className="flex items-center gap-2">
-                                <p className="font-bold text-white uppercase">{user?.name || 'Piloto'}</p>
+                                <p className="font-bold text-white ">{user?.name || 'Piloto'}</p>
                                 {isLead && (
                                   <span className="px-1.5 py-0.2 bg-earth/20 border border-earth text-earth text-[9px] uppercase font-bold">
                                     Tú
@@ -716,7 +716,7 @@ ${gpxPoints}
                     <span className="font-mono text-[10px] text-earth uppercase tracking-widest font-bold">
                       [ LOGÍSTICA DE CAMPAMENTO ]
                     </span>
-                    <h3 className="font-display font-bold text-xl text-white uppercase">
+                    <h3 className="font-display font-bold text-xl text-white ">
                       Checklist de Equipo ({activeRodada.packingList.filter(i => i.isDone).length}/{activeRodada.packingList.length})
                     </h3>
                   </div>
@@ -758,7 +758,7 @@ ${gpxPoints}
                     />
                     <button
                       type="submit"
-                      className="px-3 py-2 bg-white hover:bg-earth text-obsidian hover:text-white uppercase font-bold text-xs transition"
+                      className="px-3 py-2 bg-white hover:bg-earth text-obsidian hover:text-white font-bold text-xs transition"
                     >
                       Añadir
                     </button>
@@ -770,7 +770,7 @@ ${gpxPoints}
           ) : (
             <div className="p-16 border border-white/10 bg-[#0B0A09] text-center font-mono text-xs text-ash space-y-4">
               <Compass className="w-10 h-10 text-earth mx-auto" />
-              <h3 className="font-display font-bold text-xl text-white uppercase">
+              <h3 className="font-display font-bold text-xl text-white ">
                 No Hay Rodada Convocada en Esta Tribu
               </h3>
               <p className="max-w-md mx-auto font-light">
@@ -778,9 +778,9 @@ ${gpxPoints}
               </p>
               <button
                 onClick={onOpenCreateRodada}
-                className="px-6 py-3 bg-earth hover:bg-earth-bright text-white uppercase font-bold text-xs transition"
+                className="px-6 py-3 bg-earth hover:bg-earth-bright text-white font-bold text-xs transition"
               >
-                + Convocar Primera Rodada
+                + Convocar primera rodada
               </button>
             </div>
           )}
@@ -794,7 +794,7 @@ ${gpxPoints}
             <span className="font-mono text-[10px] text-earth uppercase tracking-widest font-bold block">
               [ FLOTILLA ACTIVA ]
             </span>
-            <h2 className="font-display font-bold text-2xl text-white uppercase mt-1">
+            <h2 className="font-display font-bold text-2xl text-white mt-1">
               Pilotos Miembros ({currentCrew.members.length})
             </h2>
           </div>
@@ -831,7 +831,7 @@ ${gpxPoints}
                       />
                       <div>
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          <p className={`font-bold uppercase transition ${isMe ? 'text-white' : 'text-white group-hover:text-earth'}`}>
+                          <p className={`font-bold transition ${isMe ? 'text-white' : 'text-white group-hover:text-earth'}`}>
                             {user.name}
                           </p>
                           {isMe && (
@@ -882,9 +882,9 @@ ${gpxPoints}
           <div className="border-b border-white/10 pb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
               <span className="font-mono text-[10px] text-earth uppercase tracking-widest font-bold block">
-                [ ARCHIVO Y BITÁCORA GPS // RUTAS DEL GRUPO ]
+                [ ARCHIVO Y BITÁCORA GPS · RUTAS DEL GRUPO ]
               </span>
-              <h2 className="font-display font-extrabold text-2xl text-white uppercase mt-1">
+              <h2 className="font-display font-extrabold text-2xl text-white mt-1">
                 Rutas de la Tribu ({allCrewRoutes.length})
               </h2>
               <p className="font-mono text-xs text-ash mt-1">
@@ -896,15 +896,15 @@ ${gpxPoints}
               {onOpenRecordRoute && (
                 <button
                   onClick={onOpenRecordRoute}
-                  className="px-3.5 py-2 bg-earth hover:bg-earth-bright text-white font-mono text-xs uppercase font-bold tracking-wider transition flex items-center gap-1.5 shrink-0"
+                  className="px-3.5 py-2 bg-earth hover:bg-earth-bright text-white font-mono text-xs font-bold transition flex items-center gap-1.5 shrink-0"
                 >
                   <Plus className="w-4 h-4" />
-                  <span>Grabar Nueva</span>
+                  <span>Grabar nueva</span>
                 </button>
               )}
               <button
                 onClick={onOpenProposeRoute}
-                className="px-3.5 py-2 border border-white/20 hover:border-white text-white font-mono text-xs uppercase font-bold tracking-wider transition flex items-center gap-1.5 shrink-0"
+                className="px-3.5 py-2 border border-white/20 hover:border-white text-white font-mono text-xs font-bold transition flex items-center gap-1.5 shrink-0"
               >
                 <span>Proponer GPX</span>
               </button>
@@ -914,7 +914,7 @@ ${gpxPoints}
           {allCrewRoutes.length === 0 ? (
             <div className="p-12 border border-white/10 bg-[#0B0A09] text-center font-mono space-y-3">
               <Compass className="w-8 h-8 text-ash mx-auto" />
-              <p className="text-white text-xs uppercase font-bold">Aún no hay rutas guardadas en este grupo</p>
+              <p className="text-white text-xs font-bold">Aún no hay rutas guardadas en este grupo</p>
               <p className="text-ash text-[11px] max-w-md mx-auto">
                 Cuando grabes una ruta con el grabador GPS en vivo o propongas un archivo GPX, selecciona este grupo para guardarla aquí y regresar a ella cuando quieras.
               </p>
@@ -937,17 +937,17 @@ ${gpxPoints}
                     <div className="space-y-3">
                       {/* Top badges: distance, difficulty & offroad */}
                       <div className="flex items-center justify-between font-mono text-[10px]">
-                        <span className="px-2 py-0.5 bg-white/5 border border-white/10 text-white font-bold uppercase">
+                        <span className="px-2 py-0.5 bg-white/5 border border-white/10 text-white font-bold ">
                           {routeItem.totalKm} KM
                         </span>
-                        <span className="text-earth uppercase font-bold tracking-wide">
+                        <span className="text-earth font-bold ">
                           {routeItem.offroadPercentage}% Off-road
                         </span>
                       </div>
 
                       {/* Route Title & Destination */}
                       <div>
-                        <h3 className="font-display font-extrabold text-lg text-white uppercase group-hover:text-earth transition line-clamp-1">
+                        <h3 className="font-display font-extrabold text-lg text-white group-hover:text-earth transition line-clamp-1">
                           {routeItem.title}
                         </h3>
                         <p className="font-mono text-[11px] text-ash flex items-center gap-1 mt-0.5 truncate">
@@ -1002,7 +1002,7 @@ ${gpxPoints}
                           setSelectedRoute(routeItem);
                           setActiveTab('rodada');
                         }}
-                        className="text-earth group-hover:text-white uppercase font-bold flex items-center gap-1 transition"
+                        className="text-earth group-hover:text-white font-bold flex items-center gap-1 transition"
                       >
                         <Compass className="w-3.5 h-3.5" />
                         <span>Ver Trazado & GPX →</span>
@@ -1014,7 +1014,7 @@ ${gpxPoints}
                           const url = buildOrderedGoogleMapsUrl(routeItem, activeRodada?.originPoint);
                           window.open(url, '_blank');
                         }}
-                        className="px-2 py-1 bg-white/5 hover:bg-white/15 text-ash hover:text-white uppercase font-bold border border-white/10 transition flex items-center gap-1"
+                        className="px-2 py-1 bg-white/5 hover:bg-white/15 text-ash hover:text-white font-bold border border-white/10 transition flex items-center gap-1"
                         title="Abrir en Google Maps"
                       >
                         <Navigation className="w-3 h-3" />
@@ -1037,17 +1037,17 @@ ${gpxPoints}
               <span className="font-mono text-[10px] text-earth uppercase tracking-widest font-bold block">
                 [ HISTORIAL Y CONVOCATORIAS DE LA TRIBU ]
               </span>
-              <h2 className="font-display font-extrabold text-2xl text-white uppercase mt-1">
+              <h2 className="font-display font-extrabold text-2xl text-white mt-1">
                 Todas las Rodadas ({crewRodadas.length})
               </h2>
             </div>
 
             <button
               onClick={onOpenCreateRodada}
-              className="px-4 py-2 bg-white hover:bg-earth text-obsidian hover:text-white font-mono text-xs uppercase font-bold tracking-wider transition flex items-center gap-2 shrink-0"
+              className="px-4 py-2 bg-white hover:bg-earth text-obsidian hover:text-white font-mono text-xs font-bold transition flex items-center gap-2 shrink-0"
             >
               <Plus className="w-4 h-4" />
-              + Convocar Nueva Rodada
+              Convocar nueva rodada
             </button>
           </div>
 
@@ -1063,7 +1063,7 @@ ${gpxPoints}
               >
                 <div className="space-y-2 flex-1">
                   <div className="flex items-center gap-3 font-mono text-[10px]">
-                    <span className={`px-2 py-0.5 border font-bold uppercase tracking-widest ${
+                    <span className={`px-2 py-0.5 border font-bold ${
                       rd.status === 'completada'
                         ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400'
                         : rd.status === 'votacion'
@@ -1078,7 +1078,7 @@ ${gpxPoints}
                     </span>
                   </div>
 
-                  <h3 className="font-display font-extrabold text-2xl text-white uppercase group-hover:text-earth transition">
+                  <h3 className="font-display font-extrabold text-2xl text-white group-hover:text-earth transition">
                     {rd.title}
                   </h3>
                   <p className="font-mono text-xs text-ash max-w-2xl font-light">
@@ -1096,7 +1096,7 @@ ${gpxPoints}
                     <p className="font-bold text-earth">{rd.attendees.length} Confirmados</p>
                   </div>
 
-                  <button className="px-6 py-3.5 bg-white group-hover:bg-earth text-obsidian group-hover:text-white uppercase font-bold tracking-widest text-xs transition shrink-0">
+                  <button className="px-6 py-3.5 bg-white group-hover:bg-earth text-obsidian group-hover:text-white font-bold text-xs transition shrink-0">
                     Ver Rodada en la Tribu →
                   </button>
                 </div>
