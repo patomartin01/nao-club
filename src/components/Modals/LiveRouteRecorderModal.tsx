@@ -5,6 +5,16 @@ import { useApp } from '../../context/AppContext';
 import { Waypoint, WaypointType, RouteProposal } from '../../types';
 import { buildOrderedGoogleMapsUrl } from '../../utils/googleMaps';
 import { 
+  saveActiveRecordingToDB, 
+  getActiveRecordingFromDB, 
+  clearActiveRecordingFromDB 
+} from '../../lib/offlineStorage';
+import { 
+  shouldAcceptGPSPoint, 
+  DeviceWakeLockManager, 
+  generateGPXString 
+} from '../../utils/gpsTelemetry';
+import { 
   X, 
   Play, 
   Pause, 
@@ -132,70 +142,133 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
   const waypointsLayerRef = useRef<any>(null);
   const [currentLayer, setCurrentLayer] = useState<'satellite' | 'topo'>('satellite');
 
-  // Key for persistent active recording in localStorage
+  // Key for persistent active recording in localStorage (solo respaldo si IndexedDB falla)
   const ACTIVE_RECORDING_STORAGE_KEY = 'motomami_active_gps_recording_v1';
+
+  // WakeLock Manager para evitar que el teléfono duerma el sensor GPS
+  const wakeLockRef = useRef<DeviceWakeLockManager>(new DeviceWakeLockManager());
+  const lastAcceptedPointRef = useRef<{ lat: number; lng: number; timestamp: number } | null>(null);
+
+  // Refs de la sesión de grabación. Los callbacks del GPS y del timer viven mucho tiempo,
+  // así que leen de aquí en vez del estado (que en esos closures se queda congelado).
+  const trackRef = useRef<[number, number][]>([]);
+  const waypointsRef = useRef<Waypoint[]>([]);
+  const distanceRef = useRef(0); // km sin redondear, para no perder tramos cortos
+  const elapsedBaseRef = useRef(0); // segundos acumulados antes del tramo actual
+  const segmentStartRef = useRef<number | null>(null); // Date.now() cuando arrancó el tramo actual
+  const stopsCountRef = useRef(0);
+  const lastMovementAtRef = useRef<number | null>(null);
+  const lastPositionRef = useRef<{ lat: number; lng: number; ele: number } | null>(null);
+  const stopLoggedRef = useRef(false);
+  const resumeGapRef = useRef(false); // el primer punto tras reanudar no suma distancia
+  const finalizedRef = useRef(false); // ruta ya guardada: no volver a persistirla
+  const fitOnRestoreRef = useRef(false);
+
+  useEffect(() => { trackRef.current = trackCoords; }, [trackCoords]);
+  useEffect(() => { waypointsRef.current = recordedWaypoints; }, [recordedWaypoints]);
+
+  // Tiempo real transcurrido (no depende de que setInterval siga vivo con la pantalla apagada)
+  const getElapsedSeconds = () =>
+    elapsedBaseRef.current +
+    (segmentStartRef.current ? Math.floor((Date.now() - segmentStartRef.current) / 1000) : 0);
 
   // Exit confirmation modal state
   const [showExitConfirm, setShowExitConfirm] = useState(false);
 
-  // Restore active recording session from localStorage on initial mount
+  // Restore active recording session from IndexedDB (fallback to localStorage) on initial mount
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    try {
-      const saved = localStorage.getItem(ACTIVE_RECORDING_STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed && Array.isArray(parsed.trackCoords) && parsed.trackCoords.length > 0) {
-          setIsRecording(parsed.isRecording ?? true);
-          setIsPaused(true); // Restore in paused state so rider can resume smoothly
-          setElapsedSeconds(parsed.elapsedSeconds || 0);
-          setDistanceKm(parsed.distanceKm || 0);
-          setCurrentSpeed(0);
-          setAvgSpeed(parsed.avgSpeed || 0);
-          setCurrentElevation(parsed.currentElevation || 0);
-          setMaxElevation(parsed.maxElevation || 0);
-          setTrackCoords(parsed.trackCoords || []);
-          setRecordedWaypoints(parsed.recordedWaypoints || []);
-          setDetectedStopsCount(parsed.detectedStopsCount || 0);
-          if (parsed.routeTitle) setRouteTitle(parsed.routeTitle);
-          if (parsed.routeDescription) setRouteDescription(parsed.routeDescription);
-          setHasGpsFix(true);
+    const restoreSession = async () => {
+      try {
+        // 1. Intentar primero desde IndexedDB (blindado para offline / miles de puntos)
+        const idbData = await getActiveRecordingFromDB();
+        let session: any = idbData;
+
+        // 2. Fallback a localStorage si no está en IndexedDB
+        if (!session) {
+          const saved = localStorage.getItem(ACTIVE_RECORDING_STORAGE_KEY);
+          if (saved) session = JSON.parse(saved);
         }
+
+        if (session && Array.isArray(session.trackCoords) && session.trackCoords.length > 0) {
+          // Sincronizar refs antes que el estado para que reanudar arranque con los datos correctos
+          distanceRef.current = session.distanceKm || 0;
+          elapsedBaseRef.current = session.elapsedSeconds || 0;
+          segmentStartRef.current = null;
+          stopsCountRef.current = session.detectedStopsCount || 0;
+          trackRef.current = session.trackCoords;
+          waypointsRef.current = session.recordedWaypoints || [];
+          fitOnRestoreRef.current = true;
+
+          setIsRecording(session.isRecording ?? true);
+          setIsPaused(true); // Restore in paused state so rider can resume smoothly
+          setElapsedSeconds(session.elapsedSeconds || 0);
+          setDistanceKm(session.distanceKm || 0);
+          setCurrentSpeed(0);
+          setAvgSpeed(session.avgSpeed || 0);
+          setCurrentElevation(session.currentElevation || 0);
+          setMaxElevation(session.maxElevation || 0);
+          setTrackCoords(session.trackCoords || []);
+          setRecordedWaypoints(session.recordedWaypoints || []);
+          setDetectedStopsCount(session.detectedStopsCount || 0);
+          if (session.routeTitle) setRouteTitle(session.routeTitle);
+          if (session.routeDescription) setRouteDescription(session.routeDescription);
+          setHasGpsFix(true);
+
+          const last = session.trackCoords[session.trackCoords.length - 1];
+          lastAcceptedPointRef.current = { lat: last[0], lng: last[1], timestamp: Date.now() };
+
+          // Ya hay traza: apagar el watcher de vista previa para que no re-centre el mapa a cada rato
+          if (previewWatcherRef.current !== null && navigator.geolocation) {
+            navigator.geolocation.clearWatch(previewWatcherRef.current);
+            previewWatcherRef.current = null;
+          }
+        }
+      } catch (e) {
+        console.warn('Error restoring active recording:', e);
       }
-    } catch (e) {
-      console.warn('Error restoring active recording:', e);
-    }
+    };
+    restoreSession();
   }, []);
 
-  // Sync active recording to localStorage whenever state updates
+  // Persistir la grabación activa. El tiempo solo dispara guardado cada 15 s para no
+  // reescribir toda la traza cada segundo; los puntos, waypoints y pausas sí guardan al instante.
+  const elapsedPersistBucket = Math.floor(elapsedSeconds / 15);
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    if (finalizedRef.current) return;
     if (isRecording || trackCoords.length > 0) {
-      try {
-        const payload = {
-          isRecording,
-          isPaused,
-          elapsedSeconds,
-          distanceKm,
-          avgSpeed,
-          currentElevation,
-          maxElevation,
-          trackCoords,
-          recordedWaypoints,
-          detectedStopsCount,
-          routeTitle,
-          routeDescription,
-          updatedAt: Date.now()
-        };
-        localStorage.setItem(ACTIVE_RECORDING_STORAGE_KEY, JSON.stringify(payload));
-      } catch (e) {
-        console.warn('Error saving active recording:', e);
-      }
+      const payload = {
+        isRecording,
+        isPaused,
+        elapsedSeconds: getElapsedSeconds(),
+        distanceKm,
+        avgSpeed,
+        currentElevation,
+        maxElevation,
+        trackCoords,
+        recordedWaypoints,
+        detectedStopsCount,
+        routeTitle,
+        routeDescription,
+        updatedAt: Date.now()
+      };
+
+      // IndexedDB es el almacenamiento principal. localStorage solo si IndexedDB no está disponible
+      // (tiene límite de ~5 MB y es síncrono, con miles de puntos se vuelve lento).
+      saveActiveRecordingToDB(payload).then(ok => {
+        if (ok) return;
+        try {
+          localStorage.setItem(ACTIVE_RECORDING_STORAGE_KEY, JSON.stringify(payload));
+        } catch (e) {
+          console.warn('Error saving active recording to localStorage:', e);
+        }
+      });
     }
   }, [
     isRecording,
     isPaused,
-    elapsedSeconds,
+    elapsedPersistBucket,
     distanceKm,
     avgSpeed,
     currentElevation,
@@ -207,8 +280,11 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
     routeDescription
   ]);
 
-  // Clean active recording session storage
+  // Clean active recording session storage (IndexedDB + localStorage)
   const clearActiveRecordingStorage = () => {
+    clearActiveRecordingFromDB();
+    lastAcceptedPointRef.current = null;
+    wakeLockRef.current.releaseLock();
     if (typeof window !== 'undefined') {
       try {
         localStorage.removeItem(ACTIVE_RECORDING_STORAGE_KEY);
@@ -298,19 +374,6 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
     );
   };
 
-  // Calculate distance between two lat/lng coords (Haversine in km)
-  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-    const R = 6371; // Earth radius in km
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = 
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-  };
-
   // Format seconds to HH:MM:SS
   const formatTime = (totalSeconds: number) => {
     const hrs = Math.floor(totalSeconds / 3600);
@@ -327,24 +390,32 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
     const initLeaflet = async () => {
       if (typeof window === 'undefined' || !mapContainerRef.current) return;
       const L = (await import('leaflet')).default;
+      // Si el modal se cerró (o React re-montó el efecto) mientras cargaba Leaflet, no crear
+      // un mapa ni un watcher de vista previa huérfanos
+      if (!isMounted || !mapContainerRef.current) return;
 
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
 
-      // Initial center: if we have trackCoords, use them, otherwise default to Mexico City area
-      const initialCenter: [number, number] = trackCoords[0] || [19.4326, -99.1332];
+      // Leer la traza desde el ref: el closure de este efecto puede tener el estado viejo
+      // (p. ej. si la sesión se restauró de IndexedDB después de abrir el modal)
+      const existingTrack = trackRef.current;
+
+      // Initial center: último punto grabado, si no, zona de CDMX
+      const initialCenter: [number, number] = existingTrack[existingTrack.length - 1] || [19.4326, -99.1332];
       const map = L.map(mapContainerRef.current, {
         center: initialCenter,
-        zoom: trackCoords.length > 0 ? 14 : 13,
+        zoom: existingTrack.length > 0 ? 14 : 13,
         zoomControl: false,
         attributionControl: false
       });
 
       // Active live preview GPS watcher before recording starts
-      if (typeof navigator !== 'undefined' && navigator.geolocation && trackCoords.length === 0) {
+      if (typeof navigator !== 'undefined' && navigator.geolocation && existingTrack.length === 0) {
         setIsLocating(true);
+        let hasCentered = false;
         // Start continuous watch to acquire and track real position immediately
         try {
           previewWatcherRef.current = navigator.geolocation.watchPosition(
@@ -357,8 +428,9 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
               if (riderMarkerRef.current) {
                 riderMarkerRef.current.setLatLng(currentPos);
               }
-              // Only auto-center on first acquisition or if not recording
-              if (mapInstanceRef.current) {
+              // Centrar solo en la primera lectura para no pelear con el zoom/arrastre del usuario
+              if (mapInstanceRef.current && !hasCentered) {
+                hasCentered = true;
                 mapInstanceRef.current.setView(currentPos, 15);
               }
             },
@@ -409,7 +481,7 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
       labelsLayer.addTo(map);
 
       // Polyline for recorded track
-      const poly = L.polyline(trackCoords || [], {
+      const poly = L.polyline(existingTrack, {
         color: '#E07A5F',
         weight: 5,
         opacity: 0.9,
@@ -437,34 +509,18 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
       const wpGroup = L.layerGroup().addTo(map);
       waypointsLayerRef.current = wpGroup;
 
-      // Re-draw any existing waypoints restored from storage
-      if (recordedWaypoints && recordedWaypoints.length > 0) {
-        recordedWaypoints.forEach((wp) => {
-          const markerIcon = L.divIcon({
-            className: 'wp-marker',
-            html: `
-              <div style="background: #0B0A09; border: 1.5px solid #E07A5F; color: white; padding: 3px 6px; border-radius: 2px; font-size: 10px; font-family: monospace; font-weight: bold; white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,0.6); display: flex; align-items: center; gap: 5px;">
-                <span style="background: #E07A5F; color: black; font-weight: 800; font-size: 8px; padding: 1px 3px; border-radius: 2px;">${wp.type.toUpperCase()}</span>
-                <span>${wp.name.split('(')[0]}</span>
-              </div>
-            `,
-            iconSize: [120, 30],
-            iconAnchor: [60, 15]
-          });
-          L.marker([wp.lat, wp.lng], { icon: markerIcon })
-            .bindPopup(`<b>${wp.name}</b><br/>${wp.notes || ''}`)
-            .addTo(wpGroup);
-        });
-      }
+      mapInstanceRef.current = map;
+
+      // Re-draw any existing waypoints (sesión restaurada o modal reabierto)
+      redrawWaypoints(waypointsRef.current);
 
       // If we restored trackCoords, fit bounds nicely so the whole track is seen immediately
-      if (trackCoords && trackCoords.length > 1) {
+      if (existingTrack.length > 1) {
+        fitOnRestoreRef.current = false;
         try {
           map.fitBounds(poly.getBounds(), { padding: [30, 30] });
         } catch (e) {}
       }
-
-      mapInstanceRef.current = map;
 
       setTimeout(() => {
         if (map) map.invalidateSize();
@@ -475,13 +531,19 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
 
     return () => {
       isMounted = false;
-      if (previewWatcherRef.current !== null && typeof navigator !== 'undefined') {
-        navigator.geolocation.clearWatch(previewWatcherRef.current);
+      stopPreviewWatcher();
+      // Si se cierra el modal grabando (p. ej. cambiando de pestaña en la barra inferior),
+      // dejarlo en pausa de forma explícita para que "Reanudar" vuelva a prender el GPS
+      if (gpsWatcherRef.current !== null) {
+        stopGpsWatcher();
+        stopTimer();
+        wakeLockRef.current.releaseLock();
+        setIsPaused(true);
+        setCurrentSpeed(0);
+      } else if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
       }
-      if (gpsWatcherRef.current !== null && typeof navigator !== 'undefined') {
-        navigator.geolocation.clearWatch(gpsWatcherRef.current);
-      }
-      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
     };
   }, [isOpen]);
 
@@ -506,70 +568,80 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
     }
   };
 
-  // Add a recorded point to track
-  const appendPoint = async (lat: number, lng: number, ele: number = 2600, speed: number = 0) => {
-    setTrackCoords(prev => {
-      const next = [...prev, [lat, lng] as [number, number]];
-      
-      // Update distance
-      if (prev.length > 0) {
-        const last = prev[prev.length - 1];
-        const addedKm = calculateDistance(last[0], last[1], lat, lng);
-        setDistanceKm(d => Number((d + addedKm).toFixed(2)));
-      }
-
-      // Update Map Polyline & Rider position
-      if (mapInstanceRef.current) {
-        if (polylineRef.current) {
-          polylineRef.current.setLatLngs(next);
-        }
-        if (riderMarkerRef.current) {
-          riderMarkerRef.current.setLatLng([lat, lng]);
-        }
-        mapInstanceRef.current.panTo([lat, lng], { animate: true, duration: 0.5 });
-      }
-
-      return next;
-    });
-
-    setCurrentSpeed(speed);
-    setCurrentElevation(ele);
-    setMaxElevation(prevMax => Math.max(prevMax, ele));
-
-    // Auto-detect stops: if speed < 3 km/h
-    if (speed < 3) {
-      setStoppedSeconds(prev => {
-        const updated = prev + 2;
-        // If stopped for > 30s in real GPS, log a technical stop!
-        if (updated >= 30 && updated < 33) {
-          logAutomaticStop(lat, lng, ele);
-        }
-        return updated;
-      });
-    } else {
-      setStoppedSeconds(0);
-    }
+  // Etiqueta visible de cada waypoint en el mapa
+  const getWaypointTag = (wp: Waypoint) => {
+    if (wp.id.startsWith('stop-')) return 'STOP';
+    const tags: Record<string, string> = {
+      start: 'START',
+      end: 'END',
+      fuel: 'GAS',
+      scenic: 'VISTA',
+      dirt: 'TECNICO',
+      camp: 'DESCANSO'
+    };
+    return tags[wp.type] || wp.type.toUpperCase();
   };
 
+  // Redibuja todos los waypoints. Al derivarse del estado, sirven igual para grabación nueva,
+  // sesión restaurada o mapa re-creado al reabrir el modal.
+  const redrawWaypoints = async (wps: Waypoint[]) => {
+    if (!mapInstanceRef.current || !waypointsLayerRef.current) return;
+    const L = (await import('leaflet')).default;
+    const layer = waypointsLayerRef.current;
+    layer.clearLayers();
+    wps.forEach((wp) => {
+      const markerIcon = L.divIcon({
+        className: 'wp-marker',
+        html: `
+          <div style="background: #0B0A09; border: 1.5px solid #E07A5F; color: white; padding: 3px 6px; border-radius: 2px; font-size: 10px; font-family: monospace; font-weight: bold; white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,0.6); display: flex; align-items: center; gap: 5px;">
+            <span style="background: #E07A5F; color: black; font-weight: 800; font-size: 8px; padding: 1px 3px; border-radius: 2px;">${getWaypointTag(wp)}</span>
+            <span>${wp.name.split('(')[0]}</span>
+          </div>
+        `,
+        iconSize: [120, 30],
+        iconAnchor: [60, 15]
+      });
+      L.marker([wp.lat, wp.lng], { icon: markerIcon })
+        .bindPopup(`<b>${wp.name}</b><br/>${wp.notes || ''}`)
+        .addTo(layer);
+    });
+  };
+
+  // Mantener la línea del mapa y los marcadores sincronizados con el estado
+  useEffect(() => {
+    if (!polylineRef.current) return;
+    polylineRef.current.setLatLngs(trackCoords);
+    if (fitOnRestoreRef.current && mapInstanceRef.current && trackCoords.length > 1) {
+      fitOnRestoreRef.current = false;
+      try {
+        mapInstanceRef.current.fitBounds(polylineRef.current.getBounds(), { padding: [30, 30] });
+      } catch (e) {}
+    }
+  }, [trackCoords]);
+
+  useEffect(() => {
+    redrawWaypoints(recordedWaypoints);
+  }, [recordedWaypoints]);
+
   // Log an automatic stop detected by GPS inactivity
-  const logAutomaticStop = async (lat: number, lng: number, ele: number) => {
-    const stopNum = detectedStopsCount + 1;
+  const logAutomaticStop = (lat: number, lng: number, ele: number) => {
+    stopsCountRef.current += 1;
+    const stopNum = stopsCountRef.current;
     const newStop: Waypoint = {
       id: `stop-${Date.now()}`,
       name: `Parada #${stopNum} (Pausa de Manejo)`,
       lat,
       lng,
       type: 'camp',
-      notes: `Parada detectada por telemetría GPS. Altitud: ${ele}m. Tiempo en ruta: ${formatTime(elapsedSeconds)}`
+      notes: `Parada detectada por telemetría GPS. Altitud: ${ele}m. Tiempo en ruta: ${formatTime(getElapsedSeconds())}`
     };
 
-    setDetectedStopsCount(c => c + 1);
+    setDetectedStopsCount(stopNum);
     setRecordedWaypoints(wps => [...wps, newStop]);
-    addMarkerToMap(newStop, 'STOP');
   };
 
   // Manual Waypoint / Stop Logger
-  const handleAddManualWaypoint = (type: WaypointType, label: string, tag: string) => {
+  const handleAddManualWaypoint = (type: WaypointType, label: string, _tag: string) => {
     const currentLoc = trackCoords[trackCoords.length - 1] || [19.4005, -99.2816];
     const newWp: Waypoint = {
       id: `wp-${Date.now()}`,
@@ -581,30 +653,152 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
     };
 
     setRecordedWaypoints(prev => [...prev, newWp]);
-    addMarkerToMap(newWp, tag);
     confetti({ particleCount: 20, spread: 45 });
   };
 
-  // Add marker symbol to Leaflet map
-  const addMarkerToMap = async (wp: Waypoint, tag: string) => {
-    if (!mapInstanceRef.current || !waypointsLayerRef.current) return;
-    const L = (await import('leaflet')).default;
+  // Procesa cada lectura del GPS mientras se graba
+  const handleGpsPosition = (pos: GeolocationPosition) => {
+    setHasGpsFix(true);
+    setGpsError(null);
+    const lat = pos.coords.latitude;
+    const lng = pos.coords.longitude;
+    const accuracy = pos.coords.accuracy || 10;
+    const hasAltitude = pos.coords.altitude !== null && pos.coords.altitude !== undefined;
+    const ele = hasAltitude ? Math.round(pos.coords.altitude as number) : null;
+    const rawSpeed = pos.coords.speed;
+    const hasSpeed = rawSpeed !== null && rawSpeed !== undefined && !Number.isNaN(rawSpeed);
+    const spd = hasSpeed && (rawSpeed as number) > 0 ? Math.round((rawSpeed as number) * 3.6) : 0; // m/s to km/h
+    const timestamp = pos.timestamp || Date.now();
 
-    const markerIcon = L.divIcon({
-      className: 'wp-marker',
-      html: `
-        <div style="background: #0B0A09; border: 1.5px solid #E07A5F; color: white; padding: 3px 6px; border-radius: 2px; font-size: 10px; font-family: monospace; font-weight: bold; white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,0.6); display: flex; align-items: center; gap: 5px;">
-          <span style="background: #E07A5F; color: black; font-weight: 800; font-size: 8px; padding: 1px 3px; border-radius: 2px;">${tag}</span>
-          <span>${wp.name.split('(')[0]}</span>
-        </div>
-      `,
-      iconSize: [120, 30],
-      iconAnchor: [60, 15]
-    });
+    setCurrentSpeed(spd);
+    lastPositionRef.current = { lat, lng, ele: ele ?? lastPositionRef.current?.ele ?? 0 };
 
-    L.marker([wp.lat, wp.lng], { icon: markerIcon })
-      .bindPopup(`<b>${wp.name}</b><br/>${wp.notes || ''}`)
-      .addTo(waypointsLayerRef.current);
+    // Filtro anti-rebotes y anti-líneas rectas
+    const prevPoint = lastAcceptedPointRef.current;
+    const check = shouldAcceptGPSPoint(
+      { lat, lng, ele: ele ?? undefined, speed: spd, accuracy, timestamp },
+      prevPoint
+    );
+
+    if (!check.accept) {
+      // Si el punto es ruido de satélite o rebote, actualizar marcador visual sin romper la traza
+      updateRiderLocation(lat, lng);
+      return;
+    }
+
+    // Movimiento real: reinicia el contador de parada. Si el teléfono no reporta velocidad,
+    // basta con que el punto haya pasado el filtro (se movió más de 2.5 m).
+    if (!hasSpeed || spd >= 3) {
+      lastMovementAtRef.current = Date.now();
+      stopLoggedRef.current = false;
+    }
+
+    lastAcceptedPointRef.current = { lat, lng, timestamp };
+
+    // Primer punto de la grabación: waypoint de salida
+    if (!prevPoint && !waypointsRef.current.some(w => w.type === 'start')) {
+      const startWp: Waypoint = {
+        id: `start-${Date.now()}`,
+        name: 'Punto de Salida',
+        lat,
+        lng,
+        type: 'start',
+        notes: `Inicio de grabación GPS: ${new Date().toLocaleTimeString()}`
+      };
+      setRecordedWaypoints(prev => [startWp, ...prev.filter(w => w.type !== 'start')]);
+    }
+
+    // Distancia acumulada sin redondear (redondear en cada paso perdía los tramos de pocos metros)
+    const addedKm = prevPoint && !resumeGapRef.current ? (check.distanceKm || 0) : 0;
+    resumeGapRef.current = false;
+    distanceRef.current += addedKm;
+    setDistanceKm(Number(distanceRef.current.toFixed(2)));
+
+    const elapsed = getElapsedSeconds();
+    if (elapsed > 0) {
+      setAvgSpeed(Math.round(distanceRef.current / (elapsed / 3600)));
+    }
+
+    if (ele !== null) {
+      setCurrentElevation(ele);
+      setMaxElevation(prevMax => Math.max(prevMax, ele));
+    }
+
+    setTrackCoords(prev => [...prev, [lat, lng] as [number, number]]);
+
+    if (!prevPoint && mapInstanceRef.current) {
+      updateRiderLocation(lat, lng, 15);
+    } else {
+      updateRiderLocation(lat, lng);
+    }
+  };
+
+  const handleGpsError = (err: GeolocationPositionError) => {
+    console.warn('GPS error:', err);
+    if (err.code === 1) {
+      setGpsError('Permiso de GPS denegado. Permite la ubicación en los ajustes del navegador.');
+    } else if (err.code === 2) {
+      setGpsError('Buscando señal GPS... Sal al exterior para mejorar la precisión de los satélites.');
+    } else if (err.code === 3) {
+      setGpsError('Tiempo de espera GPS agotado. Reintentando conectar con satélites...');
+    } else {
+      setGpsError('Error al obtener coordenadas GPS.');
+    }
+  };
+
+  const startGpsWatcher = () => {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) return;
+    if (gpsWatcherRef.current !== null) return;
+    gpsWatcherRef.current = navigator.geolocation.watchPosition(
+      handleGpsPosition,
+      handleGpsError,
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+    );
+  };
+
+  const stopGpsWatcher = () => {
+    if (gpsWatcherRef.current !== null && typeof navigator !== 'undefined' && navigator.geolocation) {
+      navigator.geolocation.clearWatch(gpsWatcherRef.current);
+    }
+    gpsWatcherRef.current = null;
+  };
+
+  const startTimer = () => {
+    segmentStartRef.current = Date.now();
+    if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+    timerIntervalRef.current = setInterval(() => {
+      setElapsedSeconds(getElapsedSeconds());
+
+      // Detección de paradas por tiempo sin movimiento. Funciona aunque el filtro descarte
+      // las lecturas de ruido o aunque el teléfono deje de mandar posiciones estando quieto.
+      if (lastMovementAtRef.current) {
+        const still = Math.floor((Date.now() - lastMovementAtRef.current) / 1000);
+        setStoppedSeconds(still >= 3 ? still : 0);
+        // Solo cuenta como parada si ya se rodó algo (evita la "parada" de antes de arrancar)
+        if (still >= 30 && !stopLoggedRef.current && lastPositionRef.current && distanceRef.current > 0.05) {
+          stopLoggedRef.current = true;
+          const p = lastPositionRef.current;
+          logAutomaticStop(p.lat, p.lng, p.ele);
+        }
+      }
+    }, 1000);
+  };
+
+  const stopTimer = () => {
+    if (segmentStartRef.current) {
+      elapsedBaseRef.current += Math.floor((Date.now() - segmentStartRef.current) / 1000);
+      segmentStartRef.current = null;
+    }
+    if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+    timerIntervalRef.current = null;
+    setElapsedSeconds(elapsedBaseRef.current);
+  };
+
+  const stopPreviewWatcher = () => {
+    if (previewWatcherRef.current !== null && typeof navigator !== 'undefined' && navigator.geolocation) {
+      navigator.geolocation.clearWatch(previewWatcherRef.current);
+    }
+    previewWatcherRef.current = null;
   };
 
   // Start real GPS recording
@@ -616,82 +810,99 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
       return;
     }
 
+    finalizedRef.current = false;
+    lastAcceptedPointRef.current = null;
+    resumeGapRef.current = false;
+    lastMovementAtRef.current = Date.now();
+    stopLoggedRef.current = false;
+
     setIsRecording(true);
     setIsPaused(false);
 
+    // Activar WakeLock para que el móvil no suspenda el sensor GPS al rodar
+    wakeLockRef.current.requestLock();
+
     // Clear preview watcher since recording watcher takes full control
-    if (previewWatcherRef.current !== null && typeof navigator !== 'undefined') {
-      navigator.geolocation.clearWatch(previewWatcherRef.current);
-      previewWatcherRef.current = null;
-    }
+    stopPreviewWatcher();
 
-    // Start Timer
-    if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
-    timerIntervalRef.current = setInterval(() => {
-      setElapsedSeconds(s => s + 1);
-    }, 1000);
-
-    // Watch real device position via GPS with high accuracy
-    gpsWatcherRef.current = navigator.geolocation.watchPosition(
-      (pos) => {
-        setHasGpsFix(true);
-        setGpsError(null);
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
-        const ele = Math.round(pos.coords.altitude || 0);
-        const rawSpeed = pos.coords.speed;
-        const spd = rawSpeed && rawSpeed > 0 ? Math.round(rawSpeed * 3.6) : 0; // m/s to km/h
-
-        // If this is the first point, set the start waypoint
-        setTrackCoords(prev => {
-          if (prev.length === 0) {
-            const startWp: Waypoint = {
-              id: `start-${Date.now()}`,
-              name: 'Punto de Salida',
-              lat,
-              lng,
-              type: 'start',
-              notes: `Inicio de grabación GPS: ${new Date().toLocaleTimeString()}`
-            };
-            setRecordedWaypoints([startWp]);
-            addMarkerToMap(startWp, 'START');
-            if (mapInstanceRef.current) {
-              mapInstanceRef.current.setView([lat, lng], 15);
-            }
-          }
-          return prev;
-        });
-
-        appendPoint(lat, lng, ele, spd);
-      },
-      (err) => {
-        console.warn('GPS error:', err);
-        if (err.code === 1) {
-          setGpsError('Permiso de GPS denegado. Permite la ubicación en los ajustes del navegador.');
-        } else if (err.code === 2) {
-          setGpsError('Buscando señal GPS... Sal al exterior para mejorar la precisión de los satélites.');
-        } else if (err.code === 3) {
-          setGpsError('Tiempo de espera GPS agotado. Reintentando conectar con satélites...');
-        } else {
-          setGpsError('Error al obtener coordenadas GPS.');
-        }
-      },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-    );
+    startTimer();
+    startGpsWatcher();
   };
 
-  // Pause
+  // Pause: detiene timer y GPS (antes el GPS seguía sumando puntos y km en pausa)
   const handlePause = () => {
     setIsPaused(true);
-    if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+    stopTimer();
+    stopGpsWatcher();
+    wakeLockRef.current.releaseLock();
+    setCurrentSpeed(0);
+    setStoppedSeconds(0);
   };
 
-  // Resume
+  // Resume: vuelve a encender el GPS (antes solo reanudaba el reloj, y tras recargar
+  // o minimizar el modal ya no se grababa ningún punto)
   const handleResume = () => {
+    setGpsError(null);
     setIsPaused(false);
-    timerIntervalRef.current = setInterval(() => {
-      setElapsedSeconds(s => s + 1);
-    }, 1000);
+    resumeGapRef.current = true;
+    lastMovementAtRef.current = Date.now();
+    stopLoggedRef.current = false;
+    stopPreviewWatcher();
+    wakeLockRef.current.requestLock();
+    startTimer();
+    startGpsWatcher();
+  };
+
+  // El navegador suelta el WakeLock cuando la pestaña pasa a segundo plano: re-pedirlo al volver
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible' && isRecording && !isPaused) {
+        wakeLockRef.current.requestLock();
+        setElapsedSeconds(getElapsedSeconds());
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
+  }, [isRecording, isPaused]);
+
+  // Deja el grabador limpio para una ruta nueva
+  const resetRecordingState = () => {
+    stopGpsWatcher();
+    if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+    timerIntervalRef.current = null;
+    elapsedBaseRef.current = 0;
+    segmentStartRef.current = null;
+    distanceRef.current = 0;
+    stopsCountRef.current = 0;
+    lastAcceptedPointRef.current = null;
+    lastMovementAtRef.current = null;
+    lastPositionRef.current = null;
+    stopLoggedRef.current = false;
+    resumeGapRef.current = false;
+    finalizedRef.current = false;
+    trackRef.current = [];
+    waypointsRef.current = [];
+    wakeLockRef.current.releaseLock();
+
+    setIsRecording(false);
+    setIsPaused(false);
+    setTrackCoords([]);
+    setRecordedWaypoints([]);
+    setElapsedSeconds(0);
+    setDistanceKm(0);
+    setAvgSpeed(0);
+    setCurrentSpeed(0);
+    setCurrentElevation(0);
+    setMaxElevation(0);
+    setDetectedStopsCount(0);
+    setStoppedSeconds(0);
+    setRouteTitle('');
+    setRouteDescription('');
+    setSavedRouteUrl(null);
+    setUploadedPhotos([]);
+    setShowExitConfirm(false);
+    setShowSaveDialog(false);
   };
 
   // Finalize & Open Save Dialog
@@ -707,8 +918,8 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
       type: 'end',
       notes: `Finalización de recorrido. Distancia: ${distanceKm} km.`
     };
-    setRecordedWaypoints(prev => [...prev, endWp]);
-    addMarkerToMap(endWp, 'END');
+    // Si ya había un "fin" (abrió el diálogo, reanudó y volvió a terminar) se reemplaza
+    setRecordedWaypoints(prev => [...prev.filter(w => w.type !== 'end'), endWp]);
 
     setRouteTitle(`Expedición Grabada ${new Date().toLocaleDateString('es-MX', { day: '2-digit', month: 'short' })} (${distanceKm} km)`);
     setRouteDescription(`Ruta off-road registrada en vivo por ${currentUser.name}. Registró ${detectedStopsCount} paradas técnicas, altitud máxima de ${maxElevation}m y ${distanceKm} km de recorrido total.`);
@@ -819,13 +1030,23 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
     const gmapsUrl = buildOrderedGoogleMapsUrl(fullRouteObject);
     setSavedRouteUrl(gmapsUrl);
 
-    // Clear active recording cache on successful save
+    // Clear active recording cache on successful save. finalizedRef evita que el efecto
+    // de persistencia la vuelva a escribir mientras se ve la pantalla de éxito.
+    finalizedRef.current = true;
+    stopGpsWatcher();
+    stopTimer();
     clearActiveRecordingStorage();
     confetti({ particleCount: 100, spread: 90 });
   };
 
   // Close modal safely or prompt if recording is in progress
   const handleRequestClose = () => {
+    // Ruta ya guardada: no preguntar qué hacer con ella, solo limpiar y cerrar
+    if (finalizedRef.current) {
+      resetRecordingState();
+      onClose();
+      return;
+    }
     // If currently recording or has recorded points, don't silently close
     if (isRecording || trackCoords.length > 0) {
       handlePause();
@@ -839,23 +1060,8 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
   // Explicitly discard recording and close
   const handleDiscardAndExit = () => {
     clearActiveRecordingStorage();
-    if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
-    if (previewWatcherRef.current !== null && typeof navigator !== 'undefined') {
-      navigator.geolocation.clearWatch(previewWatcherRef.current);
-      previewWatcherRef.current = null;
-    }
-    if (gpsWatcherRef.current !== null && typeof navigator !== 'undefined') {
-      navigator.geolocation.clearWatch(gpsWatcherRef.current);
-    }
-    setIsRecording(false);
-    setIsPaused(false);
-    setTrackCoords([]);
-    setRecordedWaypoints([]);
-    setElapsedSeconds(0);
-    setDistanceKm(0);
-    setDetectedStopsCount(0);
-    setShowExitConfirm(false);
-    setShowSaveDialog(false);
+    stopPreviewWatcher();
+    resetRecordingState();
     onClose();
   };
 
@@ -1442,6 +1648,29 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
                     <button
                       type="button"
                       onClick={() => {
+                        const gpxContent = generateGPXString(
+                          routeTitle || 'Ruta NAO Offroad',
+                          trackCoords.length > 0 ? trackCoords : SIMULATED_COORDS.map(c => [c[0], c[1]]),
+                          recordedWaypoints
+                        );
+                        const blob = new Blob([gpxContent], { type: 'application/gpx+xml' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `${(routeTitle || 'ruta-nao').toLowerCase().replace(/[^a-z0-9]/g, '-')}.gpx`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                      }}
+                      className="py-2.5 px-3 border-2 border-[#1A1918] bg-[#F7B32B] hover:bg-[#e0a020] text-[#1A1918] uppercase font-display font-black text-xs tracking-wider transition rounded-xl flex items-center justify-center gap-1.5 shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                      title="Descargar archivo GPX compatible con Garmin, Gaia GPS y Wikiloc"
+                    >
+                      <Navigation className="w-3.5 h-3.5" />
+                      <span>Descargar GPX</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
                         if (savedRouteUrl) {
                           navigator.clipboard.writeText(savedRouteUrl);
                           setCopiedLink(true);
@@ -1451,13 +1680,14 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
                       className="flex-1 py-2.5 border-2 border-[#1A1918] bg-[#F4EEDB] hover:bg-[#FAF6ED] text-[#1A1918] uppercase font-display font-bold text-xs tracking-wider transition rounded-xl flex items-center justify-center gap-2 shadow-[2px_2px_0px_#1A1918]"
                     >
                       <Copy className="w-3.5 h-3.5" />
-                      <span>{copiedLink ? '¡Enlace de Google Maps Copiado!' : 'Copiar Enlace'}</span>
+                      <span>{copiedLink ? '¡Enlace Copiado!' : 'Copiar Enlace'}</span>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => {
-                        setShowSaveDialog(false);
+                        // Ruta ya guardada: dejar el grabador limpio para la siguiente
+                        resetRecordingState();
                         onClose();
                       }}
                       className="px-6 py-2.5 border-2 border-[#1A1918] bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] uppercase font-display font-black text-xs tracking-wider transition rounded-xl shadow-[2px_2px_0px_#1A1918] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
