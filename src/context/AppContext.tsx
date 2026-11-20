@@ -7,6 +7,7 @@ import {
   Crew, 
   CrewMember,
   Rodada, 
+  RodadaStatus,
   RouteProposal, 
   PackingItem,
   RodadaAttendee,
@@ -35,6 +36,17 @@ import {
   INITIAL_CREW_MESSAGES
 } from '../data/initialData';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { enqueueOfflineAction, getPendingSyncQueue, removeOfflineAction, setOfflineQueueOwner } from '../lib/offlineStorage';
+
+// Sufijo único para IDs generados en el cliente. Antes era solo Date.now(): si dos pilotos
+// guardaban en el mismo milisegundo, el segundo insert chocaba y, al reintentarse desde la cola
+// offline con upsert, sobrescribía la ruta/actividad del otro.
+const makeUniqueSuffix = () => {
+  const rand = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+    ? crypto.randomUUID().slice(0, 8)
+    : Math.random().toString(36).slice(2, 10);
+  return `${Date.now()}-${rand}`;
+};
 
 interface AppContextType {
   currentUser: User;
@@ -60,17 +72,24 @@ interface AppContextType {
   setCurrentRodada: (rodada: Rodada | null) => void;
   enterRodada: (rodadaId: string) => void;
   createRodada: (data: { title: string; subtitle: string; description: string; category: Rodada['category']; startDate: string; endDate: string; originPoint: string }) => Rodada;
+  updateRodada: (rodadaId: string, updates: Partial<Rodada>) => boolean;
+  deleteRodada: (rodadaId: string) => boolean;
   routeProposals: RouteProposal[];
   currentRodadaRoutes: RouteProposal[];
   selectedRoute: RouteProposal | null;
   setSelectedRoute: (route: RouteProposal | null) => void;
   proposeRoute: (data: Omit<RouteProposal, 'id' | 'votes' | 'comments'>) => void;
+  updateRouteProposal: (routeId: string, updates: Partial<RouteProposal>) => boolean;
   deleteRouteProposal: (routeId: string) => boolean;
   voteRoute: (routeId: string) => void;
   downvoteRoute: (routeId: string) => void;
   addRouteComment: (routeId: string, text: string) => void;
   lockWinningRoute: (rodadaId: string, routeId: string) => void;
   unlockWinningRoute: (rodadaId: string) => void;
+  completeRodada: (rodadaId: string) => void;
+  reopenRodada: (rodadaId: string) => void;
+  archiveRouteProposal: (routeId: string) => void;
+  unarchiveRouteProposal: (routeId: string) => void;
   rsvpRodada: (rodadaId: string, motorcycleId: string, status: RsvpStatus) => void;
   togglePackingItem: (rodadaId: string, itemId: string) => void;
   assignPackingItem: (rodadaId: string, itemId: string, userId: string, userName: string) => void;
@@ -144,6 +163,68 @@ interface AppContextType {
   updateCurrentUserProfile: (updates: Partial<User>) => Promise<{ success: boolean; message?: string }>;
 }
 
+// Filas de Supabase -> modelos de la app (se usan al hidratar y en los eventos en tiempo real)
+const mapActivityRow = (a: any): ActivityPost => ({
+  id: a.id,
+  pilotId: a.pilot_id,
+  pilotName: a.pilot_name,
+  pilotHandle: a.pilot_handle,
+  pilotAvatar: a.pilot_avatar || 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
+  dateText: a.created_at ? new Date(a.created_at).toLocaleDateString('es-MX', { hour: '2-digit', minute: '2-digit' }) : 'Reciente',
+  device: '',
+  location: a.location || 'México',
+  title: a.title,
+  motoModel: a.moto_model || 'Trail',
+  discipline: (a.discipline as any) || 'Trail / Aventura',
+  distanceKm: Number(a.distance_km) || 0,
+  elevationGainM: Number(a.elevation_gain_m) || 0,
+  durationText: a.duration_formatted || '0h 00m',
+  avgSpeedKmh: Number(a.avg_speed_kmh) || 0,
+  trophiesCount: 0,
+  kudosCount: 0,
+  hasKudoed: false,
+  kudosAvatars: [],
+  commentsCount: 0,
+  comments: [],
+  coordinates: a.route_coordinates || [],
+  surfaceBreakdown: a.surface_breakdown || { asphaltPercentage: 50, dirtPercentage: 50, curveDensity: 'Media' },
+  photos: a.photos || [],
+  groupInfo: a.group_info
+});
+
+const mapRouteRow = (p: any): RouteProposal => ({
+  id: p.id,
+  rodadaId: p.rodada_id,
+  crewId: p.crew_id,
+  isRecorded: p.is_recorded || false,
+  title: p.title,
+  destination: p.destination,
+  state: p.state || 'México',
+  proposedByUserId: p.proposed_by_user_id,
+  proposedByName: p.proposed_by_name,
+  proposedByAvatar: p.proposed_by_avatar || '',
+  description: p.description || '',
+  coverImage: p.cover_image || '',
+  totalKm: Number(p.total_km) || 0,
+  estimatedHours: p.estimated_hours || '',
+  offroadPercentage: p.offroad_percentage || 50,
+  asphaltPercentage: p.asphalt_percentage || 50,
+  difficulty: p.difficulty || 'Intermedio',
+  campsite: p.campsite || undefined,
+  itinerary: p.itinerary || [],
+  waypoints: p.waypoints || [],
+  coordinates: p.coordinates || [],
+  votes: p.votes || [],
+  downvotes: p.downvotes || [],
+  comments: p.comments || [],
+  dayOfDeadVibe: p.day_of_dead_vibe,
+  safetyTips: p.safety_tips || []
+});
+
+// Evita que dos vaciados de la cola corran a la vez (al volver la señal, al reenfocar, al
+// cambiar de usuario) y suban la misma acción dos veces
+let isFlushingSyncQueue = false;
+
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const STORAGE_KEYS = {
@@ -182,6 +263,11 @@ const GUEST_PILOT: User = {
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User>(GUEST_PILOT);
+
+  // Marca las acciones offline con el piloto que tiene la sesión (ver offlineStorage)
+  useEffect(() => {
+    setOfflineQueueOwner(currentUser.id);
+  }, [currentUser.id]);
   const [users, setUsers] = useState<User[]>(INITIAL_USERS);
   const [motorcycles, setMotorcycles] = useState<Motorcycle[]>(INITIAL_MOTORCYCLES);
   const [crews, setCrews] = useState<Crew[]>(INITIAL_CREWS);
@@ -562,7 +648,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     // Local / Demo registration
     const newPilot: User = {
-      id: `user-${Date.now()}`,
+      id: `user-${makeUniqueSuffix()}`,
       name,
       handle,
       email,
@@ -606,7 +692,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return { success: true, message: `¡Bienvenido de vuelta, ${found.name}!` };
     } else {
       const loggedPilot: User = {
-        id: `user-${Date.now()}`,
+        id: `user-${makeUniqueSuffix()}`,
         name: email.split('@')[0],
         handle: `@${email.split('@')[0]}`,
         email,
@@ -880,9 +966,36 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       const savedRodadas = localStorage.getItem(STORAGE_KEYS.RODADAS);
       if (savedRodadas) {
-        const parsed = JSON.parse(savedRodadas);
-        setRodadas(parsed);
-        if (parsed.length > 0) setCurrentRodada(parsed[0]);
+        try {
+          const parsed: Rodada[] = JSON.parse(savedRodadas);
+          if (Array.isArray(parsed)) {
+            // 1. Deduplicar por id
+            const seenIds = new Set<string>();
+            const uniqueRodadas = parsed.filter(rd => {
+              if (seenIds.has(rd.id)) return false;
+              seenIds.add(rd.id);
+              return true;
+            });
+
+            // 2. Regla de Oro: Máximo 1 rodada confirmada activa a la vez
+            let foundConfirmed = false;
+            const sanitizedRodadas = uniqueRodadas.map(rd => {
+              if (rd.status === 'fijada') {
+                if (!foundConfirmed) {
+                  foundConfirmed = true;
+                  return rd;
+                } else {
+                  // Si ya había otra confirmada, esta vuelve a votación
+                  return { ...rd, winningRouteId: undefined, status: 'votacion' as RodadaStatus };
+                }
+              }
+              return rd;
+            });
+
+            setRodadas(sanitizedRodadas);
+            if (sanitizedRodadas.length > 0) setCurrentRodada(sanitizedRodadas[0]);
+          }
+        } catch {}
       }
 
       const savedRoutes = localStorage.getItem(STORAGE_KEYS.ROUTES);
@@ -1112,36 +1225,172 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // Hydrate activities (publicaciones reales) from cloud
     supabase.from('activities').select('*').order('created_at', { ascending: false }).then(({ data }) => {
       if (data && data.length > 0) {
-        const mappedActs: ActivityPost[] = data.map((a: any) => ({
-          id: a.id,
-          pilotId: a.pilot_id,
-          pilotName: a.pilot_name,
-          pilotHandle: a.pilot_handle,
-          pilotAvatar: a.pilot_avatar || 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
-          dateText: a.created_at ? new Date(a.created_at).toLocaleDateString('es-MX', { hour: '2-digit', minute: '2-digit' }) : 'Reciente',
-          device: '',
-          location: a.location || 'México',
-          title: a.title,
-          motoModel: a.moto_model || 'Trail',
-          discipline: (a.discipline as any) || 'Trail / Aventura',
-          distanceKm: Number(a.distance_km) || 0,
-          elevationGainM: Number(a.elevation_gain_m) || 0,
-          durationText: a.duration_formatted || '0h 00m',
-          avgSpeedKmh: Number(a.avg_speed_kmh) || 0,
-          trophiesCount: 0,
-          kudosCount: 0,
-          hasKudoed: false,
-          kudosAvatars: [],
-          commentsCount: 0,
-          comments: [],
-          coordinates: a.route_coordinates || [],
-          surfaceBreakdown: a.surface_breakdown || { asphaltPercentage: 50, dirtPercentage: 50, curveDensity: 'Media' },
-          photos: a.photos || [],
-          groupInfo: a.group_info
-        }));
+        const mappedActs: ActivityPost[] = data.map(mapActivityRow);
         setActivities(mappedActs);
       }
     });
+
+    // Hydrate rodadas from cloud
+    supabase.from('rodadas').select('*').order('created_at', { ascending: false }).then(({ data: cloudRodadas, error }) => {
+      if (!error && cloudRodadas && cloudRodadas.length > 0) {
+        const mappedR: Rodada[] = cloudRodadas.map((r: any) => ({
+          id: r.id,
+          crewId: r.crew_id,
+          title: r.title,
+          subtitle: r.subtitle || '',
+          description: r.description || '',
+          category: r.category || 'Fin de Semana',
+          startDate: r.start_date,
+          endDate: r.end_date,
+          originPoint: r.origin_point || 'CDMX',
+          status: (r.status as RodadaStatus) || 'votacion',
+          winningRouteId: r.winning_route_id || undefined,
+          attendees: [],
+          packingList: [],
+          gallery: [],
+          createdAt: r.created_at ? new Date(r.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
+        }));
+        setRodadas(mappedR);
+        if (mappedR.length > 0) setCurrentRodada(mappedR[0]);
+      }
+    });
+
+    // Hydrate route_proposals from cloud
+    supabase.from('route_proposals').select('*').order('created_at', { ascending: false }).then(({ data: cloudProposals, error }) => {
+      if (!error && cloudProposals && cloudProposals.length > 0) {
+        const mappedP: RouteProposal[] = cloudProposals.map(mapRouteRow);
+        setRouteProposals(mappedP);
+        if (mappedP.length > 0) setSelectedRoute(mappedP[0]);
+      }
+    });
+
+    // Background outbox sync: procesar acciones pendientes cuando hay red
+    const flushSyncQueue = async () => {
+      if (typeof window === 'undefined' || !navigator.onLine) return;
+      // Solo con sesión real, y solo las acciones de este piloto
+      if (!currentUser.id || currentUser.id === 'guest') return;
+      if (isFlushingSyncQueue) return;
+      isFlushingSyncQueue = true;
+      try {
+        const pending = await getPendingSyncQueue(currentUser.id);
+        if (!pending || pending.length === 0) return;
+        for (const item of pending) {
+          try {
+            if (item.action === 'publish_activity') {
+              const { error } = await supabase.from('activities').upsert(item.payload);
+              if (!error) {
+                await removeOfflineAction(item.id);
+                // Si al recargar la hidratación de la nube llegó antes que esta subida, re-mostrarla
+                const synced = mapActivityRow(item.payload);
+                setActivities(prev => prev.some(a => a.id === synced.id) ? prev : [synced, ...prev]);
+              }
+            } else if (item.action === 'create_route_proposal') {
+              const { error } = await supabase.from('route_proposals').upsert(item.payload);
+              if (!error) {
+                await removeOfflineAction(item.id);
+                const synced = mapRouteRow(item.payload);
+                setRouteProposals(prev => prev.some(r => r.id === synced.id) ? prev : [synced, ...prev]);
+              }
+            } else if (item.action === 'delete_route_proposal') {
+              const { error } = await supabase.from('route_proposals').delete().eq('id', item.payload.id);
+              if (!error) await removeOfflineAction(item.id);
+            } else if (item.action === 'create_rodada') {
+              const { error } = await supabase.from('rodadas').upsert(item.payload);
+              if (!error) await removeOfflineAction(item.id);
+            } else if (item.action === 'delete_rodada') {
+              const { error } = await supabase.from('rodadas').delete().eq('id', item.payload.id);
+              if (!error) await removeOfflineAction(item.id);
+            } else if (item.action === 'join_crew') {
+              const { error } = await supabase.from('crew_members').upsert(item.payload);
+              if (!error) await removeOfflineAction(item.id);
+            } else if (item.action === 'follow_user') {
+              const { error } = await supabase.from('follows').upsert(item.payload, { onConflict: 'follower_id,following_id', ignoreDuplicates: true });
+              if (!error) await removeOfflineAction(item.id);
+            } else if (item.action === 'unfollow_user') {
+              const { error } = await supabase.from('follows').delete().match(item.payload);
+              if (!error) await removeOfflineAction(item.id);
+            } else if (item.action === 'vote_route') {
+              // Formato nuevo: { id, vote }. Formato viejo traía las listas completas, que al
+              // reescribirse borraban votos ajenos: de ahí solo se rescata el voto de este piloto.
+              let vote: 'up' | 'down' | 'none' = item.payload.vote;
+              if (!vote) {
+                const voterId = item.userId || currentUser.id;
+                vote = (item.payload.votes || []).includes(voterId) ? 'up'
+                  : (item.payload.downvotes || []).includes(voterId) ? 'down' : 'none';
+              }
+              const { error } = await supabase.rpc('set_route_vote', { p_route_id: item.payload.id, p_vote: vote });
+              if (!error) await removeOfflineAction(item.id);
+            } else if (item.action === 'lock_winning_route') {
+              const { error } = await supabase.from('rodadas').update({ winning_route_id: item.payload.routeId, status: 'fijada' }).eq('id', item.payload.rodadaId);
+              if (!error) await removeOfflineAction(item.id);
+            } else if (item.action === 'unlock_winning_route') {
+              const { error } = await supabase.from('rodadas').update({ winning_route_id: null, status: 'votacion' }).eq('id', item.payload.rodadaId);
+              if (!error) await removeOfflineAction(item.id);
+            } else if (item.action === 'complete_rodada') {
+              const { error } = await supabase.from('rodadas').update({ status: 'completada' }).eq('id', item.payload.rodadaId);
+              if (!error) {
+                await supabase.from('route_proposals').update({ is_recorded: true }).eq('rodada_id', item.payload.rodadaId);
+                await removeOfflineAction(item.id);
+              }
+            } else if (item.action === 'reopen_rodada') {
+              const { error } = await supabase.from('rodadas').update({ status: 'votacion' }).eq('id', item.payload.rodadaId);
+              if (!error) await removeOfflineAction(item.id);
+            } else if (item.action === 'archive_route') {
+              const { error } = await supabase.from('route_proposals').update({ is_recorded: true }).eq('id', item.payload.routeId);
+              if (!error) await removeOfflineAction(item.id);
+            } else if (item.action === 'unarchive_route') {
+              const { error } = await supabase.from('route_proposals').update({ is_recorded: false }).eq('id', item.payload.routeId);
+              if (!error) await removeOfflineAction(item.id);
+            }
+          } catch (e) {
+            console.warn('[SyncQueue] Error flushing item:', item.id, e);
+          }
+        }
+      } catch (err) {
+        console.warn('[SyncQueue] Error reading queue:', err);
+      } finally {
+        isFlushingSyncQueue = false;
+      }
+    };
+
+    flushSyncQueue();
+    window.addEventListener('online', flushSyncQueue);
+
+    // Tiempo real: rutas grabadas y actividades que publican otros pilotos aparecen sin recargar
+    // (requiere que activities y route_proposals estén en la publicación supabase_realtime)
+    const ridesChannel = supabase
+      .channel('public:rides_realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'activities' },
+        (payload) => {
+          if (payload.eventType === 'INSERT' && payload.new) {
+            const act = mapActivityRow(payload.new);
+            setActivities(prev => prev.some(a => a.id === act.id) ? prev : [act, ...prev]);
+          } else if (payload.eventType === 'DELETE' && payload.old) {
+            const oldId = (payload.old as any).id;
+            if (oldId) setActivities(prev => prev.filter(a => a.id !== oldId));
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'route_proposals' },
+        (payload) => {
+          if (payload.eventType === 'INSERT' && payload.new) {
+            const route = mapRouteRow(payload.new);
+            setRouteProposals(prev => prev.some(r => r.id === route.id) ? prev : [route, ...prev]);
+          } else if (payload.eventType === 'UPDATE' && payload.new) {
+            const route = mapRouteRow(payload.new);
+            setRouteProposals(prev => prev.map(r => r.id === route.id ? { ...r, ...route } : r));
+            setSelectedRoute(prev => prev && prev.id === route.id ? { ...prev, ...route } : prev);
+          } else if (payload.eventType === 'DELETE' && payload.old) {
+            const oldId = (payload.old as any).id;
+            if (oldId) setRouteProposals(prev => prev.filter(r => r.id !== oldId));
+          }
+        }
+      )
+      .subscribe();
 
     // Realtime channel for crews sync across all users
     const crewsChannel = supabase
@@ -1254,9 +1503,95 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       )
       .subscribe();
 
+    // Realtime channel for follows table changes across all devices
+    const followsChannel = supabase
+      .channel('public:follows_realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'follows' },
+        (payload) => {
+          if (payload.eventType === 'INSERT' && payload.new) {
+            const row = payload.new as any;
+            setAllFollows(prev => {
+              if (prev.some(f => f.follower_id === row.follower_id && f.following_id === row.following_id)) return prev;
+              return [...prev, { follower_id: row.follower_id, following_id: row.following_id }];
+            });
+            if (row.following_id === currentUser.id) {
+              setFollowersUserIds(prev => prev.includes(row.follower_id) ? prev : [...prev, row.follower_id]);
+            }
+            if (row.follower_id === currentUser.id) {
+              setFollowingUserIds(prev => prev.includes(row.following_id) ? prev : [...prev, row.following_id]);
+            }
+          } else if (payload.eventType === 'DELETE' && payload.old) {
+            const oldRow = payload.old as any;
+            setAllFollows(prev => prev.filter(f => !(f.follower_id === oldRow.follower_id && f.following_id === oldRow.following_id)));
+            if (oldRow.following_id === currentUser.id) {
+              setFollowersUserIds(prev => prev.filter(id => id !== oldRow.follower_id));
+            }
+            if (oldRow.follower_id === currentUser.id) {
+              setFollowingUserIds(prev => prev.filter(id => id !== oldRow.following_id));
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    // Sincronización periódica y al reenfocar la ventana para garantizar que incluso si Realtime
+    // en Supabase está en estado 'Unhealthy' o reconectando, los seguidores e interacciones NUNCA se pierdan
+    const refreshFollowsAndSocial = async () => {
+      if (!isSupabaseConfigured()) return;
+      try {
+        const { data: followsData } = await supabase.from('follows').select('*');
+        if (followsData) {
+          setAllFollows(followsData.map((f: any) => ({ follower_id: f.follower_id, following_id: f.following_id })));
+          if (currentUser.id) {
+            const cloudFollowing = followsData
+              .filter((f: any) => f.follower_id === currentUser.id)
+              .map((f: any) => f.following_id);
+            setFollowingUserIds(prev => Array.from(new Set([...prev, ...cloudFollowing])));
+
+            const cloudFollowers = followsData
+              .filter((f: any) => f.following_id === currentUser.id)
+              .map((f: any) => f.follower_id);
+            setFollowersUserIds(cloudFollowers);
+          }
+        }
+
+        const { data: pData } = await supabase.from('profiles').select('*');
+        if (pData && pData.length > 0) {
+          const mappedUsers: User[] = pData.map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            handle: p.handle,
+            email: p.email,
+            avatar: p.avatar_url || 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
+            bio: p.bio || 'Piloto en NAO.',
+            location: p.location || 'México',
+            ridingLevel: (p.riding_level as any) || 'Intermedio',
+            phone: p.phone,
+            emergencyContact: p.emergency_contact
+          }));
+          setUsers(prev => {
+            const cloudIds = new Set(mappedUsers.map(u => u.id));
+            return [...mappedUsers, ...prev.filter(u => !cloudIds.has(u.id))];
+          });
+        }
+      } catch (e) {
+        console.warn('Silent social refresh err:', e);
+      }
+    };
+
+    window.addEventListener('focus', refreshFollowsAndSocial);
+    const syncInterval = setInterval(refreshFollowsAndSocial, 25000);
+
     return () => {
       subscription.unsubscribe();
+      window.removeEventListener('focus', refreshFollowsAndSocial);
+      window.removeEventListener('online', flushSyncQueue);
+      clearInterval(syncInterval);
+      supabase.removeChannel(ridesChannel);
       supabase.removeChannel(crewsChannel);
+      supabase.removeChannel(followsChannel);
       supabase.removeChannel(socialChannel);
       supabase.removeChannel(adminChannel);
     };
@@ -1321,11 +1656,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addMotorcycle = (bikeData: Omit<Motorcycle, 'id'>) => {
     const newBike: Motorcycle = {
       ...bikeData,
-      id: `moto-${Date.now()}`
+      id: `moto-${makeUniqueSuffix()}`
     };
     setMotorcycles(prev => [newBike, ...prev]);
 
-    if (isSupabaseConfigured() && currentUser.id && currentUser.id.length === 36) {
+    if (isSupabaseConfigured() && currentUser.id) {
       supabase.from('motorcycles').insert({
         user_id: currentUser.id,
         brand: bikeData.brand,
@@ -1356,7 +1691,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const createCrew = (data: { name: string; tagline: string; description: string; baseCity: string; coverImage: string; whatsappGroupUrl?: string }) => {
     const randomCode = `MAMI-${Math.floor(1000 + Math.random() * 9000)}`;
     const newCrew: Crew = {
-      id: `crew-${Date.now()}`,
+      id: `crew-${makeUniqueSuffix()}`,
       name: data.name,
       slug: data.name.toLowerCase().replace(/\s+/g, '-'),
       tagline: data.tagline,
@@ -1385,10 +1720,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         invite_code: newCrew.inviteCode,
         cover_image: newCrew.coverImage,
         base_city: newCrew.baseCity,
-        creator_id: currentUser.id && currentUser.id.length === 36 ? currentUser.id : null,
+        creator_id: currentUser.id || null,
         whatsapp_group_url: newCrew.whatsappGroupUrl
       }).then(() => {
-        if (currentUser.id && currentUser.id.length === 36) {
+        if (currentUser.id) {
           supabase.from('crew_members').insert({
             crew_id: newCrew.id,
             user_id: currentUser.id,
@@ -1609,7 +1944,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const userBikes = motorcycles.filter(m => m.userId === currentUser.id);
     const userBike = userBikes[0] ? `${userBikes[0].brand} ${userBikes[0].model}` : undefined;
     const newMsg: CrewChatMessage = {
-      id: `msg-${Date.now()}`,
+      id: `msg-${makeUniqueSuffix()}`,
       crewId,
       userId: currentUser.id,
       userName: currentUser.name,
@@ -1626,7 +1961,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return updated;
     });
 
-    if (isSupabaseConfigured() && currentUser.id && currentUser.id.length === 36) {
+    if (isSupabaseConfigured() && currentUser.id) {
       supabase.from('crew_messages').insert({
         crew_id: crewId,
         user_id: currentUser.id,
@@ -1663,7 +1998,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return updatedList;
     });
 
-    if (isSupabaseConfigured() && userId && userId.length === 36) {
+    if (isSupabaseConfigured() && userId) {
       supabase.from('crew_members').insert({
         crew_id: crewId,
         user_id: userId,
@@ -1714,6 +2049,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCurrentCrew(updated);
     setActiveNavTab('crew');
     syncActivitiesWithCrew(found.id, undefined, updatedMembers);
+
+    // Persistir membresía en Supabase Cloud
+    if (isSupabaseConfigured() && currentUser.id) {
+      supabase.from('crew_members').upsert({
+        crew_id: found.id,
+        user_id: currentUser.id,
+        role: 'Rider'
+      }, { onConflict: 'crew_id,user_id' }).then(({ error }) => {
+        if (error) {
+          console.error('Error joining crew in Supabase:', error);
+          enqueueOfflineAction('join_crew', { crew_id: found.id, user_id: currentUser.id, role: 'Rider' });
+        }
+      });
+    }
+
     return { success: true, message: `¡Te uniste a ${found.name}! Bienvenido a bordo.`, crew: updated };
   };
 
@@ -1753,7 +2103,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const createRodada = (data: { title: string; subtitle: string; description: string; category: Rodada['category']; startDate: string; endDate: string; originPoint: string }) => {
     const newRodada: Rodada = {
-      id: `rodada-${Date.now()}`,
+      id: `rodada-${makeUniqueSuffix()}`,
       crewId: currentCrew?.id || 'crew-motomami',
       title: data.title,
       subtitle: data.subtitle,
@@ -1779,6 +2129,32 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setRodadas(prev => [newRodada, ...prev]);
     setCurrentRodada(newRodada);
     setActiveNavTab('crew');
+
+    const cloudPayload = {
+      id: newRodada.id,
+      crew_id: newRodada.crewId,
+      creator_id: currentUser.id || null,
+      title: newRodada.title,
+      subtitle: newRodada.subtitle,
+      description: newRodada.description,
+      category: newRodada.category,
+      start_date: newRodada.startDate,
+      end_date: newRodada.endDate,
+      origin_point: newRodada.originPoint,
+      status: newRodada.status
+    };
+
+    if (isSupabaseConfigured()) {
+      supabase.from('rodadas').insert(cloudPayload).then(({ error }) => {
+        if (error) {
+          console.warn('[Supabase] Error inserting rodada, enqueuing offline:', error);
+          enqueueOfflineAction('create_rodada', cloudPayload);
+        }
+      });
+    } else {
+      enqueueOfflineAction('create_rodada', cloudPayload);
+    }
+
     return newRodada;
   };
 
@@ -1787,7 +2163,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const proposeRoute = (data: Omit<RouteProposal, 'id' | 'votes' | 'comments'>) => {
     const newRoute: RouteProposal = {
       ...data,
-      id: `route-${Date.now()}`,
+      id: `route-${makeUniqueSuffix()}`,
       votes: [currentUser.id],
       comments: []
     };
@@ -1824,7 +2200,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       // 2. Enviar mensaje de sistema discreto al chat de la tribu
       const chatSysMsg: CrewChatMessage = {
-        id: `msg-sys-${Date.now()}`,
+        id: `msg-sys-${makeUniqueSuffix()}`,
         crewId: targetCrew.id,
         userId: 'system',
         userName: 'SISTEMA NAO',
@@ -1856,24 +2232,189 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }).then(() => {});
       }
     }
+
+    const cloudProposalPayload = {
+      id: newRoute.id,
+      rodada_id: newRoute.rodadaId || null,
+      crew_id: newRoute.crewId || targetCrewId || null,
+      is_recorded: newRoute.isRecorded || false,
+      title: newRoute.title,
+      destination: newRoute.destination,
+      state: newRoute.state || 'México',
+      proposed_by_user_id: newRoute.proposedByUserId,
+      proposed_by_name: newRoute.proposedByName,
+      proposed_by_avatar: newRoute.proposedByAvatar || null,
+      description: newRoute.description || '',
+      cover_image: newRoute.coverImage || '',
+      total_km: newRoute.totalKm || 0,
+      estimated_hours: newRoute.estimatedHours || '',
+      offroad_percentage: newRoute.offroadPercentage || 50,
+      asphalt_percentage: newRoute.asphaltPercentage || 50,
+      difficulty: newRoute.difficulty || 'Intermedio',
+      campsite: newRoute.campsite || null,
+      itinerary: newRoute.itinerary || [],
+      waypoints: newRoute.waypoints || [],
+      coordinates: newRoute.coordinates || [],
+      votes: newRoute.votes || [],
+      downvotes: newRoute.downvotes || [],
+      comments: newRoute.comments || [],
+      day_of_dead_vibe: newRoute.dayOfDeadVibe || null,
+      safety_tips: newRoute.safetyTips || []
+    };
+
+    if (isSupabaseConfigured()) {
+      supabase.from('route_proposals').insert(cloudProposalPayload).then(({ error }) => {
+        if (error) {
+          console.warn('[Supabase] Error inserting proposal, enqueuing offline:', error);
+          enqueueOfflineAction('create_route_proposal', cloudProposalPayload);
+        }
+      });
+    } else {
+      enqueueOfflineAction('create_route_proposal', cloudProposalPayload);
+    }
+  };
+
+  const updateRodada = (rodadaId: string, updates: Partial<Rodada>): boolean => {
+    const targetRodada = rodadas.find(r => r.id === rodadaId);
+    if (!targetRodada) return false;
+
+    // Check permissions: creator of rodada, captain/creator of crew, or @patricio
+    const targetCrew = crews.find(c => c.id === targetRodada.crewId);
+    const isCrewCaptain = targetCrew?.creatorId === currentUser.id ||
+      targetCrew?.members.some(m => m.userId === currentUser.id && m.role === 'Capitán de Ruta') ||
+      currentUser.handle === '@patricio';
+    const isRodadaCreator = (targetRodada.attendees?.[0]?.userId === currentUser.id) || isCrewCaptain;
+
+    if (!isRodadaCreator) {
+      console.warn('Unauthorized: Only the creator of the rodada or crew captain can edit it.');
+      return false;
+    }
+
+    setRodadas(prev => {
+      const updated = prev.map(rd => rd.id === rodadaId ? { ...rd, ...updates } : rd);
+      try {
+        localStorage.setItem(STORAGE_KEYS.RODADAS, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    if (currentRodada?.id === rodadaId) {
+      setCurrentRodada(prev => prev ? { ...prev, ...updates } : null);
+    }
+
+    return true;
+  };
+
+  const deleteRodada = (rodadaId: string): boolean => {
+    const targetRodada = rodadas.find(r => r.id === rodadaId);
+    if (!targetRodada) return false;
+
+    // Check permissions: creator of rodada, captain/creator of crew, or @patricio
+    const targetCrew = crews.find(c => c.id === targetRodada.crewId);
+    const isCrewCaptain = targetCrew?.creatorId === currentUser.id ||
+      targetCrew?.members.some(m => m.userId === currentUser.id && m.role === 'Capitán de Ruta') ||
+      currentUser.handle === '@patricio';
+    const isRodadaCreator = (targetRodada.attendees?.[0]?.userId === currentUser.id) || isCrewCaptain;
+
+    if (!isRodadaCreator) {
+      console.warn('Unauthorized: Only the creator of the rodada or crew captain can delete it.');
+      return false;
+    }
+
+    // 1. Remove the rodada
+    setRodadas(prev => {
+      const updated = prev.filter(rd => rd.id !== rodadaId);
+      try {
+        localStorage.setItem(STORAGE_KEYS.RODADAS, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    // 2. Remove any associated route proposals
+    setRouteProposals(prev => {
+      const updated = prev.filter(p => p.rodadaId !== rodadaId);
+      try {
+        localStorage.setItem(STORAGE_KEYS.ROUTES, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    if (currentRodada?.id === rodadaId) {
+      setCurrentRodada(null);
+    }
+
+    if (isSupabaseConfigured()) {
+      supabase.from('rodadas').delete().eq('id', rodadaId).then(({ error }) => {
+        if (error) enqueueOfflineAction('delete_rodada', { id: rodadaId });
+      });
+      supabase.from('route_proposals').delete().eq('rodada_id', rodadaId).then(() => {});
+    } else {
+      enqueueOfflineAction('delete_rodada', { id: rodadaId });
+    }
+
+    return true;
+  };
+
+  const updateRouteProposal = (routeId: string, updates: Partial<RouteProposal>): boolean => {
+    const targetRoute = routeProposals.find(r => r.id === routeId);
+    if (!targetRoute) return false;
+
+    const isOwner = 
+      (targetRoute.proposedByUserId && targetRoute.proposedByUserId === currentUser.id) ||
+      (targetRoute.proposedByName && targetRoute.proposedByName.toLowerCase().trim() === currentUser.name?.toLowerCase().trim()) ||
+      currentUser.handle === '@patricio';
+
+    if (!isOwner) {
+      console.warn('Unauthorized: Only the creator of the route can edit it.');
+      return false;
+    }
+
+    setRouteProposals(prev => {
+      const updated = prev.map(r => r.id === routeId ? { ...r, ...updates } : r);
+      try {
+        localStorage.setItem(STORAGE_KEYS.ROUTES, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    if (selectedRoute?.id === routeId) {
+      setSelectedRoute(prev => prev ? { ...prev, ...updates } : null);
+    }
+
+    if (isSupabaseConfigured()) {
+      supabase.from('route_proposals').update({
+        title: updates.title,
+        destination: updates.destination,
+        description: updates.description,
+        total_km: updates.totalKm,
+        difficulty: updates.difficulty,
+        offroad_percentage: updates.offroadPercentage,
+        asphalt_percentage: updates.asphaltPercentage
+      }).eq('id', routeId).then(() => {});
+    }
+
+    return true;
   };
 
   const deleteRouteProposal = (routeId: string): boolean => {
     const targetRoute = routeProposals.find(r => r.id === routeId);
     if (!targetRoute) return false;
 
-    // Security check: Only author / creator can delete their route
+    // Security check: Only author / creator can delete their route (or @patricio)
     const isOwner = 
       (targetRoute.proposedByUserId && targetRoute.proposedByUserId === currentUser.id) ||
-      (targetRoute.proposedByName && targetRoute.proposedByName.toLowerCase().trim() === currentUser.name?.toLowerCase().trim());
+      (targetRoute.proposedByName && targetRoute.proposedByName.toLowerCase().trim() === currentUser.name?.toLowerCase().trim()) ||
+      currentUser.handle === '@patricio';
 
     if (!isOwner) {
       console.warn('Unauthorized: Only the creator of the route can delete it.');
       return false;
     }
 
+    let updatedRouteProposals: RouteProposal[] = [];
     setRouteProposals(prev => {
       const updated = prev.filter(r => r.id !== routeId);
+      updatedRouteProposals = updated;
       try {
         localStorage.setItem(STORAGE_KEYS.ROUTES, JSON.stringify(updated));
       } catch {}
@@ -1884,10 +2425,84 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setSelectedRoute(null);
     }
 
+    // Sincronizar rodadas: Si alguna rodada tenía esta ruta como winningRouteId,
+    // o si al borrar esta propuesta la rodada se queda sin propuestas válidas,
+    // desvincularla y desconfirmarla para que NO siga apareciendo como confirmada arriba
+    setRodadas(prev => {
+      let changed = false;
+      const updated = prev.map(rd => {
+        const isAssociatedRodada = rd.id === targetRoute.rodadaId;
+        const isWinningRoute = rd.winningRouteId === routeId;
+        const remainingProposalsForRodada = isAssociatedRodada 
+          ? updatedRouteProposals.filter(p => p.rodadaId === rd.id && !p.isRecorded)
+          : [];
+
+        if (isWinningRoute || (isAssociatedRodada && remainingProposalsForRodada.length === 0 && rd.status === 'fijada')) {
+          changed = true;
+          return {
+            ...rd,
+            winningRouteId: undefined,
+            status: 'votacion' as RodadaStatus
+          };
+        }
+        return rd;
+      });
+
+      if (changed) {
+        try {
+          localStorage.setItem(STORAGE_KEYS.RODADAS, JSON.stringify(updated));
+        } catch {}
+      }
+      return updated;
+    });
+
+    if (currentRodada && (currentRodada.winningRouteId === routeId || (currentRodada.id === targetRoute.rodadaId && updatedRouteProposals.filter(p => p.rodadaId === currentRodada.id && !p.isRecorded).length === 0))) {
+      setCurrentRodada(prev => prev ? { ...prev, winningRouteId: undefined, status: 'votacion' } : null);
+    }
+
+    if (isSupabaseConfigured()) {
+      supabase.from('route_proposals').delete().eq('id', routeId).then(({ error }) => {
+        if (error) enqueueOfflineAction('delete_route_proposal', { id: routeId });
+      });
+      supabase.from('rodadas').update({ winning_route_id: null, status: 'votacion' }).eq('winning_route_id', routeId).then(() => {});
+    } else {
+      enqueueOfflineAction('delete_route_proposal', { id: routeId });
+    }
+
     return true;
   };
 
+  // Guarda el voto del piloto en la nube con la función atómica set_route_vote
+  // (supabase/migration_votos_atomicos.sql). Se manda el estado final deseado, no la lista
+  // completa: así dos pilotos votando a la vez no se borran el voto, y reintentar es seguro.
+  const persistRouteVote = (routeId: string, vote: 'up' | 'down' | 'none') => {
+    if (!currentUser.id || currentUser.id === 'guest') return;
+    if (!isSupabaseConfigured()) {
+      enqueueOfflineAction('vote_route', { id: routeId, vote });
+      return;
+    }
+    supabase.rpc('set_route_vote', { p_route_id: routeId, p_vote: vote }).then(({ data, error }) => {
+      if (error) {
+        console.warn('[Supabase] Error saving vote, enqueuing offline:', error);
+        enqueueOfflineAction('vote_route', { id: routeId, vote });
+        return;
+      }
+      // Sincronizar con lo que quedó en la base (incluye los votos que otros metieron mientras tanto)
+      const row = Array.isArray(data) ? data[0] : data;
+      if (row) {
+        const votes: string[] = row.new_votes || [];
+        const downvotes: string[] = row.new_downvotes || [];
+        setRouteProposals(prev => prev.map(r => r.id === routeId ? { ...r, votes, downvotes } : r));
+        setSelectedRoute(prev => prev && prev.id === routeId ? { ...prev, votes, downvotes } : prev);
+      }
+    });
+  };
+
   const voteRoute = (routeId: string) => {
+    // Antes el voto a favor solo cambiaba en este teléfono y nunca se guardaba en la nube
+    const current = routeProposals.find(r => r.id === routeId) || (selectedRoute?.id === routeId ? selectedRoute : null);
+    if (current) persistRouteVote(routeId, current.votes.includes(currentUser.id) ? 'none' : 'up');
+
     setRouteProposals(prev => {
       const target = prev.find(r => r.id === routeId);
       if (!target) return prev;
@@ -1957,12 +2572,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         votes: isAlreadyDownvoted ? prev.votes : prev.votes.filter(id => id !== currentUser.id)
       };
     });
+
+    const targetRoute = routeProposals.find(r => r.id === routeId) || (selectedRoute?.id === routeId ? selectedRoute : null);
+    if (targetRoute) {
+      const isAlreadyDownvoted = (targetRoute.downvotes || []).includes(currentUser.id);
+      persistRouteVote(routeId, isAlreadyDownvoted ? 'none' : 'down');
+    }
   };
 
   const addRouteComment = (routeId: string, text: string) => {
     if (!text.trim()) return;
     const newComment = {
-      id: `comm-${Date.now()}`,
+      id: `comm-${makeUniqueSuffix()}`,
       userId: currentUser.id,
       userName: currentUser.name,
       userAvatar: currentUser.avatar,
@@ -1988,26 +2609,177 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const lockWinningRoute = (rodadaId: string, routeId: string) => {
-    setRodadas(prev => prev.map(rd => {
-      if (rd.id === rodadaId) {
-        return { ...rd, winningRouteId: routeId, status: 'fijada' };
+    setRodadas(prev => {
+      const updated = prev.map(rd => {
+        if (rd.id === rodadaId) {
+          return { ...rd, winningRouteId: routeId, status: 'fijada' as RodadaStatus };
+        }
+        // Regla estricta: Solo puede haber 1 rodada confirmada a la vez.
+        // Cualquier otra rodada confirmada previa vuelve a estado 'votacion'
+        if (rd.status === 'fijada') {
+          return { ...rd, winningRouteId: undefined, status: 'votacion' as RodadaStatus };
+        }
+        return rd;
+      });
+      try {
+        localStorage.setItem(STORAGE_KEYS.RODADAS, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    if (currentRodada) {
+      if (currentRodada.id === rodadaId) {
+        setCurrentRodada({ ...currentRodada, winningRouteId: routeId, status: 'fijada' });
+      } else if (currentRodada.status === 'fijada') {
+        setCurrentRodada({ ...currentRodada, winningRouteId: undefined, status: 'votacion' });
       }
-      return rd;
-    }));
-    if (currentRodada && currentRodada.id === rodadaId) {
-      setCurrentRodada({ ...currentRodada, winningRouteId: routeId, status: 'fijada' });
+    }
+
+    if (isSupabaseConfigured()) {
+      supabase.from('rodadas').update({ winning_route_id: routeId, status: 'fijada' }).eq('id', rodadaId).then(({ error }) => {
+        if (error) enqueueOfflineAction('lock_winning_route', { rodadaId, routeId });
+      });
+      supabase.from('rodadas').update({ winning_route_id: null, status: 'votacion' }).neq('id', rodadaId).eq('status', 'fijada').then(() => {});
+    } else {
+      enqueueOfflineAction('lock_winning_route', { rodadaId, routeId });
     }
   };
 
   const unlockWinningRoute = (rodadaId: string) => {
-    setRodadas(prev => prev.map(rd => {
-      if (rd.id === rodadaId) {
-        return { ...rd, winningRouteId: undefined, status: 'votacion' };
-      }
-      return rd;
-    }));
+    setRodadas(prev => {
+      const updated = prev.map(rd => {
+        if (rd.id === rodadaId) {
+          return { ...rd, winningRouteId: undefined, status: 'votacion' as RodadaStatus };
+        }
+        return rd;
+      });
+      try {
+        localStorage.setItem(STORAGE_KEYS.RODADAS, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
     if (currentRodada && currentRodada.id === rodadaId) {
       setCurrentRodada({ ...currentRodada, winningRouteId: undefined, status: 'votacion' });
+    }
+
+    if (isSupabaseConfigured()) {
+      supabase.from('rodadas').update({ winning_route_id: null, status: 'votacion' }).eq('id', rodadaId).then(({ error }) => {
+        if (error) enqueueOfflineAction('unlock_winning_route', { rodadaId });
+      });
+    } else {
+      enqueueOfflineAction('unlock_winning_route', { rodadaId });
+    }
+  };
+
+  const completeRodada = (rodadaId: string) => {
+    let targetWinningRouteId: string | undefined;
+    setRodadas(prev => {
+      const updated = prev.map(rd => {
+        if (rd.id === rodadaId) {
+          targetWinningRouteId = rd.winningRouteId;
+          return { ...rd, status: 'completada' as RodadaStatus };
+        }
+        return rd;
+      });
+      try {
+        localStorage.setItem(STORAGE_KEYS.RODADAS, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    if (currentRodada && currentRodada.id === rodadaId) {
+      setCurrentRodada({ ...currentRodada, status: 'completada' });
+    }
+
+    // Al marcar la rodada como concluida, archivamos la ruta oficial ganadora (y propuestas asociadas)
+    // al Historial para que ya no aparezca como propuesta pendiente
+    setRouteProposals(prev => {
+      const updated = prev.map(p => {
+        if (p.rodadaId === rodadaId || (targetWinningRouteId && p.id === targetWinningRouteId)) {
+          return { ...p, isRecorded: true };
+        }
+        return p;
+      });
+      try {
+        localStorage.setItem(STORAGE_KEYS.ROUTES, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    if (isSupabaseConfigured()) {
+      supabase.from('rodadas').update({ status: 'completada' }).eq('id', rodadaId).then(({ error }) => {
+        if (error) enqueueOfflineAction('complete_rodada', { rodadaId });
+      });
+      if (targetWinningRouteId) {
+        supabase.from('route_proposals').update({ is_recorded: true }).eq('id', targetWinningRouteId).then(() => {});
+      } else {
+        supabase.from('route_proposals').update({ is_recorded: true }).eq('rodada_id', rodadaId).then(() => {});
+      }
+    } else {
+      enqueueOfflineAction('complete_rodada', { rodadaId });
+    }
+  };
+
+  const reopenRodada = (rodadaId: string) => {
+    setRodadas(prev => {
+      const updated = prev.map(rd => {
+        if (rd.id === rodadaId) {
+          return { ...rd, status: 'votacion' as RodadaStatus };
+        }
+        return rd;
+      });
+      try {
+        localStorage.setItem(STORAGE_KEYS.RODADAS, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    if (currentRodada && currentRodada.id === rodadaId) {
+      setCurrentRodada({ ...currentRodada, status: 'votacion' });
+    }
+
+    if (isSupabaseConfigured()) {
+      supabase.from('rodadas').update({ status: 'votacion' }).eq('id', rodadaId).then(({ error }) => {
+        if (error) enqueueOfflineAction('reopen_rodada', { rodadaId });
+      });
+    } else {
+      enqueueOfflineAction('reopen_rodada', { rodadaId });
+    }
+  };
+
+  const archiveRouteProposal = (routeId: string) => {
+    setRouteProposals(prev => {
+      const updated = prev.map(p => p.id === routeId ? { ...p, isRecorded: true } : p);
+      try {
+        localStorage.setItem(STORAGE_KEYS.ROUTES, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    if (isSupabaseConfigured()) {
+      supabase.from('route_proposals').update({ is_recorded: true }).eq('id', routeId).then(({ error }) => {
+        if (error) enqueueOfflineAction('archive_route', { routeId });
+      });
+    } else {
+      enqueueOfflineAction('archive_route', { routeId });
+    }
+  };
+
+  const unarchiveRouteProposal = (routeId: string) => {
+    setRouteProposals(prev => {
+      const updated = prev.map(p => p.id === routeId ? { ...p, isRecorded: false } : p);
+      try {
+        localStorage.setItem(STORAGE_KEYS.ROUTES, JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    if (isSupabaseConfigured()) {
+      supabase.from('route_proposals').update({ is_recorded: false }).eq('id', routeId).then(({ error }) => {
+        if (error) enqueueOfflineAction('unarchive_route', { routeId });
+      });
+    } else {
+      enqueueOfflineAction('unarchive_route', { routeId });
     }
   };
 
@@ -2082,7 +2854,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addPackingItem = (rodadaId: string, item: string, category: PackingItem['category']) => {
     if (!item.trim()) return;
     const newItem: PackingItem = {
-      id: `pack-${Date.now()}`,
+      id: `pack-${makeUniqueSuffix()}`,
       item: item.trim(),
       category,
       isDone: false
@@ -2104,7 +2876,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addGalleryPhoto = (rodadaId: string, url: string, caption: string) => {
     if (!url.trim()) return;
     const newPhoto = {
-      id: `photo-${Date.now()}`,
+      id: `photo-${makeUniqueSuffix()}`,
       url: url.trim(),
       caption: caption.trim() || 'Foto de rodada',
       uploadedByName: currentUser.name,
@@ -2155,7 +2927,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const createRouteList = (name: string, description?: string) => {
     if (!name.trim()) return;
     const newList: RouteList = {
-      id: `list-${Date.now()}`,
+      id: `list-${makeUniqueSuffix()}`,
       userId: currentUser.id,
       name: name.trim(),
       description: description?.trim(),
@@ -2241,7 +3013,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addActivityComment = (activityId: string, text: string) => {
     if (!text.trim()) return;
     const newComment: ActivityComment = {
-      id: `comment-${Date.now()}`,
+      id: `comment-${makeUniqueSuffix()}`,
       userId: currentUser.id,
       userName: currentUser.name,
       userAvatar: currentUser.avatar,
@@ -2263,7 +3035,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const addRecordedActivity = (data: Omit<ActivityPost, 'id' | 'kudosCount' | 'hasKudoed' | 'kudosAvatars' | 'commentsCount'>) => {
-    const newActId = `act-${Date.now()}`;
+    const newActId = `act-${makeUniqueSuffix()}`;
     const newAct: ActivityPost = {
       ...data,
       id: newActId,
@@ -2301,26 +3073,37 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return updated;
     });
 
-    if (isSupabaseConfigured() && currentUser.id && currentUser.id.length === 36) {
-      supabase.from('activities').insert({
-        id: newActId,
-        pilot_id: currentUser.id,
-        pilot_name: data.pilotName || currentUser.name,
-        pilot_handle: data.pilotHandle || currentUser.handle,
-        pilot_avatar: data.pilotAvatar || currentUser.avatar,
-        title: data.title,
-        distance_km: data.distanceKm || 0,
-        elevation_gain_m: data.elevationGainM || 0,
-        duration_formatted: data.durationText || '0h 00m',
-        avg_speed_kmh: data.avgSpeedKmh || 0,
-        moto_model: data.motoModel || null,
-        discipline: data.discipline || 'Trail / Aventura',
-        location: data.location || 'México',
-        route_coordinates: data.coordinates || [],
-        photos: data.photos || [],
-        surface_breakdown: data.surfaceBreakdown || { asphaltPercentage: 50, dirtPercentage: 50, curveDensity: 'Media' },
-        group_info: data.groupInfo || null
-      }).then(() => {});
+    const cloudActivityPayload = {
+      id: newActId,
+      pilot_id: currentUser.id,
+      pilot_name: data.pilotName || currentUser.name,
+      pilot_handle: data.pilotHandle || currentUser.handle,
+      pilot_avatar: data.pilotAvatar || currentUser.avatar,
+      title: data.title,
+      distance_km: data.distanceKm || 0,
+      elevation_gain_m: data.elevationGainM || 0,
+      duration_formatted: data.durationText || '0h 00m',
+      avg_speed_kmh: data.avgSpeedKmh || 0,
+      moto_model: data.motoModel || null,
+      discipline: data.discipline || 'Trail / Aventura',
+      location: data.location || 'México',
+      route_coordinates: data.coordinates || [],
+      photos: data.photos || [],
+      surface_breakdown: data.surfaceBreakdown || { asphaltPercentage: 50, dirtPercentage: 50, curveDensity: 'Media' },
+      group_info: data.groupInfo || null
+    };
+
+    // Antes el error se ignoraba: si se guardaba la rodada sin señal (en la montaña), la actividad
+    // nunca llegaba al feed de los demás. Ahora se encola y se sube al volver la conexión.
+    if (isSupabaseConfigured() && currentUser.id && currentUser.id !== 'guest') {
+      supabase.from('activities').insert(cloudActivityPayload).then(({ error }) => {
+        if (error) {
+          console.warn('[Supabase] Error inserting activity, enqueuing offline:', error);
+          enqueueOfflineAction('publish_activity', cloudActivityPayload);
+        }
+      });
+    } else if (currentUser.id && currentUser.id !== 'guest') {
+      enqueueOfflineAction('publish_activity', cloudActivityPayload);
     }
   };
 
@@ -2400,11 +3183,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const toggleFollowUser = (userId: string) => {
+    if (!userId || userId === currentUser.id) return;
+
     setFollowingUserIds(prev => {
       const exists = prev.includes(userId);
       const next = exists ? prev.filter(id => id !== userId) : [...prev, userId];
 
-      // Also keep allFollows in sync locally
+      try {
+        localStorage.setItem('nao_following_users', JSON.stringify(next));
+      } catch {}
+
+      // Keep allFollows in sync locally immediately
       setAllFollows(prevAll => {
         if (exists) {
           return prevAll.filter(f => !(f.follower_id === currentUser.id && f.following_id === userId));
@@ -2413,11 +3202,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
       });
 
-      if (isSupabaseConfigured() && currentUser.id && currentUser.id.length === 36 && userId.length === 36) {
+      if (isSupabaseConfigured() && currentUser.id && userId) {
         if (exists) {
-          supabase.from('follows').delete().match({ follower_id: currentUser.id, following_id: userId }).then(() => {});
+          supabase.from('follows').delete().match({ follower_id: currentUser.id, following_id: userId }).then(({ error }) => {
+            if (error) enqueueOfflineAction('unfollow_user', { follower_id: currentUser.id, following_id: userId });
+          });
         } else {
-          supabase.from('follows').insert({ follower_id: currentUser.id, following_id: userId }).then(() => {});
+          supabase.from('follows').upsert(
+            { follower_id: currentUser.id, following_id: userId },
+            { onConflict: 'follower_id,following_id', ignoreDuplicates: true }
+          ).then(({ error }) => {
+            if (error) enqueueOfflineAction('follow_user', { follower_id: currentUser.id, following_id: userId });
+          });
         }
       }
 
@@ -2456,56 +3252,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const isFollowRequested = (targetUserId: string) => {
-    return followRequests.some(
-      r => r.fromUserId === currentUser.id && r.toUserId === targetUserId && r.status === 'pending'
-    );
+    return false;
   };
 
   const requestToFollowUser = (targetUserId: string) => {
     if (!targetUserId || targetUserId === currentUser.id) return;
-
-    // Si ya lo sigue, no hacer nada o dejar de seguir
-    if (isFollowingUser(targetUserId)) {
-      toggleFollowUser(targetUserId);
-      return;
-    }
-
-    // Si ya mandó solicitud, retirarla
-    const existingIndex = followRequests.findIndex(
-      r => r.fromUserId === currentUser.id && r.toUserId === targetUserId && r.status === 'pending'
-    );
-    if (existingIndex >= 0) {
-      setFollowRequests(prev => prev.filter((_, idx) => idx !== existingIndex));
-      return;
-    }
-
-    // Crear nueva solicitud
-    const newReq: FollowRequest = {
-      id: `req-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
-      fromUserId: currentUser.id,
-      fromUserName: currentUser.name,
-      fromUserHandle: currentUser.handle,
-      fromUserAvatar: currentUser.avatar,
-      toUserId: targetUserId,
-      createdAt: new Date().toISOString(),
-      status: 'pending'
-    };
-
-    // Broadcast en Realtime para que el receptor lo vea inmediatamente en su campana
-    if (isSupabaseConfigured()) {
-      supabase.channel('public:social_notifications').send({
-        type: 'broadcast',
-        event: 'new_follow_request',
-        payload: newReq
-      }).then(() => {}).catch(() => {});
-
-      // Sincronizar en tabla follows si ambos son UUIDs
-      if (currentUser.id?.length === 36 && targetUserId.length === 36) {
-        supabase.from('follows').insert({ follower_id: currentUser.id, following_id: targetUserId }).then(() => {});
-      }
-    }
-
-    setFollowRequests(prev => [newReq, ...prev]);
+    toggleFollowUser(targetUserId);
   };
 
   const acceptFollowRequest = (requestId: string) => {
@@ -2525,7 +3277,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         payload: { followerId: req.fromUserId, followingId: currentUser.id }
       }).then(() => {}).catch(() => {});
 
-      if (currentUser.id?.length === 36 && req.fromUserId.length === 36) {
+      if (currentUser.id && req.fromUserId) {
         supabase.from('follows').insert({ follower_id: req.fromUserId, following_id: currentUser.id }).then(() => {});
       }
     }
@@ -2605,6 +3357,31 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setSelectedPilotProfile(null);
       setActiveNavTab('tu');
       return;
+    }
+
+    // Consultar en Supabase para obtener las motos más recientes del hangar del piloto
+    if (isSupabaseConfigured() && userId) {
+      supabase.from('motorcycles').select('*').eq('user_id', userId).then(({ data: userMotos }) => {
+        if (userMotos && userMotos.length > 0) {
+          setMotorcycles(prev => {
+            const otherMotos = prev.filter(m => m.userId !== userId);
+            const mapped = userMotos.map((m: any) => ({
+              id: m.id,
+              userId: m.user_id,
+              brand: m.brand,
+              model: m.model,
+              year: m.year || 2023,
+              displacementCc: m.displacement_cc || 500,
+              type: (m.type as any) || 'Doble Propósito',
+              nickname: m.nickname || '',
+              photoUrl: m.image_url || 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=800',
+              modifications: m.modifications || [],
+              tires: m.tires || ''
+            }));
+            return [...otherMotos, ...mapped];
+          });
+        }
+      });
     }
 
     const found = users.find(u => u.id === userId || u.handle === userId || u.name === userId);
@@ -2766,17 +3543,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setCurrentRodada,
         enterRodada,
         createRodada,
+        updateRodada,
+        deleteRodada,
         routeProposals,
         currentRodadaRoutes,
         selectedRoute,
         setSelectedRoute,
         proposeRoute,
+        updateRouteProposal,
         deleteRouteProposal,
         voteRoute,
         downvoteRoute,
         addRouteComment,
         lockWinningRoute,
         unlockWinningRoute,
+        completeRodada,
+        reopenRodada,
+        archiveRouteProposal,
+        unarchiveRouteProposal,
         rsvpRodada,
         togglePackingItem,
         assignPackingItem,

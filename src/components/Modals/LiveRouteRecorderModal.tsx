@@ -93,6 +93,7 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
     userBikes,
     proposeRoute, 
     setSelectedRoute,
+    completeRodada,
     addRecordedActivity
   } = useApp();
 
@@ -131,6 +132,7 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
     return myCrew?.id || crews[0]?.id || '';
   });
   const [targetRodadaId, setTargetRodadaId] = useState(currentRodada?.id || rodadas[0]?.id || '');
+  const [markRodadaAsCompleted, setMarkRodadaAsCompleted] = useState(true);
   const [savedRouteUrl, setSavedRouteUrl] = useState<string | null>(null);
   const [uploadedPhotos, setUploadedPhotos] = useState<string[]>([]);
 
@@ -142,8 +144,13 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
   const waypointsLayerRef = useRef<any>(null);
   const [currentLayer, setCurrentLayer] = useState<'satellite' | 'topo'>('satellite');
 
-  // Key for persistent active recording in localStorage (solo respaldo si IndexedDB falla)
-  const ACTIVE_RECORDING_STORAGE_KEY = 'motomami_active_gps_recording_v1';
+  // Key for persistent active recording in localStorage (solo respaldo si IndexedDB falla).
+  // Va por usuario: si en el mismo teléfono entra otro piloto, no hereda la ruta del anterior.
+  const LEGACY_RECORDING_STORAGE_KEY = 'motomami_active_gps_recording_v1';
+  const recorderUserId = currentUser?.id && currentUser.id !== 'guest' ? currentUser.id : null;
+  const ACTIVE_RECORDING_STORAGE_KEY = recorderUserId
+    ? `${LEGACY_RECORDING_STORAGE_KEY}:${recorderUserId}`
+    : LEGACY_RECORDING_STORAGE_KEY;
 
   // WakeLock Manager para evitar que el teléfono duerma el sensor GPS
   const wakeLockRef = useRef<DeviceWakeLockManager>(new DeviceWakeLockManager());
@@ -175,20 +182,41 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
   // Exit confirmation modal state
   const [showExitConfirm, setShowExitConfirm] = useState(false);
 
-  // Restore active recording session from IndexedDB (fallback to localStorage) on initial mount
+  // Restore active recording session from IndexedDB (fallback to localStorage) for the signed-in pilot
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || !recorderUserId) return;
+    let cancelled = false;
     const restoreSession = async () => {
       try {
         // 1. Intentar primero desde IndexedDB (blindado para offline / miles de puntos)
-        const idbData = await getActiveRecordingFromDB();
+        const idbData = await getActiveRecordingFromDB(recorderUserId);
         let session: any = idbData;
 
-        // 2. Fallback a localStorage si no está en IndexedDB
+        // 2. Fallback a localStorage del mismo usuario
         if (!session) {
           const saved = localStorage.getItem(ACTIVE_RECORDING_STORAGE_KEY);
           if (saved) session = JSON.parse(saved);
         }
+
+        // 3. Grabación de la versión anterior (una sola clave sin dueño). Se entrega una sola vez
+        //    y se borra, para que no la recupere también el siguiente piloto que entre.
+        let usedLegacy = false;
+        if (!session) {
+          const legacy = localStorage.getItem(LEGACY_RECORDING_STORAGE_KEY);
+          if (legacy) {
+            const parsed = JSON.parse(legacy);
+            if (!parsed.ownerId || parsed.ownerId === recorderUserId) {
+              session = parsed;
+              usedLegacy = true;
+            }
+          }
+        }
+
+        if (session?.ownerId && session.ownerId !== recorderUserId) session = null;
+        if (cancelled) return;
+        // Borrar la clave vieja solo cuando de verdad se aplicó (si este intento se canceló,
+        // el siguiente todavía debe encontrarla). Desde aquí se guarda con la clave del usuario.
+        if (usedLegacy) localStorage.removeItem(LEGACY_RECORDING_STORAGE_KEY);
 
         if (session && Array.isArray(session.trackCoords) && session.trackCoords.length > 0) {
           // Sincronizar refs antes que el estado para que reanudar arranque con los datos correctos
@@ -229,13 +257,14 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
       }
     };
     restoreSession();
-  }, []);
+    return () => { cancelled = true; };
+  }, [recorderUserId]);
 
   // Persistir la grabación activa. El tiempo solo dispara guardado cada 15 s para no
   // reescribir toda la traza cada segundo; los puntos, waypoints y pausas sí guardan al instante.
   const elapsedPersistBucket = Math.floor(elapsedSeconds / 15);
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || !recorderUserId) return;
     if (finalizedRef.current) return;
     if (isRecording || trackCoords.length > 0) {
       const payload = {
@@ -251,12 +280,13 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
         detectedStopsCount,
         routeTitle,
         routeDescription,
+        ownerId: recorderUserId,
         updatedAt: Date.now()
       };
 
       // IndexedDB es el almacenamiento principal. localStorage solo si IndexedDB no está disponible
       // (tiene límite de ~5 MB y es síncrono, con miles de puntos se vuelve lento).
-      saveActiveRecordingToDB(payload).then(ok => {
+      saveActiveRecordingToDB(recorderUserId, payload).then(ok => {
         if (ok) return;
         try {
           localStorage.setItem(ACTIVE_RECORDING_STORAGE_KEY, JSON.stringify(payload));
@@ -277,12 +307,13 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
     recordedWaypoints,
     detectedStopsCount,
     routeTitle,
-    routeDescription
+    routeDescription,
+    recorderUserId
   ]);
 
   // Clean active recording session storage (IndexedDB + localStorage)
   const clearActiveRecordingStorage = () => {
-    clearActiveRecordingFromDB();
+    if (recorderUserId) clearActiveRecordingFromDB(recorderUserId);
     lastAcceptedPointRef.current = null;
     wakeLockRef.current.releaseLock();
     if (typeof window !== 'undefined') {
@@ -934,9 +965,15 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
     const offroadPct = dirtPercentage;
     const asphaltPct = 100 - dirtPercentage;
 
+    // Check if there is an active rodada to complete
+    const targetRodada = !isSoloRide ? rodadas.find(r => r.crewId === targetCrewId && r.status !== 'completada') : null;
+    if (targetRodada && markRodadaAsCompleted) {
+      completeRodada(targetRodada.id);
+    }
+
     // Build the final RouteProposal for History
     const newRoute: Omit<RouteProposal, 'id' | 'votes' | 'comments'> = {
-      rodadaId: '', // Las rutas grabadas son bitácora histórica, no propuestas para votación de rodadas futuras
+      rodadaId: (targetRodada && markRodadaAsCompleted) ? targetRodada.id : '',
       crewId: !isSoloRide ? targetCrewId : undefined,
       isRecorded: true,
       title: routeTitle.trim(),
@@ -1437,22 +1474,48 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
 
                 {/* 2. Tribu / Grupo Destino (solo visible si no es rodada en solitario) */}
                 {!isSoloRide && (
-                  <div className="animate-in fade-in slide-in-from-top-1 duration-150">
-                    <label className="text-[#1A1918]/70 text-[10px] uppercase font-display font-black block mb-1">
-                      Tribu / Grupo Destino:
-                    </label>
-                    <select
-                      value={targetCrewId}
-                      onChange={(e) => setTargetCrewId(e.target.value)}
-                      className="w-full bg-[#F4EEDB] border-2 border-[#1A1918] px-3.5 py-2.5 text-[#1A1918] text-xs focus:outline-none focus:border-[#E6332A] rounded-xl shadow-[2px_2px_0px_#1A1918] font-bold"
-                    >
-                      {/* Deduplicate crews by normalized key so duplicates never show */}
-                      {Array.from(new Map(crews.map(c => [c.slug || c.name.toLowerCase().trim(), c])).values()).map(c => (
-                        <option key={c.id} value={c.id} className="bg-[#FAF6ED] text-[#1A1918]">
-                          {c.name} {c.baseCity ? `(${c.baseCity})` : ''}
-                        </option>
-                      ))}
-                    </select>
+                  <div className="animate-in fade-in slide-in-from-top-1 duration-150 space-y-2">
+                    <div>
+                      <label className="text-[#1A1918]/70 text-[10px] uppercase font-display font-black block mb-1">
+                        Tribu / Grupo Destino:
+                      </label>
+                      <select
+                        value={targetCrewId}
+                        onChange={(e) => setTargetCrewId(e.target.value)}
+                        className="w-full bg-[#F4EEDB] border-2 border-[#1A1918] px-3.5 py-2.5 text-[#1A1918] text-xs focus:outline-none focus:border-[#E6332A] rounded-xl shadow-[2px_2px_0px_#1A1918] font-bold"
+                      >
+                        {/* Deduplicate crews by normalized key so duplicates never show */}
+                        {Array.from(new Map(crews.map(c => [c.slug || c.name.toLowerCase().trim(), c])).values()).map(c => (
+                          <option key={c.id} value={c.id} className="bg-[#FAF6ED] text-[#1A1918]">
+                            {c.name} {c.baseCity ? `(${c.baseCity})` : ''}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Checkbox para auto-completar rodada activa de la tribu */}
+                    {(() => {
+                      const activeCrewRodada = rodadas.find(r => r.crewId === targetCrewId && r.status !== 'completada');
+                      if (!activeCrewRodada) return null;
+                      return (
+                        <label className="flex items-start gap-2.5 p-3 bg-[#FAF6ED] border-2 border-[#1A1918] rounded-xl shadow-[2px_2px_0px_#1A1918] cursor-pointer hover:bg-[#F4EEDB] transition">
+                          <input
+                            type="checkbox"
+                            checked={markRodadaAsCompleted}
+                            onChange={(e) => setMarkRodadaAsCompleted(e.target.checked)}
+                            className="mt-0.5 accent-[#E6332A] w-4 h-4 rounded cursor-pointer shrink-0"
+                          />
+                          <div className="text-xs">
+                            <span className="font-display font-black text-[#1A1918] block">
+                              ✓ Archivar rodada "{activeCrewRodada.title}" al Historial
+                            </span>
+                            <span className="text-[11px] font-mono text-[#1A1918]/70 block mt-0.5">
+                              Mueve automáticamente la convocatoria y sus rutas al Historial de la Tribu como rodada concluida.
+                            </span>
+                          </div>
+                        </label>
+                      );
+                    })()}
                   </div>
                 )}
 
