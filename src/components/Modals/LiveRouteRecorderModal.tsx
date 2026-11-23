@@ -143,7 +143,6 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
   const polylineRef = useRef<any>(null);
   const riderMarkerRef = useRef<any>(null);
   const waypointsLayerRef = useRef<any>(null);
-  const [currentLayer, setCurrentLayer] = useState<'satellite' | 'dark' | 'topo'>('satellite');
 
   // Key for persistent active recording in localStorage (solo respaldo si IndexedDB falla).
   // Va por usuario: si en el mismo teléfono entra otro piloto, no hereda la ruta del anterior.
@@ -574,28 +573,6 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
       }
     };
   }, [isOpen]);
-
-  // Handle Layer change
-  const handleLayerChange = async (layer: 'satellite' | 'dark' | 'topo') => {
-    setCurrentLayer(layer);
-    if (!mapInstanceRef.current) return;
-    const L = (await import('leaflet')).default;
-    
-    // Clear existing tiles
-    mapInstanceRef.current.eachLayer((l: any) => {
-      if (l instanceof L.TileLayer) {
-        mapInstanceRef.current.removeLayer(l);
-      }
-    });
-
-    if (layer === 'satellite') {
-      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 }).addTo(mapInstanceRef.current);
-    } else if (layer === 'dark') {
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19, subdomains: 'abcd' }).addTo(mapInstanceRef.current);
-    } else {
-      L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { maxZoom: 17, attribution: 'OpenTopoMap' }).addTo(mapInstanceRef.current);
-    }
-  };
 
   // Etiqueta visible de cada waypoint en el mapa
   const getWaypointTag = (wp: Waypoint) => {
@@ -1193,35 +1170,10 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Layer switcher pill */}
-          <div className="bg-[#242322] p-0.5 rounded-xl border border-white/10 flex items-center text-[10px]">
-            <button
-              type="button"
-              onClick={() => handleLayerChange('satellite')}
-              className={`px-2 py-1 uppercase font-sans font-semibold tracking-wider rounded-lg transition text-[9px] cursor-pointer ${
-                currentLayer === 'satellite' ? 'bg-[#E6332A] text-white shadow-sm' : 'text-white/60 hover:text-white'
-              }`}
-            >
-              Satélite
-            </button>
-            <button
-              type="button"
-              onClick={() => handleLayerChange('dark')}
-              className={`px-2 py-1 uppercase font-sans font-semibold tracking-wider rounded-lg transition text-[9px] cursor-pointer ${
-                currentLayer === 'dark' ? 'bg-[#E6332A] text-white shadow-sm' : 'text-white/60 hover:text-white'
-              }`}
-            >
-              Táctico
-            </button>
-            <button
-              type="button"
-              onClick={() => handleLayerChange('topo')}
-              className={`px-2 py-1 uppercase font-sans font-semibold tracking-wider rounded-lg transition text-[9px] cursor-pointer ${
-                currentLayer === 'topo' ? 'bg-[#E6332A] text-white shadow-sm' : 'text-white/60 hover:text-white'
-              }`}
-            >
-              Topo
-            </button>
+          {/* Indicador de mapa Satélite HD de alta resolución */}
+          <div className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#242322] border border-white/10 text-[9px] font-mono uppercase tracking-wider text-white/70">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#25D366]"></span>
+            Satélite HD
           </div>
 
           <button

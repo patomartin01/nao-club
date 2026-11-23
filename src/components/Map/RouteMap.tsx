@@ -36,11 +36,11 @@ export interface RouteMapProps {
   onToggleCommunityPilots?: () => void;
   onToggleActivityHeatmap?: () => void;
   searchRadiusKm?: number;
-  externalLayer?: 'satellite' | 'topo' | 'roads';
+  externalLayer?: 'satellite' | 'roads';
   showInternalControls?: boolean;
 }
 
-type MapLayerType = 'satellite' | 'topo' | 'roads';
+type MapLayerType = 'satellite' | 'roads';
 
 export const RouteMap: React.FC<RouteMapProps> = ({
   route,
@@ -85,14 +85,6 @@ export const RouteMap: React.FC<RouteMapProps> = ({
         attribution: 'Esri, Maxar'
       });
       tileLayerGroupRef.current.addLayer(satLayer);
-    } else if (layerType === 'topo') {
-      // OpenTopoMap
-      const topoLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-        maxZoom: 17,
-        subdomains: 'abc',
-        attribution: 'OpenTopoMap'
-      });
-      tileLayerGroupRef.current.addLayer(topoLayer);
     } else {
       // Standard Road / Street & Trail network
       const roadLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -471,16 +463,6 @@ export const RouteMap: React.FC<RouteMapProps> = ({
               }`}
             >
               Satélite HD
-            </button>
-            <button
-              onClick={() => handleLayerChange('topo')}
-              className={`px-2.5 py-1 rounded-lg font-bold transition touch-manipulation ${
-                currentLayer === 'topo'
-                  ? 'bg-earth text-white'
-                  : 'text-ash hover:text-white'
-              }`}
-            >
-              Topo
             </button>
             <button
               onClick={() => handleLayerChange('roads')}
