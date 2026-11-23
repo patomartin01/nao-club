@@ -79,9 +79,6 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
           maxZoom: 19
         }).addTo(map);
-        L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
-          maxZoom: 19
-        }).addTo(map);
 
         // Polyline of recorded GPS track
         const polyline = L.polyline(coords as [number, number][], {
