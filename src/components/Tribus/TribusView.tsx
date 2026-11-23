@@ -455,11 +455,27 @@ export const TribusView: React.FC<TribusViewProps> = ({
     }
   };
 
-  // Rodadas belonging to this Tribu
-  const tribuRodadas = activeTribu 
+  // Helper para detectar si una rodada ya pasó en el calendario
+  const isPastRodada = (r: Rodada): boolean => {
+    if (r.status === 'completada') return true;
+    const dateToCheck = r.endDate || r.startDate;
+    if (!dateToCheck) return false;
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    return dateToCheck < todayStr;
+  };
+
+  // Todas las rodadas convocadas para esta Tribu
+  const allTribuRodadas = activeTribu 
     ? rodadas.filter(r => r.crewId === activeTribu.id)
     : [];
-  const tribuRodadaIds = new Set(tribuRodadas.map(r => r.id));
+
+  // Convocatorias activas y vigentes (Solo hoy o a futuro)
+  const tribuRodadas = allTribuRodadas.filter(r => !isPastRodada(r));
+  const tribuRodadaIds = new Set(allTribuRodadas.map(r => r.id));
+
+  // Convocatorias pasadas o completadas (Historial)
+  const pastTribuRodadas = allTribuRodadas.filter(r => isPastRodada(r));
 
   // Rutas YA RODADAS y publicadas con esta tribu (Historial del Grupo)
   // Requisito estricto: Solo rutas que efectivamente ya fueron rodadas y publicadas indicando el grupo
@@ -2193,63 +2209,84 @@ export const TribusView: React.FC<TribusViewProps> = ({
           </div>
 
           {/* Selector de Fechas Convocadas (Plaquitas mecánicas coleccionables) */}
-          <div className="flex items-stretch gap-2.5 overflow-x-auto pb-2 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0">
-            {tribuRodadas.map((rodada) => {
-              const isSelected = activeRodada?.id === rodada.id;
-              const rodadaProposals = routeProposals.filter(p => {
-                if (p.rodadaId !== rodada.id) return false;
-                if (p.isRecorded) return false;
-                if (tribuRecordedActivityIds.has(p.id)) return false;
-                if (p.title?.toLowerCase().startsWith('expedición grabada') || p.title?.toLowerCase().startsWith('ruta grabada')) return false;
-                return true;
-              });
-              const isConfirmed = singleConfirmedRodada?.id === rodada.id && rodada.status === 'fijada' && rodadaProposals.length > 0;
+          {tribuRodadas.length === 0 ? (
+            <div className="bg-[#FAF6ED] border border-[#1A1918]/10 rounded-2xl p-6 sm:p-8 text-center space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-[#E6332A]/10 text-[#E6332A] flex items-center justify-center mx-auto">
+                <Calendar className="w-6 h-6" />
+              </div>
+              <h3 className="font-display font-semibold text-lg text-[#1A1918]">
+                Sin convocatorias próximas
+              </h3>
+              <p className="font-sans text-xs text-[#1A1918]/70 max-w-md mx-auto">
+                Las convocatorias con fechas anteriores han concluido y están archivadas en la pestaña de Historial. ¡Convoca la próxima rodada para salir con el grupo!
+              </p>
+              <button
+                onClick={() => setShowConvokeModal(true)}
+                className="px-4 py-2 bg-[#F7B32B] hover:bg-[#e0a020] text-[#1A1918] border border-[#1A1918]/10 shadow-sm text-xs font-sans font-semibold rounded-xl inline-flex items-center gap-1.5 transition active:shadow-none"
+              >
+                <Plus className="w-4 h-4 stroke-[3]" />
+                <span>Convocar rodada</span>
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-stretch gap-2.5 overflow-x-auto pb-2 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0">
+              {tribuRodadas.map((rodada) => {
+                const isSelected = activeRodada?.id === rodada.id;
+                const rodadaProposals = routeProposals.filter(p => {
+                  if (p.rodadaId !== rodada.id) return false;
+                  if (p.isRecorded) return false;
+                  if (tribuRecordedActivityIds.has(p.id)) return false;
+                  if (p.title?.toLowerCase().startsWith('expedición grabada') || p.title?.toLowerCase().startsWith('ruta grabada')) return false;
+                  return true;
+                });
+                const isConfirmed = singleConfirmedRodada?.id === rodada.id && rodada.status === 'fijada' && rodadaProposals.length > 0;
 
-              return (
-                <button
-                  key={rodada.id}
-                  onClick={() => setSelectedRodadaId(rodada.id)}
-                  className={`text-left px-4 py-3 border border-[#1A1918]/10 rounded-2xl transition-all duration-150 flex items-center gap-3 shrink-0 active:shadow-none ${
-                    isSelected
-                      ? 'bg-[#E6332A] text-white shadow-sm'
-                      : 'bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] shadow-sm'
-                  }`}
-                >
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className={`text-xs font-mono font-semibold ${
+                return (
+                  <button
+                    key={rodada.id}
+                    onClick={() => setSelectedRodadaId(rodada.id)}
+                    className={`text-left px-4 py-3 border border-[#1A1918]/10 rounded-2xl transition-all duration-150 flex items-center gap-3 shrink-0 active:shadow-none ${
+                      isSelected
+                        ? 'bg-[#E6332A] text-white shadow-sm'
+                        : 'bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] shadow-sm'
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xs font-mono font-semibold ${
+                          isSelected ? 'text-white' : 'text-[#1A1918]'
+                        }`}>
+                          {formatHumanDate(rodada.startDate, rodada.endDate, true)}
+                        </span>
+                        {isConfirmed ? (
+                          <span className={`text-[9px] font-mono uppercase font-semibold px-1.5 py-0.5 rounded border ${
+                            isSelected 
+                              ? 'bg-white/25 border-white text-white' 
+                              : 'bg-emerald-100 border-[#1A1918]/10 text-emerald-900'
+                          }`}>
+                            Confirmada
+                          </span>
+                        ) : (
+                          <span className={`text-[9px] font-mono uppercase font-semibold px-1.5 py-0.5 rounded border ${
+                            isSelected 
+                              ? 'bg-white/20 border-white text-white' 
+                              : 'bg-[#F7B32B] border-[#1A1918]/10 text-[#1A1918]'
+                          }`}>
+                            {rodadaProposals.length} {rodadaProposals.length === 1 ? 'ruta' : 'rutas'}
+                          </span>
+                        )}
+                      </div>
+                      <p className={`text-xs font-sans font-semibold line-clamp-1 mt-1 ${
                         isSelected ? 'text-white' : 'text-[#1A1918]'
                       }`}>
-                        {formatHumanDate(rodada.startDate, rodada.endDate, true)}
-                      </span>
-                      {isConfirmed ? (
-                        <span className={`text-[9px] font-mono uppercase font-semibold px-1.5 py-0.5 rounded border ${
-                          isSelected 
-                            ? 'bg-white/25 border-white text-white' 
-                            : 'bg-emerald-100 border-[#1A1918]/10 text-emerald-900'
-                        }`}>
-                          Confirmada
-                        </span>
-                      ) : (
-                        <span className={`text-[9px] font-mono uppercase font-semibold px-1.5 py-0.5 rounded border ${
-                          isSelected 
-                            ? 'bg-white/20 border-white text-white' 
-                            : 'bg-[#F7B32B] border-[#1A1918]/10 text-[#1A1918]'
-                        }`}>
-                          {rodadaProposals.length} {rodadaProposals.length === 1 ? 'ruta' : 'rutas'}
-                        </span>
-                      )}
+                        {rodada.title}
+                      </p>
                     </div>
-                    <p className={`text-xs font-sans font-semibold line-clamp-1 mt-1 ${
-                      isSelected ? 'text-white' : 'text-[#1A1918]'
-                    }`}>
-                      {rodada.title}
-                    </p>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
 
           {/* Opciones para la Fecha Seleccionada */}
           {activeRodada && (
@@ -2768,6 +2805,41 @@ export const TribusView: React.FC<TribusViewProps> = ({
                   <span>Grabar la primera ruta</span>
                 </button>
               )}
+            </div>
+          )}
+
+          {/* Convocatorias y Fechas Anteriores Archivadas */}
+          {pastTribuRodadas.length > 0 && (
+            <div className="pt-6 border-t border-[#1A1918]/10 space-y-3">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-[#1A1918]/60" />
+                <h3 className="font-display font-semibold text-base sm:text-lg text-[#1A1918]">
+                  Convocatorias Anteriores Archivadas ({pastTribuRodadas.length})
+                </h3>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                {pastTribuRodadas.map(rodada => (
+                  <div
+                    key={rodada.id}
+                    className="p-4 bg-[#FAF6ED] border border-[#1A1918]/10 rounded-2xl shadow-sm space-y-2 opacity-90 hover:opacity-100 transition"
+                  >
+                    <div className="flex items-center justify-between text-[10px] font-mono">
+                      <span className="text-[#E6332A] font-semibold">{formatHumanDate(rodada.startDate, rodada.endDate, true)}</span>
+                      <span className="px-1.5 py-0.5 bg-[#1A1918]/10 text-[#1A1918]/70 rounded font-semibold uppercase">
+                        Concluida
+                      </span>
+                    </div>
+                    <h4 className="font-sans font-bold text-sm text-[#1A1918] line-clamp-1">{rodada.title}</h4>
+                    {rodada.subtitle && (
+                      <p className="font-sans text-xs text-[#1A1918]/60 line-clamp-2">{rodada.subtitle}</p>
+                    )}
+                    <div className="pt-1 flex items-center justify-between text-[11px] text-[#1A1918]/70 font-mono border-t border-[#1A1918]/5">
+                      <span>{rodada.attendees.length} Pilotos</span>
+                      <span className="text-[10px] text-[#1A1918]/40">Historial</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>

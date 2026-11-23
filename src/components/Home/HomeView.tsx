@@ -299,54 +299,79 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
 
         <div className="space-y-4">
-          {rodadas.map((rd) => {
-            const crew = crews.find(c => c.id === rd.crewId);
-            return (
-              <div 
-                key={rd.id}
-                onClick={() => enterRodada(rd.id)}
-                className="group border border-white/10 hover:border-earth bg-[#0B0A09] p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6 cursor-pointer transition"
-              >
-                <div className="space-y-2 flex-1">
-                  <div className="flex flex-wrap items-center gap-3 font-mono text-[10px]">
-                    <span className="text-earth font-bold  ">
-                      [{crew?.name || 'TRIBU'}]
-                    </span>
-                    <span className="text-ash">·</span>
-                    <span className="text-white bg-white/10 px-2 py-0.5">
-                      {rd.category}
-                    </span>
-                    <span className="text-ash">·</span>
-                    <span className="text-emerald-400">
-                      {rd.status === 'votacion' ? 'FASE: VOTACIÓN DE RUTAS' : 'CONFIRMADA'}
-                    </span>
-                  </div>
+          {(() => {
+            const now = new Date();
+            const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            const upcoming = rodadas.filter(rd => {
+              if (rd.status === 'completada') return false;
+              const dateToCheck = rd.endDate || rd.startDate;
+              if (!dateToCheck) return true;
+              return dateToCheck >= todayStr;
+            });
 
-                  <h3 className="font-display font-extrabold text-2xl text-white group-hover:text-earth transition">
-                    {rd.title}
-                  </h3>
-                  <p className="font-mono text-xs text-ash max-w-2xl font-light">
-                    {rd.subtitle}
-                  </p>
-                </div>
-
-                <div className="flex items-center justify-between lg:justify-end gap-6 font-mono text-xs border-t lg:border-t-0 pt-4 lg:pt-0 border-white/10">
-                  <div className="text-left lg:text-right">
-                    <span className="text-[10px] text-ash uppercase block">Fechas</span>
-                    <p className="font-bold text-white">{rd.startDate} al {rd.endDate}</p>
-                  </div>
-                  <div className="text-left lg:text-right">
-                    <span className="text-[10px] text-ash uppercase block">Flotilla</span>
-                    <p className="font-bold text-earth">{rd.attendees.length} Pilotos</p>
-                  </div>
-
-                  <button className="px-5 py-3 border border-white/20 group-hover:border-earth group-hover:bg-earth group-hover:text-white uppercase font-bold tracking-widest text-[11px] transition shrink-0">
-                    Entrar a Votar →
+            if (upcoming.length === 0) {
+              return (
+                <div className="border border-white/10 bg-[#0B0A09] p-8 text-center space-y-3">
+                  <p className="font-mono text-xs text-ash">No hay convocatorias próximas activas. Las fechas anteriores han sido archivadas en el historial de la tribu.</p>
+                  <button
+                    onClick={onOpenCreateRodada}
+                    className="px-4 py-2 bg-white hover:bg-earth text-obsidian hover:text-white font-mono text-xs font-bold transition inline-flex items-center gap-1.5"
+                  >
+                    + Convocar Rodada
                   </button>
                 </div>
-              </div>
-            );
-          })}
+              );
+            }
+
+            return upcoming.map((rd) => {
+              const crew = crews.find(c => c.id === rd.crewId);
+              return (
+                <div 
+                  key={rd.id}
+                  onClick={() => enterRodada(rd.id)}
+                  className="group border border-white/10 hover:border-earth bg-[#0B0A09] p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6 cursor-pointer transition"
+                >
+                  <div className="space-y-2 flex-1">
+                    <div className="flex flex-wrap items-center gap-3 font-mono text-[10px]">
+                      <span className="text-earth font-bold  ">
+                        [{crew?.name || 'TRIBU'}]
+                      </span>
+                      <span className="text-ash">·</span>
+                      <span className="text-white bg-white/10 px-2 py-0.5">
+                        {rd.category}
+                      </span>
+                      <span className="text-ash">·</span>
+                      <span className="text-emerald-400">
+                        {rd.status === 'votacion' ? 'FASE: VOTACIÓN DE RUTAS' : 'CONFIRMADA'}
+                      </span>
+                    </div>
+
+                    <h3 className="font-display font-extrabold text-2xl text-white group-hover:text-earth transition">
+                      {rd.title}
+                    </h3>
+                    <p className="font-mono text-xs text-ash max-w-2xl font-light">
+                      {rd.subtitle}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-between lg:justify-end gap-6 font-mono text-xs border-t lg:border-t-0 pt-4 lg:pt-0 border-white/10">
+                    <div className="text-left lg:text-right">
+                      <span className="text-[10px] text-ash uppercase block">Fechas</span>
+                      <p className="font-bold text-white">{rd.startDate} al {rd.endDate}</p>
+                    </div>
+                    <div className="text-left lg:text-right">
+                      <span className="text-[10px] text-ash uppercase block">Flotilla</span>
+                      <p className="font-bold text-earth">{rd.attendees.length} Pilotos</p>
+                    </div>
+
+                    <button className="px-5 py-3 border border-white/20 group-hover:border-earth group-hover:bg-earth group-hover:text-white uppercase font-bold tracking-widest text-[11px] transition shrink-0">
+                      Entrar a Votar →
+                    </button>
+                  </div>
+                </div>
+              );
+            });
+          })()}
         </div>
       </section>
 

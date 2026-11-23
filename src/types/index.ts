@@ -42,10 +42,12 @@ export interface ActivityParticipant {
 
 export interface ActivityGroupInfo {
   crewId?: string;
-  crewName: string;
+  crewName?: string;
   rodadaId?: string;
   rodadaTitle?: string;
-  participants: ActivityParticipant[];
+  participants?: ActivityParticipant[];
+  kudos_users?: string[];
+  kudos_avatars?: string[];
 }
 
 export interface ActivityPost {

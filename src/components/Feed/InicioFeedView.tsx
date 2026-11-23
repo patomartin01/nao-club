@@ -124,11 +124,13 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
     });
 
     // Also keep any extra riders that were recorded on this specific activity
-    groupInfo.participants.forEach(p => {
-      if (!crewParticipants.some(cp => cp.userId === p.userId)) {
-        crewParticipants.push(p);
-      }
-    });
+    if (groupInfo.participants) {
+      groupInfo.participants.forEach(p => {
+        if (!crewParticipants.some(cp => cp.userId === p.userId)) {
+          crewParticipants.push(p);
+        }
+      });
+    }
 
     return {
       ...groupInfo,
@@ -197,7 +199,7 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
       const isOwnActivity = act.pilotId === currentUser.id;
       const isFollowedPilot = isFollowingUser(act.pilotId);
       const hasFollowedFriend = Boolean(
-        act.groupInfo?.participants.some(
+        act.groupInfo?.participants?.some(
           p => p.userId === currentUser.id || isFollowingUser(p.userId)
         )
       );
@@ -576,7 +578,7 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                 {/* Social Context Header - Risograph Fellowship Dispatch */}
                 {(() => {
                   const isDirectlyFollowed = isFollowingUser(act.pilotId) || act.pilotId === currentUser.id;
-                  const followedFriend = resolvedGroup?.participants.find(
+                  const followedFriend = resolvedGroup?.participants?.find(
                     p => p.userId !== act.pilotId && (isFollowingUser(p.userId) || p.userId === currentUser.id)
                   );
 
@@ -769,7 +771,7 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                         title="Ver pilotos participantes"
                       >
                         <div className="flex -space-x-1.5 overflow-hidden items-center shrink-0">
-                          {resolvedGroup.participants.slice(0, 3).map((p) => (
+                          {(resolvedGroup.participants || []).slice(0, 3).map((p) => (
                             /* eslint-disable-next-line @next/next/no-img-element */
                             <img 
                               key={p.userId} 
@@ -784,7 +786,7 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                         </span>
                         <span className="text-white/40">•</span>
                         <span className="text-[#F7B32B] font-mono text-[10px] font-bold">
-                          {resolvedGroup.participants.length} pilotos
+                          {(resolvedGroup.participants || []).length} pilotos
                         </span>
                         <ChevronRight className="w-3.5 h-3.5 text-white/60 group-hover/grouppill:translate-x-0.5 transition shrink-0" />
                       </button>
@@ -1017,7 +1019,7 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                       ))}
                     </div>
                     <span className="text-xs font-sans font-bold">
-                      {act.kudosCount} {act.kudosCount === 1 ? 'saludo biker' : 'saludos bikers'}
+                      {act.kudosCount === 0 ? 'Sé el primero en saludar ✌️' : `${act.kudosCount} ${act.kudosCount === 1 ? 'saludo biker' : 'saludos bikers'}`}
                     </span>
                   </div>
 

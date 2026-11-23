@@ -27,6 +27,7 @@ export const GroupParticipantsModal: React.FC<GroupParticipantsModalProps> = ({
   const linkedCrew = groupInfo.crewId ? crews.find(c => c.id === groupInfo.crewId) : null;
   const isMyClub = !!linkedCrew ? linkedCrew.members.some(m => m.userId === currentUser.id) : (!!groupInfo.crewId && crews.some(c => c.id === groupInfo.crewId && c.members.some(m => m.userId === currentUser.id)));
   const displayCrewName = linkedCrew?.name || groupInfo.crewName;
+  const participants = groupInfo.participants || [];
 
   return (
     <div 
@@ -54,7 +55,7 @@ export const GroupParticipantsModal: React.FC<GroupParticipantsModalProps> = ({
                   </span>
                 )}
                 <span className="text-[10px] text-stone-500 font-sans ">
-                  {groupInfo.participants.length} pilotos
+                  {participants.length} pilotos
                 </span>
               </div>
               <h3 className="font-display font-semibold text-xl text-[#141312] mt-1">
@@ -84,7 +85,7 @@ export const GroupParticipantsModal: React.FC<GroupParticipantsModalProps> = ({
           </span>
 
           <div className="space-y-2.5">
-            {groupInfo.participants.map((p) => {
+            {participants.map((p) => {
               const isCurrentUser = p.userId === currentUser.id;
 
               return (

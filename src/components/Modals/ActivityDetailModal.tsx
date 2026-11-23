@@ -158,7 +158,7 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
       role: m.role || existing?.role || 'Rider',
       motoModel: b ? `${b.brand} ${b.model}` : (existing?.motoModel || 'Doble Propósito')
     };
-  }) : activity.groupInfo.participants) : [];
+  }) : (activity.groupInfo.participants || [])) : [];
 
   return (
     <div className="fixed inset-0 z-[9999] bg-[#1A1918]/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-y-auto animate-fadeIn">
@@ -495,7 +495,7 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
                 ))}
               </div>
               <span className="text-xs text-[#1A1918] font-mono font-bold">
-                {activity.kudosCount} {activity.kudosCount === 1 ? 'saludo recibido' : 'saludos recibidos'}
+                {activity.kudosCount === 0 ? 'Sé el primero en saludar ✌️' : `${activity.kudosCount} ${activity.kudosCount === 1 ? 'saludo recibido' : 'saludos recibidos'}`}
               </span>
             </div>
             <span className="text-[10px] text-[#E6332A] uppercase font-mono font-semibold tracking-wider bg-[#FAF6ED] px-2 py-0.5 border border-[#1A1918]/10 rounded shadow-sm">

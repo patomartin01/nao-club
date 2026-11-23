@@ -1063,15 +1063,22 @@ ${gpxPoints}
               >
                 <div className="space-y-2 flex-1">
                   <div className="flex items-center gap-3 font-mono text-[10px]">
-                    <span className={`px-2 py-0.5 border font-bold ${
-                      rd.status === 'completada'
-                        ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400'
-                        : rd.status === 'votacion'
-                        ? 'bg-earth/20 border-earth text-earth'
-                        : 'bg-white/10 border-white/20 text-white'
-                    }`}>
-                      {rd.status === 'completada' ? '✓ Rodada Completada' : rd.status === 'votacion' ? 'Votación Abierta de Rutas' : 'Confirmada'}
-                    </span>
+                    {(() => {
+                      const now = new Date();
+                      const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+                      const isPast = (rd.endDate || rd.startDate) && (rd.endDate || rd.startDate) < todayStr;
+                      return (
+                        <span className={`px-2 py-0.5 border font-bold ${
+                          rd.status === 'completada' || isPast
+                            ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400'
+                            : rd.status === 'votacion'
+                            ? 'bg-earth/20 border-earth text-earth'
+                            : 'bg-white/10 border-white/20 text-white'
+                        }`}>
+                          {rd.status === 'completada' || isPast ? '✓ Concluida / Historial' : rd.status === 'votacion' ? 'Votación Abierta de Rutas' : 'Confirmada'}
+                        </span>
+                      );
+                    })()}
                     <span className="text-ash">·</span>
                     <span className="text-white bg-white/10 px-2 py-0.5">
                       {rd.category}

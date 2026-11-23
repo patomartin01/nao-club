@@ -618,17 +618,41 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
     const L = (await import('leaflet')).default;
     const layer = waypointsLayerRef.current;
     layer.clearLayers();
+
+    const typeConfig: Record<string, { bg: string; text: string; dot: string; label: string }> = {
+      fuel: { bg: '#E6332A', text: '#FFFFFF', dot: '#FF8A84', label: 'GAS' },
+      scenic: { bg: '#F7B32B', text: '#121110', dot: '#FFE17D', label: 'MIRADOR' },
+      dirt: { bg: '#FF7A00', text: '#FFFFFF', dot: '#FFB266', label: 'TÉCNICO' },
+      camp: { bg: '#25D366', text: '#121110', dot: '#85FFB2', label: 'PAUSA' },
+      stop: { bg: '#E6332A', text: '#FFFFFF', dot: '#FF8A84', label: 'PARADA' },
+      curvometer: { bg: '#8B5CF6', text: '#FFFFFF', dot: '#C4B5FD', label: 'CURVA' },
+      start: { bg: '#25D366', text: '#121110', dot: '#85FFB2', label: 'SALIDA' },
+    };
+
     wps.forEach((wp) => {
+      const isStart = wp.name.toLowerCase().includes('salida') || wp.name.toLowerCase().includes('inicio');
+      const cfg = isStart 
+        ? typeConfig.start 
+        : (typeConfig[wp.type] || { bg: '#F7B32B', text: '#121110', dot: '#FFE17D', label: getWaypointTag(wp) });
+      const cleanTitle = wp.name.split('(')[0].trim();
+
       const markerIcon = L.divIcon({
-        className: 'wp-marker',
+        className: 'wp-tactical-pin',
         html: `
-          <div style="background: #0B0A09; border: 1.5px solid #E07A5F; color: white; padding: 3px 6px; border-radius: 2px; font-size: 10px; font-family: monospace; font-weight: bold; white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,0.6); display: flex; align-items: center; gap: 5px;">
-            <span style="background: #E07A5F; color: black; font-weight: 800; font-size: 8px; padding: 1px 3px; border-radius: 2px;">${getWaypointTag(wp)}</span>
-            <span>${wp.name.split('(')[0]}</span>
+          <div style="position: relative; display: inline-flex; flex-direction: column; align-items: center; cursor: pointer; filter: drop-shadow(0 8px 16px rgba(0,0,0,0.65));">
+            <div style="background: rgba(18, 17, 16, 0.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.18); border-radius: 9999px; padding: 4px 10px 4px 5px; display: inline-flex; align-items: center; gap: 7px; box-shadow: 0 4px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.12); white-space: nowrap;">
+              <span style="background: ${cfg.bg}; color: ${cfg.text}; font-weight: 800; font-size: 8.5px; font-family: ui-monospace, SFMono-Regular, monospace; padding: 2px 6px; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.04em; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 4px rgba(0,0,0,0.25);">
+                <span style="width: 4px; height: 4px; border-radius: 50%; background: ${cfg.dot}; box-shadow: 0 0 4px ${cfg.dot};"></span>
+                ${cfg.label}
+              </span>
+              <span style="color: #FFFFFF; font-size: 11px; font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; font-weight: 700; letter-spacing: -0.01em;">${cleanTitle}</span>
+            </div>
+            <div style="width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 5px solid rgba(18, 17, 16, 0.92); margin-top: -1px;"></div>
+            <div style="width: 7px; height: 7px; border-radius: 50%; background: ${cfg.bg}; border: 1.5px solid #FFFFFF; box-shadow: 0 0 10px ${cfg.bg}; margin-top: 1px;"></div>
           </div>
         `,
-        iconSize: [120, 30],
-        iconAnchor: [60, 15]
+        iconSize: [160, 42],
+        iconAnchor: [80, 40]
       });
       L.marker([wp.lat, wp.lng], { icon: markerIcon })
         .bindPopup(`<b>${wp.name}</b><br/>${wp.notes || ''}`)
@@ -1272,19 +1296,21 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
 
         {/* Real-time Waypoint / POI Floating Quick-Buttons (Top Left, visible when actively recording) */}
         {isRecording && !isPaused && (
-          <div className="absolute top-4 left-4 z-10 flex items-center gap-1.5 bg-[#1A1918]/90 backdrop-blur-md border border-white/15 p-1 rounded-2xl shadow-xl max-w-[calc(100vw-120px)] overflow-x-auto">
+          <div className="absolute top-4 left-4 z-10 flex items-center gap-2 bg-[#121110]/85 backdrop-blur-xl border border-white/15 p-1.5 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.6)] max-w-[calc(100vw-120px)] overflow-x-auto scrollbar-none">
             <button
               type="button"
               onClick={() => handleAddManualWaypoint('fuel', 'Gasolinera', 'GAS')}
-              className="px-2.5 py-1.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 text-[10px] uppercase font-sans font-semibold flex items-center gap-1 transition rounded-xl cursor-pointer active:scale-95 shrink-0"
+              className="px-3 py-1.5 bg-[#E6332A]/20 hover:bg-[#E6332A]/35 text-white border border-[#E6332A]/40 hover:border-[#E6332A]/80 shadow-[0_2px_8px_rgba(230,51,42,0.2)] text-[11px] font-sans font-bold flex items-center gap-1.5 transition-all duration-150 rounded-full cursor-pointer active:scale-95 shrink-0"
+              title="Añadir punto de recarga de gasolina"
             >
-              <Fuel className="w-3.5 h-3.5 text-[#E6332A]" />
+              <Fuel className="w-3.5 h-3.5 text-[#FF5C54]" />
               <span>Gas</span>
             </button>
             <button
               type="button"
               onClick={() => handleAddManualWaypoint('scenic', 'Mirador', 'VISTA')}
-              className="px-2.5 py-1.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 text-[10px] uppercase font-sans font-semibold flex items-center gap-1 transition rounded-xl cursor-pointer active:scale-95 shrink-0"
+              className="px-3 py-1.5 bg-[#F7B32B]/20 hover:bg-[#F7B32B]/35 text-white border border-[#F7B32B]/40 hover:border-[#F7B32B]/80 shadow-[0_2px_8px_rgba(247,179,43,0.2)] text-[11px] font-sans font-bold flex items-center gap-1.5 transition-all duration-150 rounded-full cursor-pointer active:scale-95 shrink-0"
+              title="Añadir punto panorámico o mirador"
             >
               <Camera className="w-3.5 h-3.5 text-[#F7B32B]" />
               <span>Mirador</span>
@@ -1292,17 +1318,19 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
             <button
               type="button"
               onClick={() => handleAddManualWaypoint('dirt', 'Técnico', 'TECNICO')}
-              className="px-2.5 py-1.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 text-[10px] uppercase font-sans font-semibold flex items-center gap-1 transition rounded-xl cursor-pointer active:scale-95 shrink-0"
+              className="px-3 py-1.5 bg-[#FF7A00]/20 hover:bg-[#FF7A00]/35 text-white border border-[#FF7A00]/40 hover:border-[#FF7A00]/80 shadow-[0_2px_8px_rgba(255,122,0,0.2)] text-[11px] font-sans font-bold flex items-center gap-1.5 transition-all duration-150 rounded-full cursor-pointer active:scale-95 shrink-0"
+              title="Añadir tramo técnico o curva difícil"
             >
-              <AlertTriangle className="w-3.5 h-3.5 text-[#E06423]" />
+              <AlertTriangle className="w-3.5 h-3.5 text-[#FFA64D]" />
               <span>Técnico</span>
             </button>
             <button
               type="button"
               onClick={() => handleAddManualWaypoint('camp', 'Descanso', 'DESCANSO')}
-              className="px-2.5 py-1.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 text-[10px] uppercase font-sans font-semibold flex items-center gap-1 transition rounded-xl cursor-pointer active:scale-95 shrink-0"
+              className="px-3 py-1.5 bg-[#25D366]/20 hover:bg-[#25D366]/35 text-white border border-[#25D366]/40 hover:border-[#25D366]/80 shadow-[0_2px_8px_rgba(37,211,102,0.2)] text-[11px] font-sans font-bold flex items-center gap-1.5 transition-all duration-150 rounded-full cursor-pointer active:scale-95 shrink-0"
+              title="Añadir pausa o parada de hidratación"
             >
-              <Coffee className="w-3.5 h-3.5 text-[#25D366]" />
+              <Coffee className="w-3.5 h-3.5 text-[#52FFA2]" />
               <span>Pausa</span>
             </button>
           </div>
@@ -1355,25 +1383,29 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
                   Altitud
                 </span>
                 <p className="font-mono font-bold text-xs sm:text-xl text-white tracking-tight mt-1 truncate">
-                  {currentElevation} <span className="text-[9px] sm:text-xs font-bold text-white/40">m</span>
+                  {currentElevation > 0 ? currentElevation : (isRecording ? '---' : '0')}{' '}
+                  <span className="text-[9px] sm:text-xs font-bold text-white/40">m</span>
                 </p>
               </div>
 
             </div>
 
-            {/* Stops Detected Feed (Compact single-line or small card when active) */}
+            {/* Stops Detected Feed (Tactical Card) */}
             {recordedWaypoints.length > 0 && (
-              <div className="bg-[#242322] border border-white/10 rounded-2xl p-2.5 flex items-center justify-between text-xs animate-fadeIn">
-                <div className="flex items-center gap-2 truncate">
-                  <span className="w-5 h-5 rounded-lg bg-[#E6332A] text-white text-[10px] flex items-center justify-center font-semibold font-mono shrink-0">
+              <div className="bg-[#242322]/90 border border-white/10 rounded-2xl p-2.5 sm:p-3 flex items-center justify-between text-xs animate-fadeIn shadow-inner">
+                <div className="flex items-center gap-2.5 truncate">
+                  <span className="w-6 h-6 rounded-lg bg-[#E6332A] text-white text-[10px] flex items-center justify-center font-bold font-mono shadow-sm shrink-0">
                     {recordedWaypoints.length}
                   </span>
-                  <span className="font-sans font-bold text-[11px] text-[#FAF6ED] truncate">
-                    {recordedWaypoints[recordedWaypoints.length - 1].name}
-                  </span>
+                  <div className="truncate">
+                    <span className="text-[9px] uppercase font-mono text-white/40 block leading-tight">Último punto fijado</span>
+                    <span className="font-sans font-bold text-xs text-[#FAF6ED] truncate block">
+                      {recordedWaypoints[recordedWaypoints.length - 1].name}
+                    </span>
+                  </div>
                 </div>
                 {stoppedSeconds > 0 && (
-                  <span className="text-[#E6332A] text-[10px] font-mono font-semibold animate-pulse shrink-0 ml-2">
+                  <span className="bg-[#E6332A]/20 text-[#FF6B6B] border border-[#E6332A]/30 text-[10px] font-mono font-bold px-2 py-1 rounded-full animate-pulse shrink-0 ml-2">
                     Detenido: {stoppedSeconds}s
                   </span>
                 )}

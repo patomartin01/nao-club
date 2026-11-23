@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { 
   User, 
   Motorcycle, 
@@ -164,33 +164,39 @@ interface AppContextType {
 }
 
 // Filas de Supabase -> modelos de la app (se usan al hidratar y en los eventos en tiempo real)
-const mapActivityRow = (a: any): ActivityPost => ({
-  id: a.id,
-  pilotId: a.pilot_id,
-  pilotName: a.pilot_name,
-  pilotHandle: a.pilot_handle,
-  pilotAvatar: a.pilot_avatar || 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
-  dateText: a.created_at ? new Date(a.created_at).toLocaleDateString('es-MX', { hour: '2-digit', minute: '2-digit' }) : 'Reciente',
-  device: '',
-  location: a.location || 'México',
-  title: a.title,
-  motoModel: a.moto_model || 'Trail',
-  discipline: (a.discipline as any) || 'Trail / Aventura',
-  distanceKm: Number(a.distance_km) || 0,
-  elevationGainM: Number(a.elevation_gain_m) || 0,
-  durationText: a.duration_formatted || '0h 00m',
-  avgSpeedKmh: Number(a.avg_speed_kmh) || 0,
-  trophiesCount: 0,
-  kudosCount: 0,
-  hasKudoed: false,
-  kudosAvatars: [],
-  commentsCount: 0,
-  comments: [],
-  coordinates: a.route_coordinates || [],
-  surfaceBreakdown: a.surface_breakdown || { asphaltPercentage: 50, dirtPercentage: 50, curveDensity: 'Media' },
-  photos: a.photos || [],
-  groupInfo: a.group_info
-});
+const mapActivityRow = (a: any, currentUserId?: string): ActivityPost => {
+  const kudosUsers: string[] = Array.isArray(a.group_info?.kudos_users) ? a.group_info.kudos_users : [];
+  const kudosAvatars: string[] = Array.isArray(a.group_info?.kudos_avatars) ? a.group_info.kudos_avatars : [];
+  const hasKudoed = currentUserId ? kudosUsers.includes(currentUserId) : false;
+
+  return {
+    id: a.id,
+    pilotId: a.pilot_id,
+    pilotName: a.pilot_name,
+    pilotHandle: a.pilot_handle,
+    pilotAvatar: a.pilot_avatar || 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
+    dateText: a.created_at ? new Date(a.created_at).toLocaleDateString('es-MX', { hour: '2-digit', minute: '2-digit' }) : 'Reciente',
+    device: '',
+    location: a.location || 'México',
+    title: a.title,
+    motoModel: a.moto_model || 'Trail',
+    discipline: (a.discipline as any) || 'Trail / Aventura',
+    distanceKm: Number(a.distance_km) || 0,
+    elevationGainM: Number(a.elevation_gain_m) || 0,
+    durationText: a.duration_formatted || '0h 00m',
+    avgSpeedKmh: Number(a.avg_speed_kmh) || 0,
+    trophiesCount: 0,
+    kudosCount: kudosUsers.length,
+    hasKudoed,
+    kudosAvatars,
+    commentsCount: 0,
+    comments: [],
+    coordinates: a.route_coordinates || [],
+    surfaceBreakdown: a.surface_breakdown || { asphaltPercentage: 50, dirtPercentage: 50, curveDensity: 'Media' },
+    photos: a.photos || [],
+    groupInfo: a.group_info
+  };
+};
 
 const mapRouteRow = (p: any): RouteProposal => ({
   id: p.id,
@@ -263,6 +269,10 @@ const GUEST_PILOT: User = {
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User>(GUEST_PILOT);
+  const currentUserRef = useRef<User>(currentUser);
+  useEffect(() => {
+    currentUserRef.current = currentUser;
+  }, [currentUser]);
 
   // Marca las acciones offline con el piloto que tiene la sesión (ver offlineStorage)
   useEffect(() => {
@@ -1241,7 +1251,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // Hydrate activities (publicaciones reales) from cloud - top 50 más recientes
     supabase.from('activities').select('*').order('created_at', { ascending: false }).limit(50).then(({ data }) => {
       if (data && data.length > 0) {
-        const mappedActs: ActivityPost[] = data.map(mapActivityRow);
+        const mappedActs: ActivityPost[] = data.map(row => mapActivityRow(row, currentUser.id));
         setActivities(mappedActs);
       }
     });
@@ -1381,8 +1391,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         { event: '*', schema: 'public', table: 'activities' },
         (payload) => {
           if (payload.eventType === 'INSERT' && payload.new) {
-            const act = mapActivityRow(payload.new);
+            const act = mapActivityRow(payload.new, currentUserRef.current?.id);
             setActivities(prev => prev.some(a => a.id === act.id) ? prev : [act, ...prev]);
+          } else if (payload.eventType === 'UPDATE' && payload.new) {
+            const act = mapActivityRow(payload.new, currentUserRef.current?.id);
+            setActivities(prev => prev.map(a => a.id === act.id ? { ...a, ...act } : a));
           } else if (payload.eventType === 'DELETE' && payload.old) {
             const oldId = (payload.old as any).id;
             if (oldId) setActivities(prev => prev.filter(a => a.id !== oldId));
@@ -3049,21 +3062,62 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
-  const toggleKudo = (activityId: string) => {
+  const toggleKudo = async (activityId: string) => {
+    let updatedKudosUsers: string[] = [];
+    let updatedKudosAvatars: string[] = [];
+    let isNowKudoed = false;
+
     setActivities(prev => prev.map(act => {
       if (act.id === activityId) {
-        const isNowKudoed = !act.hasKudoed;
+        isNowKudoed = !act.hasKudoed;
+        const currentUsers: string[] = Array.isArray((act.groupInfo as any)?.kudos_users) 
+          ? (act.groupInfo as any).kudos_users 
+          : [];
+        const currentAvatars: string[] = Array.isArray(act.kudosAvatars) 
+          ? act.kudosAvatars 
+          : [];
+        
+        updatedKudosUsers = isNowKudoed 
+          ? [...currentUsers.filter((u: string) => u !== currentUser.id), currentUser.id]
+          : currentUsers.filter((u: string) => u !== currentUser.id);
+
+        updatedKudosAvatars = isNowKudoed
+          ? [currentUser.avatar, ...currentAvatars.filter((av: string) => av !== currentUser.avatar)]
+          : currentAvatars.filter((av: string) => av !== currentUser.avatar);
+
         return {
           ...act,
           hasKudoed: isNowKudoed,
-          kudosCount: isNowKudoed ? act.kudosCount + 1 : Math.max(0, act.kudosCount - 1),
-          kudosAvatars: isNowKudoed 
-            ? [currentUser.avatar, ...act.kudosAvatars.filter(a => a !== currentUser.avatar)]
-            : act.kudosAvatars.filter(a => a !== currentUser.avatar)
+          kudosCount: updatedKudosUsers.length,
+          kudosAvatars: updatedKudosAvatars,
+          groupInfo: {
+            ...(act.groupInfo || {}),
+            kudos_users: updatedKudosUsers,
+            kudos_avatars: updatedKudosAvatars
+          }
         };
       }
       return act;
     }));
+
+    // Sincronizar en tiempo real con Supabase para todas las cuentas
+    if (isSupabaseConfigured() && activityId) {
+      try {
+        const target = activities.find(a => a.id === activityId);
+        const existingGroupInfo = (target?.groupInfo as any) || {};
+        const newGroupInfo = {
+          ...existingGroupInfo,
+          kudos_users: updatedKudosUsers,
+          kudos_avatars: updatedKudosAvatars
+        };
+        await supabase
+          .from('activities')
+          .update({ group_info: newGroupInfo })
+          .eq('id', activityId);
+      } catch (err) {
+        console.warn('Error syncing kudo to Supabase:', err);
+      }
+    }
   };
 
   const addActivityComment = (activityId: string, text: string) => {
@@ -3095,7 +3149,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const newAct: ActivityPost = {
       ...data,
       id: newActId,
-      kudosCount: 1,
+      kudosCount: 0,
       hasKudoed: false,
       kudosAvatars: [],
       commentsCount: 0
@@ -3146,7 +3200,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       route_coordinates: data.coordinates || [],
       photos: data.photos || [],
       surface_breakdown: data.surfaceBreakdown || { asphaltPercentage: 50, dirtPercentage: 50, curveDensity: 'Media' },
-      group_info: data.groupInfo || null
+      group_info: {
+        ...(data.groupInfo || {}),
+        kudos_users: [],
+        kudos_avatars: []
+      }
     };
 
     // Antes el error se ignoraba: si se guardaba la rodada sin señal (en la montaña), la actividad
