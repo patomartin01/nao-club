@@ -456,7 +456,8 @@ export const TribusView: React.FC<TribusViewProps> = ({
   };
 
   // Helper para detectar si una rodada ya pasó en el calendario
-  const isPastRodada = (r: Rodada): boolean => {
+  const isPastRodada = (r?: Rodada | null): boolean => {
+    if (!r) return false;
     if (r.status === 'completada') return true;
     const rawDate = r.endDate || r.startDate;
     if (!rawDate) return false;
@@ -495,22 +496,86 @@ export const TribusView: React.FC<TribusViewProps> = ({
   const allTribuRoutes = routeProposals.filter(p => {
     // 1. Si la propuesta proviene directamente de una actividad grabada con este grupo
     if (tribuRecordedActivityIds.has(p.id)) return true;
-    // 2. Si tiene crewId de este grupo Y fue grabada en vivo (o no está pendiente/futura en rodadas no completadas)
+    // 2. Si tiene crewId de este grupo Y fue grabada en vivo
     if (p.crewId === activeTribu?.id) {
-      // Excluir si está asignada como propuesta a una rodada que todavía no se completa
       if (p.rodadaId && tribuRodadaIds.has(p.rodadaId)) {
-        const linkedRodada = tribuRodadas.find(r => r.id === p.rodadaId);
-        return linkedRodada?.status === 'completada';
+        const linkedRodada = allTribuRodadas.find(r => r.id === p.rodadaId);
+        return linkedRodada?.status === 'completada' || isPastRodada(linkedRodada);
       }
       return true;
     }
-    // 3. Si está asignada a una rodada del grupo, SOLO incluir si la rodada ya fue 'completada'
+    // 3. Si está asignada a una rodada del grupo, incluir si la rodada ya fue 'completada' o es fecha pasada
     if (p.rodadaId && tribuRodadaIds.has(p.rodadaId)) {
-      const linkedRodada = tribuRodadas.find(r => r.id === p.rodadaId);
-      return linkedRodada?.status === 'completada';
+      const linkedRodada = allTribuRodadas.find(r => r.id === p.rodadaId);
+      return linkedRodada?.status === 'completada' || isPastRodada(linkedRodada);
     }
     return false;
   });
+
+  // Identificar qué rodadas pasadas ya tienen su propuesta en allTribuRoutes
+  const coveredRodadaIds = new Set(allTribuRoutes.map(r => r.rodadaId).filter(Boolean));
+
+  // Para cualquier rodada pasada que aún no tenga propuesta (ej. Malinalco o expediciones convocadas),
+  // integrarla como ruta completada en el historial para que figure con orgullo en la bitácora
+  const additionalRoutesFromPastRodadas: RouteProposal[] = pastTribuRodadas
+    .filter(r => !coveredRodadaIds.has(r.id))
+    .map(rodada => {
+      const foundWinning = routeProposals.find(p => p.id === rodada.winningRouteId || p.rodadaId === rodada.id);
+      if (foundWinning) return foundWinning;
+
+      const firstAttendee = rodada.attendees?.[0];
+      const authorUser = users.find(u => u.id === firstAttendee?.userId) || currentUser;
+
+      return {
+        id: `completed-rodada-${rodada.id}`,
+        rodadaId: rodada.id,
+        crewId: rodada.crewId,
+        title: rodada.title,
+        destination: rodada.title,
+        state: rodada.originPoint || 'México',
+        proposedByUserId: authorUser.id,
+        proposedByName: authorUser.name,
+        proposedByAvatar: authorUser.avatar,
+        description: rodada.description || rodada.subtitle || `Ruta rodada el ${formatHumanDate(rodada.startDate, rodada.endDate, true)}.`,
+        coverImage: rodada.gallery?.[0]?.url || 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=1000',
+        totalKm: 120,
+        estimatedHours: '3h 30m',
+        offroadPercentage: 25,
+        asphaltPercentage: 75,
+        difficulty: 'Intermedio' as const,
+        campsite: {
+          name: rodada.originPoint || 'Punto de reunión',
+          elevationMeters: 2200,
+          minTempNight: '12°C',
+          security: 'Alta',
+          amenities: ['Gasolinera cercana']
+        },
+        itinerary: [
+          {
+            day: 1,
+            title: rodada.title,
+            description: rodada.description || `Expedición completada el ${formatHumanDate(rodada.startDate, rodada.endDate, true)}`,
+            distanceKm: 120,
+            offroadKm: 30,
+            terrainType: '25% terracería / 75% asfalto'
+          }
+        ],
+        waypoints: [
+          { id: `wp-${rodada.id}-start`, name: rodada.originPoint || 'Salida', lat: 19.4005, lng: -99.2816, type: 'start' as const, notes: 'Punto de partida' },
+          { id: `wp-${rodada.id}-dest`, name: rodada.title, lat: 18.9486, lng: -99.4975, type: 'scenic' as const, notes: 'Destino alcanzado' }
+        ],
+        coordinates: [
+          [19.4005, -99.2816],
+          [19.2965, -99.6582],
+          [18.9486, -99.4975]
+        ],
+        votes: [],
+        comments: [],
+        isRecorded: true
+      };
+    });
+
+  const completeHistoryRoutes = [...allTribuRoutes, ...additionalRoutesFromPastRodadas];
 
   // Rodadas Confirmadas (status === 'fijada') - Solo estas aparecen en la sección superior
   // Requiere estrictamente que exista al menos una propuesta de ruta activa válida asociada
@@ -582,7 +647,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
   const confirmedCount = confirmedAttendees.length;
 
   // Proposal being viewed in detail modal
-  const selectedProposalForDetail = routeProposals.find(p => p.id === detailProposalId) || null;
+  const selectedProposalForDetail = completeHistoryRoutes.find(p => p.id === detailProposalId) || routeProposals.find(p => p.id === detailProposalId) || null;
 
   // Copy invitation code
   const handleCopyCode = (code: string) => {
@@ -1482,7 +1547,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
               }`}
             >
               <Map className="w-3.5 h-3.5" />
-              <span>Historial ({allTribuRoutes.length})</span>
+              <span>Historial ({completeHistoryRoutes.length})</span>
             </button>
           </div>
         </div>
@@ -2630,11 +2695,11 @@ export const TribusView: React.FC<TribusViewProps> = ({
             <div className="flex items-center gap-2.5">
               <span className="w-3 h-3 bg-[#1A1918] border border-[#1A1918]/10 shadow-sm" />
               <div>
-                <h2 className="font-display font-semibold text-xl sm:text-2xl text-[#1A1918]  ">
-                  Historial de Rutas ({allTribuRoutes.length})
+                <h2 className="font-display font-semibold text-xl sm:text-2xl text-[#1A1918]">
+                  Historial de Rutas Rodadas ({completeHistoryRoutes.length})
                 </h2>
                 <p className="text-xs text-[#1A1918]/70 font-sans mt-0.5">
-                  Rutas grabadas en vivo y recorridas por {activeTribu.name}.
+                  Rutas y expediciones completadas y recorridas por {activeTribu.name}.
                 </p>
               </div>
             </div>
@@ -2643,7 +2708,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
               <button
                 type="button"
                 onClick={onOpenRecordRoute}
-                className="px-4 py-2 bg-[#E6332A] hover:bg-[#d02c24] text-white border border-[#1A1918]/10 shadow-sm text-xs font-sans font-semibold rounded-xl flex items-center justify-center gap-1.5 transition active:shadow-none shrink-0"
+                className="px-4 py-2 bg-[#E6332A] hover:bg-[#d02c24] text-white border border-[#1A1918]/10 shadow-sm text-xs font-sans font-semibold rounded-xl flex items-center justify-center gap-1.5 transition active:shadow-none shrink-0 cursor-pointer"
               >
                 <Play className="w-3.5 h-3.5 fill-current text-[#F7B32B]" />
                 <span>+ Grabar Nueva Ruta</span>
@@ -2651,12 +2716,14 @@ export const TribusView: React.FC<TribusViewProps> = ({
             )}
           </div>
 
-          {/* Grid de rutas grabadas en el historial */}
-          {allTribuRoutes.length > 0 ? (
+          {/* Grid de rutas grabadas y rodadas en el historial */}
+          {completeHistoryRoutes.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {allTribuRoutes.map((route) => {
+              {completeHistoryRoutes.map((route) => {
                 const gmapsUrl = buildOrderedGoogleMapsUrl(route);
                 const proposer = users.find(u => u.id === route.proposedByUserId);
+                const linkedRodada = route.rodadaId ? allTribuRodadas.find(r => r.id === route.rodadaId) : null;
+                const isCompletedExpedition = linkedRodada && (isPastRodada(linkedRodada) || linkedRodada.status === 'completada');
 
                 return (
                   <div
@@ -2675,6 +2742,11 @@ export const TribusView: React.FC<TribusViewProps> = ({
                           <span className="px-2 py-0.5 bg-[#FAF6ED] border border-[#1A1918]/10 text-[#1A1918] text-[9px] font-mono font-semibold uppercase rounded shadow-sm">
                             {route.difficulty || 'Intermedia'}
                           </span>
+                          {isCompletedExpedition && (
+                            <span className="px-2 py-0.5 bg-emerald-600 text-white text-[9px] font-mono font-semibold uppercase rounded shadow-sm">
+                              ✓ Rodada
+                            </span>
+                          )}
                         </div>
                         <div className="absolute top-2.5 right-2.5 z-10">
                           <span className="px-2.5 py-0.5 bg-[#1A1918] text-[#FAF6ED] border border-[#1A1918]/10 text-[10px] font-mono font-semibold rounded shadow-sm">
@@ -2686,9 +2758,16 @@ export const TribusView: React.FC<TribusViewProps> = ({
                       {/* Content */}
                       <div className="p-4 space-y-3">
                         <div>
-                          <div className="flex items-center gap-1.5 text-xs text-[#E6332A] font-bold font-mono">
-                            <MapPin className="w-3.5 h-3.5 shrink-0" />
-                            <span className="truncate">{route.destination || 'Ruta del Club'}</span>
+                          <div className="flex items-center justify-between gap-1.5 text-xs text-[#E6332A] font-bold font-mono">
+                            <div className="flex items-center gap-1.5 truncate">
+                              <MapPin className="w-3.5 h-3.5 shrink-0" />
+                              <span className="truncate">{route.destination || 'Ruta del Club'}</span>
+                            </div>
+                            {linkedRodada?.startDate && (
+                              <span className="text-[10px] text-[#1A1918]/60 font-mono shrink-0">
+                                {formatHumanDate(linkedRodada.startDate, linkedRodada.endDate, true)}
+                              </span>
+                            )}
                           </div>
                           <h3 className="font-display font-semibold text-base text-[#1A1918] group-hover:text-[#E6332A] transition-colors leading-snug line-clamp-1 mt-1">
                             {route.title}
@@ -2724,7 +2803,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                             <span className="truncate font-bold text-[#1A1918]">Por {route.proposedByName}</span>
                           </div>
                           <span className="text-[10px] text-[#1A1918]/70 font-mono">
-                            {route.waypoints?.length || 0} waypoints
+                            {linkedRodada ? `${linkedRodada.attendees?.length || 1} Pilotos` : `${route.waypoints?.length || 0} waypoints`}
                           </span>
                         </div>
                       </div>
@@ -2738,7 +2817,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                           e.stopPropagation();
                           setDetailProposalId(route.id);
                         }}
-                        className="px-3 py-1.5 bg-[#FAF6ED] hover:bg-white text-[#1A1918] border border-[#1A1918]/10 rounded-xl text-xs font-sans font-semibold transition-all shadow-sm active:shadow-none"
+                        className="px-3 py-1.5 bg-[#FAF6ED] hover:bg-white text-[#1A1918] border border-[#1A1918]/10 rounded-xl text-xs font-sans font-semibold transition-all shadow-sm active:shadow-none cursor-pointer"
                       >
                         Ver detalle
                       </button>
@@ -2765,7 +2844,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                                 e.stopPropagation();
                                 setEditingProposal(route);
                               }}
-                              className="p-1.5 bg-[#FAF6ED] hover:bg-[#F7B32B] text-[#1A1918]/70 hover:text-[#1A1918] border border-[#1A1918]/10 rounded-xl transition-all shadow-sm active:shadow-none"
+                              className="p-1.5 bg-[#FAF6ED] hover:bg-[#F7B32B] text-[#1A1918]/70 hover:text-[#1A1918] border border-[#1A1918]/10 rounded-xl transition-all shadow-sm active:shadow-none cursor-pointer"
                               title="Editar tu ruta"
                             >
                               <Pencil className="w-3.5 h-3.5" />
@@ -2778,7 +2857,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                                   deleteRouteProposal(route.id);
                                 }
                               }}
-                              className="p-1.5 bg-[#FAF6ED] hover:bg-[#E6332A] text-[#1A1918]/60 hover:text-white border border-[#1A1918]/10 rounded-xl transition-all shadow-sm active:shadow-none"
+                              className="p-1.5 bg-[#FAF6ED] hover:bg-[#E6332A] text-[#1A1918]/60 hover:text-white border border-[#1A1918]/10 rounded-xl transition-all shadow-sm active:shadow-none cursor-pointer"
                               title="Eliminar tu ruta del historial"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -2797,58 +2876,23 @@ export const TribusView: React.FC<TribusViewProps> = ({
                 <Map className="w-7 h-7 text-[#E6332A]" />
               </div>
               <div className="space-y-1">
-                <h3 className="font-display font-semibold text-lg text-[#1A1918]  ">
+                <h3 className="font-display font-semibold text-lg text-[#1A1918]">
                   Sin rutas rodadas aún
                 </h3>
                 <p className="text-xs text-[#1A1918]/70 font-sans leading-relaxed">
-                  Aquí solo se archivarán las rutas que efectivamente ya se hayan rodado y publicado seleccionando a {activeTribu.name}.
+                  Aquí solo se archivarán las rutas que efectivamente ya se hayan rodado y completado seleccionando a {activeTribu.name}.
                 </p>
               </div>
               {onOpenRecordRoute && (
                 <button
                   type="button"
                   onClick={onOpenRecordRoute}
-                  className="px-5 py-2.5 bg-[#E6332A] hover:bg-[#d02c24] text-white border border-[#1A1918]/10 font-sans font-semibold text-xs rounded-xl shadow-sm inline-flex items-center gap-2 transition  "
+                  className="px-5 py-2.5 bg-[#E6332A] hover:bg-[#d02c24] text-white border border-[#1A1918]/10 font-sans font-semibold text-xs rounded-xl shadow-sm inline-flex items-center gap-2 transition cursor-pointer"
                 >
                   <Play className="w-3.5 h-3.5 fill-current text-[#F7B32B]" />
                   <span>Grabar la primera ruta</span>
                 </button>
               )}
-            </div>
-          )}
-
-          {/* Convocatorias y Fechas Anteriores Archivadas */}
-          {pastTribuRodadas.length > 0 && (
-            <div className="pt-6 border-t border-[#1A1918]/10 space-y-3">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-[#1A1918]/60" />
-                <h3 className="font-display font-semibold text-base sm:text-lg text-[#1A1918]">
-                  Convocatorias Anteriores Archivadas ({pastTribuRodadas.length})
-                </h3>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                {pastTribuRodadas.map(rodada => (
-                  <div
-                    key={rodada.id}
-                    className="p-4 bg-[#FAF6ED] border border-[#1A1918]/10 rounded-2xl shadow-sm space-y-2 opacity-90 hover:opacity-100 transition"
-                  >
-                    <div className="flex items-center justify-between text-[10px] font-mono">
-                      <span className="text-[#E6332A] font-semibold">{formatHumanDate(rodada.startDate, rodada.endDate, true)}</span>
-                      <span className="px-1.5 py-0.5 bg-[#1A1918]/10 text-[#1A1918]/70 rounded font-semibold uppercase">
-                        Concluida
-                      </span>
-                    </div>
-                    <h4 className="font-sans font-bold text-sm text-[#1A1918] line-clamp-1">{rodada.title}</h4>
-                    {rodada.subtitle && (
-                      <p className="font-sans text-xs text-[#1A1918]/60 line-clamp-2">{rodada.subtitle}</p>
-                    )}
-                    <div className="pt-1 flex items-center justify-between text-[11px] text-[#1A1918]/70 font-mono border-t border-[#1A1918]/5">
-                      <span>{rodada.attendees.length} Pilotos</span>
-                      <span className="text-[10px] text-[#1A1918]/40">Historial</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
             </div>
           )}
         </div>
