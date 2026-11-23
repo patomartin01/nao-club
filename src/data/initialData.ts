@@ -1,14 +1,14 @@
 import { User, Motorcycle, Crew, Rodada, RouteProposal, RouteList, ActivityPost, Challenge, CrewChatMessage } from '../types';
 
 export const CURRENT_USER: User = {
-  id: 'user-patricio',
-  name: 'Pato Martín',
-  handle: '@patomartin',
+  id: 'a1bac354-0a88-486c-9289-049e75c61c12',
+  name: 'Patricio Martin Vidal',
+  handle: '@pmartinv2001',
   email: 'pmartin.v2001@gmail.com',
   avatar: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
   bio: 'Piloto multidisciplinario y miembro de MotoMami. Rodando carretera revirada, pistas y terracería. Salidas desde Interlomas.',
   location: 'Interlomas / CDMX',
-  ridingLevel: 'Avanzado',
+  ridingLevel: 'Intermedio',
   emergencyContact: '+52 55 1234 5678 (Papá)',
   phone: '+52 55 9876 5432',
   completedRouteIds: ['route-1', 'route-4', 'route-2'],
@@ -39,7 +39,7 @@ export const INITIAL_CREWS: Crew[] = [
     creatorId: 'a1bac354-0a88-486c-9289-049e75c61c12',
     createdAt: '2026-10-29',
     members: [
-      { userId: 'user-patricio', role: 'Capitán de Ruta', joinedAt: '2026-10-29' }
+      { userId: 'a1bac354-0a88-486c-9289-049e75c61c12', role: 'Capitán de Ruta', joinedAt: '2026-10-29' }
     ],
     whatsappGroupUrl: 'https://chat.whatsapp.com/Jg1AKUEqoXF7nXZuAPJ588'
   }
@@ -52,8 +52,8 @@ export const INITIAL_ROUTE_PROPOSALS: RouteProposal[] = [
     title: 'Corral de Piedra & Faldas del Nevado de Toluca',
     destination: 'Amanalco de Becerra / Valle de Bravo',
     state: 'Estado de México',
-    proposedByUserId: 'user-patricio',
-    proposedByName: 'Pato Martín',
+    proposedByUserId: 'a1bac354-0a88-486c-9289-049e75c61c12',
+    proposedByName: 'Patricio Martin Vidal',
     proposedByAvatar: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
     description: 'Campamento base a 3,000 msnm junto a un lago alpino. El mejor bosque de coníferas para soltar maletas pesadas y salir a hacer loops circulares por brechas madereras con pinocha y descensos a Valle de Bravo.',
     coverImage: 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&q=80&w=1000',
@@ -135,11 +135,11 @@ export const INITIAL_RODADA: Rodada = {
   originPoint: 'Interlomas, Huixquilucan, Edomex',
   attendees: [],
   packingList: [
-    { id: 'p1', item: 'Compresor de aire eléctrico 12V / Batería', category: 'Herramientas', assignedToUserId: 'user-patricio', assignedToName: 'Pato Martín', isDone: true },
+    { id: 'p1', item: 'Compresor de aire eléctrico 12V / Batería', category: 'Herramientas', assignedToUserId: 'a1bac354-0a88-486c-9289-049e75c61c12', assignedToName: 'Patricio Martin Vidal', isDone: true },
     { id: 'p2', item: 'Kit de mechas para llantas tubeless y parches', category: 'Herramientas', isDone: false },
     { id: 'p3', item: 'Juego de llaves Allen/Torx y desmontadores', category: 'Herramientas', isDone: false },
     { id: 'p4', item: 'Botiquín de primeros auxilios con torniquete y gasas', category: 'Seguridad & Salud', isDone: false },
-    { id: 'p5', item: 'Radio comunicadores Baofeng VHF (frecuencia 146.520)', category: 'Seguridad & Salud', assignedToUserId: 'user-patricio', assignedToName: 'Pato Martín', isDone: true },
+    { id: 'p5', item: 'Radio comunicadores Baofeng VHF (frecuencia 146.520)', category: 'Seguridad & Salud', assignedToUserId: 'a1bac354-0a88-486c-9289-049e75c61c12', assignedToName: 'Patricio Martin Vidal', isDone: true },
     { id: 'p6', item: 'Casas de campaña resistentes a viento 4 estaciones', category: 'Campamento', isDone: false },
     { id: 'p7', item: 'Aislantes térmicos inflables R-value > 3.0', category: 'Campamento', isDone: false },
     { id: 'p8', item: 'Lámparas frontales de cabeza con baterías extra', category: 'Campamento', isDone: false },
@@ -151,7 +151,7 @@ export const INITIAL_RODADA: Rodada = {
       id: 'g1',
       url: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=1000',
       caption: 'Explorando las brechas madereras en amanecer',
-      uploadedByName: 'Pato Martín',
+      uploadedByName: 'Patricio Martin Vidal',
       uploadedAt: 'Hace 2 días'
     },
     {
@@ -177,7 +177,7 @@ export const INITIAL_RODADAS: Rodada[] = [INITIAL_RODADA];
 export const INITIAL_ROUTE_LISTS: RouteList[] = [
   {
     id: 'list-wishlist',
-    userId: 'user-patricio',
+    userId: 'a1bac354-0a88-486c-9289-049e75c61c12',
     name: 'Por Rodar // Wishlist 2026',
     description: 'Rutas pendientes para puentes y fines de semana largos con el grupo.',
     routeIds: ['route-2', 'route-3', 'route-5'],
@@ -185,7 +185,7 @@ export const INITIAL_ROUTE_LISTS: RouteList[] = [
   },
   {
     id: 'list-tecnicas',
-    userId: 'user-patricio',
+    userId: 'a1bac354-0a88-486c-9289-049e75c61c12',
     name: 'Retos Técnicos de Sierra',
     description: 'Brechas rocosas, cañones y pasos de río para poner a prueba llantas 50/50.',
     routeIds: ['route-3', 'route-5'],
@@ -255,10 +255,10 @@ export const INITIAL_CREW_MESSAGES: CrewChatMessage[] = [
   {
     id: 'msg-3',
     crewId: 'crew-1793316469201',
-    userId: 'user-patricio',
-    userName: 'Pato Martín',
+    userId: 'a1bac354-0a88-486c-9289-049e75c61c12',
+    userName: 'Patricio Martin Vidal',
     userAvatar: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
-    userBike: 'BMW R 1250 GS Adv',
+    userBike: 'Royal Enfield Himalayan 411',
     message: 'Vientos. El punto de reunión en la gasolinera de Santa Fe sigue en pie a las 6:30 AM para salir con tanque lleno.',
     createdAt: '2026-10-22T09:35:00Z'
   },

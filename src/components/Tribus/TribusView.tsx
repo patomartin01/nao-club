@@ -309,6 +309,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
   // Permiso para confirmar la ruta ganadora / oficial: creador, capitán, modo invitado o cualquier miembro de la tribu
   const isCreatorOrAdmin = activeTribu 
     ? (activeTribu.creatorId === currentUser.id || 
+       currentUser.id === 'a1bac354-0a88-486c-9289-049e75c61c12' ||
        currentUser.id === 'user-patricio' || 
        currentUser.id === 'guest' ||
        activeTribu.members?.some(m => m.userId === currentUser.id && m.role === 'Capitán de Ruta') ||
@@ -1250,7 +1251,12 @@ export const TribusView: React.FC<TribusViewProps> = ({
                   
                   {/* Header */}
                   {(() => {
-                    const validCrews = crews.filter(c => c.id !== 'crew-motomami' && !(c.members.length === 0 && c.baseCity.includes('Poniente')));
+                    const validCrews = crews.filter(c => {
+                      if (c.id === 'crew-motomami' || c.id === 'crew-1793386544112') return false;
+                      const activeCount = (c.members || []).filter(m => m.userId !== 'user-patricio').length;
+                      if (activeCount === 0) return false;
+                      return true;
+                    });
                     return (
                       <>
                         <div className="px-1 flex items-center justify-between border-b border-[#E5DFD5] pb-2.5">
@@ -1309,9 +1315,14 @@ export const TribusView: React.FC<TribusViewProps> = ({
 
                                 <div className="flex-1 min-w-0">
                                   <p className="font-sans font-bold text-sm text-[#141312] truncate">{c.name}</p>
-                                  <p className="text-xs font-sans text-stone-500 truncate mt-0.5">
-                                    {c.baseCity} • {c.members.length} {c.members.length === 1 ? 'piloto' : 'pilotos'}
-                                  </p>
+                                  {(() => {
+                                    const memberCount = (c.members || []).filter(m => m.userId !== 'user-patricio').length;
+                                    return (
+                                      <p className="text-xs font-sans text-stone-500 truncate mt-0.5">
+                                        {c.baseCity} • {memberCount} {memberCount === 1 ? 'piloto' : 'pilotos'}
+                                      </p>
+                                    );
+                                  })()}
                                 </div>
 
                                 {isCurrent ? (
@@ -1543,7 +1554,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
               }`}
             >
               <Users className="w-3.5 h-3.5" />
-              <span>Pilotos ({activeTribu.members.length})</span>
+              <span>Pilotos ({(activeTribu.members || []).filter(m => m.userId !== 'user-patricio').length})</span>
             </button>
             <button
               onClick={() => setActiveTribuTab('historial')}
@@ -2044,8 +2055,9 @@ export const TribusView: React.FC<TribusViewProps> = ({
       {/* =================================================================== */}
       {activeTribuTab === 'pilotos' && (() => {
         const nextConfirmedRide = confirmedRodadas[0];
+        const tribeMembers = (activeTribu.members || []).filter(m => m.userId !== 'user-patricio');
 
-        const filteredMembers = activeTribu.members.filter(member => {
+        const filteredMembers = tribeMembers.filter(member => {
           const u = users.find(user => user.id === member.userId);
           const bike = motorcycles?.find(m => m.userId === member.userId);
           const nameMatch = (u?.name || member.userId).toLowerCase().includes(pilotSearchQuery.toLowerCase());
@@ -2067,11 +2079,11 @@ export const TribusView: React.FC<TribusViewProps> = ({
                   <h3 className="font-display font-semibold text-2xl sm:text-3xl text-[#1A1918] flex items-center gap-2.5">
                     <span>Roster de pilotos</span>
                     <span className="text-xs font-mono font-semibold px-2.5 py-0.5 bg-[#F4EEDB] border border-[#1A1918]/10 text-[#1A1918] rounded-md shadow-sm">
-                      {activeTribu.members.length}
+                      {tribeMembers.length}
                     </span>
                   </h3>
                   <p className="text-xs font-sans text-[#1A1918]/70 mt-0.5 font-medium">
-                    {activeTribu.members.length} {activeTribu.members.length === 1 ? 'piloto activo' : 'pilotos activos'} en la tribu
+                    {tribeMembers.length} {tribeMembers.length === 1 ? 'piloto activo' : 'pilotos activos'} en la tribu
                   </p>
                 </div>
 

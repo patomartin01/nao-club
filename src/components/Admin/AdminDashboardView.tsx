@@ -46,7 +46,7 @@ export const AdminDashboardView: React.FC = () => {
   const [isSyncing, setIsSyncing] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
-  const isAdmin = currentUser.email?.toLowerCase() === 'pmartin.v2001@gmail.com' || currentUser.id === 'user-patricio';
+  const isAdmin = currentUser.email?.toLowerCase() === 'pmartin.v2001@gmail.com' || currentUser.id === 'a1bac354-0a88-486c-9289-049e75c61c12' || currentUser.id === 'user-patricio';
 
   const handleSyncCloud = async () => {
     setIsSyncing(true);

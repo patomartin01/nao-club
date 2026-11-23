@@ -544,7 +544,7 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
           )}
 
           {/* Optional Admin shortcut button if admin */}
-          {(currentUser.email?.toLowerCase() === 'pmartin.v2001@gmail.com' || currentUser.handle === '@patomartin' || currentUser.id === 'user-patricio') && (
+          {(currentUser.email?.toLowerCase() === 'pmartin.v2001@gmail.com' || currentUser.handle === '@pmartinv2001' || currentUser.id === 'a1bac354-0a88-486c-9289-049e75c61c12' || currentUser.handle === '@patomartin' || currentUser.id === 'user-patricio') && (
             <button
               onClick={() => setActiveNavTab('admin')}
               className={`py-1 px-2.5 bg-[#1A1918] hover:bg-black text-[#F7B32B] text-[9px] font-sans font-semibold uppercase tracking-wider flex items-center justify-center gap-1 transition rounded-xl border border-[#1A1918]/10 shadow-sm active:shadow-none cursor-pointer shrink-0 `}

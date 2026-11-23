@@ -228,7 +228,7 @@ const mapRouteRow = (p: any): RouteProposal => ({
 });
 
 // IDs de tribus obsoletas o de demo que deben ser purgadas y nunca mostrarse
-const DEPRECATED_CREW_IDS = new Set(['crew-motomami']);
+const DEPRECATED_CREW_IDS = new Set(['crew-motomami', 'crew-1793386544112']);
 
 // Mapeadores para motocicletas de Hangar (conversión robusta entre camelCase y snake_case)
 const mapMotorcycleRow = (m: any): Motorcycle => ({
@@ -911,8 +911,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         parsed = parsed.filter(c => !DEPRECATED_CREW_IDS.has(c.id));
         parsed = parsed.map(c => {
           const coverOverride = customCovers[c.id];
+          const sanitizedMembers = (Array.isArray(c.members) ? c.members : []).filter(m => m.userId !== 'user-patricio');
           if (c.id === 'crew-sierrabrava') {
-            const currentMembers = Array.isArray(c.members) ? [...c.members] : [];
+            const currentMembers = [...sanitizedMembers];
             if (INITIAL_CREWS[1]?.members) {
               INITIAL_CREWS[1].members.forEach(initM => {
                 if (!currentMembers.some(m => m.userId === initM.userId)) {
@@ -933,7 +934,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           }
           return {
             ...c,
-            coverImage: coverOverride || c.coverImage
+            coverImage: coverOverride || c.coverImage,
+            members: sanitizedMembers
           };
         });
 
@@ -957,7 +959,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const uniqueCrews: Crew[] = [];
         for (const c of parsed) {
           if (deletedSet.has(c.id) || DEPRECATED_CREW_IDS.has(c.id)) continue;
-          if (c.id === 'crew-motomami' || (c.members.length === 0 && c.baseCity.includes('Poniente'))) continue;
+          if (c.id === 'crew-motomami' || c.id === 'crew-1793386544112' || (c.members.filter(m => m.userId !== 'user-patricio').length === 0)) continue;
           const normKey = (c.slug || c.name.toLowerCase().trim().replace(/\s+/g, '-'));
           if (!seenNames.has(normKey)) {
             seenNames.add(normKey);
@@ -1121,7 +1123,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }));
         setUsers(prev => {
           const cloudIds = new Set(mappedUsers.map(u => u.id));
-          return [...mappedUsers, ...prev.filter(u => !cloudIds.has(u.id))];
+          return [
+            ...mappedUsers,
+            ...prev.filter(u => !cloudIds.has(u.id) && u.id !== 'user-patricio' && u.handle !== '@patomartin')
+          ];
         });
       }
     });
@@ -1139,11 +1144,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           coverImage: c.cover_image || 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=1200',
           baseCity: c.base_city || 'México',
           creatorId: c.creator_id || '',
-          members: (c.crew_members || []).map((m: any) => ({
-            userId: m.user_id,
-            role: m.role || 'Rider',
-            joinedAt: m.joined_at?.split('T')[0] || ''
-          })),
+          members: (c.crew_members || [])
+            .filter((m: any) => m.user_id !== 'user-patricio')
+            .map((m: any) => ({
+              userId: m.user_id,
+              role: m.role || 'Rider',
+              joinedAt: m.joined_at?.split('T')[0] || ''
+            })),
           whatsappGroupUrl: c.whatsapp_group_url,
           createdAt: c.created_at?.split('T')[0] || ''
         }));
@@ -1176,8 +1183,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           const finalCrews: Crew[] = [];
           for (const c of allCrews) {
             if (deletedSet.has(c.id) || DEPRECATED_CREW_IDS.has(c.id)) continue;
-            // Excluir el grupo huérfano de demo con 0 pilotos
-            if (c.id === 'crew-motomami' || (c.members.length === 0 && (c.baseCity.includes('Poniente') || c.slug === 'nao-adventure'))) continue;
+            // Excluir grupos huérfanos o con 0 pilotos activos
+            if (c.id === 'crew-motomami' || c.id === 'crew-1793386544112' || (c.members.filter(m => m.userId !== 'user-patricio').length === 0)) continue;
             const normKey = (c.slug || c.name.toLowerCase().trim().replace(/\s+/g, '-'));
             if (!seenNames.has(normKey)) {
               seenNames.add(normKey);

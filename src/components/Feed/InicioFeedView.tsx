@@ -258,7 +258,7 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
   // Registration Dossier Number
   const pilotDossierNo = currentUserFounderNumber 
     ? `NO. ${String(currentUserFounderNumber).padStart(4, '0')}`
-    : (currentUser.id === 'user-patricio' ? 'NO. 0001' : 'NO. PILOT');
+    : (currentUser.id === 'a1bac354-0a88-486c-9289-049e75c61c12' || currentUser.id === 'user-patricio' || currentUser.email?.toLowerCase() === 'pmartin.v2001@gmail.com' ? 'NO. 0001' : 'NO. PILOT');
 
   return (
     <div className="max-w-[1440px] w-full mx-auto pb-24 font-sans space-y-4 sm:space-y-8">
