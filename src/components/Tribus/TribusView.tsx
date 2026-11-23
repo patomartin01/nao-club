@@ -458,11 +458,20 @@ export const TribusView: React.FC<TribusViewProps> = ({
   // Helper para detectar si una rodada ya pasó en el calendario
   const isPastRodada = (r: Rodada): boolean => {
     if (r.status === 'completada') return true;
-    const dateToCheck = r.endDate || r.startDate;
-    if (!dateToCheck) return false;
+    const rawDate = r.endDate || r.startDate;
+    if (!rawDate) return false;
     const now = new Date();
     const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-    return dateToCheck < todayStr;
+    if (/^\d{4}-\d{2}-\d{2}/.test(rawDate)) {
+      return rawDate.slice(0, 10) < todayStr;
+    }
+    const parsed = Date.parse(rawDate);
+    if (!isNaN(parsed)) {
+      const d = new Date(parsed);
+      const parsedStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      return parsedStr < todayStr;
+    }
+    return false;
   };
 
   // Todas las rodadas convocadas para esta Tribu
