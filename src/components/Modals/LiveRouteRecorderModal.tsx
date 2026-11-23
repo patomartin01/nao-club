@@ -143,7 +143,7 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
   const polylineRef = useRef<any>(null);
   const riderMarkerRef = useRef<any>(null);
   const waypointsLayerRef = useRef<any>(null);
-  const [currentLayer, setCurrentLayer] = useState<'satellite' | 'topo'>('satellite');
+  const [currentLayer, setCurrentLayer] = useState<'satellite' | 'dark' | 'topo'>('satellite');
 
   // Key for persistent active recording in localStorage (solo respaldo si IndexedDB falla).
   // Va por usuario: si en el mismo teléfono entra otro piloto, no hereda la ruta del anterior.
@@ -502,15 +502,11 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
 
       L.control.zoom({ position: 'topright' }).addTo(map);
 
-      // Tile Layer (Satellite HD default)
+      // Tile Layer (Satellite HD default - fotografía aérea limpia sin textos estorbosos)
       const satLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
         maxZoom: 19
       });
-      const labelsLayer = L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
-        maxZoom: 19
-      });
       satLayer.addTo(map);
-      labelsLayer.addTo(map);
 
       // Polyline for recorded track
       const poly = L.polyline(existingTrack, {
@@ -580,7 +576,7 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
   }, [isOpen]);
 
   // Handle Layer change
-  const handleLayerChange = async (layer: 'satellite' | 'topo') => {
+  const handleLayerChange = async (layer: 'satellite' | 'dark' | 'topo') => {
     setCurrentLayer(layer);
     if (!mapInstanceRef.current) return;
     const L = (await import('leaflet')).default;
@@ -594,7 +590,8 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
 
     if (layer === 'satellite') {
       L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 }).addTo(mapInstanceRef.current);
-      L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 }).addTo(mapInstanceRef.current);
+    } else if (layer === 'dark') {
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19, subdomains: 'abcd' }).addTo(mapInstanceRef.current);
     } else {
       L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { maxZoom: 17, attribution: 'OpenTopoMap' }).addTo(mapInstanceRef.current);
     }
@@ -1182,6 +1179,15 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
               }`}
             >
               Satélite
+            </button>
+            <button
+              type="button"
+              onClick={() => handleLayerChange('dark')}
+              className={`px-2 py-1 uppercase font-sans font-semibold tracking-wider rounded-lg transition text-[9px] cursor-pointer ${
+                currentLayer === 'dark' ? 'bg-[#E6332A] text-white shadow-sm' : 'text-white/60 hover:text-white'
+              }`}
+            >
+              Táctico
             </button>
             <button
               type="button"

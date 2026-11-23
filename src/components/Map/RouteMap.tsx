@@ -79,17 +79,12 @@ export const RouteMap: React.FC<RouteMapProps> = ({
     tileLayerGroupRef.current.clearLayers();
 
     if (layerType === 'satellite') {
-      // High-resolution Esri World Imagery
+      // High-resolution Esri World Imagery (limpio sin textos comerciales gigantes)
       const satLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
         maxZoom: 19,
         attribution: 'Esri, Maxar'
       });
-      // Transparent highway and places labels overlay
-      const labelLayer = L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
-        maxZoom: 19
-      });
       tileLayerGroupRef.current.addLayer(satLayer);
-      tileLayerGroupRef.current.addLayer(labelLayer);
     } else if (layerType === 'topo') {
       // OpenTopoMap
       const topoLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
