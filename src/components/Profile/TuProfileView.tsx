@@ -166,7 +166,7 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
           img.crossOrigin = 'anonymous';
           img.onload = () => {
             const canvas = document.createElement('canvas');
-            const maxW = 900;
+            const maxW = 800;
             let w = img.width;
             let h = img.height;
             if (w > maxW) {
@@ -178,7 +178,7 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
             const ctx = canvas.getContext('2d');
             if (ctx) {
               ctx.drawImage(img, 0, 0, w, h);
-              setBikePhotoUrl(canvas.toDataURL('image/jpeg', 0.85));
+              setBikePhotoUrl(canvas.toDataURL('image/jpeg', 0.78));
             } else {
               setBikePhotoUrl(raw);
             }

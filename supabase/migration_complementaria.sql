@@ -199,6 +199,13 @@ BEGIN
   BEGIN
     ALTER TABLE public.motorcycles DROP CONSTRAINT IF EXISTS motorcycles_user_id_fkey;
     ALTER TABLE public.motorcycles ALTER COLUMN user_id TYPE text;
+    ALTER TABLE public.motorcycles ALTER COLUMN id TYPE text;
+    ALTER TABLE public.motorcycles ADD COLUMN IF NOT EXISTS type text;
+    ALTER TABLE public.motorcycles ADD COLUMN IF NOT EXISTS nickname text;
+    ALTER TABLE public.motorcycles ADD COLUMN IF NOT EXISTS tires text;
+    ALTER TABLE public.motorcycles ADD COLUMN IF NOT EXISTS displacement_cc integer;
+    ALTER TABLE public.motorcycles ADD COLUMN IF NOT EXISTS image_url text;
+    ALTER TABLE public.motorcycles ADD COLUMN IF NOT EXISTS year integer;
   EXCEPTION WHEN OTHERS THEN NULL;
   END;
 

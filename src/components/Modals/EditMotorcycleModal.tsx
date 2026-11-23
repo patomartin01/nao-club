@@ -47,6 +47,8 @@ export const EditMotorcycleModal: React.FC<EditMotorcycleModalProps> = ({
   const [modificationsInput, setModificationsInput] = useState('');
   const editBikeFileInputRef = React.useRef<HTMLInputElement>(null);
 
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
   const handleEditBikePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -58,7 +60,7 @@ export const EditMotorcycleModal: React.FC<EditMotorcycleModalProps> = ({
           img.crossOrigin = 'anonymous';
           img.onload = () => {
             const canvas = document.createElement('canvas');
-            const maxW = 900;
+            const maxW = 800;
             let w = img.width;
             let h = img.height;
             if (w > maxW) {
@@ -70,7 +72,7 @@ export const EditMotorcycleModal: React.FC<EditMotorcycleModalProps> = ({
             const ctx = canvas.getContext('2d');
             if (ctx) {
               ctx.drawImage(img, 0, 0, w, h);
-              setPhotoUrl(canvas.toDataURL('image/jpeg', 0.85));
+              setPhotoUrl(canvas.toDataURL('image/jpeg', 0.78));
             } else {
               setPhotoUrl(raw);
             }
@@ -113,6 +115,9 @@ export const EditMotorcycleModal: React.FC<EditMotorcycleModalProps> = ({
       .map(m => m.trim())
       .filter(Boolean);
 
+    // Protección garantizada: NUNCA borrar la foto existente si no se cargó una nueva
+    const finalPhoto = photoUrl.trim() || bike.photoUrl || PRESET_MOTO_PHOTOS[0];
+
     onSave(bike.id, {
       brand: brand.trim(),
       model: model.trim(),
@@ -120,12 +125,16 @@ export const EditMotorcycleModal: React.FC<EditMotorcycleModalProps> = ({
       displacementCc: Number(displacementCc) || 500,
       type,
       nickname: nickname.trim() || undefined,
-      photoUrl: photoUrl.trim() || PRESET_MOTO_PHOTOS[0],
+      photoUrl: finalPhoto,
       tires: tires.trim() || 'Mixtas 70/30',
       modifications: modsArray.length > 0 ? modsArray : ['Original de fábrica']
     });
 
-    onClose();
+    setSaveSuccess(true);
+    setTimeout(() => {
+      setSaveSuccess(false);
+      onClose();
+    }, 400);
   };
 
   return (
@@ -342,21 +351,33 @@ export const EditMotorcycleModal: React.FC<EditMotorcycleModalProps> = ({
           </div>
 
           {/* Modal Footer Buttons */}
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#1A1918]/10">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-5 py-2.5 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] font-sans font-semibold text-xs rounded-xl border border-[#1A1918]/10 transition shadow-sm cursor-pointer"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="px-6 py-2.5 bg-[#E6332A] hover:bg-[#d02c24] text-white font-sans font-semibold text-xs rounded-xl border border-[#1A1918]/10 shadow-sm active:shadow-none transition flex items-center gap-2 cursor-pointer"
-            >
-              <Check className="w-4 h-4 stroke-[3]" />
-              <span>Guardar ficha técnica</span>
-            </button>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-[#1A1918]/10">
+            <span className="text-[10px] font-mono text-[#1A1918]/60">
+              {typeof navigator !== 'undefined' && !navigator.onLine ? (
+                <span className="text-[#FF7A00] font-bold">● Modo sin señal: guardará localmente</span>
+              ) : (
+                <span className="text-[#25D366] font-bold">● Conexión segura con tu hangar</span>
+              )}
+            </span>
+            <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-5 py-2.5 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] font-sans font-semibold text-xs rounded-xl border border-[#1A1918]/10 transition shadow-sm cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={saveSuccess}
+                className={`px-6 py-2.5 text-white font-sans font-semibold text-xs rounded-xl border border-[#1A1918]/10 shadow-sm active:shadow-none transition flex items-center gap-2 cursor-pointer ${
+                  saveSuccess ? 'bg-[#25D366]' : 'bg-[#E6332A] hover:bg-[#d02c24]'
+                }`}
+              >
+                <Check className="w-4 h-4 stroke-[3]" />
+                <span>{saveSuccess ? '¡Guardada!' : 'Guardar ficha técnica'}</span>
+              </button>
+            </div>
           </div>
         </form>
       </div>

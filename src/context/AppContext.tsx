@@ -227,6 +227,38 @@ const mapRouteRow = (p: any): RouteProposal => ({
   safetyTips: p.safety_tips || []
 });
 
+// Mapeadores para motocicletas de Hangar (conversión robusta entre camelCase y snake_case)
+const mapMotorcycleRow = (m: any): Motorcycle => ({
+  id: String(m.id),
+  userId: String(m.user_id),
+  brand: m.brand || 'Moto',
+  model: m.model || '',
+  year: Number(m.year) || new Date().getFullYear(),
+  displacementCc: Number(m.displacement_cc) || 500,
+  type: (m.type as any) || 'Doble Propósito',
+  nickname: m.nickname || '',
+  photoUrl: m.image_url || 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=800',
+  modifications: Array.isArray(m.modifications)
+    ? m.modifications
+    : (typeof m.modifications === 'string' ? m.modifications.split(',').map((x: string) => x.trim()).filter(Boolean) : []),
+  tires: m.tires || 'Mixtas 70/30',
+  isPrimary: Boolean(m.is_primary)
+});
+
+const mapMotorcycleToRow = (bike: Partial<Motorcycle> & { userId?: string }) => {
+  const row: Record<string, any> = {};
+  if (bike.brand !== undefined) row.brand = bike.brand.trim();
+  if (bike.model !== undefined) row.model = bike.model.trim();
+  if (bike.year !== undefined) row.year = Number(bike.year) || new Date().getFullYear();
+  if (bike.displacementCc !== undefined) row.displacement_cc = Number(bike.displacementCc) || 500;
+  if (bike.nickname !== undefined) row.nickname = bike.nickname ? bike.nickname.trim() : null;
+  if (bike.photoUrl !== undefined && bike.photoUrl.trim()) row.image_url = bike.photoUrl.trim();
+  if (bike.tires !== undefined) row.tires = bike.tires ? bike.tires.trim() : null;
+  if (bike.isPrimary !== undefined) row.is_primary = Boolean(bike.isPrimary);
+  if (bike.userId !== undefined) row.user_id = bike.userId;
+  return row;
+};
+
 // Evita que dos vaciados de la cola corran a la vez (al volver la señal, al reenfocar, al
 // cambiar de usuario) y suban la misma acción dos veces
 let isFlushingSyncQueue = false;
@@ -1228,22 +1260,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     motoQuery.then(({ data }) => {
       if (data && data.length > 0) {
-        const mappedMotos: Motorcycle[] = data.map((m: any) => ({
-          id: m.id,
-          userId: m.user_id,
-          brand: m.brand,
-          model: m.model,
-          year: m.year || 2023,
-          displacementCc: m.displacement_cc || 500,
-          type: (m.type as any) || 'Doble Propósito',
-          nickname: m.nickname || '',
-          photoUrl: m.image_url || 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=800',
-          modifications: m.modifications || [],
-          tires: m.tires || ''
-        }));
+        const mappedMotos: Motorcycle[] = data.map((m: any) => mapMotorcycleRow(m));
         setMotorcycles(prev => {
-          const cloudIds = new Set(mappedMotos.map(b => b.id));
-          return [...mappedMotos, ...prev.filter(b => !cloudIds.has(b.id))];
+          // Merge inteligente: nunca sobreescribir una foto local personalizada con un placeholder si el usuario actual ya tiene foto
+          const cloudMap = new Map(mappedMotos.map(b => [b.id, b]));
+          const merged = prev.map(localBike => {
+            const cloudBike = cloudMap.get(localBike.id);
+            if (cloudBike) {
+              cloudMap.delete(localBike.id);
+              const hasCustomLocalPhoto = localBike.photoUrl && !localBike.photoUrl.includes('images.unsplash.com');
+              return {
+                ...cloudBike,
+                photoUrl: hasCustomLocalPhoto ? localBike.photoUrl : (cloudBike.photoUrl || localBike.photoUrl)
+              };
+            }
+            return localBike;
+          });
+          return [...merged, ...Array.from(cloudMap.values())];
         });
       }
     });
@@ -1366,6 +1399,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               if (!error) await removeOfflineAction(item.id);
             } else if (item.action === 'unarchive_route') {
               const { error } = await supabase.from('route_proposals').update({ is_recorded: false }).eq('id', item.payload.routeId);
+              if (!error) await removeOfflineAction(item.id);
+            } else if (item.action === 'add_motorcycle') {
+              const { error } = await supabase.from('motorcycles').upsert(item.payload);
+              if (!error) await removeOfflineAction(item.id);
+            } else if (item.action === 'update_motorcycle') {
+              const { error } = await supabase.from('motorcycles').update(item.payload.payload).eq('id', item.payload.id);
+              if (!error) await removeOfflineAction(item.id);
+            } else if (item.action === 'delete_motorcycle') {
+              const { error } = await supabase.from('motorcycles').delete().eq('id', item.payload.id);
               if (!error) await removeOfflineAction(item.id);
             }
           } catch (e) {
@@ -1574,42 +1616,32 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         (payload) => {
           if (payload.eventType === 'INSERT' && payload.new) {
             const m = payload.new as any;
+            const newBike = mapMotorcycleRow(m);
             setMotorcycles(prev => {
-              if (prev.some(x => x.id === m.id)) return prev;
-              return [
-                ...prev,
-                {
-                  id: m.id,
-                  userId: m.user_id,
-                  brand: m.brand,
-                  model: m.model,
-                  year: m.year || 2023,
-                  displacementCc: m.displacement_cc || 500,
-                  type: (m.type as any) || 'Doble Propósito',
-                  nickname: m.nickname || '',
-                  photoUrl: m.image_url || 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=800',
-                  modifications: m.modifications || [],
-                  tires: m.tires || ''
-                }
-              ];
+              const existingIdx = prev.findIndex(x => x.id === newBike.id || (x.userId === newBike.userId && x.model === newBike.model));
+              if (existingIdx >= 0) {
+                // Si ya existía con id provisional, conciliar y preservar foto si la local es personalizada
+                return prev.map((x, idx) => idx === existingIdx ? {
+                  ...newBike,
+                  photoUrl: (x.photoUrl && !x.photoUrl.includes('images.unsplash.com')) ? x.photoUrl : newBike.photoUrl
+                } : x);
+              }
+              return [newBike, ...prev];
             });
           } else if (payload.eventType === 'UPDATE' && payload.new) {
             const m = payload.new as any;
-            setMotorcycles(prev => prev.map(x => x.id === m.id ? {
-              ...x,
-              brand: m.brand,
-              model: m.model,
-              year: m.year || x.year,
-              displacementCc: m.displacement_cc || x.displacementCc,
-              type: (m.type as any) || x.type,
-              nickname: m.nickname ?? x.nickname,
-              photoUrl: m.image_url || x.photoUrl,
-              modifications: m.modifications || x.modifications,
-              tires: m.tires || x.tires
+            const updatedBike = mapMotorcycleRow(m);
+            setMotorcycles(prev => prev.map(x => x.id === updatedBike.id ? {
+              ...updatedBike,
+              photoUrl: (x.photoUrl && !x.photoUrl.includes('images.unsplash.com') && (!updatedBike.photoUrl || updatedBike.photoUrl.includes('images.unsplash.com')))
+                ? x.photoUrl
+                : updatedBike.photoUrl
             } : x));
           } else if (payload.eventType === 'DELETE' && payload.old) {
             const m = payload.old as any;
-            setMotorcycles(prev => prev.filter(x => x.id !== m.id));
+            if (m?.id) {
+              setMotorcycles(prev => prev.filter(x => x.id !== String(m.id)));
+            }
           }
         }
       )
@@ -1722,38 +1754,126 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const userBikes = motorcycles.filter(m => m.userId === currentUser.id);
 
-  const addMotorcycle = (bikeData: Omit<Motorcycle, 'id'>) => {
+  const generateBikeId = () => {
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+      try {
+        return crypto.randomUUID();
+      } catch {}
+    }
+    return `moto-${makeUniqueSuffix()}`;
+  };
+
+  const addMotorcycle = async (bikeData: Omit<Motorcycle, 'id'>) => {
+    const bikeId = generateBikeId();
     const newBike: Motorcycle = {
       ...bikeData,
-      id: `moto-${makeUniqueSuffix()}`
+      id: bikeId,
+      userId: bikeData.userId || currentUser.id,
+      modifications: bikeData.modifications && bikeData.modifications.length > 0 ? bikeData.modifications : ['Original de fábrica'],
+      isPrimary: bikeData.isPrimary ?? (userBikes.length === 0)
     };
+
+    // 1. Guardar de inmediato en estado local y persistir
     setMotorcycles(prev => [newBike, ...prev]);
 
-    if (isSupabaseConfigured() && currentUser.id) {
-      supabase.from('motorcycles').insert({
-        user_id: currentUser.id,
-        brand: bikeData.brand,
-        model: bikeData.model,
-        year: bikeData.year,
-        displacement_cc: bikeData.displacementCc,
-        nickname: bikeData.nickname || null,
-        image_url: bikeData.photoUrl || null,
-        tires: bikeData.tires || null
-      }).then(() => {});
+    // 2. Mapear al esquema exacto de PostgreSQL de Supabase
+    const dbPayload = mapMotorcycleToRow(newBike);
+    dbPayload.id = bikeId;
+
+    const isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
+
+    if (isOnline && isSupabaseConfigured() && newBike.userId && newBike.userId !== 'guest') {
+      try {
+        const { data, error } = await supabase.from('motorcycles').upsert(dbPayload).select().single();
+        if (error) {
+          console.warn('[Hangar] Error guardando moto en Supabase, encolando offline:', error.message);
+          await enqueueOfflineAction('add_motorcycle', dbPayload);
+        } else if (data && data.id && String(data.id) !== bikeId) {
+          // Si Supabase generó un ID distinto, conciliar en el estado local
+          setMotorcycles(prev => prev.map(m => m.id === bikeId ? { ...m, id: String(data.id) } : m));
+        }
+      } catch (err) {
+        console.warn('[Hangar] Fallo de red al insertar moto:', err);
+        await enqueueOfflineAction('add_motorcycle', dbPayload);
+      }
+    } else if (newBike.userId && newBike.userId !== 'guest') {
+      // Fuera de línea: encolar para subir al reconectar
+      await enqueueOfflineAction('add_motorcycle', dbPayload);
     }
   };
 
-  const updateMotorcycle = (id: string, updates: Partial<Motorcycle>) => {
-    setMotorcycles(prev => prev.map(m => m.id === id ? { ...m, ...updates } : m));
-    if (supabase) {
-      supabase.from('motorcycles').update(updates).eq('id', id).then(() => {});
+  const updateMotorcycle = async (id: string, updates: Partial<Motorcycle>) => {
+    // 1. Actualizar estado local inmediatamente
+    let updatedBikeSnapshot: Motorcycle | null = null;
+    setMotorcycles(prev => prev.map(m => {
+      if (m.id === id) {
+        const merged: Motorcycle = {
+          ...m,
+          ...updates,
+          // Protección contra pérdida de fotos: nunca vaciar la foto si updates no trae una nueva
+          photoUrl: updates.photoUrl && updates.photoUrl.trim() ? updates.photoUrl.trim() : m.photoUrl
+        };
+        updatedBikeSnapshot = merged;
+        return merged;
+      }
+      return m;
+    }));
+
+    // 2. Mapear a columnas de Supabase (snake_case)
+    const dbPayload = mapMotorcycleToRow(updates);
+    if (Object.keys(dbPayload).length === 0) return;
+
+    const isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
+
+    if (isOnline && isSupabaseConfigured()) {
+      try {
+        const { error, data } = await supabase
+          .from('motorcycles')
+          .update(dbPayload)
+          .eq('id', id)
+          .select();
+
+        if (error || !data || data.length === 0) {
+          // Si falló por id (p. ej. id local antiguo que no coincide con UUID de Supabase), intentar por user_id y modelo
+          if (currentUser.id && updatedBikeSnapshot) {
+            const { error: fallbackError } = await supabase
+              .from('motorcycles')
+              .update(dbPayload)
+              .eq('user_id', currentUser.id)
+              .eq('model', (updatedBikeSnapshot as Motorcycle).model);
+
+            if (fallbackError) {
+              await enqueueOfflineAction('update_motorcycle', { id, payload: dbPayload, userId: currentUser.id });
+            }
+          } else {
+            await enqueueOfflineAction('update_motorcycle', { id, payload: dbPayload, userId: currentUser.id });
+          }
+        }
+      } catch (err) {
+        console.warn('[Hangar] Fallo de red al actualizar moto:', err);
+        await enqueueOfflineAction('update_motorcycle', { id, payload: dbPayload, userId: currentUser.id });
+      }
+    } else {
+      // Sin conexión: encolar para sincronizar en cuanto vuelva la señal
+      await enqueueOfflineAction('update_motorcycle', { id, payload: dbPayload, userId: currentUser.id });
     }
   };
 
-  const deleteMotorcycle = (id: string) => {
+  const deleteMotorcycle = async (id: string) => {
     setMotorcycles(prev => prev.filter(m => m.id !== id));
-    if (isSupabaseConfigured()) {
-      supabase.from('motorcycles').delete().eq('id', id).then(() => {});
+    const isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
+
+    if (isOnline && isSupabaseConfigured()) {
+      try {
+        const { error } = await supabase.from('motorcycles').delete().eq('id', id);
+        if (error) {
+          await enqueueOfflineAction('delete_motorcycle', { id, userId: currentUser.id });
+        }
+      } catch (err) {
+        await enqueueOfflineAction('delete_motorcycle', { id, userId: currentUser.id });
+      }
+    } else {
+      await enqueueOfflineAction('delete_motorcycle', { id, userId: currentUser.id });
     }
   };
 
@@ -3494,20 +3614,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           if (motosRes.data && motosRes.data.length > 0) {
             setMotorcycles(prev => {
               const otherMotos = prev.filter(m => m.userId !== resolvedId);
-              const mapped = motosRes.data.map((m: any) => ({
-                id: m.id,
-                userId: m.user_id,
-                brand: m.brand,
-                model: m.model,
-                year: m.year || 2023,
-                displacementCc: m.displacement_cc || 500,
-                type: (m.type as any) || 'Doble Propósito',
-                nickname: m.nickname || '',
-                photoUrl: m.image_url || 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=800',
-                modifications: m.modifications || [],
-                tires: m.tires || ''
-              }));
-              return [...otherMotos, ...mapped];
+              const mapped = motosRes.data.map((m: any) => mapMotorcycleRow(m));
+              const currentForUser = prev.filter(m => m.userId === resolvedId);
+              const reconciled = mapped.map(cb => {
+                const match = currentForUser.find(lb => lb.id === cb.id || lb.model === cb.model);
+                if (match && match.photoUrl && !match.photoUrl.includes('images.unsplash.com')) {
+                  return { ...cb, photoUrl: match.photoUrl };
+                }
+                return cb;
+              });
+              return [...otherMotos, ...reconciled];
             });
           }
 

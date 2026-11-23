@@ -106,6 +106,7 @@ export interface Motorcycle {
   photoUrl: string;
   modifications: string[];
   tires: string; // e.g. "Mitas E-07+ (50/50)", "Continental TKC80", "Metzeler Karoo 4"
+  isPrimary?: boolean;
 }
 
 export interface User {

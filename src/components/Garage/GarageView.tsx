@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Motorcycle, BikeType, RidingLevel } from '../../types';
-import { Plus, Trash2, Shield, Gauge, Check, X, Bike, Wrench } from 'lucide-react';
+import { Plus, Trash2, Shield, Gauge, Check, X, Bike, Wrench, Camera, Upload } from 'lucide-react';
 import { EditMotorcycleModal } from '../Modals/EditMotorcycleModal';
 
 export const GarageView: React.FC = () => {
@@ -21,6 +21,43 @@ export const GarageView: React.FC = () => {
   const [photoUrl, setPhotoUrl] = useState('');
   const [tires, setTires] = useState('Continental TKC80 (50/50)');
   const [modificationsInput, setModificationsInput] = useState('Skid plate de aluminio, Defensas altas de motor, Faros auxiliares');
+  const bikeFileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleBikePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          const raw = reader.result;
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const maxW = 800;
+            let w = img.width;
+            let h = img.height;
+            if (w > maxW) {
+              h = Math.round((h * maxW) / w);
+              w = maxW;
+            }
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+              ctx.drawImage(img, 0, 0, w, h);
+              setPhotoUrl(canvas.toDataURL('image/jpeg', 0.78));
+            } else {
+              setPhotoUrl(raw);
+            }
+          };
+          img.onerror = () => setPhotoUrl(raw);
+          img.src = raw;
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleCreateBike = (e: React.FormEvent) => {
     e.preventDefault();
@@ -271,6 +308,58 @@ export const GarageView: React.FC = () => {
             </div>
 
             <form onSubmit={handleCreateBike} className="space-y-4 font-sans text-xs">
+              {/* Photo Upload from Gallery */}
+              <div className="space-y-2 bg-[#F4EEDB] border border-[#1A1918]/10 p-3.5 rounded-2xl shadow-sm">
+                <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block">
+                  Foto de la Máquina (Galería de Fotos)
+                </label>
+
+                <input
+                  ref={bikeFileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleBikePhotoUpload}
+                />
+
+                <div className="flex items-center gap-3.5">
+                  <div 
+                    onClick={() => bikeFileInputRef.current?.click()}
+                    className="relative w-28 h-20 rounded-xl overflow-hidden border border-[#1A1918]/10 shadow-sm bg-white cursor-pointer group shrink-0 flex items-center justify-center"
+                  >
+                    {photoUrl ? (
+                      <>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={photoUrl} alt="Foto seleccionada" className="w-full h-full object-cover group-hover:scale-105 transition" />
+                        <div className="absolute inset-0 bg-[#1A1918]/50 opacity-0 group-hover:opacity-100 transition flex flex-col items-center justify-center text-white text-[8px] font-mono font-bold uppercase p-1">
+                          <Camera className="w-3.5 h-3.5 mb-0.5" />
+                          Cambiar
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center p-2 text-center text-[#1A1918]/60 group-hover:text-[#E6332A] transition">
+                        <Camera className="w-5 h-5 mb-1" />
+                        <span className="text-[8px] font-mono uppercase font-semibold">Tocar para subir</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex-1">
+                    <button
+                      type="button"
+                      onClick={() => bikeFileInputRef.current?.click()}
+                      className="px-3.5 py-2 bg-white hover:bg-[#FAF6ED] text-[#1A1918] border border-[#1A1918]/10 rounded-xl font-sans font-semibold text-[11px] shadow-sm active:shadow-none transition inline-flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Upload className="w-3.5 h-3.5 text-[#E6332A]" />
+                      <span>{photoUrl ? 'Cambiar foto de galería' : 'Subir foto de mi galería'}</span>
+                    </button>
+                    <p className="text-[10px] text-[#1A1918]/60 mt-1">
+                      Foto real de tu moto para tu ficha pública.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-[#1A1918]/80 uppercase text-[10px] block mb-1 font-sans font-semibold tracking-wider">Marca</label>
