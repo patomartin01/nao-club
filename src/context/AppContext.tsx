@@ -227,6 +227,9 @@ const mapRouteRow = (p: any): RouteProposal => ({
   safetyTips: p.safety_tips || []
 });
 
+// IDs de tribus obsoletas o de demo que deben ser purgadas y nunca mostrarse
+const DEPRECATED_CREW_IDS = new Set(['crew-motomami']);
+
 // Mapeadores para motocicletas de Hangar (conversión robusta entre camelCase y snake_case)
 const mapMotorcycleRow = (m: any): Motorcycle => ({
   id: String(m.id),
@@ -904,31 +907,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         } catch {}
 
         let parsed: Crew[] = JSON.parse(savedCrews);
+        // Purgar inmediatamente IDs obsoletos de demo
+        parsed = parsed.filter(c => !DEPRECATED_CREW_IDS.has(c.id));
         parsed = parsed.map(c => {
           const coverOverride = customCovers[c.id];
-          if (c.id === 'crew-motomami') {
-            const currentMembers = Array.isArray(c.members) ? [...c.members] : [];
-            INITIAL_CREWS[0].members.forEach(initM => {
-              if (!currentMembers.some(m => m.userId === initM.userId)) {
-                currentMembers.push(initM);
-              }
-            });
-            return {
-              ...c,
-              coverImage: coverOverride || c.coverImage,
-              name: 'MotoMami',
-              inviteCode: 'MAMI-2026',
-              members: currentMembers,
-              whatsappGroupUrl: 'https://chat.whatsapp.com/Jg1AKUEqoXF7nXZuAPJ588'
-            };
-          }
           if (c.id === 'crew-sierrabrava') {
             const currentMembers = Array.isArray(c.members) ? [...c.members] : [];
-            INITIAL_CREWS[1].members.forEach(initM => {
-              if (!currentMembers.some(m => m.userId === initM.userId)) {
-                currentMembers.push(initM);
-              }
-            });
+            if (INITIAL_CREWS[1]?.members) {
+              INITIAL_CREWS[1].members.forEach(initM => {
+                if (!currentMembers.some(m => m.userId === initM.userId)) {
+                  currentMembers.push(initM);
+                }
+              });
+            }
             // Remover cualquier link falso/dummy de Sierra Brava
             const isDummyLink = !c.whatsappGroupUrl || 
               c.whatsappGroupUrl.includes('SierraBravaDualSport') || 
@@ -952,13 +943,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           const savedDeleted = localStorage.getItem(STORAGE_KEYS.DELETED_CREWS);
           if (savedDeleted) deletedCrewIds = JSON.parse(savedDeleted);
         } catch {}
+        // Asegurar que las tribus obsoletas queden registradas permanentemente como eliminadas
+        DEPRECATED_CREW_IDS.forEach(depId => {
+          if (!deletedCrewIds.includes(depId)) deletedCrewIds.push(depId);
+        });
+        try {
+          localStorage.setItem(STORAGE_KEYS.DELETED_CREWS, JSON.stringify(deletedCrewIds));
+        } catch {}
         const deletedSet = new Set(deletedCrewIds);
 
         // Remove duplicates by ID and by Normalized Name/Slug, excluyendo eliminados
         const seenNames = new Set<string>();
         const uniqueCrews: Crew[] = [];
         for (const c of parsed) {
-          if (deletedSet.has(c.id)) continue;
+          if (deletedSet.has(c.id) || DEPRECATED_CREW_IDS.has(c.id)) continue;
+          if (c.id === 'crew-motomami' || (c.members.length === 0 && c.baseCity.includes('Poniente'))) continue;
           const normKey = (c.slug || c.name.toLowerCase().trim().replace(/\s+/g, '-'));
           if (!seenNames.has(normKey)) {
             seenNames.add(normKey);
@@ -1165,6 +1164,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             const savedDeleted = localStorage.getItem(STORAGE_KEYS.DELETED_CREWS);
             if (savedDeleted) deletedCrewIds = JSON.parse(savedDeleted);
           } catch {}
+          DEPRECATED_CREW_IDS.forEach(depId => {
+            if (!deletedCrewIds.includes(depId)) deletedCrewIds.push(depId);
+          });
           const deletedSet = new Set(deletedCrewIds);
 
           const cloudIds = new Set(mergedMapped.map(cr => cr.id));
@@ -1173,7 +1175,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           const seenNames = new Set<string>();
           const finalCrews: Crew[] = [];
           for (const c of allCrews) {
-            if (deletedSet.has(c.id)) continue;
+            if (deletedSet.has(c.id) || DEPRECATED_CREW_IDS.has(c.id)) continue;
+            // Excluir el grupo huérfano de demo con 0 pilotos
+            if (c.id === 'crew-motomami' || (c.members.length === 0 && (c.baseCity.includes('Poniente') || c.slug === 'nao-adventure'))) continue;
             const normKey = (c.slug || c.name.toLowerCase().trim().replace(/\s+/g, '-'));
             if (!seenNames.has(normKey)) {
               seenNames.add(normKey);
@@ -1183,9 +1187,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
           // Sincronizar currentCrew si ya estaba seleccionado y pertenece a él
           setCurrentCrew(curr => {
-            if (!curr) return null;
+            if (!curr || DEPRECATED_CREW_IDS.has(curr.id) || curr.id === 'crew-motomami') {
+              return finalCrews[0] || null;
+            }
             const updatedCurr = finalCrews.find(c => c.id === curr.id);
-            return updatedCurr || null;
+            return updatedCurr || finalCrews[0] || null;
           });
 
           return finalCrews;
@@ -2293,7 +2299,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const createRodada = (data: { title: string; subtitle: string; description: string; category: Rodada['category']; startDate: string; endDate: string; originPoint: string }) => {
     const newRodada: Rodada = {
       id: `rodada-${makeUniqueSuffix()}`,
-      crewId: currentCrew?.id || 'crew-motomami',
+      crewId: currentCrew?.id || 'crew-1793316469201',
       title: data.title,
       subtitle: data.subtitle,
       description: data.description,

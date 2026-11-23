@@ -28,18 +28,18 @@ export const INITIAL_MOTORCYCLES: Motorcycle[] = [];
 
 export const INITIAL_CREWS: Crew[] = [
   {
-    id: 'crew-motomami',
-    name: 'MotoMami',
+    id: 'crew-1793316469201',
+    name: 'Motomami',
     slug: 'motomami',
     tagline: 'Terracería, sierra, fogatas y doble propósito sin drama.',
     description: 'Comunidad de amigos apasionados por las motos trail y doble propósito. Rodamos fines de semana y puentes buscando campamentos base remotos, brechas forestales y buena comida.',
-    inviteCode: 'NAO-2026',
+    inviteCode: 'MAMI-9408',
     coverImage: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=1200',
-    baseCity: 'Interlomas & Poniente CDMX',
-    creatorId: 'user-patricio',
-    createdAt: '2024-03-15',
+    baseCity: 'Interlomas / CDMX',
+    creatorId: 'a1bac354-0a88-486c-9289-049e75c61c12',
+    createdAt: '2026-10-29',
     members: [
-      { userId: 'user-patricio', role: 'Capitán de Ruta', joinedAt: '2024-03-15' }
+      { userId: 'user-patricio', role: 'Capitán de Ruta', joinedAt: '2026-10-29' }
     ],
     whatsappGroupUrl: 'https://chat.whatsapp.com/Jg1AKUEqoXF7nXZuAPJ588'
   }
@@ -123,7 +123,7 @@ export const INITIAL_ROUTE_PROPOSALS: RouteProposal[] = [
 
 export const INITIAL_RODADA: Rodada = {
   id: 'rodada-dia-muertos-2026',
-  crewId: 'crew-motomami',
+  crewId: 'crew-1793316469201',
   title: 'Expedición Puente Día de Muertos 2026',
   subtitle: 'Campamento Base & Loops Off-Road en Motos Doble Propósito',
   description: 'Salida de 3 días / 2 noches aprovechando el puente de noviembre. El plan maestro: establecer un campamento base seguro, descargar maletas pesadas para rodar ligeros y hacer rutas circulares de terracería técnica fluida.',
@@ -234,7 +234,7 @@ export const INITIAL_CHALLENGES: Challenge[] = [
 export const INITIAL_CREW_MESSAGES: CrewChatMessage[] = [
   {
     id: 'msg-1',
-    crewId: 'crew-motomami',
+    crewId: 'crew-1793316469201',
     userId: 'user-sofia',
     userName: 'Sofía Ramos',
     userAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=250',
@@ -244,7 +244,7 @@ export const INITIAL_CREW_MESSAGES: CrewChatMessage[] = [
   },
   {
     id: 'msg-2',
-    crewId: 'crew-motomami',
+    crewId: 'crew-1793316469201',
     userId: 'user-mateo',
     userName: 'Mateo Garza',
     userAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=250',
@@ -254,7 +254,7 @@ export const INITIAL_CREW_MESSAGES: CrewChatMessage[] = [
   },
   {
     id: 'msg-3',
-    crewId: 'crew-motomami',
+    crewId: 'crew-1793316469201',
     userId: 'user-patricio',
     userName: 'Pato Martín',
     userAvatar: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
@@ -264,7 +264,7 @@ export const INITIAL_CREW_MESSAGES: CrewChatMessage[] = [
   },
   {
     id: 'msg-4',
-    crewId: 'crew-motomami',
+    crewId: 'crew-1793316469201',
     userId: 'user-manu-vidal',
     userName: 'Manu Martin Vidal',
     userAvatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=250',

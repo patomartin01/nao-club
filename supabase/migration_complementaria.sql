@@ -247,3 +247,10 @@ BEGIN
   EXCEPTION WHEN OTHERS THEN NULL;
   END;
 END $$;
+
+-- 7. PURGA DE GRUPO HUÉRFANO DE DEMO (0 PILOTOS)
+DELETE FROM public.crew_members WHERE crew_id = 'crew-motomami';
+DELETE FROM public.crew_messages WHERE crew_id = 'crew-motomami';
+DELETE FROM public.rodadas WHERE crew_id = 'crew-motomami';
+DELETE FROM public.route_proposals WHERE crew_id = 'crew-motomami';
+DELETE FROM public.crews WHERE id = 'crew-motomami';

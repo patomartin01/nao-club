@@ -1249,78 +1249,85 @@ export const TribusView: React.FC<TribusViewProps> = ({
                   <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 bg-white border-t border-l border-[#E5DFD5]" />
                   
                   {/* Header */}
-                  <div className="px-1 flex items-center justify-between border-b border-[#E5DFD5] pb-2.5">
-                    <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4 text-[#C84B31]" />
-                      <span className="text-xs font-sans font-semibold text-[#141312]  ">Tus Clubs &amp; Tribus</span>
-                    </div>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#FAF8F5] text-stone-600 border border-[#E5DFD5] font-bold">
-                      {crews.length} {crews.length === 1 ? 'grupo' : 'grupos'}
-                    </span>
-                  </div>
-
-                  {/* Crew List */}
-                  <div className="max-h-64 overflow-y-auto space-y-1 py-1 pr-1">
-                    {crews.map(c => {
-                      const isCurrent = c.id === activeTribu.id;
-                      const initials = c.name
-                        .split(' ')
-                        .map(w => w[0])
-                        .filter(Boolean)
-                        .slice(0, 2)
-                        .join('')
-                        .toUpperCase();
-
-                      return (
-                        <button
-                          key={c.id}
-                          onClick={() => {
-                            setSelectedTribuId(c.id);
-                            setShowCrewDropdown(false);
-                          }}
-                          className={`w-full text-left p-2.5 rounded-xl transition-all flex items-center gap-3 ${
-                            isCurrent 
-                              ? 'bg-[#FAF8F5] border border-[#141312] text-[#141312] shadow-xs' 
-                              : 'hover:bg-[#FAF8F5] text-stone-600 hover:text-[#141312] border border-transparent'
-                          }`}
-                        >
-                          <div className={`w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center shrink-0 border transition ${
-                            isCurrent 
-                              ? 'border-[#141312] ring-1 ring-[#141312] shadow-xs' 
-                              : 'border-[#E5DFD5] bg-[#FAF8F5]'
-                          }`}>
-                            {c.coverImage ? (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img 
-                                src={c.coverImage} 
-                                alt={c.name} 
-                                className="w-full h-full object-cover" 
-                              />
-                            ) : (
-                              <span className={`font-sans font-bold text-xs ${isCurrent ? 'text-[#C84B31]' : 'text-stone-500'}`}>
-                                {initials || 'TR'}
-                              </span>
-                            )}
+                  {(() => {
+                    const validCrews = crews.filter(c => c.id !== 'crew-motomami' && !(c.members.length === 0 && c.baseCity.includes('Poniente')));
+                    return (
+                      <>
+                        <div className="px-1 flex items-center justify-between border-b border-[#E5DFD5] pb-2.5">
+                          <div className="flex items-center gap-2">
+                            <Users className="w-4 h-4 text-[#C84B31]" />
+                            <span className="text-xs font-sans font-semibold text-[#141312]  ">Tus Clubs &amp; Tribus</span>
                           </div>
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#FAF8F5] text-stone-600 border border-[#E5DFD5] font-bold">
+                            {validCrews.length} {validCrews.length === 1 ? 'grupo' : 'grupos'}
+                          </span>
+                        </div>
 
-                          <div className="flex-1 min-w-0">
-                            <p className="font-sans font-bold text-sm text-[#141312] truncate">{c.name}</p>
-                            <p className="text-xs font-sans text-stone-500 truncate mt-0.5">
-                              {c.baseCity} • {c.members.length} {c.members.length === 1 ? 'piloto' : 'pilotos'}
-                            </p>
-                          </div>
+                        {/* Crew List */}
+                        <div className="max-h-64 overflow-y-auto space-y-1 py-1 pr-1">
+                          {validCrews.map(c => {
+                            const isCurrent = c.id === activeTribu.id;
+                            const initials = c.name
+                              .split(' ')
+                              .map(w => w[0])
+                              .filter(Boolean)
+                              .slice(0, 2)
+                              .join('')
+                              .toUpperCase();
 
-                          {isCurrent ? (
-                            <div className="w-5 h-5 rounded-full bg-[#141312] flex items-center justify-center shrink-0 shadow-xs">
-                              <Check className="w-3 h-3 text-white stroke-[3]" />
-                            </div>
-                          ) : (
-                            <span className="text-[11px] font-sans font-bold text-stone-400 ">Entrar</span>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
+                            return (
+                              <button
+                                key={c.id}
+                                onClick={() => {
+                                  setSelectedTribuId(c.id);
+                                  setShowCrewDropdown(false);
+                                }}
+                                className={`w-full text-left p-2.5 rounded-xl transition-all flex items-center gap-3 ${
+                                  isCurrent 
+                                    ? 'bg-[#FAF8F5] border border-[#141312] text-[#141312] shadow-xs' 
+                                    : 'hover:bg-[#FAF8F5] text-stone-600 hover:text-[#141312] border border-transparent'
+                                }`}
+                              >
+                                <div className={`w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center shrink-0 border transition ${
+                                  isCurrent 
+                                    ? 'border-[#141312] ring-1 ring-[#141312] shadow-xs' 
+                                    : 'border-[#E5DFD5] bg-[#FAF8F5]'
+                                }`}>
+                                  {c.coverImage ? (
+                                    // eslint-disable-next-line @next/next/no-img-element
+                                    <img 
+                                      src={c.coverImage} 
+                                      alt={c.name} 
+                                      className="w-full h-full object-cover" 
+                                    />
+                                  ) : (
+                                    <span className={`font-sans font-bold text-xs ${isCurrent ? 'text-[#C84B31]' : 'text-stone-500'}`}>
+                                      {initials || 'TR'}
+                                    </span>
+                                  )}
+                                </div>
+
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-sans font-bold text-sm text-[#141312] truncate">{c.name}</p>
+                                  <p className="text-xs font-sans text-stone-500 truncate mt-0.5">
+                                    {c.baseCity} • {c.members.length} {c.members.length === 1 ? 'piloto' : 'pilotos'}
+                                  </p>
+                                </div>
+
+                                {isCurrent ? (
+                                  <div className="w-5 h-5 rounded-full bg-[#141312] flex items-center justify-center shrink-0 shadow-xs">
+                                    <Check className="w-3 h-3 text-white stroke-[3]" />
+                                  </div>
+                                ) : (
+                                  <span className="text-[11px] font-sans font-bold text-stone-400 ">Entrar</span>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </>
+                    );
+                  })()}
 
                   {/* Actions */}
                   <div className="pt-2 border-t border-[#E5DFD5] space-y-1">
