@@ -1063,8 +1063,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     });
 
-    // Hydrate profiles from cloud
-    supabase.from('profiles').select('*').then(({ data }) => {
+    // Hydrate profiles from cloud (limitado a 50 para escala de 300k usuarios)
+    supabase.from('profiles').select('*').limit(50).then(({ data }) => {
       if (data && data.length > 0) {
         const mappedUsers: User[] = data.map((p: any) => ({
           id: p.id,
@@ -1151,56 +1151,72 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     });
 
-    // Hydrate follows from cloud and sync requests
-    supabase.from('follows').select('*').then(async ({ data: followsData }) => {
-      if (followsData) {
-        setAllFollows(followsData.map((f: any) => ({ follower_id: f.follower_id, following_id: f.following_id })));
-
-        const cloudFollowing = followsData
-          .filter((f: any) => f.follower_id === currentUser.id)
-          .map((f: any) => f.following_id);
-        setFollowingUserIds(cloudFollowing);
-
-        const cloudFollowers = followsData
-          .filter((f: any) => f.following_id === currentUser.id)
-          .map((f: any) => f.follower_id);
-        setFollowersUserIds(cloudFollowers);
-
-        // Si alguien sigue a currentUser pero no estaba reconocido en followRequests locales,
-        // generar notificación visible en la campana
-        if (currentUser.id && currentUser.id !== 'guest' && cloudFollowers.length > 0) {
-          const { data: profilesData } = await supabase.from('profiles').select('*');
-          if (profilesData && profilesData.length > 0) {
-            const profilesMap = new Map(profilesData.map((p: any) => [p.id, p]));
-            setFollowRequests(prev => {
-              const existingFromIds = new Set(prev.map(r => r.fromUserId));
-              const newReqs: FollowRequest[] = [];
-              cloudFollowers.forEach((followerId: string) => {
-                if (!existingFromIds.has(followerId)) {
-                  const prof = profilesMap.get(followerId);
-                  if (prof) {
-                    newReqs.push({
-                      id: `cloud-follow-${followerId}`,
-                      fromUserId: prof.id,
-                      fromUserName: prof.name || 'Piloto',
-                      fromUserHandle: prof.handle || '@piloto',
-                      fromUserAvatar: prof.avatar_url || 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
-                      toUserId: currentUser.id,
-                      createdAt: new Date().toISOString(),
-                      status: 'pending'
-                    });
-                  }
-                }
-              });
-              return newReqs.length > 0 ? [...newReqs, ...prev] : prev;
+    // Hydrate follows from cloud and sync requests (optimizado con índice B-Tree para 300k usuarios)
+    if (currentUser.id && currentUser.id !== 'guest') {
+      supabase
+        .from('follows')
+        .select('*')
+        .or(`follower_id.eq.${currentUser.id},following_id.eq.${currentUser.id}`)
+        .then(async ({ data: followsData }) => {
+          if (followsData) {
+            setAllFollows(prev => {
+              const map = new Map(prev.map(f => [`${f.follower_id}_${f.following_id}`, f]));
+              followsData.forEach((f: any) => map.set(`${f.follower_id}_${f.following_id}`, { follower_id: f.follower_id, following_id: f.following_id }));
+              return Array.from(map.values());
             });
-          }
-        }
-      }
-    });
 
-    // Hydrate motorcycles from cloud
-    supabase.from('motorcycles').select('*').then(({ data }) => {
+            const cloudFollowing = followsData
+              .filter((f: any) => f.follower_id === currentUser.id)
+              .map((f: any) => f.following_id);
+            setFollowingUserIds(prev => Array.from(new Set([...prev, ...cloudFollowing])));
+
+            const cloudFollowers = followsData
+              .filter((f: any) => f.following_id === currentUser.id)
+              .map((f: any) => f.follower_id);
+            setFollowersUserIds(cloudFollowers);
+
+            // Cargar perfiles únicamente de quienes te siguen para las notificaciones (evita descargar 300k perfiles)
+            if (cloudFollowers.length > 0) {
+              const { data: profilesData } = await supabase
+                .from('profiles')
+                .select('*')
+                .in('id', cloudFollowers.slice(0, 50));
+              if (profilesData && profilesData.length > 0) {
+                const profilesMap = new Map(profilesData.map((p: any) => [p.id, p]));
+                setFollowRequests(prev => {
+                  const existingFromIds = new Set(prev.map(r => r.fromUserId));
+                  const newReqs: FollowRequest[] = [];
+                  cloudFollowers.forEach((followerId: string) => {
+                    if (!existingFromIds.has(followerId)) {
+                      const prof = profilesMap.get(followerId);
+                      if (prof) {
+                        newReqs.push({
+                          id: `cloud-follow-${followerId}`,
+                          fromUserId: prof.id,
+                          fromUserName: prof.name || 'Piloto',
+                          fromUserHandle: prof.handle || '@piloto',
+                          fromUserAvatar: prof.avatar_url || 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
+                          toUserId: currentUser.id,
+                          createdAt: new Date().toISOString(),
+                          status: 'pending'
+                        });
+                      }
+                    }
+                  });
+                  return newReqs.length > 0 ? [...newReqs, ...prev] : prev;
+                });
+              }
+            }
+          }
+        });
+    }
+
+    // Hydrate motorcycles from cloud (carga motos del piloto actual + recientes)
+    const motoQuery = (currentUser.id && currentUser.id !== 'guest')
+      ? supabase.from('motorcycles').select('*').or(`user_id.eq.${currentUser.id},is_primary.eq.true`).limit(50)
+      : supabase.from('motorcycles').select('*').limit(50);
+
+    motoQuery.then(({ data }) => {
       if (data && data.length > 0) {
         const mappedMotos: Motorcycle[] = data.map((m: any) => ({
           id: m.id,
@@ -1222,16 +1238,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     });
 
-    // Hydrate activities (publicaciones reales) from cloud
-    supabase.from('activities').select('*').order('created_at', { ascending: false }).then(({ data }) => {
+    // Hydrate activities (publicaciones reales) from cloud - top 50 más recientes
+    supabase.from('activities').select('*').order('created_at', { ascending: false }).limit(50).then(({ data }) => {
       if (data && data.length > 0) {
         const mappedActs: ActivityPost[] = data.map(mapActivityRow);
         setActivities(mappedActs);
       }
     });
 
-    // Hydrate rodadas from cloud
-    supabase.from('rodadas').select('*').order('created_at', { ascending: false }).then(({ data: cloudRodadas, error }) => {
+    // Hydrate rodadas from cloud - top 30
+    supabase.from('rodadas').select('*').order('created_at', { ascending: false }).limit(30).then(({ data: cloudRodadas, error }) => {
       if (!error && cloudRodadas && cloudRodadas.length > 0) {
         const mappedR: Rodada[] = cloudRodadas.map((r: any) => ({
           id: r.id,
@@ -1536,45 +1552,84 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       )
       .subscribe();
 
+    // Realtime channel for motorcycles table changes (hangar sync across devices)
+    const motorcyclesChannel = supabase
+      .channel('public:motorcycles_realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'motorcycles' },
+        (payload) => {
+          if (payload.eventType === 'INSERT' && payload.new) {
+            const m = payload.new as any;
+            setMotorcycles(prev => {
+              if (prev.some(x => x.id === m.id)) return prev;
+              return [
+                ...prev,
+                {
+                  id: m.id,
+                  userId: m.user_id,
+                  brand: m.brand,
+                  model: m.model,
+                  year: m.year || 2023,
+                  displacementCc: m.displacement_cc || 500,
+                  type: (m.type as any) || 'Doble Propósito',
+                  nickname: m.nickname || '',
+                  photoUrl: m.image_url || 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=800',
+                  modifications: m.modifications || [],
+                  tires: m.tires || ''
+                }
+              ];
+            });
+          } else if (payload.eventType === 'UPDATE' && payload.new) {
+            const m = payload.new as any;
+            setMotorcycles(prev => prev.map(x => x.id === m.id ? {
+              ...x,
+              brand: m.brand,
+              model: m.model,
+              year: m.year || x.year,
+              displacementCc: m.displacement_cc || x.displacementCc,
+              type: (m.type as any) || x.type,
+              nickname: m.nickname ?? x.nickname,
+              photoUrl: m.image_url || x.photoUrl,
+              modifications: m.modifications || x.modifications,
+              tires: m.tires || x.tires
+            } : x));
+          } else if (payload.eventType === 'DELETE' && payload.old) {
+            const m = payload.old as any;
+            setMotorcycles(prev => prev.filter(x => x.id !== m.id));
+          }
+        }
+      )
+      .subscribe();
+
     // Sincronización periódica y al reenfocar la ventana para garantizar que incluso si Realtime
     // en Supabase está en estado 'Unhealthy' o reconectando, los seguidores e interacciones NUNCA se pierdan
     const refreshFollowsAndSocial = async () => {
-      if (!isSupabaseConfigured()) return;
+      if (!isSupabaseConfigured() || !currentUser.id || currentUser.id === 'guest') return;
       try {
-        const { data: followsData } = await supabase.from('follows').select('*');
+        const { data: followsData } = await supabase
+          .from('follows')
+          .select('follower_id, following_id')
+          .or(`follower_id.eq.${currentUser.id},following_id.eq.${currentUser.id}`);
+
         if (followsData) {
-          setAllFollows(followsData.map((f: any) => ({ follower_id: f.follower_id, following_id: f.following_id })));
-          if (currentUser.id) {
-            const cloudFollowing = followsData
-              .filter((f: any) => f.follower_id === currentUser.id)
-              .map((f: any) => f.following_id);
-            setFollowingUserIds(prev => Array.from(new Set([...prev, ...cloudFollowing])));
-
-            const cloudFollowers = followsData
-              .filter((f: any) => f.following_id === currentUser.id)
-              .map((f: any) => f.follower_id);
-            setFollowersUserIds(cloudFollowers);
-          }
-        }
-
-        const { data: pData } = await supabase.from('profiles').select('*');
-        if (pData && pData.length > 0) {
-          const mappedUsers: User[] = pData.map((p: any) => ({
-            id: p.id,
-            name: p.name,
-            handle: p.handle,
-            email: p.email,
-            avatar: p.avatar_url || 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
-            bio: p.bio || 'Piloto en NAO.',
-            location: p.location || 'México',
-            ridingLevel: (p.riding_level as any) || 'Intermedio',
-            phone: p.phone,
-            emergencyContact: p.emergency_contact
-          }));
-          setUsers(prev => {
-            const cloudIds = new Set(mappedUsers.map(u => u.id));
-            return [...mappedUsers, ...prev.filter(u => !cloudIds.has(u.id))];
+          setAllFollows(prev => {
+            const map = new Map(prev.map(f => [`${f.follower_id}_${f.following_id}`, f]));
+            followsData.forEach((f: any) => {
+              map.set(`${f.follower_id}_${f.following_id}`, { follower_id: f.follower_id, following_id: f.following_id });
+            });
+            return Array.from(map.values());
           });
+
+          const cloudFollowing = followsData
+            .filter((f: any) => f.follower_id === currentUser.id)
+            .map((f: any) => f.following_id);
+          setFollowingUserIds(prev => Array.from(new Set([...prev, ...cloudFollowing])));
+
+          const cloudFollowers = followsData
+            .filter((f: any) => f.following_id === currentUser.id)
+            .map((f: any) => f.follower_id);
+          setFollowersUserIds(cloudFollowers);
         }
       } catch (e) {
         console.warn('Silent social refresh err:', e);
@@ -1592,6 +1647,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       supabase.removeChannel(ridesChannel);
       supabase.removeChannel(crewsChannel);
       supabase.removeChannel(followsChannel);
+      supabase.removeChannel(motorcyclesChannel);
       supabase.removeChannel(socialChannel);
       supabase.removeChannel(adminChannel);
     };
@@ -3208,11 +3264,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             if (error) enqueueOfflineAction('unfollow_user', { follower_id: currentUser.id, following_id: userId });
           });
         } else {
-          supabase.from('follows').upsert(
-            { follower_id: currentUser.id, following_id: userId },
-            { onConflict: 'follower_id,following_id', ignoreDuplicates: true }
-          ).then(({ error }) => {
-            if (error) enqueueOfflineAction('follow_user', { follower_id: currentUser.id, following_id: userId });
+          supabase.from('follows').insert({ follower_id: currentUser.id, following_id: userId }).then(({ error }) => {
+            if (error && error.code !== '23505') {
+              enqueueOfflineAction('follow_user', { follower_id: currentUser.id, following_id: userId });
+            }
           });
         }
       }
@@ -3349,7 +3404,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const unreadNotificationsCount = notifications.filter(n => !n.read).length;
 
-  const openPilotProfileById = (userId: string) => {
+  const openPilotProfileById = async (userId: string) => {
     if (!userId) return;
 
     // Si es el usuario actual, nunca abrir el modal de otro piloto: redirigir a su pestaña propia "Tú"
@@ -3359,34 +3414,80 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return;
     }
 
-    // Consultar en Supabase para obtener las motos más recientes del hangar del piloto
-    if (isSupabaseConfigured() && userId) {
-      supabase.from('motorcycles').select('*').eq('user_id', userId).then(({ data: userMotos }) => {
-        if (userMotos && userMotos.length > 0) {
-          setMotorcycles(prev => {
-            const otherMotos = prev.filter(m => m.userId !== userId);
-            const mapped = userMotos.map((m: any) => ({
-              id: m.id,
-              userId: m.user_id,
-              brand: m.brand,
-              model: m.model,
-              year: m.year || 2023,
-              displacementCc: m.displacement_cc || 500,
-              type: (m.type as any) || 'Doble Propósito',
-              nickname: m.nickname || '',
-              photoUrl: m.image_url || 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=800',
-              modifications: m.modifications || [],
-              tires: m.tires || ''
-            }));
-            return [...otherMotos, ...mapped];
-          });
+    const localFound = users.find(u => u.id === userId || u.handle === userId || u.name === userId);
+
+    if (isSupabaseConfigured()) {
+      try {
+        const isUuid = userId.length === 36 && userId.includes('-');
+        const profilePromise = isUuid
+          ? supabase.from('profiles').select('*').eq('id', userId).maybeSingle()
+          : supabase.from('profiles').select('*').or(`handle.eq.${userId},handle.eq.@${userId.replace(/^@/, '')},name.ilike.%${userId}%`).maybeSingle();
+
+        const { data: p } = await profilePromise;
+        const resolvedId = p?.id || (isUuid ? userId : localFound?.id);
+
+        if (resolvedId) {
+          // Consultar motos y seguidores del piloto en paralelo para garantizar datos completos
+          const [motosRes, followsRes] = await Promise.all([
+            supabase.from('motorcycles').select('*').eq('user_id', resolvedId),
+            supabase.from('follows').select('*').or(`follower_id.eq.${resolvedId},following_id.eq.${resolvedId}`)
+          ]);
+
+          if (motosRes.data && motosRes.data.length > 0) {
+            setMotorcycles(prev => {
+              const otherMotos = prev.filter(m => m.userId !== resolvedId);
+              const mapped = motosRes.data.map((m: any) => ({
+                id: m.id,
+                userId: m.user_id,
+                brand: m.brand,
+                model: m.model,
+                year: m.year || 2023,
+                displacementCc: m.displacement_cc || 500,
+                type: (m.type as any) || 'Doble Propósito',
+                nickname: m.nickname || '',
+                photoUrl: m.image_url || 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=800',
+                modifications: m.modifications || [],
+                tires: m.tires || ''
+              }));
+              return [...otherMotos, ...mapped];
+            });
+          }
+
+          if (followsRes.data && followsRes.data.length > 0) {
+            setAllFollows(prev => {
+              const map = new Map(prev.map(f => [`${f.follower_id}_${f.following_id}`, f]));
+              followsRes.data.forEach((f: any) => {
+                map.set(`${f.follower_id}_${f.following_id}`, { follower_id: f.follower_id, following_id: f.following_id });
+              });
+              return Array.from(map.values());
+            });
+          }
         }
-      });
+
+        if (p) {
+          const remoteUser: User = {
+            id: p.id,
+            name: p.name || 'Piloto NAO',
+            handle: p.handle || `@${(p.name || 'piloto').toLowerCase().replace(/\s+/g, '')}`,
+            email: p.email || '',
+            avatar: p.avatar_url || 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
+            bio: p.bio || 'Piloto en NAO.',
+            location: p.location || 'México',
+            ridingLevel: (p.riding_level as any) || 'Intermedio',
+            phone: p.phone,
+            emergencyContact: p.emergency_contact
+          };
+          setUsers(prev => prev.some(u => u.id === remoteUser.id) ? prev.map(u => u.id === remoteUser.id ? remoteUser : u) : [...prev, remoteUser]);
+          setSelectedPilotProfile(remoteUser);
+          return;
+        }
+      } catch (err) {
+        console.warn('Error fetching pilot data:', err);
+      }
     }
 
-    const found = users.find(u => u.id === userId || u.handle === userId || u.name === userId);
-    if (found) {
-      setSelectedPilotProfile(found);
+    if (localFound) {
+      setSelectedPilotProfile(localFound);
       return;
     }
 
@@ -3441,63 +3542,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           return;
         }
       }
-    }
-
-    // Si no se encontró en memoria local, consultar Supabase directamente
-    if (isSupabaseConfigured()) {
-      const isUuid = userId.length === 36 && userId.includes('-');
-      const queryBuilder = supabase.from('profiles').select('*');
-      const finalQuery = isUuid 
-        ? queryBuilder.eq('id', userId) 
-        : queryBuilder.or(`handle.eq.${userId},handle.eq.@${userId.replace(/^@/, '')},name.ilike.%${userId}%`);
-
-      finalQuery.maybeSingle().then(async ({ data: p }) => {
-        if (p) {
-          // Obtener motos de este usuario si existen
-          const { data: userMotos } = await supabase.from('motorcycles').select('*').eq('user_id', p.id);
-          if (userMotos && userMotos.length > 0) {
-            setMotorcycles(prev => {
-              const existingIds = new Set(prev.map(m => m.id));
-              const newMotos = userMotos
-                .filter((m: any) => !existingIds.has(m.id))
-                .map((m: any) => ({
-                  id: m.id,
-                  userId: m.user_id,
-                  brand: m.brand,
-                  model: m.model,
-                  year: m.year || 2023,
-                  displacementCc: m.displacement_cc || 500,
-                  type: (m.type as any) || 'Doble Propósito',
-                  nickname: m.nickname || '',
-                  photoUrl: m.image_url || 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=800',
-                  modifications: m.modifications || [],
-                  tires: m.tires || ''
-                }));
-              return [...prev, ...newMotos];
-            });
-          }
-
-          const remoteUser: User = {
-            id: p.id,
-            name: p.name || 'Piloto NAO',
-            handle: p.handle || `@${(p.name || 'piloto').toLowerCase().replace(/\s+/g, '')}`,
-            email: p.email || '',
-            avatar: p.avatar_url || 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
-            bio: p.bio || 'Piloto en NAO.',
-            location: p.location || 'México',
-            ridingLevel: (p.riding_level as any) || 'Intermedio',
-            phone: p.phone,
-            emergencyContact: p.emergency_contact
-          };
-
-          // Guardarlo en users para el caché local
-          setUsers(prev => prev.some(u => u.id === remoteUser.id) ? prev : [...prev, remoteUser]);
-          setSelectedPilotProfile(remoteUser);
-        } else {
-          setSelectedPilotProfile(null);
-        }
-      });
-      return;
     }
 
     // NUNCA hacer fallback al usuario actual

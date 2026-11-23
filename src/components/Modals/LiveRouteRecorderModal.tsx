@@ -14,6 +14,7 @@ import {
   DeviceWakeLockManager, 
   generateGPXString 
 } from '../../utils/gpsTelemetry';
+import { unifiedLocationService } from '../../utils/backgroundLocationService';
 import { 
   X, 
   Play, 
@@ -777,19 +778,42 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
     }
   };
 
-  const startGpsWatcher = () => {
-    if (typeof navigator === 'undefined' || !navigator.geolocation) return;
+  const startGpsWatcher = async () => {
     if (gpsWatcherRef.current !== null) return;
-    gpsWatcherRef.current = navigator.geolocation.watchPosition(
-      handleGpsPosition,
-      handleGpsError,
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-    );
+    gpsWatcherRef.current = 1;
+
+    try {
+      await unifiedLocationService.startTracking(
+        (reading) => {
+          handleGpsPosition({
+            coords: {
+              latitude: reading.latitude,
+              longitude: reading.longitude,
+              altitude: reading.altitude ?? null,
+              speed: reading.speed !== null && reading.speed !== undefined ? reading.speed / 3.6 : null,
+              accuracy: reading.accuracy ?? 10,
+              altitudeAccuracy: null,
+              heading: null
+            },
+            timestamp: reading.timestamp
+          } as GeolocationPosition);
+        },
+        (errorMsg) => {
+          setGpsError(errorMsg);
+        }
+      );
+    } catch (err: any) {
+      console.warn('Error starting unified location service:', err);
+    }
   };
 
-  const stopGpsWatcher = () => {
-    if (gpsWatcherRef.current !== null && typeof navigator !== 'undefined' && navigator.geolocation) {
-      navigator.geolocation.clearWatch(gpsWatcherRef.current);
+  const stopGpsWatcher = async () => {
+    if (gpsWatcherRef.current !== null) {
+      try {
+        await unifiedLocationService.stopTracking();
+      } catch (err) {
+        console.warn('Error stopping unified location service:', err);
+      }
     }
     gpsWatcherRef.current = null;
   };
@@ -1133,7 +1157,7 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
               {hasGpsFix ? (
                 <>
                   <span className="w-1 h-1 rounded-full bg-[#25D366]"></span>
-                  GPS Activo • Alta Precisión
+                  {unifiedLocationService.isNativeDevice() ? 'GPS Nativo (2º Plano Activo)' : 'GPS Web (Mantén Pantalla Activa)'}
                 </>
               ) : isLocating ? (
                 <>
@@ -1141,7 +1165,7 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
                   Conectando satélites...
                 </>
               ) : (
-                'Listo para rodar'
+                unifiedLocationService.isNativeDevice() ? '🛰️ Modo Nativo Listo' : '🌐 Modo Web Listo'
               )}
             </span>
           </div>

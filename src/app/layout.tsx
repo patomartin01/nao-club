@@ -55,6 +55,19 @@ export default function RootLayout({
           integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
           crossOrigin=""
         />
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+              window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw-maps.js').then(function(reg) {
+                  console.log('[SW Maps] Cache de mapas offline activado con exito.');
+                }).catch(function(err) {
+                  console.warn('[SW Maps] Error registrando SW de mapas:', err);
+                });
+              });
+            }
+          `
+        }} />
       </head>
       <body className="min-h-screen bg-[#F6F4EE] text-[#141312] selection:bg-[#F2B705] selection:text-[#141312] font-sans antialiased">
         <AppProvider>
