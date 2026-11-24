@@ -33,22 +33,44 @@ export default function Home() {
   const [createRodadaOpen, setCreateRodadaOpen] = useState(false);
   const [recordRouteOpen, setRecordRouteOpen] = useState(false);
 
-  // Handle URL profile sharing: ?piloto=@handle or ?piloto=id
-  const pilotParamHandledRef = useRef(false);
+  // Track target pilot from URL query (?piloto=... or ?pilot=...)
+  const [targetPilotParam, setTargetPilotParam] = useState<string | null>(null);
+
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    if (pilotParamHandledRef.current) return;
     try {
       const urlParams = new URLSearchParams(window.location.search);
-      const pilotParam = urlParams.get('piloto');
-      if (pilotParam) {
-        pilotParamHandledRef.current = true;
-        setTimeout(() => {
-          openPilotProfileById(pilotParam);
-        }, 400);
+      const param = urlParams.get('piloto') || urlParams.get('pilot');
+      if (param) {
+        setTargetPilotParam(param);
+        sessionStorage.setItem('nao_target_pilot', param);
+        sessionStorage.setItem('nao_pending_follow', 'true');
+      } else {
+        const stored = sessionStorage.getItem('nao_target_pilot');
+        if (stored) setTargetPilotParam(stored);
       }
     } catch {}
-  }, [openPilotProfileById]);
+  }, []);
+
+  // When user is authenticated, automatically open target pilot profile and auto-follow
+  const targetPilotHandledRef = useRef(false);
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    if (typeof window === 'undefined') return;
+    if (targetPilotHandledRef.current) return;
+
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const targetParam = urlParams.get('piloto') || urlParams.get('pilot') || sessionStorage.getItem('nao_target_pilot');
+      if (targetParam) {
+        targetPilotHandledRef.current = true;
+        sessionStorage.removeItem('nao_target_pilot');
+        setTimeout(async () => {
+          await openPilotProfileById(targetParam);
+        }, 500);
+      }
+    } catch {}
+  }, [isAuthenticated, openPilotProfileById]);
 
   // If session is still verifying, show clean minimalist loader
   if (isAuthLoading) {
@@ -66,7 +88,7 @@ export default function Home() {
 
   // If pilot is not authenticated, show full-screen Welcome Gate (Instagram style)
   if (!isAuthenticated) {
-    return <WelcomeLoginGate />;
+    return <WelcomeLoginGate targetPilotIdentifier={targetPilotParam} />;
   }
 
   return (

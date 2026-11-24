@@ -3703,9 +3703,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (isSupabaseConfigured()) {
       try {
         const isUuid = userId.length === 36 && userId.includes('-');
+        const clean = userId.replace(/^@/, '');
         const profilePromise = isUuid
           ? supabase.from('profiles').select('*').eq('id', userId).maybeSingle()
-          : supabase.from('profiles').select('*').or(`handle.eq.${userId},handle.eq.@${userId.replace(/^@/, '')},name.ilike.%${userId}%`).maybeSingle();
+          : supabase.from('profiles').select('*').or(`handle.eq.${userId},handle.eq.@${clean},handle.eq.${clean},name.ilike.%${clean}%`).maybeSingle();
 
         const { data: p } = await profilePromise;
         const resolvedId = p?.id || (isUuid ? userId : localFound?.id);
@@ -3759,6 +3760,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           };
           setUsers(prev => prev.some(u => u.id === remoteUser.id) ? prev.map(u => u.id === remoteUser.id ? remoteUser : u) : [...prev, remoteUser]);
           setSelectedPilotProfile(remoteUser);
+
+          // Si venía pendiente de follow por enlace de invitación (?piloto=...)
+          if (typeof window !== 'undefined' && sessionStorage.getItem('nao_pending_follow') === 'true') {
+            sessionStorage.removeItem('nao_pending_follow');
+            setTimeout(() => {
+              toggleFollowUser(remoteUser.id);
+            }, 300);
+          }
           return;
         }
       } catch (err) {
@@ -3768,6 +3777,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     if (localFound) {
       setSelectedPilotProfile(localFound);
+      if (typeof window !== 'undefined' && sessionStorage.getItem('nao_pending_follow') === 'true') {
+        sessionStorage.removeItem('nao_pending_follow');
+        setTimeout(() => {
+          toggleFollowUser(localFound.id);
+        }, 300);
+      }
       return;
     }
 

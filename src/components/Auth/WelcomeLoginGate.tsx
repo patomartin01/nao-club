@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { 
   ShieldCheck, 
   ArrowRight, 
@@ -12,12 +13,17 @@ import {
   Check, 
   Compass, 
   Flame, 
-  Sparkles 
+  Sparkles,
+  Bike
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
-export const WelcomeLoginGate: React.FC = () => {
-  const { signUp, signIn, signInWithGoogle } = useApp();
+interface WelcomeLoginGateProps {
+  targetPilotIdentifier?: string | null;
+}
+
+export const WelcomeLoginGate: React.FC<WelcomeLoginGateProps> = ({ targetPilotIdentifier }) => {
+  const { signUp, signIn, signInWithGoogle, users } = useApp();
 
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [name, setName] = useState('');
@@ -29,6 +35,58 @@ export const WelcomeLoginGate: React.FC = () => {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Pilot who shared their profile link
+  const [invitedByPilot, setInvitedByPilot] = useState<{
+    id: string;
+    name: string;
+    handle: string;
+    avatar: string;
+    location?: string;
+  } | null>(null);
+
+  useEffect(() => {
+    const target = targetPilotIdentifier || (typeof window !== 'undefined' ? sessionStorage.getItem('nao_target_pilot') : null);
+    if (!target) return;
+
+    const clean = target.replace(/^@/, '');
+    const localMatch = users.find(u => 
+      u.id === target || 
+      u.handle.toLowerCase() === target.toLowerCase() || 
+      u.handle.toLowerCase() === `@${clean.toLowerCase()}` ||
+      u.name.toLowerCase().includes(clean.toLowerCase())
+    );
+
+    if (localMatch) {
+      setInvitedByPilot({
+        id: localMatch.id,
+        name: localMatch.name,
+        handle: localMatch.handle,
+        avatar: localMatch.avatar,
+        location: localMatch.location,
+      });
+      return;
+    }
+
+    if (isSupabaseConfigured()) {
+      const isUuid = target.length === 36 && target.includes('-');
+      const query = isUuid
+        ? supabase.from('profiles').select('*').eq('id', target).maybeSingle()
+        : supabase.from('profiles').select('*').or(`handle.eq.@${clean},handle.eq.${clean},name.ilike.%${clean}%`).maybeSingle();
+      
+      query.then(({ data }) => {
+        if (data) {
+          setInvitedByPilot({
+            id: data.id,
+            name: data.name || 'Piloto NAO',
+            handle: data.handle || `@${clean}`,
+            avatar: data.avatar_url || 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
+            location: data.location || 'México',
+          });
+        }
+      });
+    }
+  }, [targetPilotIdentifier, users]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,6 +154,28 @@ export const WelcomeLoginGate: React.FC = () => {
               Comunidad y bitácora técnica de motociclismo. Inicia sesión para acceder a rutas, tribus y hangares.
             </p>
           </div>
+
+          {/* Pilot Invitation Banner */}
+          {invitedByPilot && (
+            <div className="bg-[#F4EEDB] border-2 border-[#E6332A]/30 rounded-2xl p-4 flex items-center gap-3.5 shadow-sm animate-in fade-in duration-200">
+              <div className="w-12 h-12 rounded-xl overflow-hidden bg-[#FAF6ED] border border-[#1A1918]/10 shrink-0 shadow-xs">
+                <img src={invitedByPilot.avatar} alt={invitedByPilot.name} className="w-full h-full object-cover" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <span className="text-[9px] font-mono text-[#E6332A] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-[#E6332A]/10 border border-[#E6332A]/20">
+                    Invitación de Piloto
+                  </span>
+                </div>
+                <h4 className="text-xs font-sans font-semibold text-[#1A1918] truncate">
+                  {invitedByPilot.name} <span className="font-mono text-[#E6332A] font-semibold">{invitedByPilot.handle}</span>
+                </h4>
+                <p className="text-[11px] font-sans text-[#1A1918]/70 truncate">
+                  Inicia sesión o regístrate para conectar y seguir su perfil.
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Tab Switcher */}
           <div className="flex rounded-xl bg-[#F4EEDB] p-1 border border-[#1A1918]/10 shadow-sm">

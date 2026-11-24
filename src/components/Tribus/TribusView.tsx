@@ -303,9 +303,23 @@ export const TribusView: React.FC<TribusViewProps> = ({
   const [copiedNaoLink, setCopiedNaoLink] = useState(false);
   const [showEditCrewModal, setShowEditCrewModal] = useState(false);
   const [showCrewDropdown, setShowCrewDropdown] = useState(false);
+  const [showPilotSearchDropdown, setShowPilotSearchDropdown] = useState(false);
 
-  // Active crew object
-  const activeTribu = crews.find(c => c.id === selectedTribuId) || null;
+  // Active crew object - Excluyendo estrictamente tribus obsoletas o con 0 miembros
+  const validCrewsList = crews.filter(c => c.id !== 'crew-motomami' && c.id !== 'crew-1793386544112' && (c.members || []).length > 0);
+  const activeTribu = validCrewsList.find(c => c.id === selectedTribuId) 
+    || validCrewsList.find(c => c.id === 'crew-1793316469201')
+    || validCrewsList[0] 
+    || null;
+
+  // Auto-corregir si se seleccionó accidentalmente una tribu obsoleta o con 0 pilotos
+  useEffect(() => {
+    if (selectedTribuId === 'crew-motomami' || selectedTribuId === 'crew-1793386544112') {
+      const realCrew = crews.find(c => c.id !== 'crew-motomami' && c.id !== 'crew-1793386544112' && (c.members || []).length > 0);
+      setSelectedTribuId(realCrew ? realCrew.id : null);
+    }
+  }, [selectedTribuId, crews]);
+
   // Permiso para confirmar la ruta ganadora / oficial: creador, capitán, modo invitado o cualquier miembro de la tribu
   const isCreatorOrAdmin = activeTribu 
     ? (activeTribu.creatorId === currentUser.id || 
@@ -821,6 +835,8 @@ export const TribusView: React.FC<TribusViewProps> = ({
   // Filtered tribus for the directory: LOS GRUPOS SON ESTRICTAMENTE PRIVADOS
   // Solo se visualizan aquellos donde el usuario actual es creador o miembro confirmado
   const myCrews = crews.filter(c => {
+    if (c.id === 'crew-motomami' || c.id === 'crew-1793386544112') return false;
+    if (!c.members || c.members.length === 0) return false;
     return c.creatorId === currentUser.id || c.members.some(m => m.userId === currentUser.id);
   });
 
@@ -1253,6 +1269,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                   {(() => {
                     const validCrews = crews.filter(c => {
                       if (c.id === 'crew-motomami' || c.id === 'crew-1793386544112') return false;
+                      if (!c.members || c.members.length === 0) return false;
                       const activeCount = (c.members || []).filter(m => m.userId !== 'user-patricio').length;
                       if (activeCount === 0) return false;
                       return true;
@@ -2057,14 +2074,31 @@ export const TribusView: React.FC<TribusViewProps> = ({
         const nextConfirmedRide = confirmedRodadas[0];
         const tribeMembers = (activeTribu.members || []).filter(m => m.userId !== 'user-patricio');
 
+        const q = pilotSearchQuery.trim().toLowerCase();
+
+        // 1. Pilotos dentro de la tribu que coinciden con la búsqueda
         const filteredMembers = tribeMembers.filter(member => {
+          if (!q) return true;
           const u = users.find(user => user.id === member.userId);
           const bike = motorcycles?.find(m => m.userId === member.userId);
-          const nameMatch = (u?.name || member.userId).toLowerCase().includes(pilotSearchQuery.toLowerCase());
-          const handleMatch = (u?.handle || '').toLowerCase().includes(pilotSearchQuery.toLowerCase());
-          const motoMatch = bike ? `${bike.brand} ${bike.model}`.toLowerCase().includes(pilotSearchQuery.toLowerCase()) : false;
-          return !pilotSearchQuery || nameMatch || handleMatch || motoMatch;
+          const nameMatch = (u?.name || member.userId).toLowerCase().includes(q);
+          const handleMatch = (u?.handle || '').toLowerCase().includes(q);
+          const motoMatch = bike ? `${bike.brand} ${bike.model}`.toLowerCase().includes(q) : false;
+          return nameMatch || handleMatch || motoMatch;
         });
+
+        // 2. Pilotos de la comunidad NAO que NO están en la tribu y coinciden con la búsqueda
+        const tribeMemberIds = new Set(tribeMembers.map(m => m.userId));
+        const communityMatches = q ? users.filter(u => {
+          if (tribeMemberIds.has(u.id)) return false;
+          if (u.id === 'user-patricio' || u.handle === '@patomartin') return false;
+          const bike = motorcycles?.find(m => m.userId === u.id);
+          const nameMatch = (u.name || '').toLowerCase().includes(q);
+          const handleMatch = (u.handle || '').toLowerCase().includes(q);
+          const motoMatch = bike ? `${bike.brand} ${bike.model}`.toLowerCase().includes(q) : false;
+          return nameMatch || handleMatch || motoMatch;
+        }) : [];
+
         return (
           <div className="space-y-6 font-sans">
             {/* Header & Quick Action Toolbar (Risograph Paddock Look) */}
@@ -2131,18 +2165,174 @@ export const TribusView: React.FC<TribusViewProps> = ({
                 </div>
               </div>
 
-              {/* Search Input */}
-              <div className="pt-1">
+              {/* Search Input with Instagram-Style Reactive Autocomplete */}
+              <div className="pt-1 relative">
                 <div className="relative w-full">
                   <Search className="w-3.5 h-3.5 text-[#1A1918]/50 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
                     type="text"
                     value={pilotSearchQuery}
-                    onChange={(e) => setPilotSearchQuery(e.target.value)}
-                    placeholder="Buscar piloto o máquina..."
-                    className="w-full pl-9 pr-3.5 py-2.5 text-xs font-mono bg-[#FAF6ED] border border-[#1A1918]/10 text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none focus:border-[#E6332A] rounded-xl shadow-sm"
+                    onFocus={() => setShowPilotSearchDropdown(true)}
+                    onChange={(e) => {
+                      setPilotSearchQuery(e.target.value);
+                      setShowPilotSearchDropdown(true);
+                    }}
+                    placeholder="Buscar piloto o máquina (ej. Jor, Jorge, Himalayan)..."
+                    className="w-full pl-9 pr-9 py-2.5 text-xs font-mono bg-[#FAF6ED] border border-[#1A1918]/10 text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none focus:border-[#E6332A] rounded-xl shadow-sm"
                   />
+                  {pilotSearchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPilotSearchQuery('');
+                        setShowPilotSearchDropdown(false);
+                      }}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#1A1918]/40 hover:text-[#1A1918] text-xs font-mono cursor-pointer"
+                    >
+                      ✕
+                    </button>
+                  )}
                 </div>
+
+                {/* Floating Autocomplete Dropdown (Instagram Style) */}
+                {showPilotSearchDropdown && q.length >= 1 && (
+                  <>
+                    <div 
+                      className="fixed inset-0 z-30" 
+                      onClick={() => setShowPilotSearchDropdown(false)} 
+                    />
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-[#FAF6ED] border border-[#1A1918]/15 rounded-2xl shadow-xl z-40 overflow-hidden divide-y divide-[#1A1918]/10 max-h-96 overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
+                      
+                      {/* Grupo 1: En esta Tribu */}
+                      {filteredMembers.length > 0 && (
+                        <div className="p-2 space-y-1">
+                          <div className="px-2.5 py-1 text-[10px] font-mono text-[#1A1918]/50 uppercase tracking-wider font-bold">
+                            En {activeTribu.name} ({filteredMembers.length})
+                          </div>
+                          {filteredMembers.slice(0, 5).map(member => {
+                            const u = users.find(user => user.id === member.userId);
+                            const bike = motorcycles?.find(m => m.userId === member.userId);
+                            const displayName = u ? (u.id === currentUser.id ? `${u.name} (Tú)` : u.name) : member.userId;
+                            return (
+                              <div
+                                key={member.userId}
+                                onClick={() => {
+                                  openPilotProfileById(member.userId);
+                                  setShowPilotSearchDropdown(false);
+                                }}
+                                className="flex items-center justify-between gap-3 p-2 hover:bg-[#F4EEDB] rounded-xl cursor-pointer transition group"
+                              >
+                                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                  <div className="w-9 h-9 rounded-xl overflow-hidden bg-[#FAF6ED] border border-[#1A1918]/10 shrink-0">
+                                    {u?.avatar ? (
+                                      <img src={u.avatar} alt={displayName} className="w-full h-full object-cover" />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center font-bold text-xs text-[#1A1918]">
+                                        {member.userId.slice(0, 2).toUpperCase()}
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="min-w-0 flex-1">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="font-sans font-semibold text-xs text-[#1A1918] group-hover:text-[#E6332A] truncate">
+                                        {displayName}
+                                      </span>
+                                    </div>
+                                    <span className="text-[11px] font-mono text-[#1A1918]/60 truncate block">
+                                      {u?.handle || '@piloto'} {bike ? `• ${bike.brand} ${bike.model}` : ''}
+                                    </span>
+                                  </div>
+                                </div>
+                                <span className="text-[10px] font-sans font-semibold text-[#1A1918]/60 group-hover:text-[#E6332A] shrink-0">
+                                  Ver perfil →
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {/* Grupo 2: En la Comunidad NAO */}
+                      {communityMatches.length > 0 && (
+                        <div className="p-2 space-y-1 bg-[#F4EEDB]/50">
+                          <div className="px-2.5 py-1 text-[10px] font-mono text-[#E6332A] uppercase tracking-wider font-bold flex items-center justify-between">
+                            <span>Pilotos en la Comunidad NAO ({communityMatches.length})</span>
+                            <span className="text-[9px] font-sans text-[#1A1918]/60 normal-case">Disponibles para reclutar</span>
+                          </div>
+                          {communityMatches.slice(0, 6).map(u => {
+                            const bike = motorcycles?.find(m => m.userId === u.id);
+                            return (
+                              <div
+                                key={u.id}
+                                className="flex items-center justify-between gap-3 p-2 hover:bg-[#F4EEDB] rounded-xl transition group"
+                              >
+                                <div 
+                                  onClick={() => {
+                                    openPilotProfileById(u.id);
+                                    setShowPilotSearchDropdown(false);
+                                  }}
+                                  className="flex items-center gap-2.5 min-w-0 flex-1 cursor-pointer"
+                                >
+                                  <div className="w-9 h-9 rounded-xl overflow-hidden bg-[#FAF6ED] border border-[#1A1918]/10 shrink-0">
+                                    <img src={u.avatar} alt={u.name} className="w-full h-full object-cover" />
+                                  </div>
+                                  <div className="min-w-0 flex-1">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="font-sans font-semibold text-xs text-[#1A1918] group-hover:text-[#E6332A] truncate">
+                                        {u.name}
+                                      </span>
+                                      <span className="text-[9px] font-mono font-bold px-1.5 py-0.2 bg-[#FAF6ED] border border-[#1A1918]/10 rounded text-stone-600">
+                                        Comunidad
+                                      </span>
+                                    </div>
+                                    <span className="text-[11px] font-mono text-[#1A1918]/60 truncate block">
+                                      {u.handle} {bike ? `• ${bike.brand} ${bike.model}` : ''}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      addCrewMember(activeTribu.id, u.id, 'Rider');
+                                      setNotificationToast(`${u.name} ha sido reclutado a ${activeTribu.name}.`);
+                                      try { confetti({ particleCount: 25, spread: 60 }); } catch {}
+                                      setTimeout(() => setNotificationToast(null), 4000);
+                                    }}
+                                    className="px-2.5 py-1 bg-[#E6332A] hover:bg-[#d02c24] text-white text-[10px] font-sans font-semibold rounded-lg shadow-xs flex items-center gap-1 cursor-pointer transition"
+                                  >
+                                    <UserPlus className="w-3 h-3" />
+                                    <span>Reclutar</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      openPilotProfileById(u.id);
+                                      setShowPilotSearchDropdown(false);
+                                    }}
+                                    className="p-1 text-[#1A1918]/60 hover:text-[#1A1918] text-xs cursor-pointer"
+                                    title="Ver perfil"
+                                  >
+                                    →
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {/* No results */}
+                      {filteredMembers.length === 0 && communityMatches.length === 0 && (
+                        <div className="p-4 text-center text-xs font-sans text-[#1A1918]/60">
+                          No se encontraron pilotos con &ldquo;{pilotSearchQuery}&rdquo; en NAO.
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
@@ -2263,7 +2453,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
               </div>
             ) : (
               <div className="p-8 border border-dashed border-[#1A1918]/10 bg-[#FAF6ED] rounded-[24px] text-center space-y-2">
-                <p className="text-[#1A1918]/70 font-sans text-xs font-medium">No se encontraron pilotos con ese filtro de búsqueda.</p>
+                <p className="text-[#1A1918]/70 font-sans text-xs font-medium">No se encontraron pilotos en esta tribu con ese filtro.</p>
                 <button
                   type="button"
                   onClick={() => setPilotSearchQuery('')}
@@ -2271,6 +2461,82 @@ export const TribusView: React.FC<TribusViewProps> = ({
                 >
                   Limpiar búsqueda
                 </button>
+              </div>
+            )}
+
+            {/* Comunidad NAO results grid (Global matches outside the crew) */}
+            {q.length >= 1 && communityMatches.length > 0 && (
+              <div className="mt-8 pt-6 border-t border-[#1A1918]/10 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] font-mono tracking-[0.2em] text-[#E6332A] uppercase font-semibold">
+                      PILOTOS EN LA COMUNIDAD NAO
+                    </span>
+                    <h4 className="font-display font-semibold text-lg sm:text-xl text-[#1A1918]">
+                      Resultados globales fuera de la tribu ({communityMatches.length})
+                    </h4>
+                    <p className="text-xs font-sans text-[#1A1918]/70">
+                      Coinciden con tu búsqueda. Puedes reclutarlos directamente a {activeTribu.name} o ver su dossier.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {communityMatches.map(u => {
+                    const bike = motorcycles?.find(m => m.userId === u.id);
+                    return (
+                      <div
+                        key={u.id}
+                        className="p-5 bg-[#FAF6ED] border border-[#1A1918]/10 rounded-[24px] shadow-sm hover:shadow-md transition flex flex-col justify-between"
+                      >
+                        <div className="space-y-3">
+                          <div className="flex items-start gap-3.5">
+                            <div className="w-12 h-12 rounded-2xl overflow-hidden shrink-0 border border-[#1A1918]/10 bg-[#F4EEDB]">
+                              <img src={u.avatar} alt={u.name} className="w-full h-full object-cover" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <h5 className="font-sans font-semibold text-sm text-[#1A1918] truncate">{u.name}</h5>
+                              <span className="text-xs font-mono text-[#E6332A] block truncate">{u.handle}</span>
+                              {u.location && (
+                                <span className="text-[11px] font-sans text-[#1A1918]/60 block truncate mt-0.5">{u.location}</span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="bg-[#F4EEDB] border border-[#1A1918]/10 rounded-xl p-2 flex items-center gap-2">
+                            <Bike className="w-3.5 h-3.5 text-[#E6332A] shrink-0" />
+                            <span className="font-sans text-xs text-[#1A1918] truncate font-medium">
+                              {bike ? `${bike.brand} ${bike.model}` : 'Sin máquina registrada'}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="mt-4 pt-3 border-t border-[#1A1918]/10 flex items-center justify-between gap-2">
+                          <button
+                            type="button"
+                            onClick={() => openPilotProfileById(u.id)}
+                            className="text-xs font-sans font-semibold text-[#1A1918] hover:text-[#E6332A] transition cursor-pointer"
+                          >
+                            Ver perfil →
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              addCrewMember(activeTribu.id, u.id, 'Rider');
+                              setNotificationToast(`${u.name} ha sido reclutado a ${activeTribu.name}.`);
+                              try { confetti({ particleCount: 25, spread: 60 }); } catch {}
+                              setTimeout(() => setNotificationToast(null), 4000);
+                            }}
+                            className="px-3 py-1.5 bg-[#E6332A] hover:bg-[#d02c24] text-white text-xs font-sans font-semibold rounded-xl border border-[#1A1918]/10 shadow-xs flex items-center gap-1.5 transition cursor-pointer"
+                          >
+                            <UserPlus className="w-3.5 h-3.5" />
+                            <span>Reclutar</span>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>
