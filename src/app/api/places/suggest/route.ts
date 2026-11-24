@@ -11,28 +11,77 @@ export async function GET(request: Request) {
   const query = q.trim();
   const apiKey = process.env.GOOGLE_MAPS_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
-  // 1. If Google Maps API key is configured, query official Google Places Autocomplete
+  // 1. If Google Maps API key is configured, query official Google Places API (New)
   if (apiKey) {
     try {
-      const googleRes = await fetch(
-        `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(
-          query
-        )}&components=country:mx&language=es&key=${apiKey}`
-      );
+      const googleRes = await fetch('https://places.googleapis.com/v1/places:autocomplete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Goog-Api-Key': apiKey,
+          'Referer': request.headers.get('referer') || 'https://nao-club-three.vercel.app/'
+        },
+        body: JSON.stringify({
+          input: query,
+          includedRegionCodes: ['mx'],
+          languageCode: 'es'
+        })
+      });
+
       if (googleRes.ok) {
         const data = await googleRes.json();
-        if (data.status === 'OK' && data.predictions) {
-          const results = data.predictions.map((p: any) => ({
-            name: p.structured_formatting?.main_text || p.description,
-            address: p.structured_formatting?.secondary_text || '',
-            placeId: p.place_id,
-            source: 'google_places'
-          }));
-          return NextResponse.json({ results });
+        const predictions = data.suggestions || [];
+        if (predictions.length > 0) {
+          // Fetch coordinates for top 4 predictions using Places (New) Details
+          const topPredictions = predictions.slice(0, 4);
+          const detailedResults = await Promise.all(
+            topPredictions.map(async (p: any) => {
+              const placeId = p.placePrediction?.placeId;
+              const mainText = p.placePrediction?.structuredFormat?.mainText?.text || p.placePrediction?.text?.text || query;
+              const secondaryText = p.placePrediction?.structuredFormat?.secondaryText?.text || '';
+              
+              let lat: number | undefined;
+              let lng: number | undefined;
+
+              if (placeId) {
+                try {
+                  const detailRes = await fetch(`https://places.googleapis.com/v1/places/${placeId}`, {
+                    headers: {
+                      'X-Goog-Api-Key': apiKey,
+                      'X-Goog-FieldMask': 'location,formattedAddress',
+                      'Referer': request.headers.get('referer') || 'https://nao-club-three.vercel.app/'
+                    }
+                  });
+                  if (detailRes.ok) {
+                    const detailData = await detailRes.json();
+                    if (detailData.location) {
+                      lat = detailData.location.latitude;
+                      lng = detailData.location.longitude;
+                    }
+                  }
+                } catch {
+                  // Fallback to geocoding or defaults if detail lookup fails
+                }
+              }
+
+              return {
+                name: mainText,
+                address: secondaryText,
+                lat: lat || 19.4000,
+                lng: lng || -99.2000,
+                placeId,
+                source: 'google_places_new'
+              };
+            })
+          );
+
+          if (detailedResults.length > 0) {
+            return NextResponse.json({ results: detailedResults });
+          }
         }
       }
     } catch (e) {
-      console.error('Google Places API error:', e);
+      console.error('Google Places API (New) error:', e);
     }
   }
 
