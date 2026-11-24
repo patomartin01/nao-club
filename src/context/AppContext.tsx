@@ -1061,19 +1061,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         try {
           const parsedActs = JSON.parse(savedActivities);
           if (Array.isArray(parsedActs) && parsedActs.length > 0) {
-            const sanitizedActs = parsedActs.map((act: ActivityPost) => {
-              if (act.groupInfo && act.groupInfo.crewName) {
-                return {
-                  ...act,
-                  groupInfo: {
-                    ...act.groupInfo,
-                    crewName: act.groupInfo.crewName.replace(/MotoMami/gi, 'NAO')
-                  }
-                };
-              }
-              return act;
-            });
-            setActivities(sanitizedActs);
+            setActivities(parsedActs);
           }
         } catch {}
       }

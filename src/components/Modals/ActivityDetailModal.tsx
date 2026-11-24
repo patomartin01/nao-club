@@ -652,7 +652,7 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
                 <div className="flex items-center gap-2">
                   <Users className="w-4 h-4 text-[#E6332A]" />
                   <span className="text-xs font-sans font-semibold text-[#1A1918]  ">
-                    Rodada en Grupo: {resolvedCrewName?.replace(/MotoMami/gi, 'NAO')}
+                    Rodada en Grupo: {resolvedCrewName}
                   </span>
                 </div>
                 <span className="text-[10px] text-[#1A1918] font-mono font-semibold bg-[#FAF6ED] px-2.5 py-1 border border-[#1A1918]/10 rounded-xl shadow-sm">
