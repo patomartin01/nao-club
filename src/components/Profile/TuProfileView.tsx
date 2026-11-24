@@ -33,7 +33,9 @@ import {
   TrendingUp,
   Map as MapIcon,
   ChevronRight,
-  MessageSquarePlus
+  MessageSquarePlus,
+  Smartphone,
+  Bell
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { EditProfileModal } from '../Modals/EditProfileModal';
@@ -41,6 +43,7 @@ import { EditMotorcycleModal } from '../Modals/EditMotorcycleModal';
 import { FollowersModal } from '../Modals/FollowersModal';
 import { ActivityDetailModal } from '../Modals/ActivityDetailModal';
 import { FounderFeedbackModal } from '../Modals/FounderFeedbackModal';
+import { PwaInstallModal } from '../Modals/PwaInstallModal';
 import { ActivityPost } from '../../types';
 
 interface TuProfileViewProps {
@@ -95,6 +98,7 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
   const [followersModalOpen, setFollowersModalOpen] = useState(false);
   const [followersModalTab, setFollowersModalTab] = useState<'followers' | 'following' | 'requests'>('followers');
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
+  const [pwaModalOpen, setPwaModalOpen] = useState(false);
   
   // Custom uploaded photos state
   const [customPhotos, setCustomPhotos] = useState<{ url: string; caption: string }[]>(() => {
@@ -528,8 +532,20 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
             </button>
           )}
 
-          {/* Accesos secundarios: sugerencias (fundadores) y panel admin */}
+          {/* Accesos secundarios: sugerencias (fundadores), app/notificaciones y panel admin */}
           <div className="flex items-center justify-end gap-2 mt-3 empty:hidden">
+          {/* Botón App Móvil & Notificaciones Push */}
+          <button
+            type="button"
+            onClick={() => setPwaModalOpen(true)}
+            className="py-1 px-2.5 bg-[#F4EEDB] hover:bg-[#FAF6ED] text-[#1A1918] text-[9px] font-mono font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition rounded-xl border border-[#1A1918]/30 hover:border-[#1A1918] cursor-pointer shrink-0"
+            title="Instalar en pantalla de inicio y activar notificaciones push"
+          >
+            <Smartphone className="w-3 h-3 text-[#E6332A]" />
+            <span className="hidden sm:inline">App Móvil & Notificaciones</span>
+            <span className="sm:hidden">App & Alertas</span>
+          </button>
+
           {/* Botón sutil exclusivo para los primeros 50 usuarios: sugerencias o comentarios */}
           {currentUserFounderNumber !== null && currentUserFounderNumber <= 50 && (
             <button
@@ -1362,6 +1378,13 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
       <FounderFeedbackModal
         isOpen={feedbackModalOpen}
         onClose={() => setFeedbackModalOpen(false)}
+      />
+
+      {/* PWA App Install & Push Notifications Modal */}
+      <PwaInstallModal
+        isOpen={pwaModalOpen}
+        onClose={() => setPwaModalOpen(false)}
+        userId={currentUser.id}
       />
 
     </div>

@@ -29,6 +29,7 @@ export const metadata: Metadata = {
       { url: '/apple-icon' }
     ]
   },
+  manifest: '/manifest.json',
   formatDetection: {
     telephone: false
   }
@@ -55,14 +56,16 @@ export default function RootLayout({
           integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
           crossOrigin=""
         />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="mobile-web-app-capable" content="yes" />
         <script dangerouslySetInnerHTML={{
           __html: `
             if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
               window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/sw-maps.js').then(function(reg) {
-                  console.log('[SW Maps] Cache de mapas offline activado con exito.');
+                navigator.serviceWorker.register('/sw.js').then(function(reg) {
+                  console.log('[NAO PWA & Push] Service Worker activado con exito.');
                 }).catch(function(err) {
-                  console.warn('[SW Maps] Error registrando SW de mapas:', err);
+                  console.warn('[NAO PWA] Error registrando SW:', err);
                 });
               });
             }
