@@ -150,6 +150,10 @@ interface AppContextType {
   signIn: (email: string, password: string) => Promise<{ success: boolean; message: string }>;
   signInWithGoogle: () => Promise<{ success: boolean; message: string }>;
   signOut: () => Promise<void>;
+  isResetPasswordOpen: boolean;
+  setIsResetPasswordOpen: (open: boolean) => void;
+  sendPasswordResetEmail: (email: string) => Promise<{ success: boolean; message: string }>;
+  updateUserPassword: (newPassword: string) => Promise<{ success: boolean; message: string }>;
   isOnboardingOpen: boolean;
   setOnboardingOpen: (open: boolean) => void;
   completeOnboarding: () => void;
@@ -504,6 +508,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return true;
   });
   const [isOnboardingOpen, setOnboardingOpen] = useState(false);
+  const [isResetPasswordOpen, setIsResetPasswordOpen] = useState(false);
   const [founderUserNumber, setFounderUserNumber] = useState<number | null>(null);
   const [currentUserFounderNumber, setCurrentUserFounderNumber] = useState<number | null>(null);
 
@@ -982,6 +987,65 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } catch {}
   };
 
+  // Enviar correo de restablecimiento de contraseña
+  const sendPasswordResetEmail = async (email: string): Promise<{ success: boolean; message: string }> => {
+    const cleanEmail = email.trim();
+    if (!cleanEmail) {
+      return { success: false, message: 'Por favor ingresa tu correo electrónico.' };
+    }
+    if (isSupabaseConfigured()) {
+      try {
+        const origin = typeof window !== 'undefined' ? window.location.origin : 'https://nao-club-three.vercel.app';
+        const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
+          redirectTo: `${origin}/?reset_password=true`
+        });
+        if (error) {
+          let msg = error.message;
+          if (msg.toLowerCase().includes('rate limit')) {
+            msg = 'Demasiados intentos. Por favor espera unos minutos antes de volver a intentar.';
+          }
+          return { success: false, message: msg };
+        }
+        return { 
+          success: true, 
+          message: '¡Correo enviado con éxito! Revisa tu bandeja de entrada o spam para restablecer tu contraseña.' 
+        };
+      } catch (err: any) {
+        return { success: false, message: err.message || 'Error al conectar con el servidor de autenticación.' };
+      }
+    }
+
+    return { 
+      success: true, 
+      message: 'Modo demo: Se ha simulado el envío del correo de recuperación.' 
+    };
+  };
+
+  // Actualizar la contraseña del usuario (después de abrir el enlace de recuperación)
+  const updateUserPassword = async (newPassword: string): Promise<{ success: boolean; message: string }> => {
+    if (!newPassword || newPassword.length < 6) {
+      return { success: false, message: 'La contraseña debe tener al menos 6 caracteres.' };
+    }
+    if (isSupabaseConfigured()) {
+      try {
+        const { error } = await supabase.auth.updateUser({
+          password: newPassword
+        });
+        if (error) {
+          return { success: false, message: error.message };
+        }
+        return { 
+          success: true, 
+          message: '¡Contraseña restablecida con éxito! Ya puedes usar tu nueva clave.' 
+        };
+      } catch (err: any) {
+        return { success: false, message: err.message || 'Error al actualizar la contraseña.' };
+      }
+    }
+
+    return { success: true, message: 'Contraseña actualizada con éxito en modo local.' };
+  };
+
   // Update Current User Profile
   const updateCurrentUserProfile = async (updates: Partial<User>): Promise<{ success: boolean; message?: string }> => {
     // If handle is being updated, verify uniqueness
@@ -1356,6 +1420,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setIsResetPasswordOpen(true);
+      }
       if (session?.user) {
         loadSupabaseProfile(session.user.id, session.user.email);
       } else if (event === 'SIGNED_OUT') {
@@ -1365,6 +1432,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         } catch {}
       }
     });
+
+    // Detect recovery token from query string or URL hash
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const hash = window.location.hash || '';
+      if (
+        urlParams.get('reset_password') === 'true' ||
+        hash.includes('type=recovery')
+      ) {
+        setIsResetPasswordOpen(true);
+      }
+    }
 
     // Hydrate profiles from cloud
     supabase.from('profiles').select('*').limit(200).then(({ data }) => {
@@ -4456,6 +4535,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         signIn,
         signInWithGoogle,
         signOut,
+        isResetPasswordOpen,
+        setIsResetPasswordOpen,
+        sendPasswordResetEmail,
+        updateUserPassword,
         isOnboardingOpen,
         setOnboardingOpen,
         completeOnboarding,

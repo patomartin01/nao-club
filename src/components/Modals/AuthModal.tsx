@@ -10,6 +10,7 @@ import {
   Lock, 
   AtSign, 
   ArrowRight, 
+  ArrowLeft,
   Sparkles, 
   Check, 
   AlertCircle,
@@ -31,12 +32,13 @@ export const AuthModal: React.FC = () => {
     signIn, 
     signInWithGoogle,
     signOut,
+    sendPasswordResetEmail,
     currentUser,
     switchCurrentUser,
     users
   } = useApp();
 
-  const [mode, setMode] = useState<'signup' | 'login' | 'demo'>('signup');
+  const [mode, setMode] = useState<'signup' | 'login' | 'demo' | 'forgot'>('signup');
   const [name, setName] = useState('');
   const [handle, setHandle] = useState('');
   const [email, setEmail] = useState('');
@@ -57,7 +59,19 @@ export const AuthModal: React.FC = () => {
     setLoading(true);
 
     try {
-      if (mode === 'signup') {
+      if (mode === 'forgot') {
+        if (!email.trim()) {
+          setErrorMessage('Ingresa tu correo electrónico.');
+          setLoading(false);
+          return;
+        }
+        const res = await sendPasswordResetEmail(email.trim());
+        if (!res.success) {
+          setErrorMessage(res.message);
+        } else {
+          setSuccessMessage(res.message);
+        }
+      } else if (mode === 'signup') {
         if (!name.trim() || !email.trim() || !password.trim()) {
           setErrorMessage('Por favor completa todos los campos.');
           setLoading(false);
@@ -197,91 +211,116 @@ export const AuthModal: React.FC = () => {
           /* ========================================================= */
           <div className="space-y-4">
             {/* Tab Switcher */}
-            <div className="flex rounded-xl bg-[#F4EEDB] p-1 border border-[#1A1918]/10 shadow-sm">
-              <button
-                type="button"
-                onClick={() => { setMode('signup'); setErrorMessage(null); }}
-                className={`flex-1 py-2 text-xs font-sans font-semibold rounded-lg transition ${
-                  mode === 'signup'
-                    ? 'bg-[#FAF6ED] text-[#1A1918] border border-[#1A1918]/10 shadow-sm'
-                    : 'text-[#1A1918]/60 hover:text-[#1A1918]'
-                }`}
-              >
-                Registro
-              </button>
-              <button
-                type="button"
-                onClick={() => { setMode('login'); setErrorMessage(null); }}
-                className={`flex-1 py-2 text-xs font-sans font-semibold rounded-lg transition ${
-                  mode === 'login'
-                    ? 'bg-[#FAF6ED] text-[#1A1918] border border-[#1A1918]/10 shadow-sm'
-                    : 'text-[#1A1918]/60 hover:text-[#1A1918]'
-                }`}
-              >
-                Entrar
-              </button>
-              <button
-                type="button"
-                onClick={() => { setMode('demo'); setErrorMessage(null); }}
-                className={`py-2 px-3 text-xs font-sans font-semibold rounded-lg transition ${
-                  mode === 'demo'
-                    ? 'bg-[#F7B32B] text-[#1A1918] border border-[#1A1918]/10 shadow-sm'
-                    : 'text-[#1A1918]/60 hover:text-[#1A1918]'
-                }`}
-                title="Cambiar entre perfiles demo de prueba"
-              >
-                Pilotos demo
-              </button>
-            </div>
+            {mode !== 'forgot' ? (
+              <div className="flex rounded-xl bg-[#F4EEDB] p-1 border border-[#1A1918]/10 shadow-sm">
+                <button
+                  type="button"
+                  onClick={() => { setMode('signup'); setErrorMessage(null); }}
+                  className={`flex-1 py-2 text-xs font-sans font-semibold rounded-lg transition ${
+                    mode === 'signup'
+                      ? 'bg-[#FAF6ED] text-[#1A1918] border border-[#1A1918]/10 shadow-sm'
+                      : 'text-[#1A1918]/60 hover:text-[#1A1918]'
+                  }`}
+                >
+                  Registro
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setMode('login'); setErrorMessage(null); }}
+                  className={`flex-1 py-2 text-xs font-sans font-semibold rounded-lg transition ${
+                    mode === 'login'
+                      ? 'bg-[#FAF6ED] text-[#1A1918] border border-[#1A1918]/10 shadow-sm'
+                      : 'text-[#1A1918]/60 hover:text-[#1A1918]'
+                  }`}
+                >
+                  Entrar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setMode('demo'); setErrorMessage(null); }}
+                  className={`py-2 px-3 text-xs font-sans font-semibold rounded-lg transition ${
+                    mode === 'demo'
+                      ? 'bg-[#F7B32B] text-[#1A1918] border border-[#1A1918]/10 shadow-sm'
+                      : 'text-[#1A1918]/60 hover:text-[#1A1918]'
+                  }`}
+                  title="Cambiar entre perfiles demo de prueba"
+                >
+                  Pilotos demo
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between pb-1">
+                <button
+                  type="button"
+                  onClick={() => { setMode('login'); setErrorMessage(null); setSuccessMessage(null); }}
+                  className="inline-flex items-center gap-1.5 text-xs font-mono font-semibold text-[#E6332A] hover:underline cursor-pointer"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" /> Volver a Entrar
+                </button>
+                <span className="text-[10px] font-mono uppercase bg-[#E6332A]/10 text-[#E6332A] px-2 py-0.5 rounded font-bold">
+                  Recuperación
+                </span>
+              </div>
+            )}
 
-        {/* FORM: REGISTRO O LOGIN */}
+        {/* FORM: REGISTRO, LOGIN O RECUPERACIÓN */}
         {mode !== 'demo' ? (
           <div className="space-y-3.5">
-            {/* GOOGLE SIGN IN BUTTON */}
-            <button
-              type="button"
-              disabled={googleLoading || loading}
-              onClick={async () => {
-                setErrorMessage(null);
-                setGoogleLoading(true);
-                const res = await signInWithGoogle();
-                if (!res.success) {
-                  setErrorMessage(res.message);
-                  setGoogleLoading(false);
-                }
-              }}
-              className="w-full py-3 px-4 bg-white hover:bg-[#FAF6ED] text-[#1A1918] border border-[#1A1918]/10 rounded-xl font-sans font-semibold text-xs transition shadow-sm active:shadow-none flex items-center justify-center gap-3 cursor-pointer disabled:opacity-60"
-            >
-              <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
-                <path
-                  fill="#4285F4"
-                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                />
-                <path
-                  fill="#34A853"
-                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                />
-                <path
-                  fill="#FBBC05"
-                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-                />
-                <path
-                  fill="#EA4335"
-                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-                />
-              </svg>
-              <span>{googleLoading ? 'Conectando con Google...' : 'Continuar con Google'}</span>
-            </button>
+            {/* GOOGLE SIGN IN BUTTON (only for login or signup) */}
+            {mode !== 'forgot' && (
+              <>
+                <button
+                  type="button"
+                  disabled={googleLoading || loading}
+                  onClick={async () => {
+                    setErrorMessage(null);
+                    setGoogleLoading(true);
+                    const res = await signInWithGoogle();
+                    if (!res.success) {
+                      setErrorMessage(res.message);
+                      setGoogleLoading(false);
+                    }
+                  }}
+                  className="w-full py-3 px-4 bg-white hover:bg-[#FAF6ED] text-[#1A1918] border border-[#1A1918]/10 rounded-xl font-sans font-semibold text-xs transition shadow-sm active:shadow-none flex items-center justify-center gap-3 cursor-pointer disabled:opacity-60"
+                >
+                  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                    <path
+                      fill="#4285F4"
+                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                    />
+                    <path
+                      fill="#34A853"
+                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                    />
+                    <path
+                      fill="#FBBC05"
+                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                    />
+                    <path
+                      fill="#EA4335"
+                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                    />
+                  </svg>
+                  <span>{googleLoading ? 'Conectando con Google...' : 'Continuar con Google'}</span>
+                </button>
 
-            {/* SEPARATOR */}
-            <div className="relative flex items-center justify-center my-2">
-              <div className="border-t border-[#1A1918]/20 w-full" />
-              <span className="bg-[#FAF6ED] px-3 text-[10px] font-mono uppercase font-semibold text-[#1A1918]/60 absolute">
-                o con correo y contraseña
-              </span>
-            </div>
+                {/* SEPARATOR */}
+                <div className="relative flex items-center justify-center my-2">
+                  <div className="border-t border-[#1A1918]/20 w-full" />
+                  <span className="bg-[#FAF6ED] px-3 text-[10px] font-mono uppercase font-semibold text-[#1A1918]/60 absolute">
+                    o con correo y contraseña
+                  </span>
+                </div>
+              </>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-3.5">
+            {mode === 'forgot' && (
+              <div className="text-xs font-sans text-[#1A1918]/80 bg-[#F4EEDB] p-3 rounded-xl border border-[#1A1918]/10">
+                Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña.
+              </div>
+            )}
+
             {mode === 'signup' && (
               <>
                 <div>
@@ -336,23 +375,36 @@ export const AuthModal: React.FC = () => {
               </div>
             </div>
 
-            <div>
-              <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block mb-1">
-                Contraseña
-              </label>
-              <div className="relative">
-                <Lock className="w-4 h-4 text-[#1A1918]/50 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="password"
-                  required
-                  minLength={6}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Mínimo 6 caracteres"
-                  className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl pl-9 pr-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-sm"
-                />
+            {mode !== 'forgot' && (
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918]">
+                    Contraseña
+                  </label>
+                  {mode === 'login' && (
+                    <button
+                      type="button"
+                      onClick={() => { setMode('forgot'); setErrorMessage(null); setSuccessMessage(null); }}
+                      className="text-[10px] font-mono font-semibold text-[#E6332A] hover:underline cursor-pointer"
+                    >
+                      ¿Olvidaste tu contraseña?
+                    </button>
+                  )}
+                </div>
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-[#1A1918]/50 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="password"
+                    required
+                    minLength={6}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Mínimo 6 caracteres"
+                    className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl pl-9 pr-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-sm"
+                  />
+                </div>
               </div>
-            </div>
+            )}
 
             <button
               type="submit"
@@ -361,6 +413,11 @@ export const AuthModal: React.FC = () => {
             >
               {loading ? (
                 <span>Procesando...</span>
+              ) : mode === 'forgot' ? (
+                <>
+                  <span>Enviar enlace de recuperación</span>
+                  <ArrowRight className="w-4 h-4 stroke-[3]" />
+                </>
               ) : (
                 <>
                   <span>{mode === 'signup' ? 'Crear Cuenta de Piloto' : 'Iniciar Sesión'}</span>

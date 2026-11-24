@@ -17,6 +17,7 @@ import { CreateRodadaModal } from '../components/Modals/CreateRodadaModal';
 import { PilotProfileModal } from '../components/Modals/PilotProfileModal';
 import { LiveRouteRecorderModal } from '../components/Modals/LiveRouteRecorderModal';
 import { AuthModal } from '../components/Modals/AuthModal';
+import { ResetPasswordModal } from '../components/Modals/ResetPasswordModal';
 import { WelcomeLoginGate } from '../components/Auth/WelcomeLoginGate';
 import { InitialOnboardingModal } from '../components/Auth/InitialOnboardingModal';
 import { FounderWelcomeModal } from '../components/Modals/FounderWelcomeModal';
@@ -112,7 +113,12 @@ export default function Home() {
 
   // If pilot is not authenticated, show full-screen Welcome Gate (Instagram style)
   if (!isAuthenticated) {
-    return <WelcomeLoginGate targetPilotIdentifier={targetPilotParam} />;
+    return (
+      <>
+        <WelcomeLoginGate targetPilotIdentifier={targetPilotParam} />
+        <ResetPasswordModal />
+      </>
+    );
   }
 
   return (
@@ -209,6 +215,7 @@ export default function Home() {
       <PilotProfileModal />
 
       <AuthModal />
+      <ResetPasswordModal />
       <InitialOnboardingModal />
       <FounderWelcomeModal />
       <PushPromptOnceBanner userId={currentUser?.id} />
