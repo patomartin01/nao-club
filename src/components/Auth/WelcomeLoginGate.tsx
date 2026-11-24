@@ -43,10 +43,12 @@ export const WelcomeLoginGate: React.FC<WelcomeLoginGateProps> = ({ targetPilotI
     handle: string;
     avatar: string;
     location?: string;
+    moto?: string;
   } | null>(null);
 
   useEffect(() => {
-    const target = targetPilotIdentifier || (typeof window !== 'undefined' ? sessionStorage.getItem('nao_target_pilot') : null);
+    const target = targetPilotIdentifier || 
+      (typeof window !== 'undefined' ? (localStorage.getItem('nao_target_pilot') || sessionStorage.getItem('nao_target_pilot')) : null);
     if (!target) return;
 
     const clean = target.replace(/^@/, '');
@@ -74,14 +76,23 @@ export const WelcomeLoginGate: React.FC<WelcomeLoginGateProps> = ({ targetPilotI
         ? supabase.from('profiles').select('*').eq('id', target).maybeSingle()
         : supabase.from('profiles').select('*').or(`handle.eq.@${clean},handle.eq.${clean},name.ilike.%${clean}%`).maybeSingle();
       
-      query.then(({ data }) => {
+      query.then(async ({ data }) => {
         if (data) {
+          let moto = '';
+          try {
+            const { data: mData } = await supabase.from('motorcycles').select('brand, model').eq('user_id', data.id).limit(1).maybeSingle();
+            if (mData) {
+              moto = `${mData.brand} ${mData.model}`.trim();
+            }
+          } catch {}
+
           setInvitedByPilot({
             id: data.id,
             name: data.name || 'Piloto NAO',
             handle: data.handle || `@${clean}`,
             avatar: data.avatar_url || 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
             location: data.location || 'México',
+            moto: moto || undefined
           });
         }
       });
@@ -157,23 +168,33 @@ export const WelcomeLoginGate: React.FC<WelcomeLoginGateProps> = ({ targetPilotI
 
           {/* Pilot Invitation Banner */}
           {invitedByPilot && (
-            <div className="bg-[#F4EEDB] border-2 border-[#E6332A]/30 rounded-2xl p-4 flex items-center gap-3.5 shadow-sm animate-in fade-in duration-200">
-              <div className="w-12 h-12 rounded-xl overflow-hidden bg-[#FAF6ED] border border-[#1A1918]/10 shrink-0 shadow-xs">
-                <img src={invitedByPilot.avatar} alt={invitedByPilot.name} className="w-full h-full object-cover" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5 mb-0.5">
-                  <span className="text-[9px] font-mono text-[#E6332A] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-[#E6332A]/10 border border-[#E6332A]/20">
-                    Invitación de Piloto
-                  </span>
+            <div className="bg-[#FAF6ED] border-2 border-[#E6332A]/35 rounded-2xl p-4 shadow-sm animate-in fade-in duration-200 space-y-2.5">
+              <div className="flex items-center gap-3.5">
+                <div className="w-14 h-14 rounded-2xl overflow-hidden bg-[#FAF6ED] border-2 border-[#E6332A]/20 shrink-0 shadow-xs">
+                  <img src={invitedByPilot.avatar} alt={invitedByPilot.name} className="w-full h-full object-cover" />
                 </div>
-                <h4 className="text-xs font-sans font-semibold text-[#1A1918] truncate">
-                  {invitedByPilot.name} <span className="font-mono text-[#E6332A] font-semibold">{invitedByPilot.handle}</span>
-                </h4>
-                <p className="text-[11px] font-sans text-[#1A1918]/70 truncate">
-                  Inicia sesión o regístrate para conectar y seguir su perfil.
-                </p>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <span className="text-[9px] font-mono text-white bg-[#E6332A] uppercase font-bold tracking-wider px-2 py-0.5 rounded shadow-2xs">
+                      Invitación de Piloto
+                    </span>
+                  </div>
+                  <h4 className="text-xs sm:text-sm font-sans font-semibold text-[#1A1918] truncate">
+                    {invitedByPilot.name}
+                  </h4>
+                  <p className="text-xs font-mono text-[#E6332A] font-semibold truncate">
+                    {invitedByPilot.handle}
+                  </p>
+                  {invitedByPilot.moto && (
+                    <p className="text-[11px] font-sans text-[#1A1918]/70 truncate mt-0.5">
+                      🏍️ {invitedByPilot.moto}
+                    </p>
+                  )}
+                </div>
               </div>
+              <p className="text-[11px] font-sans text-[#1A1918]/80 text-center bg-[#F4EEDB] rounded-xl py-1.5 px-3 border border-[#1A1918]/5">
+                Inicia sesión o regístrate abajo para <strong>conectar y seguir a {invitedByPilot.name}</strong> automáticamente.
+              </p>
             </div>
           )}
 

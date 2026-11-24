@@ -37,6 +37,7 @@ import {
 } from '../data/initialData';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { enqueueOfflineAction, getPendingSyncQueue, removeOfflineAction, setOfflineQueueOwner } from '../lib/offlineStorage';
+import confetti from 'canvas-confetti';
 
 // Sufijo único para IDs generados en el cliente. Antes era solo Date.now(): si dos pilotos
 // guardaban en el mismo milisegundo, el segundo insert chocaba y, al reintentarse desde la cola
@@ -122,6 +123,7 @@ interface AppContextType {
   getFollowersCountForUser: (userId: string) => number;
   getFollowingCountForUser: (userId: string) => number;
   toggleFollowUser: (userId: string) => void;
+  followUser: (userId: string) => void;
   isFollowingUser: (userId: string) => boolean;
   followRequests: FollowRequest[];
   pendingFollowRequests: FollowRequest[];
@@ -756,12 +758,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  // Sign In with Google OAuth
+  // Sign In with Google OAuth (preserves target pilot query / storage across redirect)
   const signInWithGoogle = async (): Promise<{ success: boolean; message: string }> => {
     if (isSupabaseConfigured()) {
       try {
+        if (typeof window !== 'undefined') {
+          const urlParams = new URLSearchParams(window.location.search);
+          const p = urlParams.get('piloto') || urlParams.get('pilot') || localStorage.getItem('nao_target_pilot') || sessionStorage.getItem('nao_target_pilot');
+          if (p) {
+            localStorage.setItem('nao_target_pilot', p);
+            localStorage.setItem('nao_pending_follow', 'true');
+            sessionStorage.setItem('nao_target_pilot', p);
+            sessionStorage.setItem('nao_pending_follow', 'true');
+            try {
+              document.cookie = `nao_target_pilot=${encodeURIComponent(p)}; path=/; max-age=86400; SameSite=Lax`;
+            } catch {}
+          }
+        }
+
         const redirectUrl = typeof window !== 'undefined' 
-          ? window.location.origin 
+          ? window.location.href 
           : 'https://nao-club-three.vercel.app';
 
         const { error } = await supabase.auth.signInWithOAuth({
@@ -3560,6 +3576,37 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
+  // Idempotent follow: guarantees following without accidental unfollowing
+  const followUser = (userId: string) => {
+    if (!userId || userId === currentUser.id || currentUser.id === 'guest') return;
+
+    setFollowingUserIds(prev => {
+      if (prev.includes(userId)) return prev;
+      const next = [...prev, userId];
+
+      try {
+        localStorage.setItem('nao_following_users', JSON.stringify(next));
+      } catch {}
+
+      setAllFollows(prevAll => {
+        if (prevAll.some(f => f.follower_id === currentUser.id && f.following_id === userId)) {
+          return prevAll;
+        }
+        return [...prevAll, { follower_id: currentUser.id, following_id: userId }];
+      });
+
+      if (isSupabaseConfigured() && currentUser.id && userId) {
+        supabase.from('follows').insert({ follower_id: currentUser.id, following_id: userId }).then(({ error }) => {
+          if (error && error.code !== '23505') {
+            enqueueOfflineAction('follow_user', { follower_id: currentUser.id, following_id: userId });
+          }
+        });
+      }
+
+      return next;
+    });
+  };
+
   const getFollowersCountForUser = (userId: string): number => {
     if (!userId) return 0;
     // If checking current logged-in user, use followersUserIds length
@@ -3692,9 +3739,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!userId) return;
 
     // Si es el usuario actual, nunca abrir el modal de otro piloto: redirigir a su pestaña propia "Tú"
-    if (userId === currentUser.id || userId === currentUser.handle) {
+    const isSelf = userId === currentUser.id || 
+      userId === currentUser.handle || 
+      (currentUser.handle && currentUser.handle.replace(/^@/, '').toLowerCase() === userId.replace(/^@/, '').toLowerCase());
+
+    if (isSelf) {
       setSelectedPilotProfile(null);
       setActiveNavTab('tu');
+      try {
+        if (typeof window !== 'undefined') {
+          sessionStorage.removeItem('nao_target_pilot');
+          localStorage.removeItem('nao_target_pilot');
+          sessionStorage.removeItem('nao_pending_follow');
+          localStorage.removeItem('nao_pending_follow');
+          document.cookie = 'nao_target_pilot=; path=/; max-age=0;';
+        }
+      } catch {}
       return;
     }
 
@@ -3762,10 +3822,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           setSelectedPilotProfile(remoteUser);
 
           // Si venía pendiente de follow por enlace de invitación (?piloto=...)
-          if (typeof window !== 'undefined' && sessionStorage.getItem('nao_pending_follow') === 'true') {
-            sessionStorage.removeItem('nao_pending_follow');
+          const isPending = typeof window !== 'undefined' && 
+            (sessionStorage.getItem('nao_pending_follow') === 'true' || localStorage.getItem('nao_pending_follow') === 'true');
+
+          if (isPending) {
+            try {
+              sessionStorage.removeItem('nao_pending_follow');
+              localStorage.removeItem('nao_pending_follow');
+              sessionStorage.removeItem('nao_target_pilot');
+              localStorage.removeItem('nao_target_pilot');
+              document.cookie = 'nao_target_pilot=; path=/; max-age=0;';
+            } catch {}
+
             setTimeout(() => {
-              toggleFollowUser(remoteUser.id);
+              followUser(remoteUser.id);
+              try {
+                confetti({ particleCount: 50, spread: 80, origin: { y: 0.5 } });
+              } catch {}
             }, 300);
           }
           return;
@@ -3777,10 +3850,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     if (localFound) {
       setSelectedPilotProfile(localFound);
-      if (typeof window !== 'undefined' && sessionStorage.getItem('nao_pending_follow') === 'true') {
-        sessionStorage.removeItem('nao_pending_follow');
+      const isPending = typeof window !== 'undefined' && 
+        (sessionStorage.getItem('nao_pending_follow') === 'true' || localStorage.getItem('nao_pending_follow') === 'true');
+
+      if (isPending) {
+        try {
+          sessionStorage.removeItem('nao_pending_follow');
+          localStorage.removeItem('nao_pending_follow');
+          sessionStorage.removeItem('nao_target_pilot');
+          localStorage.removeItem('nao_target_pilot');
+          document.cookie = 'nao_target_pilot=; path=/; max-age=0;';
+        } catch {}
+
         setTimeout(() => {
-          toggleFollowUser(localFound.id);
+          followUser(localFound.id);
+          try {
+            confetti({ particleCount: 50, spread: 80, origin: { y: 0.5 } });
+          } catch {}
         }, 300);
       }
       return;
@@ -3847,9 +3933,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setSelectedPilotProfile(null);
     if (typeof window !== 'undefined') {
       try {
+        localStorage.removeItem('nao_target_pilot');
+        sessionStorage.removeItem('nao_target_pilot');
+        localStorage.removeItem('nao_pending_follow');
+        sessionStorage.removeItem('nao_pending_follow');
+        document.cookie = 'nao_target_pilot=; path=/; max-age=0;';
         const url = new URL(window.location.href);
-        if (url.searchParams.has('piloto')) {
+        if (url.searchParams.has('piloto') || url.searchParams.has('pilot')) {
           url.searchParams.delete('piloto');
+          url.searchParams.delete('pilot');
           window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
         }
       } catch {}
@@ -3931,6 +4023,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         getFollowersCountForUser,
         getFollowingCountForUser,
         toggleFollowUser,
+        followUser,
         isFollowingUser,
         followRequests,
         pendingFollowRequests,

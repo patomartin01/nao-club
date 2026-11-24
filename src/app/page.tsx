@@ -24,7 +24,7 @@ import { BottomBar } from '../components/Navigation/BottomBar';
 import { AdminDashboardView } from '../components/Admin/AdminDashboardView';
 
 export default function Home() {
-  const { activeNavTab, setActiveNavTab, isAuthenticated, isAuthLoading, openPilotProfileById } = useApp();
+  const { activeNavTab, setActiveNavTab, isAuthenticated, isAuthLoading, openPilotProfileById, currentUser } = useApp();
 
   // Modal states
   const [proposeRouteOpen, setProposeRouteOpen] = useState(false);
@@ -33,8 +33,24 @@ export default function Home() {
   const [createRodadaOpen, setCreateRodadaOpen] = useState(false);
   const [recordRouteOpen, setRecordRouteOpen] = useState(false);
 
-  // Track target pilot from URL query (?piloto=... or ?pilot=...)
+  // Track target pilot from URL query (?piloto=... or ?pilot=...) or persistent storage
   const [targetPilotParam, setTargetPilotParam] = useState<string | null>(null);
+
+  const getSavedTargetPilot = (): string | null => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const fromUrl = urlParams.get('piloto') || urlParams.get('pilot');
+      if (fromUrl) return fromUrl;
+      const fromLocal = localStorage.getItem('nao_target_pilot');
+      if (fromLocal) return fromLocal;
+      const fromSession = sessionStorage.getItem('nao_target_pilot');
+      if (fromSession) return fromSession;
+      const cookieMatch = document.cookie.match(/nao_target_pilot=([^;]+)/);
+      if (cookieMatch) return decodeURIComponent(cookieMatch[1]);
+    } catch {}
+    return null;
+  };
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -43,10 +59,15 @@ export default function Home() {
       const param = urlParams.get('piloto') || urlParams.get('pilot');
       if (param) {
         setTargetPilotParam(param);
+        localStorage.setItem('nao_target_pilot', param);
         sessionStorage.setItem('nao_target_pilot', param);
+        localStorage.setItem('nao_pending_follow', 'true');
         sessionStorage.setItem('nao_pending_follow', 'true');
+        try {
+          document.cookie = `nao_target_pilot=${encodeURIComponent(param)}; path=/; max-age=86400; SameSite=Lax`;
+        } catch {}
       } else {
-        const stored = sessionStorage.getItem('nao_target_pilot');
+        const stored = getSavedTargetPilot();
         if (stored) setTargetPilotParam(stored);
       }
     } catch {}
@@ -55,22 +76,24 @@ export default function Home() {
   // When user is authenticated, automatically open target pilot profile and auto-follow
   const targetPilotHandledRef = useRef(false);
   useEffect(() => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated || !currentUser?.id || currentUser.id === 'guest') return;
     if (typeof window === 'undefined') return;
     if (targetPilotHandledRef.current) return;
 
     try {
-      const urlParams = new URLSearchParams(window.location.search);
-      const targetParam = urlParams.get('piloto') || urlParams.get('pilot') || sessionStorage.getItem('nao_target_pilot');
+      const targetParam = getSavedTargetPilot();
       if (targetParam) {
         targetPilotHandledRef.current = true;
-        sessionStorage.removeItem('nao_target_pilot');
-        setTimeout(async () => {
+        
+        // Wait slightly for context and Supabase user state to be 100% stable
+        const timer = setTimeout(async () => {
           await openPilotProfileById(targetParam);
-        }, 500);
+        }, 300);
+
+        return () => clearTimeout(timer);
       }
     } catch {}
-  }, [isAuthenticated, openPilotProfileById]);
+  }, [isAuthenticated, currentUser?.id, openPilotProfileById]);
 
   // If session is still verifying, show clean minimalist loader
   if (isAuthLoading) {

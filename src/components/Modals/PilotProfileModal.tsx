@@ -16,6 +16,7 @@ import {
   ArrowUpRight,
   TrendingUp,
   UserPlus,
+  UserCheck,
   UserX,
   Check,
   Clock
@@ -70,7 +71,7 @@ export const PilotProfileModal: React.FC = () => {
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#1A1918]/70 backdrop-blur-sm animate-fadeIn overflow-y-auto cursor-pointer"
+      className="fixed inset-0 z-[200] flex items-center justify-center p-3 sm:p-4 bg-[#1A1918]/70 backdrop-blur-sm animate-fadeIn overflow-y-auto cursor-pointer"
       onClick={closePilotProfile}
     >
       <div 
@@ -79,9 +80,17 @@ export const PilotProfileModal: React.FC = () => {
       >
         {/* Header Banner */}
         <div className="bg-[#F4EEDB] border-b border-[#1A1918]/10 p-4 flex items-center justify-between rounded-t-[26px]">
-          <span className="text-[10px] uppercase font-mono font-semibold tracking-widest text-[#E6332A] bg-[#FAF6ED] px-3 py-1 border border-[#1A1918]/10 shadow-sm rounded-lg">
-            DOSSIER DE PILOTO
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] uppercase font-mono font-semibold tracking-widest text-[#E6332A] bg-[#FAF6ED] px-3 py-1 border border-[#1A1918]/10 shadow-sm rounded-lg">
+              DOSSIER DE PILOTO
+            </span>
+            {isFollowingUser(selectedPilotProfile.id) && (
+              <span className="text-[10px] uppercase font-mono font-semibold tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-1 border border-emerald-200 rounded-lg flex items-center gap-1">
+                <UserCheck className="w-3 h-3 stroke-[2.5]" />
+                Siguiendo
+              </span>
+            )}
+          </div>
           <div className="flex items-center gap-2">
             <button
               type="button"
