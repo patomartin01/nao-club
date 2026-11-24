@@ -35,7 +35,8 @@ import {
   ChevronRight,
   MessageSquarePlus,
   Smartphone,
-  Bell
+  Bell,
+  Settings
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { EditProfileModal } from '../Modals/EditProfileModal';
@@ -44,6 +45,7 @@ import { FollowersModal } from '../Modals/FollowersModal';
 import { ActivityDetailModal } from '../Modals/ActivityDetailModal';
 import { FounderFeedbackModal } from '../Modals/FounderFeedbackModal';
 import { PwaInstallModal } from '../Modals/PwaInstallModal';
+import { SettingsModal } from '../Modals/SettingsModal';
 import { ActivityPost } from '../../types';
 
 interface TuProfileViewProps {
@@ -99,6 +101,7 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
   const [followersModalTab, setFollowersModalTab] = useState<'followers' | 'following' | 'requests'>('followers');
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const [pwaModalOpen, setPwaModalOpen] = useState(false);
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false);
   
   // Custom uploaded photos state
   const [customPhotos, setCustomPhotos] = useState<{ url: string; caption: string }[]>(() => {
@@ -387,8 +390,8 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
 
       {/* 01. PROFILE HEADER (Simplified & Compact Pilot Card) */}
       <div className="bg-[#FAF6ED] border border-[#1A1918]/10 rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-sm relative overflow-hidden">
-        {/* Top-Right Action: Share button */}
-        <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20 flex items-center gap-2">
+        {/* Top-Right Action: Share & Settings buttons */}
+        <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20 flex items-center gap-1.5 sm:gap-2">
           {shareToast && (
             <span className="text-[10px] font-mono font-bold bg-[#1A1918] text-[#FAF6ED] px-2.5 py-1 rounded-lg border border-[#1A1918]/10 shadow-sm animate-in fade-in duration-150 flex items-center gap-1">
               <Check className="w-3 h-3 text-[#F7B32B]" />
@@ -403,9 +406,17 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
           >
             <Share2 className="w-3.5 h-3.5 text-[#1A1918]" />
           </button>
+          <button
+            type="button"
+            onClick={() => setSettingsModalOpen(true)}
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border border-[#1A1918]/20 shadow-sm active:shadow-none flex items-center justify-center transition cursor-pointer"
+            title="Configuración de app, alertas y cuenta"
+          >
+            <Settings className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#1A1918]" />
+          </button>
         </div>
 
-        <div className="flex items-start sm:items-center gap-3.5 sm:gap-4 relative z-10 pr-10">
+        <div className="flex items-start sm:items-center gap-3.5 sm:gap-4 relative z-10 pr-20 sm:pr-24">
           {/* Avatar with edit badge */}
           <div className="relative shrink-0 group">
             <button
@@ -532,20 +543,8 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
             </button>
           )}
 
-          {/* Accesos secundarios: sugerencias (fundadores), app/notificaciones y panel admin */}
+          {/* Accesos secundarios: sugerencias (fundadores) y panel admin */}
           <div className="flex items-center justify-end gap-2 mt-3 empty:hidden">
-          {/* Botón App Móvil & Notificaciones Push */}
-          <button
-            type="button"
-            onClick={() => setPwaModalOpen(true)}
-            className="py-1 px-2.5 bg-[#F4EEDB] hover:bg-[#FAF6ED] text-[#1A1918] text-[9px] font-mono font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition rounded-xl border border-[#1A1918]/30 hover:border-[#1A1918] cursor-pointer shrink-0"
-            title="Instalar en pantalla de inicio y activar notificaciones push"
-          >
-            <Smartphone className="w-3 h-3 text-[#E6332A]" />
-            <span className="hidden sm:inline">App Móvil & Notificaciones</span>
-            <span className="sm:hidden">App & Alertas</span>
-          </button>
-
           {/* Botón sutil exclusivo para los primeros 50 usuarios: sugerencias o comentarios */}
           {currentUserFounderNumber !== null && currentUserFounderNumber <= 50 && (
             <button
@@ -1378,6 +1377,14 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
       <FounderFeedbackModal
         isOpen={feedbackModalOpen}
         onClose={() => setFeedbackModalOpen(false)}
+      />
+
+      {/* Settings / Configuración Modal */}
+      <SettingsModal
+        isOpen={settingsModalOpen}
+        onClose={() => setSettingsModalOpen(false)}
+        onOpenEditProfile={() => setEditProfileOpen(true)}
+        onOpenFeedback={() => setFeedbackModalOpen(true)}
       />
 
       {/* PWA App Install & Push Notifications Modal */}
