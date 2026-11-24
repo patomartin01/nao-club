@@ -20,6 +20,7 @@ import { AuthModal } from '../components/Modals/AuthModal';
 import { WelcomeLoginGate } from '../components/Auth/WelcomeLoginGate';
 import { InitialOnboardingModal } from '../components/Auth/InitialOnboardingModal';
 import { FounderWelcomeModal } from '../components/Modals/FounderWelcomeModal';
+import { PushPromptOnceBanner } from '../components/Notifications/PushPromptOnceBanner';
 import { BottomBar } from '../components/Navigation/BottomBar';
 import { AdminDashboardView } from '../components/Admin/AdminDashboardView';
 
@@ -210,6 +211,7 @@ export default function Home() {
       <AuthModal />
       <InitialOnboardingModal />
       <FounderWelcomeModal />
+      <PushPromptOnceBanner userId={currentUser?.id} />
 
       <LiveRouteRecorderModal 
         isOpen={recordRouteOpen || activeNavTab === 'registrar'} 

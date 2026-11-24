@@ -77,6 +77,9 @@ export const PwaInstallModal: React.FC<PwaInstallModalProps> = ({
 
     const result = await subscribeUserToPush(userId);
     setLoading(false);
+    try {
+      localStorage.setItem('nao_push_prompted_once', 'true');
+    } catch {}
 
     if (result.success) {
       setPermission('granted');
