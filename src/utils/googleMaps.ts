@@ -1,4 +1,4 @@
-import { RouteProposal } from '../types';
+import { RouteProposal, ActivityPost } from '../types';
 
 /**
  * Builds an ultra-clean, short Google Maps multi-stop URL.
@@ -65,6 +65,55 @@ export const buildOrderedGoogleMapsUrl = (
   const origin = encodeURIComponent(cleanGmapsPoint(customOrigin || 'Interlomas, Huixquilucan, Edomex'));
   const dest = encodeURIComponent(cleanGmapsPoint(`${route.destination}, ${route.state || 'México'}`));
   return `https://www.google.com/maps/dir/${origin}/${dest}`;
+};
+
+/**
+ * Builds a multi-stop Google Maps URL for an ActivityPost (recorded ride / community dispatch).
+ * Checks explicit gmapsUrl, waypoints list, or samples coordinates.
+ */
+export const buildActivityGoogleMapsUrl = (activity: ActivityPost): string => {
+  if (!activity) return 'https://maps.google.com';
+  if (activity.gmapsUrl && activity.gmapsUrl.startsWith('http')) {
+    return activity.gmapsUrl;
+  }
+
+  const fmt = (n: number) => Number(n.toFixed(5));
+
+  // If activity has waypoints, order them sequentially
+  if (activity.waypoints && activity.waypoints.length > 0) {
+    const points = activity.waypoints.map(wp => {
+      if (wp.lat && wp.lng) {
+        return `${fmt(wp.lat)},${fmt(wp.lng)}`;
+      }
+      return encodeURIComponent(cleanGmapsPoint(wp.name));
+    }).filter(Boolean);
+
+    if (points.length > 0) {
+      return `https://www.google.com/maps/dir/${points.join('/')}`;
+    }
+  }
+
+  // If activity has GPS coordinates, sample them
+  if (activity.coordinates && activity.coordinates.length > 1) {
+    const coords = activity.coordinates;
+    const sampled: string[] = [];
+    sampled.push(`${fmt(coords[0][0])},${fmt(coords[0][1])}`);
+
+    if (coords.length >= 4) {
+      const step = Math.floor(coords.length / 3);
+      for (let i = step; i < coords.length - 1; i += step) {
+        sampled.push(`${fmt(coords[i][0])},${fmt(coords[i][1])}`);
+      }
+    }
+
+    const last = coords[coords.length - 1];
+    sampled.push(`${fmt(last[0])},${fmt(last[1])}`);
+    return `https://www.google.com/maps/dir/${sampled.join('/')}`;
+  }
+
+  // Fallback to searching the title or location
+  const query = encodeURIComponent(activity.location || activity.title || 'México');
+  return `https://www.google.com/maps/search/?api=1&query=${query}`;
 };
 
 const cleanGmapsPoint = (str: string): string => {

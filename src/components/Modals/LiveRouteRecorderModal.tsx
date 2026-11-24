@@ -1094,7 +1094,17 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
     // Selected destination crew (if not solo)
     const selectedCrew = !isSoloRide ? crews.find(c => c.id === targetCrewId) : null;
 
-    // Also publish as live ride activity in the community dispatch feed
+    // Build Google Maps full multi-stop navigation url
+    const fullRouteObject = {
+      ...newRoute,
+      id: `temp-${Date.now()}`,
+      votes: [],
+      comments: []
+    } as RouteProposal;
+    const gmapsUrl = buildOrderedGoogleMapsUrl(fullRouteObject);
+    setSavedRouteUrl(gmapsUrl);
+
+    // Also publish as live ride activity in the community dispatch feed with full waypoints & Google Maps URL
     addRecordedActivity({
       pilotId: currentUser.id,
       pilotName: currentUser.name,
@@ -1111,6 +1121,9 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
       durationText: formatTime(elapsedSeconds),
       avgSpeedKmh: avgSpeed || 42,
       coordinates: trackCoords.length > 0 ? trackCoords : SIMULATED_COORDS.map(c => [c[0], c[1]]),
+      waypoints: recordedWaypoints,
+      gmapsUrl: gmapsUrl,
+      routeProposalId: fullRouteObject.id,
       photos: uploadedPhotos,
       groupInfo: (!isSoloRide && selectedCrew) ? {
         crewId: selectedCrew.id,
@@ -1132,16 +1145,6 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
         curveDensity: offroadPct >= 60 ? 'Alta' : 'Media'
       }
     });
-
-    // Build Google Maps full multi-stop navigation url
-    const fullRouteObject = {
-      ...newRoute,
-      id: `temp-${Date.now()}`,
-      votes: [],
-      comments: []
-    } as RouteProposal;
-    const gmapsUrl = buildOrderedGoogleMapsUrl(fullRouteObject);
-    setSavedRouteUrl(gmapsUrl);
 
     // Clear active recording cache on successful save. finalizedRef evita que el efecto
     // de persistencia la vuelva a escribir mientras se ve la pantalla de éxito.

@@ -17,13 +17,15 @@ import {
   Users,
   Bike,
   Bookmark,
-  Trash2
+  Trash2,
+  ExternalLink
 } from 'lucide-react';
 import { BikerSaluteIcon } from '../Icons/BikerSaluteIcon';
 import { SaveToListModal } from './SaveToListModal';
 import { ShareModal } from './ShareModal';
 import { triggerExhaustSmoke } from '../../utils/exhaustSmoke';
 import { useApp } from '../../context/AppContext';
+import { buildActivityGoogleMapsUrl } from '../../utils/googleMaps';
 import confetti from 'canvas-confetti';
 
 interface ActivityDetailModalProps {
@@ -43,13 +45,36 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
   onToggleSaludo,
   onAddComment
 }) => {
-  const { currentUser, deleteActivity, savedRouteIds, routeLists, isFollowingUser, crews, users, motorcycles } = useApp();
+  const { currentUser, deleteActivity, savedRouteIds, routeLists, isFollowingUser, crews, users, motorcycles, routeProposals } = useApp();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
+  const tileLayerRef = useRef<any>(null);
+  const [mapLayer, setMapLayer] = useState<'hybrid' | 'roadmap'>('hybrid');
   const [commentText, setCommentText] = useState('');
   const [copiedLink, setCopiedLink] = useState(false);
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+
+  // Link waypoints from activity or matching route proposal
+  const linkedRoute = activity ? routeProposals.find(r => r.id === activity.routeProposalId || r.title === activity.title) : null;
+  const effectiveWaypoints = (activity?.waypoints && activity.waypoints.length > 0)
+    ? activity.waypoints
+    : (linkedRoute?.waypoints || []);
+
+  const googleMapsNavUrl = activity ? buildActivityGoogleMapsUrl({
+    ...activity,
+    waypoints: effectiveWaypoints
+  }) : 'https://maps.google.com';
+
+  // Toggle map tiles dynamically when mapLayer switches
+  useEffect(() => {
+    if (tileLayerRef.current) {
+      const tileUrl = mapLayer === 'hybrid'
+        ? 'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}'
+        : 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}';
+      tileLayerRef.current.setUrl(tileUrl);
+    }
+  }, [mapLayer]);
 
   useEffect(() => {
     if (!isOpen || !activity || !mapContainerRef.current) return;
@@ -65,6 +90,7 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
         if (mapInstanceRef.current) {
           mapInstanceRef.current.remove();
           mapInstanceRef.current = null;
+          tileLayerRef.current = null;
         }
 
         const coords = activity.coordinates && activity.coordinates.length > 0 
@@ -76,37 +102,123 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
           attributionControl: false
         });
 
-        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-          maxZoom: 19
+        // High-definition Google Maps Satellite Hybrid or Road Network Layer
+        const tileUrl = mapLayer === 'hybrid'
+          ? 'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}'
+          : 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}';
+
+        const tileLayer = L.tileLayer(tileUrl, {
+          maxZoom: 20,
+          subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
         }).addTo(map);
+        tileLayerRef.current = tileLayer;
 
         // Polyline of recorded GPS track
         const polyline = L.polyline(coords as [number, number][], {
-          color: '#C84B31',
-          weight: 4,
+          color: '#E6332A',
+          weight: 4.5,
           opacity: 0.95,
           smoothFactor: 1
         }).addTo(map);
 
-        // Start point
-        const startIcon = L.divIcon({
-          className: 'custom-start-marker',
-          html: `<div style="background-color: #10B981; width: 12px; height: 12px; border-radius: 50%; border: 2px solid #FFFFFF; box-shadow: 0 0 10px rgba(16,185,129,0.8);"></div>`,
-          iconSize: [12, 12],
-          iconAnchor: [6, 6]
-        });
-        L.marker(coords[0] as [number, number], { icon: startIcon }).addTo(map);
+        // Render recorded Waypoints & Stops if present
+        if (effectiveWaypoints && effectiveWaypoints.length > 0) {
+          effectiveWaypoints.forEach((wp, idx) => {
+            if (!wp.lat || !wp.lng) return;
+            const isFirst = idx === 0;
+            const isLast = idx === effectiveWaypoints.length - 1;
 
-        // End point
-        const endIcon = L.divIcon({
-          className: 'custom-end-marker',
-          html: `<div style="background-color: #EF4444; width: 12px; height: 12px; border-radius: 50%; border: 2px solid #FFFFFF; box-shadow: 0 0 10px rgba(239,68,68,0.8);"></div>`,
-          iconSize: [12, 12],
-          iconAnchor: [6, 6]
-        });
-        L.marker(coords[coords.length - 1] as [number, number], { icon: endIcon }).addTo(map);
+            let bg = '#F7B32B';
+            let emoji = '📍';
+            if (wp.type === 'start' || isFirst) {
+              bg = '#10B981';
+              emoji = '🟢';
+            } else if (wp.type === 'end' || isLast) {
+              bg = '#EF4444';
+              emoji = '🏁';
+            } else if (wp.type === 'fuel') {
+              bg = '#E06423';
+              emoji = '⛽';
+            } else if (wp.type === 'scenic') {
+              bg = '#3B82F6';
+              emoji = '📸';
+            } else if (wp.type === 'food') {
+              bg = '#10B981';
+              emoji = '☕';
+            } else if (wp.type === 'camp') {
+              bg = '#8B5CF6';
+              emoji = '⛺';
+            } else if (wp.type === 'dirt') {
+              bg = '#D97706';
+              emoji = '🏔️';
+            } else {
+              bg = '#DC2626';
+              emoji = '⚠️';
+            }
 
-        map.fitBounds(polyline.getBounds(), { padding: [30, 30] });
+            const wpIcon = L.divIcon({
+              className: 'custom-wp-marker',
+              html: `
+                <div style="position: relative; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; cursor: pointer;">
+                  <div style="background-color: ${bg}; color: #FFFFFF; width: 28px; height: 28px; border-radius: 50%; border: 2.5px solid #FAF6ED; box-shadow: 0 4px 10px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; font-size: 13px;">
+                    ${emoji}
+                  </div>
+                  <div style="position: absolute; top: -5px; right: -5px; background-color: #1A1918; color: #FAF6ED; width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid #FAF6ED; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; font-family: monospace;">
+                    ${idx + 1}
+                  </div>
+                </div>
+              `,
+              iconSize: [32, 32],
+              iconAnchor: [16, 16]
+            });
+
+            const marker = L.marker([wp.lat, wp.lng], { icon: wpIcon }).addTo(map);
+
+            const singleGmapsUrl = `https://www.google.com/maps/search/?api=1&query=${wp.lat},${wp.lng}`;
+            const popupHtml = `
+              <div style="font-family: system-ui, -apple-system, sans-serif; padding: 4px; min-width: 180px; color: #1A1918;">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 4px; margin-bottom: 4px;">
+                  <span style="font-size: 9px; font-family: monospace; font-weight: 800; text-transform: uppercase; background: #FAF6ED; border: 1px solid rgba(26,25,24,0.15); padding: 2px 6px; border-radius: 4px; color: #E6332A;">
+                    Parada #${idx + 1}
+                  </span>
+                  <span style="font-size: 9px; font-family: monospace; font-weight: 700; text-transform: uppercase; color: #666;">
+                    ${wp.type}
+                  </span>
+                </div>
+                <div style="font-size: 12px; font-weight: 700; color: #1A1918; margin-bottom: 4px; line-height: 1.2;">
+                  ${wp.name}
+                </div>
+                ${wp.notes ? `<div style="font-size: 11px; color: #444; background: #F4EEDB; border-radius: 6px; padding: 4px 6px; margin-bottom: 6px; line-height: 1.3;">${wp.notes}</div>` : ''}
+                <div style="font-size: 9px; font-family: monospace; color: #888; margin-bottom: 6px;">
+                  GPS: ${wp.lat.toFixed(5)}, ${wp.lng.toFixed(5)}
+                </div>
+                <a href="${singleGmapsUrl}" target="_blank" rel="noopener noreferrer" style="display: block; text-align: center; background: #1A1918; color: #FAF6ED; padding: 5px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; text-decoration: none;">
+                  Ver punto en Google Maps ↗
+                </a>
+              </div>
+            `;
+            marker.bindPopup(popupHtml, { maxWidth: 260 });
+          });
+        } else {
+          // Fallback start & end point dots
+          const startIcon = L.divIcon({
+            className: 'custom-start-marker',
+            html: `<div style="background-color: #10B981; width: 14px; height: 14px; border-radius: 50%; border: 2.5px solid #FFFFFF; box-shadow: 0 0 10px rgba(16,185,129,0.9);"></div>`,
+            iconSize: [14, 14],
+            iconAnchor: [7, 7]
+          });
+          L.marker(coords[0] as [number, number], { icon: startIcon }).addTo(map);
+
+          const endIcon = L.divIcon({
+            className: 'custom-end-marker',
+            html: `<div style="background-color: #EF4444; width: 14px; height: 14px; border-radius: 50%; border: 2.5px solid #FFFFFF; box-shadow: 0 0 10px rgba(239,68,68,0.9);"></div>`,
+            iconSize: [14, 14],
+            iconAnchor: [7, 7]
+          });
+          L.marker(coords[coords.length - 1] as [number, number], { icon: endIcon }).addTo(map);
+        }
+
+        map.fitBounds(polyline.getBounds(), { padding: [35, 35] });
         mapInstanceRef.current = map;
       } catch (err) {
         console.error('Error loading leaflet in activity modal', err);
@@ -120,6 +232,7 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
+        tileLayerRef.current = null;
       }
     };
   }, [isOpen, activity]);
@@ -301,14 +414,158 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
             </h2>
           </div>
 
-          {/* INTERACTIVE ROUTE MAP */}
-          <div className="relative border border-[#1A1918]/10 rounded-2xl overflow-hidden shadow-sm">
-            <div ref={mapContainerRef} className="w-full h-64 sm:h-80 z-0 bg-[#F4EEDB]" />
-            <div className="absolute bottom-3 left-3 bg-[#FAF6ED]/95 backdrop-blur px-3 py-1.5 text-[10px] text-[#1A1918] uppercase font-mono font-semibold border border-[#1A1918]/10 rounded-xl flex items-center gap-3 z-10 shadow-sm">
-              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500 border border-[#1A1918]/10 inline-block"></span> Inicio</span>
-              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#E6332A] border border-[#1A1918]/10 inline-block"></span> Fin</span>
+          {/* INTERACTIVE ROUTE MAP WITH GOOGLE MAPS TILES & LAYER CONTROLS */}
+          <div className="space-y-2.5">
+            <div className="relative border border-[#1A1918]/10 rounded-2xl overflow-hidden shadow-sm">
+              <div ref={mapContainerRef} className="w-full h-72 sm:h-96 z-0 bg-[#F4EEDB]" />
+              
+              {/* Google Maps Layer Switcher */}
+              <div className="absolute top-3 right-3 flex items-center bg-[#FAF6ED]/95 backdrop-blur border border-[#1A1918]/10 rounded-xl overflow-hidden shadow-sm z-10 p-1 gap-1">
+                <button
+                  type="button"
+                  onClick={() => setMapLayer('hybrid')}
+                  className={`px-2.5 py-1 text-[10px] font-mono font-bold rounded-lg transition ${
+                    mapLayer === 'hybrid' ? 'bg-[#1A1918] text-white shadow-sm' : 'text-[#1A1918]/70 hover:text-[#1A1918]'
+                  }`}
+                >
+                  🛰️ Satélite
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMapLayer('roadmap')}
+                  className={`px-2.5 py-1 text-[10px] font-mono font-bold rounded-lg transition ${
+                    mapLayer === 'roadmap' ? 'bg-[#1A1918] text-white shadow-sm' : 'text-[#1A1918]/70 hover:text-[#1A1918]'
+                  }`}
+                >
+                  🗺️ Calles
+                </button>
+              </div>
+
+              {/* Status Header Overlay */}
+              <div className="absolute top-3 left-3 bg-[#FAF6ED]/95 backdrop-blur px-2.5 py-1 border border-[#1A1918]/10 rounded-xl text-[9px] font-mono font-bold text-[#1A1918] flex items-center gap-1.5 shadow-sm z-10">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span>GOOGLE MAPS {mapLayer.toUpperCase()}</span>
+                {effectiveWaypoints.length > 0 && (
+                  <span className="text-[#E6332A] font-extrabold">• {effectiveWaypoints.length} PARADAS</span>
+                )}
+              </div>
+
+              {/* Bottom Legend */}
+              <div className="absolute bottom-3 left-3 bg-[#FAF6ED]/95 backdrop-blur px-3 py-1.5 text-[10px] text-[#1A1918] uppercase font-mono font-semibold border border-[#1A1918]/10 rounded-xl flex items-center gap-3 z-10 shadow-sm">
+                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500 border border-[#1A1918]/10 inline-block"></span> Inicio</span>
+                {effectiveWaypoints.length > 0 && (
+                  <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#F7B32B] border border-[#1A1918]/10 inline-block"></span> Paradas ({effectiveWaypoints.length})</span>
+                )}
+                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#E6332A] border border-[#1A1918]/10 inline-block"></span> Fin</span>
+              </div>
+            </div>
+
+            {/* Google Maps External Navigation Launch Bar */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 p-3 sm:p-4 bg-[#F4EEDB] border border-[#1A1918]/10 rounded-2xl shadow-sm">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-[#F7B32B] flex items-center justify-center shrink-0 border border-[#1A1918]/10 text-base shadow-sm">
+                  🗺️
+                </div>
+                <div className="min-w-0">
+                  <span className="font-sans font-semibold text-xs text-[#1A1918] block truncate">
+                    Google Maps Multi-Parada
+                  </span>
+                  <span className="text-[10px] font-mono text-[#1A1918]/70 block truncate">
+                    {effectiveWaypoints.length > 0 
+                      ? `${effectiveWaypoints.length} paradas secuenciales reconocidas por GPS` 
+                      : `Ruta de ${activity.distanceKm} km lista para navegación por turnos`}
+                  </span>
+                </div>
+              </div>
+              <a
+                href={googleMapsNavUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2.5 bg-[#E6332A] hover:bg-[#d02c24] text-white text-xs font-sans font-semibold rounded-xl transition flex items-center justify-center gap-2 shadow-sm active:shadow-none shrink-0"
+              >
+                <Navigation className="w-3.5 h-3.5 text-white" />
+                <span>Abrir en Google Maps {effectiveWaypoints.length > 0 ? `(${effectiveWaypoints.length} paradas)` : ''} ↗</span>
+              </a>
             </div>
           </div>
+
+          {/* CHRONOLOGICAL STOPS LOG (BITÁCORA DE PARADAS REGISTRADAS) */}
+          {effectiveWaypoints && effectiveWaypoints.length > 0 && (
+            <div className="p-4 sm:p-5 bg-[#F4EEDB] border border-[#1A1918]/10 rounded-2xl space-y-3.5 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-[#E6332A]" />
+                  <span className="text-xs font-sans font-semibold text-[#1A1918]">
+                    Paradas Registradas en el Recorrido ({effectiveWaypoints.length})
+                  </span>
+                </div>
+                <a
+                  href={googleMapsNavUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[10px] font-mono font-bold text-[#E6332A] hover:underline flex items-center gap-1"
+                >
+                  Navegar todas en Maps ↗
+                </a>
+              </div>
+
+              <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+                {effectiveWaypoints.map((wp, idx) => {
+                  let badgeColor = 'bg-[#F7B32B] text-[#1A1918]';
+                  let emoji = '📍';
+                  if (wp.type === 'start' || idx === 0) { badgeColor = 'bg-emerald-500 text-white'; emoji = '🟢'; }
+                  else if (wp.type === 'end' || idx === effectiveWaypoints.length - 1) { badgeColor = 'bg-[#EF4444] text-white'; emoji = '🏁'; }
+                  else if (wp.type === 'fuel') { badgeColor = 'bg-[#E06423] text-white'; emoji = '⛽'; }
+                  else if (wp.type === 'scenic') { badgeColor = 'bg-blue-500 text-white'; emoji = '📸'; }
+                  else if (wp.type === 'food') { badgeColor = 'bg-emerald-600 text-white'; emoji = '☕'; }
+                  else if (wp.type === 'camp') { badgeColor = 'bg-purple-600 text-white'; emoji = '⛺'; }
+                  else if (wp.type === 'dirt') { badgeColor = 'bg-amber-600 text-white'; emoji = '🏔️'; }
+                  else { badgeColor = 'bg-red-600 text-white'; emoji = '⚠️'; }
+
+                  return (
+                    <div key={wp.id || idx} className="p-3 bg-[#FAF6ED] border border-[#1A1918]/10 rounded-xl flex items-center justify-between gap-3 shadow-sm hover:border-[#1A1918]/25 transition">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className={`w-8 h-8 rounded-xl ${badgeColor} flex items-center justify-center text-sm shrink-0 shadow-sm border border-[#1A1918]/10`}>
+                          {emoji}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-sans font-semibold text-xs text-[#1A1918] truncate">
+                              {wp.name}
+                            </span>
+                            <span className="text-[9px] font-mono font-bold uppercase px-1.5 py-0.5 bg-[#F4EEDB] border border-[#1A1918]/10 rounded text-[#1A1918]/80 shrink-0">
+                              #{idx + 1} • {wp.type}
+                            </span>
+                          </div>
+                          {wp.notes && (
+                            <p className="text-[11px] text-[#1A1918]/70 font-sans mt-0.5 truncate">
+                              {wp.notes}
+                            </p>
+                          )}
+                          {wp.lat && wp.lng && (
+                            <span className="text-[9px] font-mono text-[#1A1918]/50 block">
+                              GPS: {wp.lat.toFixed(5)}, {wp.lng.toFixed(5)}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${wp.lat},${wp.lng}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-2.5 py-1.5 bg-[#FAF6ED] hover:bg-[#F4EEDB] border border-[#1A1918]/10 rounded-lg text-[10px] font-mono font-bold text-[#1A1918] hover:text-[#E6332A] shrink-0 transition flex items-center gap-1 shadow-sm"
+                        title="Abrir este punto específico en Google Maps"
+                      >
+                        <span>Ver punto</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* PHOTO GALLERY OF THE RIDE */}
           {activity.photos && activity.photos.length > 0 && (

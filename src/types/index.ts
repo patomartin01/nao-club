@@ -74,6 +74,9 @@ export interface ActivityPost {
   comments?: ActivityComment[];
   groupInfo?: ActivityGroupInfo;
   coordinates: [number, number][];
+  waypoints?: Waypoint[];
+  gmapsUrl?: string;
+  routeProposalId?: string;
   photos?: string[];
   surfaceBreakdown: {
     asphaltPercentage: number;

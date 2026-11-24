@@ -1055,7 +1055,7 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                           {/* Radar / HUD Badge */}
                           <div className="absolute top-1.5 left-1.5 px-2 py-0.5 bg-[#FAF6ED] border border-[#1A1918]/10 text-[8px] font-sans font-semibold text-[#1A1918] uppercase tracking-widest flex items-center gap-1 z-10 pointer-events-none rounded shadow-sm">
                             <Compass className="w-2.5 h-2.5 text-[#E6332A] animate-pulse" />
-                            <span>GPS RUTA</span>
+                            <span>{act.waypoints && act.waypoints.length > 0 ? `${act.waypoints.length} PARADAS` : 'GPS RUTA'}</span>
                           </div>
 
                           {/* Distance pill */}
@@ -1076,7 +1076,7 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                           <div className="absolute top-3 left-3 px-2.5 py-1 bg-[#FAF6ED]/95 backdrop-blur-md border border-[#1A1918]/10 rounded-xl flex items-center gap-1.5 shadow-sm z-10">
                             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse border border-[#1A1918]/10" />
                             <span className="text-[9px] font-sans font-semibold text-[#1A1918] uppercase tracking-wider">
-                              GPS SATÉLITE • TRAZADO EN VIVO
+                              {act.waypoints && act.waypoints.length > 0 ? `GOOGLE MAPS • ${act.waypoints.length} PARADAS` : 'GPS SATÉLITE • TRAZADO EN VIVO'}
                             </span>
                           </div>
 
@@ -1143,7 +1143,7 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                   </button>
                 </div>
 
-                {/* Action Buttons: Saludo Biker, Compartir */}
+                {/* Action Buttons: Saludo Biker, Ver Mapa/Ruta, Compartir */}
                 <div className="px-4 py-2.5 flex items-center justify-around text-xs border-b border-[#1A1918]/10 bg-[#FAF6ED] gap-2">
                   <button
                     onClick={(e) => handleKudoClick(act, e)}
@@ -1153,6 +1153,19 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                   >
                     <BikerSaluteIcon className="w-4 h-4" active={act.hasKudoed} />
                     <span>{act.hasKudoed ? 'Saludado' : 'Saludo'}</span>
+                  </button>
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedDetailActivity(act);
+                      setIsDetailModalOpen(true);
+                    }}
+                    className="flex-1 py-2.5 flex items-center justify-center gap-1.5 text-[#1A1918] bg-[#F4EEDB] hover:bg-[#FAF6ED] font-sans text-xs font-semibold transition rounded-xl border border-[#1A1918]/10 shadow-sm active:shadow-none"
+                    title="Ver mapa satelital interactivo, paradas y Google Maps"
+                  >
+                    <Navigation className="w-3.5 h-3.5 text-[#E6332A]" />
+                    <span>Ver Mapa {act.waypoints && act.waypoints.length > 0 ? `(${act.waypoints.length}p)` : ''}</span>
                   </button>
 
                   <button
