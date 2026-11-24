@@ -1,8 +1,18 @@
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 interface WaypointPayload {
   lat: number;
   lng: number;
+}
+
+export async function GET() {
+  return NextResponse.json({
+    status: 'ok',
+    service: 'Google Routes API (v2) compute endpoint',
+    engine: 'routes.googleapis.com/directions/v2:computeRoutes'
+  });
 }
 
 export async function POST(request: Request) {
@@ -14,7 +24,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Origin and destination are required' }, { status: 400 });
     }
 
-    const apiKey = process.env.GOOGLE_MAPS_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+    const apiKey = process.env.GOOGLE_MAPS_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyA-BFkHrE2ixqfJihSiRhgjNEICrnNGSGM';
 
     if (!apiKey) {
       return NextResponse.json({ error: 'Google Maps API key is not configured' }, { status: 500 });
