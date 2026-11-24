@@ -39,7 +39,12 @@ export const INITIAL_CREWS: Crew[] = [
     creatorId: 'a1bac354-0a88-486c-9289-049e75c61c12',
     createdAt: '2026-10-29',
     members: [
-      { userId: 'a1bac354-0a88-486c-9289-049e75c61c12', role: 'Capitán de Ruta', joinedAt: '2026-10-29' }
+      { userId: 'a1bac354-0a88-486c-9289-049e75c61c12', role: 'Capitán de Ruta', joinedAt: '2026-10-29' },
+      { userId: '4ef9e183-2a42-4479-a091-6abebbfe5cb1', role: 'Rider', joinedAt: '2026-11-20' },
+      { userId: '2aaa8305-2851-442f-a7cb-ad99d28e6bed', role: 'Rider', joinedAt: '2026-11-20' },
+      { userId: 'be5c1d63-53f1-4a65-93ec-e021f104809a', role: 'Rider', joinedAt: '2026-11-20' },
+      { userId: '416b1eda-5865-481d-bac2-3bebf20ffd51', role: 'Rider', joinedAt: '2026-11-20' },
+      { userId: 'patomartin', role: 'Rider', joinedAt: '2026-11-20' }
     ],
     whatsappGroupUrl: 'https://chat.whatsapp.com/Jg1AKUEqoXF7nXZuAPJ588'
   }

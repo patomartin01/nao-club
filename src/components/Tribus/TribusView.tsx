@@ -1266,7 +1266,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                   
                   {/* Header */}
                   {(() => {
-                    const validCrews = crews.filter(c => !isDeprecatedCrew(c));
+                    const validCrews = crews.filter(c => !isDeprecatedCrew(c) && (c.id === 'crew-1793316469201' || (c.members && c.members.length > 0)));
                     return (
                       <>
                         <div className="px-1 flex items-center justify-between border-b border-[#E5DFD5] pb-2.5">

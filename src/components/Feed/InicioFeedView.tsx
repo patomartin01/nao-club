@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import dynamic from 'next/dynamic';
-import { useApp } from '../../context/AppContext';
+import { useApp, isDeprecatedCrew } from '../../context/AppContext';
 import { ActivityPost, ActivityGroupInfo, ActivityParticipant } from '../../types';
 import { 
   Flame, 
@@ -1171,7 +1171,7 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
 
             <div className="space-y-2.5">
               {crews
-                .filter(c => c.members.some(m => m.userId === currentUser.id))
+                .filter(c => !isDeprecatedCrew(c) && c.members.some(m => m.userId === currentUser.id))
                 .slice(0, 2)
                 .map(c => (
                 <div 

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useApp } from '../../context/AppContext';
+import { useApp, isDeprecatedCrew } from '../../context/AppContext';
 import { 
   Users, 
   MapPin, 
@@ -40,6 +40,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
   } = useApp();
 
   const primaryBike = userBikes[0];
+  const validCrews = crews.filter(c => !isDeprecatedCrew(c));
 
   return (
     <div className="space-y-12 pb-32 text-chalk">
@@ -105,7 +106,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-white/10 border-t border-white/10 font-mono text-xs bg-[#0E0C0A]">
           <div className="p-4 sm:p-5">
             <span className="text-[10px] text-ash uppercase tracking-wider block">Grupos inscritos</span>
-            <p className="font-bold text-white text-base mt-0.5">{crews.length} Tribus</p>
+            <p className="font-bold text-white text-base mt-0.5">{validCrews.length} Tribus</p>
           </div>
           <div className="p-4 sm:p-5">
             <span className="text-[10px] text-ash uppercase tracking-wider block">Máquina asignada</span>
@@ -132,7 +133,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               [ 01 · SELECCIONA UN GRUPO PARA ENTRAR ]
             </span>
             <h2 className="font-display font-extrabold text-2xl sm:text-3xl text-white tracking-tight mt-1">
-              Tus Grupos & Tribus ({crews.length})
+              Tus Grupos & Tribus ({validCrews.length})
             </h2>
             <p className="font-mono text-xs text-ash mt-1">
               Haz clic en cualquiera de tus grupos para entrar a su sala, ver sus miembros y gestionar sus rodadas.
@@ -151,7 +152,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
         {/* Group Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {crews.map((crew) => {
+          {validCrews.map((crew) => {
             const isMember = crew.members.some(m => m.userId === currentUser.id);
             const crewRodadas = rodadas.filter(r => r.crewId === crew.id);
             const activeRodada = crewRodadas.find(r => r.status === 'votacion') || crewRodadas[0];

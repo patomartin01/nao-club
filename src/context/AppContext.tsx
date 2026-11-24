@@ -238,8 +238,11 @@ export const isDeprecatedCrew = (c: any): boolean => {
   if (!c) return true;
   if (c.id === 'crew-motomami' || c.id === 'crew-1793386544112' || DEPRECATED_CREW_IDS.has(c.id)) return true;
   if (c.invite_code === 'NAO-2026' || c.inviteCode === 'NAO-2026') return true;
-  const baseCity = c.base_city || c.baseCity || '';
-  if (typeof baseCity === 'string' && baseCity.toLowerCase().includes('poniente')) return true;
+  const baseCity = (c.base_city || c.baseCity || '').toLowerCase();
+  if (baseCity.includes('poniente') || baseCity.includes('monterrey')) return true;
+  // Cualquier duplicado llamado Motomami que no sea el oficial de 6 pilotos (crew-1793316469201)
+  const name = (c.name || '').toLowerCase().trim();
+  if (name === 'motomami' && c.id !== 'crew-1793316469201') return true;
   const members = c.members || c.crew_members;
   if (Array.isArray(members)) {
     const validMembers = members.filter((m: any) => {
@@ -1856,7 +1859,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEYS.CREWS, JSON.stringify(crews));
+      const sanitized = crews.filter(c => !isDeprecatedCrew(c));
+      localStorage.setItem(STORAGE_KEYS.CREWS, JSON.stringify(sanitized));
     } catch (e) { console.error(e); }
   }, [crews]);
 
