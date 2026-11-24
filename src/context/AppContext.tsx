@@ -319,6 +319,15 @@ const GUEST_PILOT: User = {
   }
 };
 
+const isMockActivity = (a: any): boolean => {
+  if (!a) return true;
+  if (a.id === 'act-1' || a.id === 'act-2' || a.id === 'act-3' || a.id === 'act-4') return true;
+  if (a.pilotId === 'user-inaki' || a.pilotId === 'user-andrea' || a.pilotId === 'user-diego') return true;
+  if (a.pilotHandle === '@inaki_rr' || a.pilotHandle === '@andrea_track' || a.pilotHandle === '@diego_capi') return true;
+  if (typeof a.title === 'string' && (a.title.includes('Zempoala') || a.title.includes('Circuito Amozoc') || a.title.includes('Cerro Zapotecas'))) return true;
+  return false;
+};
+
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User>(() => {
     if (typeof window !== 'undefined') {
@@ -992,7 +1001,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  // Moto Expeditions & Social state
+  // Moto Expeditions & Social state (solo rodadas reales publicadas)
   const [activities, setActivities] = useState<ActivityPost[]>(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -1000,20 +1009,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (saved) {
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            const map = new Map(parsed.map((a: ActivityPost) => [a.id, a]));
-            INITIAL_ACTIVITIES.forEach(a => {
-              if (!map.has(a.id)) map.set(a.id, a);
-            });
-            return Array.from(map.values());
+            const cleaned = parsed.filter((a: ActivityPost) => !isMockActivity(a));
+            localStorage.setItem(STORAGE_KEYS.ACTIVITIES, JSON.stringify(cleaned));
+            return cleaned;
           }
         }
       } catch {}
     }
-    return INITIAL_ACTIVITIES;
+    return [];
   });
   const [challenges, setChallenges] = useState<Challenge[]>(INITIAL_CHALLENGES);
-  const [completedRouteIds, setCompletedRouteIds] = useState<string[]>(CURRENT_USER.completedRouteIds || ['route-1', 'route-4']);
-  const [savedRouteIds, setSavedRouteIds] = useState<string[]>(CURRENT_USER.savedRouteIds || ['route-2', 'route-3', 'route-5']);
+  const [completedRouteIds, setCompletedRouteIds] = useState<string[]>(CURRENT_USER.completedRouteIds || []);
+  const [savedRouteIds, setSavedRouteIds] = useState<string[]>(CURRENT_USER.savedRouteIds || []);
   const [routeLists, setRouteLists] = useState<RouteList[]>(INITIAL_ROUTE_LISTS);
   const [selectedPilotProfile, setSelectedPilotProfile] = useState<User | null>(null);
   const [followingUserIds, setFollowingUserIds] = useState<string[]>(() => {
@@ -1184,8 +1191,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (savedActivities) {
         try {
           const parsedActs = JSON.parse(savedActivities);
-          if (Array.isArray(parsedActs) && parsedActs.length > 0) {
-            setActivities(parsedActs);
+          if (Array.isArray(parsedActs)) {
+            const cleaned = parsedActs.filter((a: ActivityPost) => !isMockActivity(a));
+            setActivities(cleaned);
+            localStorage.setItem(STORAGE_KEYS.ACTIVITIES, JSON.stringify(cleaned));
           }
         } catch {}
       }
@@ -1477,21 +1486,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
 
     // Hydrate activities (publicaciones reales) from cloud - top 50 más recientes
-    // Hydrate activities (publicaciones reales) from cloud - non-destructive merge
     supabase.from('activities').select('*').order('created_at', { ascending: false }).limit(50).then(({ data }) => {
-      if (data && data.length > 0) {
-        const mappedActs: ActivityPost[] = data.map(row => mapActivityRow(row, currentUser.id));
+      if (data) {
+        const mappedActs: ActivityPost[] = data.map(row => mapActivityRow(row, currentUser.id)).filter(a => !isMockActivity(a));
         setActivities(prev => {
           const cloudMap = new Map(mappedActs.map(a => [a.id, a]));
-          const merged = prev.map(l => {
-            const fromCloud = cloudMap.get(l.id);
-            if (fromCloud) {
-              cloudMap.delete(l.id);
-              return { ...l, ...fromCloud };
-            }
-            return l;
-          });
-          return [...Array.from(cloudMap.values()), ...merged];
+          // Keep only local unsynced activities created by this currentUser that are not mocks
+          const localUnsynced = prev.filter(a => 
+            !isMockActivity(a) && 
+            a.pilotId === currentUser.id && 
+            !cloudMap.has(a.id)
+          );
+          const finalActs = [...mappedActs, ...localUnsynced];
+          if (typeof window !== 'undefined') {
+            try {
+              localStorage.setItem(STORAGE_KEYS.ACTIVITIES, JSON.stringify(finalActs));
+            } catch {}
+          }
+          return finalActs;
         });
       }
     });

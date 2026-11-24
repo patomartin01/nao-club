@@ -93,7 +93,7 @@ export const BottomBar: React.FC<BottomBarProps> = ({ onOpenRecordRoute }) => {
       {/* 5-column dock with clean, slim Risograph styling */}
       <div className="max-w-md mx-auto px-3 py-1 flex items-center justify-between">
         
-        {/* 01. INICIO (DESPACHO) */}
+        {/* 01. INICIO */}
         <button
           type="button"
           onClick={() => setActiveNavTab('inicio')}
@@ -105,7 +105,7 @@ export const BottomBar: React.FC<BottomBarProps> = ({ onOpenRecordRoute }) => {
             <Home className={`w-4 h-4 transition-transform ${isInicio ? 'scale-110 stroke-[2.5]' : 'group-hover:text-[#1A1918]'}`} />
           </div>
           <span className={`font-sans uppercase tracking-wider text-[9px] mt-0.5 ${isInicio ? 'text-[#E6332A] font-semibold' : 'font-bold'}`}>
-            Despacho
+            Inicio
           </span>
         </button>
 

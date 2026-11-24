@@ -11,8 +11,8 @@ export const CURRENT_USER: User = {
   ridingLevel: 'Intermedio',
   emergencyContact: '+52 55 1234 5678 (Papá)',
   phone: '+52 55 9876 5432',
-  completedRouteIds: ['route-1', 'route-4', 'route-2'],
-  savedRouteIds: ['route-2', 'route-3', 'route-5'],
+  completedRouteIds: [],
+  savedRouteIds: [],
   stats: {
     totalKm: 0,
     completedCount: 0,
@@ -179,171 +179,9 @@ export const INITIAL_RODADA: Rodada = {
 
 export const INITIAL_RODADAS: Rodada[] = [INITIAL_RODADA];
 
-export const INITIAL_ROUTE_LISTS: RouteList[] = [
-  {
-    id: 'list-wishlist',
-    userId: 'a1bac354-0a88-486c-9289-049e75c61c12',
-    name: 'Por Rodar // Wishlist 2026',
-    description: 'Rutas pendientes para puentes y fines de semana largos con el grupo.',
-    routeIds: ['route-2', 'route-3', 'route-5'],
-    createdAt: '2026-10-15'
-  },
-  {
-    id: 'list-tecnicas',
-    userId: 'a1bac354-0a88-486c-9289-049e75c61c12',
-    name: 'Retos Técnicos de Sierra',
-    description: 'Brechas rocosas, cañones y pasos de río para poner a prueba llantas 50/50.',
-    routeIds: ['route-3', 'route-5'],
-    createdAt: '2026-10-18'
-  }
-];
+export const INITIAL_ROUTE_LISTS: RouteList[] = [];
 
-export const INITIAL_ACTIVITIES: ActivityPost[] = [
-  {
-    id: 'act-1',
-    pilotId: 'user-inaki',
-    pilotName: 'Iñaki Rivera Robles',
-    pilotHandle: '@inaki_rr',
-    pilotAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=250',
-    dateText: 'Ayer a las 7:30 a.m.',
-    device: 'Garmin Forerunner 265',
-    location: 'Miguel Hidalgo, Ciudad de México',
-    title: 'Rodada Matutina // Curvas y Cañón de Zempoala',
-    motoModel: 'BMW R 1250 GS Adventure',
-    discipline: 'Carretera / Curvas',
-    distanceKm: 74.2,
-    elevationGainM: 1420,
-    durationText: '1h 12m',
-    avgSpeedKmh: 61.8,
-    trophiesCount: 2,
-    kudosCount: 8,
-    hasKudoed: false,
-    kudosAvatars: [
-      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150',
-      'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=150'
-    ],
-    commentsCount: 3,
-    coordinates: [
-      [19.4100, -99.1900],
-      [19.3800, -99.2300],
-      [19.3100, -99.2800],
-      [19.1800, -99.3200],
-      [19.0600, -99.3100]
-    ],
-    surfaceBreakdown: {
-      asphaltPercentage: 88,
-      dirtPercentage: 12,
-      curveDensity: 'Alta'
-    }
-  },
-  {
-    id: 'act-2',
-    pilotId: 'a1bac354-0a88-486c-9289-049e75c61c12',
-    pilotName: 'Patricio Martin Vidal',
-    pilotHandle: '@pmartinv2001',
-    pilotAvatar: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
-    dateText: '21 de noviembre a las 8:15 a.m.',
-    device: 'NAO Cockpit GPS',
-    location: 'San Pedro Cholula / Desierto',
-    title: 'Paso por Brechas y Reserva Cerro Zapotecas',
-    motoModel: 'Royal Enfield Himalayan 411',
-    discipline: 'Doble Propósito / Trail',
-    distanceKm: 42.8,
-    elevationGainM: 890,
-    durationText: '1h 45m',
-    avgSpeedKmh: 24.5,
-    trophiesCount: 7,
-    kudosCount: 14,
-    hasKudoed: true,
-    kudosAvatars: [
-      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150',
-      'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=150'
-    ],
-    commentsCount: 5,
-    coordinates: [
-      [19.0600, -98.3100],
-      [19.0700, -98.3400],
-      [19.0900, -98.3600],
-      [19.0800, -98.3800],
-      [19.0650, -98.3200]
-    ],
-    surfaceBreakdown: {
-      asphaltPercentage: 35,
-      dirtPercentage: 65,
-      curveDensity: 'Media'
-    }
-  },
-  {
-    id: 'act-3',
-    pilotId: 'user-andrea',
-    pilotName: 'Andrea Reyes',
-    pilotHandle: '@andrea_track',
-    pilotAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=250',
-    dateText: '18 de noviembre a las 9:00 a.m.',
-    device: 'Garmin Venu 2',
-    location: 'Circuito Amozoc / Puebla Track',
-    title: 'Sesión de Curvas y Crono en Circuito',
-    motoModel: 'Yamaha MT-09 SP',
-    discipline: 'Sport / Pista',
-    distanceKm: 58.4,
-    elevationGainM: 120,
-    durationText: '0h 48m',
-    avgSpeedKmh: 73.0,
-    trophiesCount: 4,
-    kudosCount: 11,
-    hasKudoed: false,
-    kudosAvatars: [
-      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150'
-    ],
-    commentsCount: 2,
-    coordinates: [
-      [19.0400, -98.1800],
-      [19.0450, -98.1750],
-      [19.0420, -98.1700],
-      [19.0380, -98.1760]
-    ],
-    surfaceBreakdown: {
-      asphaltPercentage: 100,
-      dirtPercentage: 0,
-      curveDensity: 'Alta'
-    }
-  },
-  {
-    id: 'act-4',
-    pilotId: 'user-diego',
-    pilotName: 'Diego "Capi" R.',
-    pilotHandle: '@diego_capi',
-    pilotAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250',
-    dateText: '10 de noviembre de 2026',
-    device: 'NAO Cockpit GPS',
-    location: 'Valle de Bravo, Estado de México',
-    title: 'Travesía Panorámica Laguna & Brechas Altas',
-    motoModel: 'Triumph Tiger 900 Rally Pro',
-    discipline: 'Adventure / Maxi-Trail',
-    distanceKm: 118.5,
-    elevationGainM: 2150,
-    durationText: '3h 10m',
-    avgSpeedKmh: 37.4,
-    trophiesCount: 9,
-    kudosCount: 19,
-    hasKudoed: true,
-    kudosAvatars: [
-      'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=150'
-    ],
-    commentsCount: 7,
-    coordinates: [
-      [19.2900, -99.9800],
-      [19.2400, -100.0800],
-      [19.1900, -100.1300],
-      [19.1500, -100.0500]
-    ],
-    surfaceBreakdown: {
-      asphaltPercentage: 55,
-      dirtPercentage: 45,
-      curveDensity: 'Alta'
-    }
-  }
-];
+export const INITIAL_ACTIVITIES: ActivityPost[] = [];
 
 export const INITIAL_CHALLENGES: Challenge[] = [
   {
