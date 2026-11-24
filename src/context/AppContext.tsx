@@ -195,6 +195,9 @@ const mapActivityRow = (a: any, currentUserId?: string): ActivityPost => {
     commentsCount: 0,
     comments: [],
     coordinates: a.route_coordinates || [],
+    waypoints: a.waypoints || a.group_info?.waypoints || [],
+    gmapsUrl: a.gmaps_url || a.group_info?.gmaps_url || '',
+    routeProposalId: a.route_proposal_id || a.group_info?.route_proposal_id || '',
     surfaceBreakdown: a.surface_breakdown || { asphaltPercentage: 50, dirtPercentage: 50, curveDensity: 'Media' },
     photos: a.photos || [],
     groupInfo: a.group_info
@@ -1632,6 +1635,41 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           }
         }
       )
+      .on(
+        'broadcast',
+        { event: 'new_follower' },
+        (payload: any) => {
+          if (payload?.payload) {
+            const data = payload.payload;
+            const isMe = data.toUserId === currentUser.id || 
+              (currentUser.handle && data.toUserId === currentUser.handle) ||
+              (data.toUserId === 'user-patricio' && currentUser.id === 'a1bac354-0a88-486c-9289-049e75c61c12') ||
+              (currentUser.id === 'user-patricio' && data.toUserId === 'a1bac354-0a88-486c-9289-049e75c61c12');
+            if (isMe && data.followerId !== currentUser.id) {
+              const newNotif: AppNotification = {
+                id: `notif-follow-${data.followerId}-${Date.now()}`,
+                type: 'new_follower',
+                title: 'Nuevo Seguidor',
+                message: `${data.followerName || 'Un piloto'} ha comenzado a seguirte.`,
+                createdAt: new Date().toISOString(),
+                read: false,
+                toUserId: currentUser.id,
+                fromUserId: data.followerId,
+                fromUserName: data.followerName || 'Piloto',
+                fromUserAvatar: data.followerAvatar || 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=150'
+              };
+              setNotifications(prev => {
+                if (prev.some(n => n.id === newNotif.id || (n.type === 'new_follower' && n.fromUserId === data.followerId))) return prev;
+                const updated = [newNotif, ...prev];
+                try {
+                  localStorage.setItem(STORAGE_KEYS.APP_NOTIFICATIONS, JSON.stringify(updated));
+                } catch {}
+                return updated;
+              });
+            }
+          }
+        }
+      )
     // Realtime channel for admin events (feedback from founders)
     const adminChannel = supabase
       .channel('public:admin_channel')
@@ -1667,8 +1705,35 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               if (prev.some(f => f.follower_id === row.follower_id && f.following_id === row.following_id)) return prev;
               return [...prev, { follower_id: row.follower_id, following_id: row.following_id }];
             });
-            if (row.following_id === currentUser.id) {
+            const isTargetMe = row.following_id === currentUser.id ||
+              (currentUser.handle && row.following_id === currentUser.handle) ||
+              (row.following_id === 'a1bac354-0a88-486c-9289-049e75c61c12' && currentUser.id === 'user-patricio') ||
+              (row.following_id === 'user-patricio' && currentUser.id === 'a1bac354-0a88-486c-9289-049e75c61c12');
+
+            if (isTargetMe) {
               setFollowersUserIds(prev => prev.includes(row.follower_id) ? prev : [...prev, row.follower_id]);
+              const followerUser = users.find(u => u.id === row.follower_id || u.handle === row.follower_id);
+              const followerName = followerUser?.name || 'Un piloto';
+              setNotifications(prev => {
+                if (prev.some(n => n.type === 'new_follower' && n.fromUserId === row.follower_id)) return prev;
+                const newNotif: AppNotification = {
+                  id: `notif-follow-${row.follower_id}-${Date.now()}`,
+                  type: 'new_follower',
+                  title: 'Nuevo Seguidor',
+                  message: `${followerName} ha comenzado a seguirte.`,
+                  createdAt: new Date().toISOString(),
+                  read: false,
+                  toUserId: currentUser.id,
+                  fromUserId: row.follower_id,
+                  fromUserName: followerName,
+                  fromUserAvatar: followerUser?.avatar || 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=150'
+                };
+                const updated = [newNotif, ...prev];
+                try {
+                  localStorage.setItem(STORAGE_KEYS.APP_NOTIFICATIONS, JSON.stringify(updated));
+                } catch {}
+                return updated;
+              });
             }
             if (row.follower_id === currentUser.id) {
               setFollowingUserIds(prev => prev.includes(row.following_id) ? prev : [...prev, row.following_id]);
@@ -3463,10 +3528,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       surface_breakdown: data.surfaceBreakdown || { asphaltPercentage: 50, dirtPercentage: 50, curveDensity: 'Media' },
       group_info: {
         ...(data.groupInfo || {}),
+        waypoints: data.waypoints || [],
+        gmaps_url: data.gmapsUrl || '',
+        route_proposal_id: data.routeProposalId || '',
         kudos_users: [],
         kudos_avatars: []
       }
     };
+
+    // Notificar a miembros de la tribu o seguidores en tiempo real
+    createNotification({
+      type: 'route_published',
+      title: 'Nueva Rodada Grabada',
+      message: `${currentUser.name} ha publicado la expedición "${data.title}" (${data.distanceKm || 0} km).`,
+      crewId: data.groupInfo?.crewId,
+      crewName: data.groupInfo?.crewName,
+      fromUserId: currentUser.id,
+      fromUserName: currentUser.name,
+      fromUserAvatar: currentUser.avatar || 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=150',
+      actionUrl: `/actividad/${newActId}`
+    });
 
     // Antes el error se ignoraba: si se guardaba la rodada sin señal (en la montaña), la actividad
     // nunca llegaba al feed de los demás. Ahora se encola y se sube al volver la conexión.
@@ -3598,6 +3679,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               enqueueOfflineAction('follow_user', { follower_id: effectiveFollowerId, following_id: effectiveTargetId });
             }
           });
+          supabase.channel('public:social_notifications').send({
+            type: 'broadcast',
+            event: 'new_follower',
+            payload: {
+              toUserId: effectiveTargetId,
+              followerId: currentUser.id,
+              followerName: currentUser.name,
+              followerHandle: currentUser.handle,
+              followerAvatar: currentUser.avatar
+            }
+          }).then(() => {}).catch(() => {});
         }
       }
 
@@ -3638,6 +3730,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             enqueueOfflineAction('follow_user', { follower_id: effectiveFollowerId, following_id: effectiveTargetId });
           }
         });
+        supabase.channel('public:social_notifications').send({
+          type: 'broadcast',
+          event: 'new_follower',
+          payload: {
+            toUserId: effectiveTargetId,
+            followerId: currentUser.id,
+            followerName: currentUser.name,
+            followerHandle: currentUser.handle,
+            followerAvatar: currentUser.avatar
+          }
+        }).then(() => {}).catch(() => {});
       }
 
       return next;

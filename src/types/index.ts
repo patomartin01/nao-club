@@ -307,7 +307,7 @@ export interface CrewChatMessage {
   status: 'pending' | 'accepted' | 'rejected';
 }
 
-export type NotificationType = 'route_published' | 'follow_request' | 'crew_invite' | 'rodada_convoked';
+export type NotificationType = 'route_published' | 'follow_request' | 'crew_invite' | 'rodada_convoked' | 'new_follower';
 
 export interface AppNotification {
   id: string;

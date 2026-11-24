@@ -57,6 +57,10 @@ export const Navbar: React.FC<NavbarProps> = () => {
   const handleRouteNotificationClick = (notif: typeof notifications[0]) => {
     markNotificationAsRead(notif.id);
     setShowNotifications(false);
+    if (notif.type === 'new_follower' && notif.fromUserId) {
+      openPilotProfileById(notif.fromUserId);
+      return;
+    }
     if (notif.crewId) {
       enterCrew(notif.crewId);
     }
@@ -210,7 +214,7 @@ export const Navbar: React.FC<NavbarProps> = () => {
                                 className="w-8 h-8 rounded-full object-cover border border-[#1A1918]/10"
                               />
                               <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-[#E6332A] text-white rounded-full flex items-center justify-center border border-[#1A1918]/10 text-[8px]">
-                                📍
+                                {notif.type === 'new_follower' ? '👤' : '📍'}
                               </div>
                             </div>
                             <div className="min-w-0 flex-1">
@@ -228,7 +232,7 @@ export const Navbar: React.FC<NavbarProps> = () => {
                                 {notif.message}
                               </p>
                               <span className="text-[9px] font-mono text-[#1A1918]/50 block mt-1">
-                                Toca para ver en Tribus →
+                                {notif.type === 'new_follower' ? 'Toca para ver perfil de piloto →' : 'Toca para ver en Tribus →'}
                               </span>
                             </div>
                           </div>
