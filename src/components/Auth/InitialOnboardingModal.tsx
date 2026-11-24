@@ -88,7 +88,6 @@ export const InitialOnboardingModal: React.FC = () => {
   const [bikeYear, setBikeYear] = useState<number | string>(2023);
   const [bikeCc, setBikeCc] = useState<number | string>(1250);
   const [bikeType, setBikeType] = useState<BikeType>('Adventure / Maxi-Trail');
-  const [bikeTires, setBikeTires] = useState('Continental TKC80 (50/50)');
   const [bikePhotoPreview, setBikePhotoPreview] = useState<string>('');
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -223,8 +222,7 @@ export const InitialOnboardingModal: React.FC = () => {
         type: bikeType,
         nickname: bikeNickname.trim() || undefined,
         photoUrl: bikePhotoPreview || defaultBikePhoto,
-        modifications: [],
-        tires: bikeTires.trim() || 'Doble propósito'
+        modifications: []
       });
     }
 
@@ -608,35 +606,20 @@ export const InitialOnboardingModal: React.FC = () => {
               </div>
             </div>
 
-            {/* Type & Tires */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block mb-1">
-                  Tipo de moto
-                </label>
-                <select
-                  value={bikeType}
-                  onChange={(e) => setBikeType(e.target.value as BikeType)}
-                  className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl px-3 py-2.5 text-xs text-[#1A1918] focus:outline-none transition font-sans font-medium shadow-sm cursor-pointer"
-                >
-                  {BIKE_TYPES.map(t => (
-                    <option key={t} value={t}>{t}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block mb-1">
-                  Neumáticos instalados
-                </label>
-                <input
-                  type="text"
-                  value={bikeTires}
-                  onChange={(e) => setBikeTires(e.target.value)}
-                  placeholder="Ej. Continental TKC80 (50/50)"
-                  className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl px-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-sm"
-                />
-              </div>
+            {/* Type */}
+            <div>
+              <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block mb-1">
+                Tipo de moto
+              </label>
+              <select
+                value={bikeType}
+                onChange={(e) => setBikeType(e.target.value as BikeType)}
+                className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl px-3 py-2.5 text-xs text-[#1A1918] focus:outline-none transition font-sans font-medium shadow-sm cursor-pointer"
+              >
+                {BIKE_TYPES.map(t => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </select>
             </div>
 
             {/* Action Buttons */}

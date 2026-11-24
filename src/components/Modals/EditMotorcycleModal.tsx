@@ -43,7 +43,6 @@ export const EditMotorcycleModal: React.FC<EditMotorcycleModalProps> = ({
   const [type, setType] = useState<BikeType>('Doble Propósito');
   const [nickname, setNickname] = useState('');
   const [photoUrl, setPhotoUrl] = useState('');
-  const [tires, setTires] = useState('');
   const [modificationsInput, setModificationsInput] = useState('');
   const editBikeFileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -95,7 +94,6 @@ export const EditMotorcycleModal: React.FC<EditMotorcycleModalProps> = ({
       setType(bike.type || 'Doble Propósito');
       setNickname(bike.nickname || '');
       setPhotoUrl(bike.photoUrl || '');
-      setTires(bike.tires || 'Continental TKC80 (50/50)');
       setModificationsInput(
         bike.modifications && bike.modifications.length > 0
           ? bike.modifications.join(', ')
@@ -126,7 +124,6 @@ export const EditMotorcycleModal: React.FC<EditMotorcycleModalProps> = ({
       type,
       nickname: nickname.trim() || undefined,
       photoUrl: finalPhoto,
-      tires: tires.trim() || 'Mixtas 70/30',
       modifications: modsArray.length > 0 ? modsArray : ['Original de fábrica']
     });
 
@@ -267,20 +264,6 @@ export const EditMotorcycleModal: React.FC<EditMotorcycleModalProps> = ({
                 className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl px-3.5 py-2.5 text-xs text-[#1A1918] font-mono font-bold focus:outline-none transition shadow-sm"
               />
             </div>
-          </div>
-
-          {/* Tires */}
-          <div className="space-y-1">
-            <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block">
-              Neumáticos / Compuesto Montado
-            </label>
-            <input
-              type="text"
-              value={tires}
-              onChange={(e) => setTires(e.target.value)}
-              placeholder="Ej. Continental TKC80 (50/50), Motoz Tractionator RallZ"
-              className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl px-3.5 py-2.5 text-xs text-[#1A1918] focus:outline-none transition shadow-sm"
-            />
           </div>
 
           {/* Modifications */}

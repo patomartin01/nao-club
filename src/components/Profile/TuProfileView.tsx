@@ -156,7 +156,6 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
   const [bikeType, setBikeType] = useState<BikeType>('Doble Propósito');
   const [bikeNickname, setBikeNickname] = useState('');
   const [bikePhotoUrl, setBikePhotoUrl] = useState('');
-  const [bikeTires, setBikeTires] = useState('Continental TKC80 (50/50)');
   const [bikeMods, setBikeMods] = useState('Skid plate de aluminio, Defensas de motor, Faros auxiliares');
 
   const bikeFileInputRef = React.useRef<HTMLInputElement>(null);
@@ -343,8 +342,7 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
       type: bikeType,
       nickname: bikeNickname.trim() || undefined,
       photoUrl: bikePhotoUrl.trim() || PRESET_MOTO_PHOTOS[0],
-      modifications: modsArray.length > 0 ? modsArray : ['Configuración estándar de fábrica'],
-      tires: bikeTires.trim() || 'Mixtas 70/30'
+      modifications: modsArray.length > 0 ? modsArray : ['Configuración estándar de fábrica']
     });
 
     setBikeModel('');
@@ -709,8 +707,8 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
                     {/* Technical Specs Pill Box */}
                     <div className="grid grid-cols-2 gap-2 bg-[#F4EEDB] border border-[#1A1918]/10 p-3 rounded-xl text-xs font-mono">
                       <div>
-                        <span className="text-[9px] uppercase text-[#1A1918]/60 block font-bold">Neumáticos</span>
-                        <span className="text-[#1A1918] font-semibold truncate block">{bike.tires || '70/30 Mixtas'}</span>
+                        <span className="text-[9px] uppercase text-[#1A1918]/60 block font-bold">Año</span>
+                        <span className="text-[#1A1918] font-semibold truncate block">{bike.year || 2024}</span>
                       </div>
                       <div>
                         <span className="text-[9px] uppercase text-[#1A1918]/60 block font-bold">Cilindrada</span>
@@ -1265,46 +1263,31 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
                 </div>
               </div>
 
-              {/* Type and Tires */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block mb-1">
-                    Tipo de moto
-                  </label>
-                  <select
-                    value={bikeType}
-                    onChange={(e) => setBikeType(e.target.value as BikeType)}
-                    className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl px-3 py-2.5 text-xs text-[#1A1918] focus:outline-none transition font-sans font-medium shadow-sm cursor-pointer"
-                  >
-                    {[
-                      'Doble Propósito', 
-                      'Adventure / Maxi-Trail', 
-                      'Enduro', 
-                      'Scrambler', 
-                      'Naked', 
-                      'Deportiva', 
-                      'Chopper / Cruiser', 
-                      'Touring', 
-                      'Cafe Racer',
-                      'Scooter'
-                    ].map(t => (
-                      <option key={t} value={t}>{t}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block mb-1">
-                    Neumáticos instalados
-                  </label>
-                  <input
-                    type="text"
-                    value={bikeTires}
-                    onChange={(e) => setBikeTires(e.target.value)}
-                    placeholder="Ej. Continental TKC80 (50/50)"
-                    className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl px-3 py-2.5 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none transition font-sans font-medium shadow-sm"
-                  />
-                </div>
+              {/* Type */}
+              <div>
+                <label className="text-[10px] font-mono uppercase font-semibold text-[#1A1918] block mb-1">
+                  Tipo de moto
+                </label>
+                <select
+                  value={bikeType}
+                  onChange={(e) => setBikeType(e.target.value as BikeType)}
+                  className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 focus:border-[#E6332A] rounded-xl px-3 py-2.5 text-xs text-[#1A1918] focus:outline-none transition font-sans font-medium shadow-sm cursor-pointer"
+                >
+                  {[
+                    'Doble Propósito', 
+                    'Adventure / Maxi-Trail', 
+                    'Enduro', 
+                    'Scrambler', 
+                    'Naked', 
+                    'Deportiva', 
+                    'Chopper / Cruiser', 
+                    'Touring', 
+                    'Cafe Racer',
+                    'Scooter'
+                  ].map(t => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
               </div>
 
               {/* Modifications */}

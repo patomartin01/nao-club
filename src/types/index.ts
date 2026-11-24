@@ -108,7 +108,7 @@ export interface Motorcycle {
   nickname?: string;
   photoUrl: string;
   modifications: string[];
-  tires: string; // e.g. "Mitas E-07+ (50/50)", "Continental TKC80", "Metzeler Karoo 4"
+  tires?: string; // opcional / deprecado
   isPrimary?: boolean;
 }
 

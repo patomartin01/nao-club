@@ -554,7 +554,7 @@ ${gpxPoints}
                         )}
                       </div>
                       <p className="text-[#1A1918]/70 text-[11px] font-sans ">
-                        {bike ? `${bike.brand} ${bike.model}` : 'Doble Propósito'} · {bike?.tires || 'Llantas 50/50'}
+                        {bike ? `${bike.brand} ${bike.model} (${bike.displacementCc} cc)` : 'Doble Propósito'}
                       </p>
                     </div>
                   </div>

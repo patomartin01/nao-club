@@ -287,10 +287,7 @@ export const PilotProfileModal: React.FC = () => {
                     />
                     <div className="text-xs min-w-0 flex-1">
                       <p className="font-sans font-semibold text-[#1A1918] text-sm truncate">{bike.brand} {bike.model}</p>
-                      <p className="text-[10px] text-[#E6332A] font-mono font-semibold mt-0.5 uppercase">{bike.type} • {bike.displacementCc}cc</p>
-                      <p className="text-[10px] text-[#1A1918]/70 mt-1 font-sans font-medium">
-                        Llantas: <strong className="text-[#1A1918] font-mono font-semibold not-italic">{bike.tires}</strong>
-                      </p>
+                      <p className="text-[10px] text-[#E6332A] font-mono font-semibold mt-0.5 uppercase">{bike.type} • {bike.displacementCc}cc • {bike.year || 2024}</p>
                     </div>
                   </div>
                 ))}

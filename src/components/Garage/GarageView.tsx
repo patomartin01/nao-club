@@ -19,7 +19,6 @@ export const GarageView: React.FC = () => {
   const [type, setType] = useState<BikeType>('Doble Propósito');
   const [nickname, setNickname] = useState('');
   const [photoUrl, setPhotoUrl] = useState('');
-  const [tires, setTires] = useState('Continental TKC80 (50/50)');
   const [modificationsInput, setModificationsInput] = useState('Skid plate de aluminio, Defensas altas de motor, Faros auxiliares');
   const bikeFileInputRef = useRef<HTMLInputElement>(null);
 
@@ -77,8 +76,7 @@ export const GarageView: React.FC = () => {
       type,
       nickname: nickname.trim() || undefined,
       photoUrl: photoUrl.trim() || 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=800',
-      modifications: modsArray.length > 0 ? modsArray : ['Original de fábrica'],
-      tires: tires.trim() || 'Llantas Mixtas 70/30'
+      modifications: modsArray.length > 0 ? modsArray : ['Original de fábrica']
     });
 
     setModel('');
@@ -233,7 +231,7 @@ export const GarageView: React.FC = () => {
                     {bike.brand} {bike.model} ({bike.year})
                   </h3>
                   <p className="font-sans text-xs text-[#1A1918]/70 mt-1 font-medium">
-                    Compuesto &amp; Neumáticos: <strong className="text-[#1A1918] font-sans font-bold">{bike.tires}</strong>
+                    Categoría &amp; Tipo: <strong className="text-[#1A1918] font-sans font-bold">{bike.type} • {bike.displacementCc} cc</strong>
                   </p>
                 </div>
 
@@ -414,17 +412,6 @@ export const GarageView: React.FC = () => {
                     className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 rounded-xl px-3 py-2.5 text-[#1A1918] font-bold focus:outline-none focus:ring-2 focus:ring-[#E6332A] shadow-sm"
                   />
                 </div>
-              </div>
-
-              <div>
-                <label className="text-[#1A1918]/80 uppercase text-[10px] block mb-1 font-sans font-semibold tracking-wider">Neumáticos montados</label>
-                <input
-                  type="text"
-                  value={tires}
-                  onChange={(e) => setTires(e.target.value)}
-                  placeholder="Ej. Metzeler Karoo 4 (50/50)"
-                  className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 rounded-xl px-3 py-2.5 text-[#1A1918] font-bold placeholder-[#1A1918]/40 focus:outline-none focus:ring-2 focus:ring-[#E6332A] shadow-sm"
-                />
               </div>
 
               <div>

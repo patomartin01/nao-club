@@ -856,7 +856,7 @@ ${gpxPoints}
                         <p className="font-bold text-white text-[10px] uppercase truncate">
                           {userBike.brand} {userBike.model}
                         </p>
-                        <p className="text-[9px] text-earth truncate">{userBike.tires}</p>
+                        <p className="text-[9px] text-earth truncate">{userBike.type} · {userBike.displacementCc}cc</p>
                       </div>
                     )}
                     {!isMe ? (
