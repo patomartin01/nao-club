@@ -231,7 +231,25 @@ const mapRouteRow = (p: any): RouteProposal => ({
 });
 
 // IDs de tribus obsoletas o de demo que deben ser purgadas y nunca mostrarse
-const DEPRECATED_CREW_IDS = new Set(['crew-motomami', 'crew-1793386544112']);
+export const DEPRECATED_CREW_IDS = new Set(['crew-motomami', 'crew-1793386544112']);
+
+// Validador universal de tribus obsoletas, huérfanas o con 0 miembros
+export const isDeprecatedCrew = (c: any): boolean => {
+  if (!c) return true;
+  if (c.id === 'crew-motomami' || c.id === 'crew-1793386544112' || DEPRECATED_CREW_IDS.has(c.id)) return true;
+  if (c.invite_code === 'NAO-2026' || c.inviteCode === 'NAO-2026') return true;
+  const baseCity = c.base_city || c.baseCity || '';
+  if (typeof baseCity === 'string' && baseCity.toLowerCase().includes('poniente')) return true;
+  const members = c.members || c.crew_members;
+  if (Array.isArray(members)) {
+    const validMembers = members.filter((m: any) => {
+      const uid = m?.userId || m?.user_id;
+      return uid && uid !== 'user-patricio';
+    });
+    if (validMembers.length === 0) return true;
+  }
+  return false;
+};
 
 // Mapeadores para motocicletas de Hangar (conversión robusta entre camelCase y snake_case)
 const mapMotorcycleRow = (m: any): Motorcycle => ({
@@ -956,7 +974,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
         let parsed: Crew[] = JSON.parse(savedCrews);
         // Purgar inmediatamente IDs obsoletos de demo
-        parsed = parsed.filter(c => !DEPRECATED_CREW_IDS.has(c.id));
+        parsed = parsed.filter(c => !isDeprecatedCrew(c));
         parsed = parsed.map(c => {
           const coverOverride = customCovers[c.id];
           const sanitizedMembers = (Array.isArray(c.members) ? c.members : []).filter(m => m.userId !== 'user-patricio');
@@ -1006,8 +1024,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const seenNames = new Set<string>();
         const uniqueCrews: Crew[] = [];
         for (const c of parsed) {
-          if (deletedSet.has(c.id) || DEPRECATED_CREW_IDS.has(c.id)) continue;
-          if (c.id === 'crew-motomami' || c.id === 'crew-1793386544112' || (c.members.filter(m => m.userId !== 'user-patricio').length === 0)) continue;
+          if (deletedSet.has(c.id) || isDeprecatedCrew(c)) continue;
           const normKey = (c.slug || c.name.toLowerCase().trim().replace(/\s+/g, '-'));
           if (!seenNames.has(normKey)) {
             seenNames.add(normKey);
@@ -1183,7 +1200,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // Hydrate crews from cloud
     supabase.from('crews').select('*, crew_members(*)').then(({ data }) => {
       if (data && data.length > 0) {
-        const mappedCrews: Crew[] = data.map((c: any) => ({
+        const cleanCloudData = data.filter((c: any) => !isDeprecatedCrew(c));
+        const mappedCrews: Crew[] = cleanCloudData.map((c: any) => ({
           id: c.id,
           name: c.name,
           slug: c.slug,
@@ -1202,7 +1220,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             })),
           whatsappGroupUrl: c.whatsapp_group_url,
           createdAt: c.created_at?.split('T')[0] || ''
-        }));
+        })).filter(c => !isDeprecatedCrew(c));
         setCrews(prev => {
           let customCovers: Record<string, string> = {};
           try {
@@ -1226,14 +1244,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           const deletedSet = new Set(deletedCrewIds);
 
           const cloudIds = new Set(mergedMapped.map(cr => cr.id));
-          const allCrews = [...mergedMapped, ...prev.filter(cr => !cloudIds.has(cr.id))];
+          const allCrews = [...mergedMapped, ...prev.filter(cr => !cloudIds.has(cr.id) && !isDeprecatedCrew(cr))];
 
           const seenNames = new Set<string>();
           const finalCrews: Crew[] = [];
           for (const c of allCrews) {
-            if (deletedSet.has(c.id) || DEPRECATED_CREW_IDS.has(c.id)) continue;
-            // Excluir grupos huérfanos o con 0 pilotos activos
-            if (c.id === 'crew-motomami' || c.id === 'crew-1793386544112' || (c.members.filter(m => m.userId !== 'user-patricio').length === 0)) continue;
+            if (deletedSet.has(c.id) || isDeprecatedCrew(c)) continue;
             const normKey = (c.slug || c.name.toLowerCase().trim().replace(/\s+/g, '-'));
             if (!seenNames.has(normKey)) {
               seenNames.add(normKey);
@@ -1243,7 +1259,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
           // Sincronizar currentCrew si ya estaba seleccionado y pertenece a él
           setCurrentCrew(curr => {
-            if (!curr || DEPRECATED_CREW_IDS.has(curr.id) || curr.id === 'crew-motomami') {
+            if (!curr || isDeprecatedCrew(curr)) {
               return finalCrews[0] || null;
             }
             const updatedCurr = finalCrews.find(c => c.id === curr.id);

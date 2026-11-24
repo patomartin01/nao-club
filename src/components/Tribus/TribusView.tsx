@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useApp } from '../../context/AppContext';
+import { useApp, isDeprecatedCrew } from '../../context/AppContext';
 import { 
   Users, 
   Calendar, 
@@ -306,7 +306,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
   const [showPilotSearchDropdown, setShowPilotSearchDropdown] = useState(false);
 
   // Active crew object - Excluyendo estrictamente tribus obsoletas o con 0 miembros
-  const validCrewsList = crews.filter(c => c.id !== 'crew-motomami' && c.id !== 'crew-1793386544112' && (c.members || []).length > 0);
+  const validCrewsList = crews.filter(c => !isDeprecatedCrew(c));
   const activeTribu = validCrewsList.find(c => c.id === selectedTribuId) 
     || validCrewsList.find(c => c.id === 'crew-1793316469201')
     || validCrewsList[0] 
@@ -314,8 +314,8 @@ export const TribusView: React.FC<TribusViewProps> = ({
 
   // Auto-corregir si se seleccionó accidentalmente una tribu obsoleta o con 0 pilotos
   useEffect(() => {
-    if (selectedTribuId === 'crew-motomami' || selectedTribuId === 'crew-1793386544112') {
-      const realCrew = crews.find(c => c.id !== 'crew-motomami' && c.id !== 'crew-1793386544112' && (c.members || []).length > 0);
+    if (selectedTribuId && isDeprecatedCrew({ id: selectedTribuId })) {
+      const realCrew = crews.find(c => !isDeprecatedCrew(c));
       setSelectedTribuId(realCrew ? realCrew.id : null);
     }
   }, [selectedTribuId, crews]);
@@ -835,8 +835,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
   // Filtered tribus for the directory: LOS GRUPOS SON ESTRICTAMENTE PRIVADOS
   // Solo se visualizan aquellos donde el usuario actual es creador o miembro confirmado
   const myCrews = crews.filter(c => {
-    if (c.id === 'crew-motomami' || c.id === 'crew-1793386544112') return false;
-    if (!c.members || c.members.length === 0) return false;
+    if (isDeprecatedCrew(c)) return false;
     return c.creatorId === currentUser.id || c.members.some(m => m.userId === currentUser.id);
   });
 
@@ -1267,13 +1266,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                   
                   {/* Header */}
                   {(() => {
-                    const validCrews = crews.filter(c => {
-                      if (c.id === 'crew-motomami' || c.id === 'crew-1793386544112') return false;
-                      if (!c.members || c.members.length === 0) return false;
-                      const activeCount = (c.members || []).filter(m => m.userId !== 'user-patricio').length;
-                      if (activeCount === 0) return false;
-                      return true;
-                    });
+                    const validCrews = crews.filter(c => !isDeprecatedCrew(c));
                     return (
                       <>
                         <div className="px-1 flex items-center justify-between border-b border-[#E5DFD5] pb-2.5">

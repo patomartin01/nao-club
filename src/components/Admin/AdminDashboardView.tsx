@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { useApp } from '../../context/AppContext';
+import { useApp, isDeprecatedCrew } from '../../context/AppContext';
 import { isSupabaseConfigured, supabase } from '../../lib/supabase';
 import { User, Motorcycle, Crew } from '../../types';
 import { 
@@ -115,7 +115,7 @@ export const AdminDashboardView: React.FC = () => {
         setCloudMemberships(membersRes.data);
       }
       if (crewsRes.data) {
-        setCloudCrews(crewsRes.data);
+        setCloudCrews(crewsRes.data.filter((c: any) => !isDeprecatedCrew(c)));
       }
       if (bikesRes.data) {
         setCloudBikes(bikesRes.data);
@@ -1281,7 +1281,7 @@ export const AdminDashboardView: React.FC = () => {
             <span className="text-xs font-mono text-[#1A1918]/60">Sincronizado con Supabase</span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {(cloudCrews.length > 0 ? cloudCrews : crews).map((c: any) => {
+            {(cloudCrews.length > 0 ? cloudCrews : crews).filter((c: any) => !isDeprecatedCrew(c)).map((c: any) => {
               const membersCount = cloudMemberships.filter(m => m.crew_id === c.id).length || c.members?.length || 1;
               return (
                 <div key={c.id} className="p-4 bg-[#F4EEDB] border border-[#1A1918]/10 rounded-xl shadow-sm space-y-3">

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useApp } from '../../context/AppContext';
+import { useApp, isDeprecatedCrew } from '../../context/AppContext';
 import { 
   Users, 
   Calendar, 
@@ -194,7 +194,7 @@ export const GruposView: React.FC<GruposViewProps> = ({
             </h4>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {crews.map(crew => {
+              {crews.filter(c => !isDeprecatedCrew(c)).map(crew => {
                 const isMember = crew.members.some(m => m.userId === currentUser.id);
 
                 return isMember ? (
