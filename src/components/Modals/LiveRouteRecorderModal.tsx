@@ -159,9 +159,9 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
     setMapLayer(nextLayer);
 
     const labels: Record<string, string> = {
-      'google-hybrid': '🛰️ Google Híbrido (Satélite + Calles)',
-      'google-streets': '🗺️ Google Calles',
-      'satellite-clean': '📸 Satélite Limpio (Maxar)'
+      'google-hybrid': 'Google Híbrido (Satélite + Calles)',
+      'google-streets': 'Google Calles (Red Vial)',
+      'satellite-clean': 'Satélite Alta Resolución'
     };
 
     setLayerToast(labels[nextLayer]);
@@ -1235,7 +1235,7 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
             title="Alternar capa de mapa"
           >
             <span className="w-1.5 h-1.5 rounded-full bg-[#25D366] animate-pulse"></span>
-            {mapLayer === 'google-hybrid' ? '🛰️ Google Híbrido' : mapLayer === 'google-streets' ? '🗺️ Google Calles' : '📸 Satélite Limpio'}
+            {mapLayer === 'google-hybrid' ? 'Google Híbrido' : mapLayer === 'google-streets' ? 'Google Calles' : 'Satélite HD'}
           </button>
 
           <button

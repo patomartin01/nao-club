@@ -13,6 +13,8 @@ import {
   Navigation,
   Download,
   Layers,
+  Map as MapIcon,
+  Compass,
   Send,
   Users,
   Bike,
@@ -424,20 +426,22 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setMapLayer('hybrid')}
-                  className={`px-2.5 py-1 text-[10px] font-mono font-bold rounded-lg transition ${
+                  className={`px-2.5 py-1 text-[10px] font-mono font-bold rounded-lg transition flex items-center gap-1.5 ${
                     mapLayer === 'hybrid' ? 'bg-[#1A1918] text-white shadow-sm' : 'text-[#1A1918]/70 hover:text-[#1A1918]'
                   }`}
                 >
-                  🛰️ Satélite
+                  <Layers className="w-3 h-3" />
+                  <span>Satélite</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setMapLayer('roadmap')}
-                  className={`px-2.5 py-1 text-[10px] font-mono font-bold rounded-lg transition ${
+                  className={`px-2.5 py-1 text-[10px] font-mono font-bold rounded-lg transition flex items-center gap-1.5 ${
                     mapLayer === 'roadmap' ? 'bg-[#1A1918] text-white shadow-sm' : 'text-[#1A1918]/70 hover:text-[#1A1918]'
                   }`}
                 >
-                  🗺️ Calles
+                  <MapIcon className="w-3 h-3" />
+                  <span>Calles</span>
                 </button>
               </div>
 
@@ -463,12 +467,12 @@ export const ActivityDetailModal: React.FC<ActivityDetailModalProps> = ({
             {/* Google Maps External Navigation Launch Bar */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 p-3 sm:p-4 bg-[#F4EEDB] border border-[#1A1918]/10 rounded-2xl shadow-sm">
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-9 h-9 rounded-xl bg-[#F7B32B] flex items-center justify-center shrink-0 border border-[#1A1918]/10 text-base shadow-sm">
-                  🗺️
+                <div className="w-9 h-9 rounded-xl bg-[#1A1918] flex items-center justify-center shrink-0 border border-[#1A1918]/10 text-white shadow-sm">
+                  <Compass className="w-4 h-4 text-[#FAF6ED]" />
                 </div>
                 <div className="min-w-0">
                   <span className="font-sans font-semibold text-xs text-[#1A1918] block truncate">
-                    Google Maps Multi-Parada
+                    Navegación Google Maps
                   </span>
                   <span className="text-[10px] font-mono text-[#1A1918]/70 block truncate">
                     {effectiveWaypoints.length > 0 
