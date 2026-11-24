@@ -165,6 +165,7 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
       ((u.name && u.name.toLowerCase().includes(q)) || (u.handle && u.handle.toLowerCase().includes(q)))
     ).slice(0, 6);
   }, [searchQuery, users, currentUser.id]);
+  const [feedScope, setFeedScope] = useState<'comunidad' | 'siguiendo'>('comunidad');
   const [isGpsBannerDismissed, setIsGpsBannerDismissed] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
     try {
@@ -208,23 +209,22 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
         }
       }
 
-      // 3. Social relevance filter:
-      // Si el usuario está buscando expresamente texto, permitir resultados de toda la comunidad
+      // 3. Social scope filter:
       if (searchQuery.trim()) return true;
 
-      const isOwnActivity = act.pilotId === currentUser.id;
-      const isFollowedPilot = isFollowingUser(act.pilotId);
-      const hasFollowedFriend = Boolean(
-        act.groupInfo?.participants?.some(
-          p => p.userId === currentUser.id || isFollowingUser(p.userId)
-        )
-      );
+      if (feedScope === 'siguiendo') {
+        const isOwnActivity = act.pilotId === currentUser.id;
+        const isFollowedPilot = isFollowingUser(act.pilotId);
+        const hasFollowedFriend = Boolean(
+          act.groupInfo?.participants?.some(
+            p => p.userId === currentUser.id || isFollowingUser(p.userId)
+          )
+        );
+        return isOwnActivity || isFollowedPilot || hasFollowedFriend;
+      }
 
-      // Si el usuario aún no sigue a nadie, mostrar expediciones de la comunidad para que el feed no esté vacío
-      const hasAnyFollows = followingUserIds && followingUserIds.length > 0;
-      if (!hasAnyFollows) return true;
-
-      return isOwnActivity || isFollowedPilot || hasFollowedFriend;
+      // 'comunidad' muestra todas las rodadas del club
+      return true;
     })
     .sort((a, b) => {
       if (sortOrder === 'distance') return b.distanceKm - a.distanceKm;
@@ -517,6 +517,43 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
             )}
           </div>
 
+          {/* Feed Scope: Comunidad vs Siguiendo */}
+          <div className="flex items-center justify-between gap-2 pt-1">
+            <div className="inline-flex p-1 bg-[#F4EEDB] border border-[#1A1918]/10 rounded-xl shadow-inner">
+              <button
+                type="button"
+                onClick={() => setFeedScope('comunidad')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-sans font-semibold transition cursor-pointer ${
+                  feedScope === 'comunidad'
+                    ? 'bg-[#1A1918] text-[#FAF6ED] shadow-sm'
+                    : 'text-[#1A1918]/70 hover:text-[#1A1918]'
+                }`}
+              >
+                Comunidad
+              </button>
+              <button
+                type="button"
+                onClick={() => setFeedScope('siguiendo')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-sans font-semibold transition flex items-center gap-1.5 cursor-pointer ${
+                  feedScope === 'siguiendo'
+                    ? 'bg-[#1A1918] text-[#FAF6ED] shadow-sm'
+                    : 'text-[#1A1918]/70 hover:text-[#1A1918]'
+                }`}
+              >
+                <span>Siguiendo</span>
+                {followingUserIds.length > 0 && (
+                  <span className="w-4 h-4 rounded-full bg-[#E6332A] text-white text-[9px] font-mono flex items-center justify-center font-bold">
+                    {followingUserIds.length}
+                  </span>
+                )}
+              </button>
+            </div>
+
+            <span className="text-[10px] font-mono text-[#1A1918]/60">
+              {filteredActivities.length} {filteredActivities.length === 1 ? 'rodada' : 'rodadas'}
+            </span>
+          </div>
+
           {/* Horizontal compact scroll for categories on mobile */}
           <div className="flex items-center gap-2 py-1 overflow-x-auto no-scrollbar -mx-2 px-2 sm:mx-0 sm:px-0">
             {disciplineFilters.map(f => (
@@ -647,28 +684,42 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
                   </div>
                   <div>
                     <h3 className="font-display font-semibold text-base sm:text-lg text-[#1A1918]">
-                      Sin rodadas aún
+                      {feedScope === 'siguiendo' ? 'Sin rodadas de tus pilotos seguidos' : 'Sin rodadas aún'}
                     </h3>
                     <p className="text-xs font-sans text-[#1A1918]/70 mt-0.5 max-w-sm mx-auto">
-                      Sé el primer piloto en registrar una salida o proponer una expedición para la comunidad.
+                      {feedScope === 'siguiendo'
+                        ? 'Los pilotos que sigues aún no han registrado rodadas recientes. Cambia a "Comunidad" para ver todas las rodadas del club.'
+                        : 'Sé el primer piloto en registrar una salida o proponer una expedición para la comunidad.'}
                     </p>
                   </div>
                   <div className="flex items-center justify-center gap-2 pt-1 flex-wrap">
-                    <button
-                      type="button"
-                      onClick={() => onOpenRecordRoute && onOpenRecordRoute()}
-                      className="py-2.5 px-4 bg-[#E6332A] hover:bg-[#d02c24] text-white border border-[#1A1918]/10 rounded-xl text-xs font-sans font-semibold shadow-sm active:shadow-none transition flex items-center gap-1.5 cursor-pointer"
-                    >
-                      <Plus className="w-3.5 h-3.5 stroke-[3]" />
-                      <span>Grabar rodada</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => onOpenProposeRoute && onOpenProposeRoute()}
-                      className="py-2.5 px-4 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border border-[#1A1918]/10 rounded-xl text-xs font-sans font-semibold shadow-sm active:shadow-none transition cursor-pointer"
-                    >
-                      <span>Proponer ruta</span>
-                    </button>
+                    {feedScope === 'siguiendo' ? (
+                      <button
+                        type="button"
+                        onClick={() => setFeedScope('comunidad')}
+                        className="py-2.5 px-4 bg-[#1A1918] text-[#FAF6ED] rounded-xl text-xs font-sans font-semibold shadow-sm active:shadow-none transition cursor-pointer"
+                      >
+                        Ver rodadas de la Comunidad
+                      </button>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => onOpenRecordRoute && onOpenRecordRoute()}
+                          className="py-2.5 px-4 bg-[#E6332A] hover:bg-[#d02c24] text-white border border-[#1A1918]/10 rounded-xl text-xs font-sans font-semibold shadow-sm active:shadow-none transition flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <Plus className="w-3.5 h-3.5 stroke-[3]" />
+                          <span>Grabar rodada</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onOpenProposeRoute && onOpenProposeRoute()}
+                          className="py-2.5 px-4 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] border border-[#1A1918]/10 rounded-xl text-xs font-sans font-semibold shadow-sm active:shadow-none transition cursor-pointer"
+                        >
+                          <span>Proponer ruta</span>
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               ) : (

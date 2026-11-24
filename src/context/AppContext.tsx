@@ -234,26 +234,16 @@ const mapRouteRow = (p: any): RouteProposal => ({
 });
 
 // IDs de tribus obsoletas o de demo que deben ser purgadas y nunca mostrarse
-export const DEPRECATED_CREW_IDS = new Set(['crew-motomami', 'crew-1793386544112']);
+export const DEPRECATED_CREW_IDS = new Set(['crew-1793386544112']);
 
 // Validador universal de tribus obsoletas, huérfanas o con 0 miembros
 export const isDeprecatedCrew = (c: any): boolean => {
   if (!c) return true;
-  if (c.id === 'crew-motomami' || c.id === 'crew-1793386544112' || DEPRECATED_CREW_IDS.has(c.id)) return true;
-  if (c.invite_code === 'NAO-2026' || c.inviteCode === 'NAO-2026') return true;
+  if (c.id === 'crew-1793386544112' || DEPRECATED_CREW_IDS.has(c.id)) return true;
   const baseCity = (c.base_city || c.baseCity || '').toLowerCase();
-  if (baseCity.includes('poniente') || baseCity.includes('monterrey')) return true;
-  // Cualquier duplicado llamado Motomami que no sea el oficial de 6 pilotos (crew-1793316469201)
+  if (baseCity.includes('monterrey')) return true;
   const name = (c.name || '').toLowerCase().trim();
-  if (name === 'motomami' && c.id !== 'crew-1793316469201') return true;
-  const members = c.members || c.crew_members;
-  if (Array.isArray(members)) {
-    const validMembers = members.filter((m: any) => {
-      const uid = m?.userId || m?.user_id;
-      return uid && uid !== 'user-patricio';
-    });
-    if (validMembers.length === 0) return true;
-  }
+  if (name === 'prueba') return true;
   return false;
 };
 
@@ -330,7 +320,18 @@ const GUEST_PILOT: User = {
 };
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState<User>(GUEST_PILOT);
+  const [currentUser, setCurrentUser] = useState<User>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && parsed.id) return parsed;
+        }
+      } catch {}
+    }
+    return GUEST_PILOT;
+  });
   const currentUserRef = useRef<User>(currentUser);
   useEffect(() => {
     currentUserRef.current = currentUser;
@@ -341,20 +342,101 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setOfflineQueueOwner(currentUser.id);
   }, [currentUser.id]);
   const [users, setUsers] = useState<User[]>(INITIAL_USERS);
-  const [motorcycles, setMotorcycles] = useState<Motorcycle[]>(INITIAL_MOTORCYCLES);
-  const [crews, setCrews] = useState<Crew[]>(INITIAL_CREWS);
+  const [motorcycles, setMotorcycles] = useState<Motorcycle[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const savedMotos = localStorage.getItem(STORAGE_KEYS.MOTORCYCLES);
+        if (savedMotos) {
+          const parsed = JSON.parse(savedMotos);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed.filter((m: Motorcycle) => m.id !== 'moto-1' && m.id !== 'moto-2');
+          }
+        }
+      } catch {}
+    }
+    return INITIAL_MOTORCYCLES;
+  });
+  const [crews, setCrews] = useState<Crew[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEYS.CREWS);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed.filter((c: Crew) => !isDeprecatedCrew(c));
+          }
+        }
+      } catch {}
+    }
+    return INITIAL_CREWS.filter(c => !isDeprecatedCrew(c));
+  });
   const [currentCrew, setCurrentCrew] = useState<Crew | null>(null);
-  const [rodadas, setRodadas] = useState<Rodada[]>(INITIAL_RODADAS);
-  const [currentRodada, setCurrentRodada] = useState<Rodada | null>(INITIAL_RODADAS[0]);
-  const [routeProposals, setRouteProposals] = useState<RouteProposal[]>(INITIAL_ROUTE_PROPOSALS);
-  const [selectedRoute, setSelectedRoute] = useState<RouteProposal | null>(INITIAL_ROUTE_PROPOSALS[0]);
+  const [rodadas, setRodadas] = useState<Rodada[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEYS.RODADAS);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch {}
+    }
+    return INITIAL_RODADAS;
+  });
+  const [currentRodada, setCurrentRodada] = useState<Rodada | null>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEYS.RODADAS);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed[0];
+        }
+      } catch {}
+    }
+    return INITIAL_RODADAS[0];
+  });
+  const [routeProposals, setRouteProposals] = useState<RouteProposal[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEYS.ROUTES);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch {}
+    }
+    return INITIAL_ROUTE_PROPOSALS;
+  });
+  const [selectedRoute, setSelectedRoute] = useState<RouteProposal | null>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEYS.ROUTES);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed[0];
+        }
+      } catch {}
+    }
+    return INITIAL_ROUTE_PROPOSALS[0];
+  });
   const [activeNavTab, setActiveNavTab] = useState<NavTab>('inicio');
   const [crewMessages, setCrewMessages] = useState<CrewChatMessage[]>(INITIAL_CREW_MESSAGES);
 
   // Auth & Cloud State
   const [isAuthModalOpen, setAuthModalOpen] = useState(false);
   const [isSupabaseOnline] = useState(isSupabaseConfigured());
-  const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const [isAuthLoading, setIsAuthLoading] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && parsed.id && parsed.id !== 'guest') return false;
+        }
+      } catch {}
+    }
+    return true;
+  });
   const [isOnboardingOpen, setOnboardingOpen] = useState(false);
   const [founderUserNumber, setFounderUserNumber] = useState<number | null>(null);
   const [currentUserFounderNumber, setCurrentUserFounderNumber] = useState<number | null>(null);
@@ -911,14 +993,53 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Moto Expeditions & Social state
-  const [activities, setActivities] = useState<ActivityPost[]>(INITIAL_ACTIVITIES);
+  const [activities, setActivities] = useState<ActivityPost[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEYS.ACTIVITIES);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            const map = new Map(parsed.map((a: ActivityPost) => [a.id, a]));
+            INITIAL_ACTIVITIES.forEach(a => {
+              if (!map.has(a.id)) map.set(a.id, a);
+            });
+            return Array.from(map.values());
+          }
+        }
+      } catch {}
+    }
+    return INITIAL_ACTIVITIES;
+  });
   const [challenges, setChallenges] = useState<Challenge[]>(INITIAL_CHALLENGES);
   const [completedRouteIds, setCompletedRouteIds] = useState<string[]>(CURRENT_USER.completedRouteIds || ['route-1', 'route-4']);
   const [savedRouteIds, setSavedRouteIds] = useState<string[]>(CURRENT_USER.savedRouteIds || ['route-2', 'route-3', 'route-5']);
   const [routeLists, setRouteLists] = useState<RouteList[]>(INITIAL_ROUTE_LISTS);
   const [selectedPilotProfile, setSelectedPilotProfile] = useState<User | null>(null);
-  const [followingUserIds, setFollowingUserIds] = useState<string[]>([]);
-  const [followersUserIds, setFollowersUserIds] = useState<string[]>([]);
+  const [followingUserIds, setFollowingUserIds] = useState<string[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('nao_following_users');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) return parsed.filter((id: string) => id !== 'user-manuel' && id !== 'user-mich');
+        }
+      } catch {}
+    }
+    return [];
+  });
+  const [followersUserIds, setFollowersUserIds] = useState<string[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('nao_followers_users');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) return parsed.filter((id: string) => id !== 'user-manuel' && id !== 'user-mich');
+        }
+      } catch {}
+    }
+    return [];
+  });
   const [allFollows, setAllFollows] = useState<{ follower_id: string; following_id: string }[]>([]);
   const [followRequests, setFollowRequests] = useState<FollowRequest[]>([]);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
@@ -1356,14 +1477,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
 
     // Hydrate activities (publicaciones reales) from cloud - top 50 más recientes
+    // Hydrate activities (publicaciones reales) from cloud - non-destructive merge
     supabase.from('activities').select('*').order('created_at', { ascending: false }).limit(50).then(({ data }) => {
       if (data && data.length > 0) {
         const mappedActs: ActivityPost[] = data.map(row => mapActivityRow(row, currentUser.id));
-        setActivities(mappedActs);
+        setActivities(prev => {
+          const cloudMap = new Map(mappedActs.map(a => [a.id, a]));
+          const merged = prev.map(l => {
+            const fromCloud = cloudMap.get(l.id);
+            if (fromCloud) {
+              cloudMap.delete(l.id);
+              return { ...l, ...fromCloud };
+            }
+            return l;
+          });
+          return [...Array.from(cloudMap.values()), ...merged];
+        });
       }
     });
 
-    // Hydrate rodadas from cloud - top 30
+    // Hydrate rodadas from cloud - non-destructive merge preserving attendees/packing
     supabase.from('rodadas').select('*').order('created_at', { ascending: false }).limit(30).then(({ data: cloudRodadas, error }) => {
       if (!error && cloudRodadas && cloudRodadas.length > 0) {
         const mappedR: Rodada[] = cloudRodadas.map((r: any) => ({
@@ -1383,17 +1516,51 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           gallery: [],
           createdAt: r.created_at ? new Date(r.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
         }));
-        setRodadas(mappedR);
-        if (mappedR.length > 0) setCurrentRodada(mappedR[0]);
+        setRodadas(prev => {
+          const cloudMap = new Map(mappedR.map(r => [r.id, r]));
+          const merged = prev.map(l => {
+            const fromCloud = cloudMap.get(l.id);
+            if (fromCloud) {
+              cloudMap.delete(l.id);
+              return {
+                ...l,
+                ...fromCloud,
+                attendees: (fromCloud.attendees && fromCloud.attendees.length > 0) ? fromCloud.attendees : l.attendees,
+                packingList: (fromCloud.packingList && fromCloud.packingList.length > 0) ? fromCloud.packingList : l.packingList,
+                gallery: (fromCloud.gallery && fromCloud.gallery.length > 0) ? fromCloud.gallery : l.gallery
+              };
+            }
+            return l;
+          });
+          const result = [...Array.from(cloudMap.values()), ...merged];
+          if (result.length > 0) {
+            setCurrentRodada(curr => curr ? (result.find(r => r.id === curr.id) || result[0]) : result[0]);
+          }
+          return result;
+        });
       }
     });
 
-    // Hydrate route_proposals from cloud
+    // Hydrate route_proposals from cloud - non-destructive merge
     supabase.from('route_proposals').select('*').order('created_at', { ascending: false }).then(({ data: cloudProposals, error }) => {
       if (!error && cloudProposals && cloudProposals.length > 0) {
         const mappedP: RouteProposal[] = cloudProposals.map(mapRouteRow);
-        setRouteProposals(mappedP);
-        if (mappedP.length > 0) setSelectedRoute(mappedP[0]);
+        setRouteProposals(prev => {
+          const cloudMap = new Map(mappedP.map(p => [p.id, p]));
+          const merged = prev.map(l => {
+            const fromCloud = cloudMap.get(l.id);
+            if (fromCloud) {
+              cloudMap.delete(l.id);
+              return { ...l, ...fromCloud };
+            }
+            return l;
+          });
+          const result = [...Array.from(cloudMap.values()), ...merged];
+          if (result.length > 0) {
+            setSelectedRoute(curr => curr ? (result.find(r => r.id === curr.id) || result[0]) : result[0]);
+          }
+          return result;
+        });
       }
     });
 
