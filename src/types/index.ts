@@ -120,6 +120,7 @@ export interface User {
   ridingLevel: RidingLevel;
   emergencyContact?: string;
   phone?: string;
+  createdAt?: string;
   completedRouteIds?: string[];
   savedRouteIds?: string[];
   stats?: {

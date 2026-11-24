@@ -161,6 +161,7 @@ interface AppContextType {
   deleteFeedback: (feedbackId: string) => void;
   checkHandleAvailability: (handle: string, excludeUserId?: string) => Promise<{ available: boolean; message?: string }>;
   updateCurrentUserProfile: (updates: Partial<User>) => Promise<{ success: boolean; message?: string }>;
+  refreshUsers: () => Promise<void>;
 }
 
 // Filas de Supabase -> modelos de la app (se usan al hidratar y en los eventos en tiempo real)
@@ -838,6 +839,37 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return { success: true };
   };
 
+  const refreshUsers = async (): Promise<void> => {
+    if (!isSupabaseConfigured()) return;
+    try {
+      const { data, error } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
+      if (!error && data) {
+        const mappedUsers: User[] = data.map((p: any) => ({
+          id: p.id,
+          name: p.name,
+          handle: p.handle,
+          email: p.email,
+          avatar: p.avatar_url || 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
+          bio: p.bio || 'Piloto en NAO.',
+          location: p.location || 'México',
+          ridingLevel: (p.riding_level as any) || 'Intermedio',
+          phone: p.phone,
+          emergencyContact: p.emergency_contact,
+          createdAt: p.created_at
+        }));
+        setUsers(prev => {
+          const cloudIds = new Set(mappedUsers.map(u => u.id));
+          return [
+            ...mappedUsers,
+            ...prev.filter(u => !cloudIds.has(u.id) && u.id !== 'user-patricio' && u.handle !== '@patomartin')
+          ];
+        });
+      }
+    } catch (err) {
+      console.warn('Error refreshing users from cloud:', err);
+    }
+  };
+
   // Moto Expeditions & Social state
   const [activities, setActivities] = useState<ActivityPost[]>(INITIAL_ACTIVITIES);
   const [challenges, setChallenges] = useState<Challenge[]>(INITIAL_CHALLENGES);
@@ -1119,7 +1151,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           location: p.location || 'México',
           ridingLevel: (p.riding_level as any) || 'Intermedio',
           phone: p.phone,
-          emergencyContact: p.emergency_contact
+          emergencyContact: p.emergency_contact,
+          createdAt: p.created_at
         }));
         setUsers(prev => {
           const cloudIds = new Set(mappedUsers.map(u => u.id));
@@ -1660,6 +1693,65 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       )
       .subscribe();
 
+    // Realtime channel for profiles table changes (new registrations & profile edits)
+    const profilesChannel = supabase
+      .channel('public:profiles_realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'profiles' },
+        (payload: any) => {
+          if (payload.eventType === 'INSERT' && payload.new) {
+            const p = payload.new;
+            const newPilot: User = {
+              id: p.id,
+              name: p.name,
+              handle: p.handle,
+              email: p.email,
+              avatar: p.avatar_url || 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
+              bio: p.bio || 'Piloto en NAO.',
+              location: p.location || 'México',
+              ridingLevel: (p.riding_level as any) || 'Intermedio',
+              phone: p.phone,
+              emergencyContact: p.emergency_contact,
+              createdAt: p.created_at
+            };
+            setUsers(prev => {
+              const existingIdx = prev.findIndex(u => u.id === newPilot.id);
+              if (existingIdx >= 0) {
+                return prev.map((u, i) => i === existingIdx ? { ...u, ...newPilot } : u);
+              }
+              return [newPilot, ...prev];
+            });
+          } else if (payload.eventType === 'UPDATE' && payload.new) {
+            const p = payload.new;
+            setUsers(prev => prev.map(u => {
+              if (u.id === p.id) {
+                return {
+                  ...u,
+                  name: p.name || u.name,
+                  handle: p.handle || u.handle,
+                  email: p.email || u.email,
+                  avatar: p.avatar_url || u.avatar,
+                  bio: p.bio !== undefined ? p.bio : u.bio,
+                  location: p.location || u.location,
+                  ridingLevel: (p.riding_level as any) || u.ridingLevel,
+                  phone: p.phone !== undefined ? p.phone : u.phone,
+                  emergencyContact: p.emergency_contact !== undefined ? p.emergency_contact : u.emergencyContact,
+                  createdAt: p.created_at || u.createdAt
+                };
+              }
+              return u;
+            }));
+          } else if (payload.eventType === 'DELETE' && payload.old) {
+            const oldId = payload.old?.id;
+            if (oldId) {
+              setUsers(prev => prev.filter(u => u.id !== oldId));
+            }
+          }
+        }
+      )
+      .subscribe();
+
     // Sincronización periódica y al reenfocar la ventana para garantizar que incluso si Realtime
     // en Supabase está en estado 'Unhealthy' o reconectando, los seguidores e interacciones NUNCA se pierdan
     const refreshFollowsAndSocial = async () => {
@@ -1706,6 +1798,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       supabase.removeChannel(crewsChannel);
       supabase.removeChannel(followsChannel);
       supabase.removeChannel(motorcyclesChannel);
+      supabase.removeChannel(profilesChannel);
       supabase.removeChannel(socialChannel);
       supabase.removeChannel(adminChannel);
     };
@@ -3861,7 +3954,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         markFeedbackStatus,
         deleteFeedback,
         checkHandleAvailability,
-        updateCurrentUserProfile
+        updateCurrentUserProfile,
+        refreshUsers
       }}
     >
       {children}
