@@ -1031,6 +1031,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const uniqueCrews: Crew[] = [];
         for (const c of parsed) {
           if (deletedSet.has(c.id) || isDeprecatedCrew(c)) continue;
+          if (!c.whatsappGroupUrl && (c.slug === 'motomami' || c.name?.toLowerCase().includes('motomami'))) {
+            c.whatsappGroupUrl = INITIAL_CREWS[0]?.whatsappGroupUrl || 'https://chat.whatsapp.com/Jg1AKUEqoXF7nXZuAPJ588?s=cl&p=a&iam=2';
+          }
           const normKey = (c.slug || c.name.toLowerCase().trim().replace(/\s+/g, '-'));
           if (!seenNames.has(normKey)) {
             seenNames.add(normKey);
@@ -1212,7 +1215,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               role: m.role || 'Rider',
               joinedAt: m.joined_at?.split('T')[0] || ''
             })),
-          whatsappGroupUrl: c.whatsapp_group_url,
+          whatsappGroupUrl: c.whatsapp_group_url || (c.slug === 'motomami' || c.name?.toLowerCase().includes('motomami') ? 'https://chat.whatsapp.com/Jg1AKUEqoXF7nXZuAPJ588?s=cl&p=a&iam=2' : undefined),
           createdAt: c.created_at?.split('T')[0] || ''
         })).filter(c => !isDeprecatedCrew(c));
         setCrews(prev => {

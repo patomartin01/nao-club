@@ -53,6 +53,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, item })
   const { crews, currentUser, createNotification } = useApp();
   const [copiedLink, setCopiedLink] = useState(false);
   const [sharedGroups, setSharedGroups] = useState<string[]>([]);
+  const [lastSharedCrew, setLastSharedCrew] = useState<Crew | null>(null);
   const [activeTab, setActiveTab] = useState<'grupos' | 'compartir'>('grupos');
 
   if (!isOpen || !item) return null;
@@ -99,9 +100,21 @@ ${shareUrl}`;
       navigator.clipboard.writeText(waText).catch(() => {});
     }
 
-    // Abrir WhatsApp con el texto y enlace formateado
-    const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(waText)}`;
-    window.open(waUrl, '_blank', 'noopener,noreferrer');
+    // Si la tribu tiene su grupo de WhatsApp vinculado, dirigir DIRECTAMENTE al grupo de WhatsApp
+    let targetUrl = '';
+    const rawGroupUrl = crew.whatsappGroupUrl?.trim();
+    if (rawGroupUrl) {
+      targetUrl = rawGroupUrl.startsWith('http') ? rawGroupUrl : `https://${rawGroupUrl}`;
+    } else {
+      // Fallback a selector general de WhatsApp si la tribu no tiene enlace cargado
+      targetUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(waText)}`;
+    }
+
+    if (typeof window !== 'undefined' && targetUrl) {
+      window.open(targetUrl, '_blank', 'noopener,noreferrer');
+    }
+
+    setLastSharedCrew(crew);
 
     // Notificación para la tribu en la plataforma
     if (createNotification) {
@@ -366,7 +379,7 @@ ${shareUrl}`;
                             ? 'bg-[#1D4477] text-white cursor-default'
                             : 'bg-[#25D366] hover:bg-[#20bd5a] text-white'
                         }`}
-                        title={crew.whatsappGroupUrl ? 'Enviar telemetría al grupo de WhatsApp' : 'Compartir con la tribu en WhatsApp'}
+                        title={crew.whatsappGroupUrl ? `Abrir chat del grupo ${crew.name} con telemetría copiada` : 'Compartir con la tribu en WhatsApp'}
                       >
                         {isShared ? (
                           <>
@@ -376,7 +389,7 @@ ${shareUrl}`;
                         ) : (
                           <>
                             <WhatsAppIcon className="w-3.5 h-3.5 fill-current" />
-                            <span>Enviar a WhatsApp</span>
+                            <span>{crew.whatsappGroupUrl ? 'Enviar al Grupo' : 'Enviar a WhatsApp'}</span>
                           </>
                         )}
                       </button>
@@ -385,14 +398,36 @@ ${shareUrl}`;
                 })}
               </div>
 
-              {sharedGroups.length > 0 && (
-                <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-[#1A1918] text-xs flex items-center gap-2.5 animate-fadeIn shadow-sm">
-                  <div className="w-6 h-6 rounded-full bg-[#25D366] text-white flex items-center justify-center shrink-0">
-                    <Check className="w-3.5 h-3.5 text-white" />
+              {lastSharedCrew && (
+                <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-300 text-[#1A1918] text-xs space-y-2 animate-fadeIn shadow-sm">
+                  <div className="flex items-start gap-2.5">
+                    <div className="w-6 h-6 rounded-full bg-[#25D366] text-white flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                      <Check className="w-3.5 h-3.5 text-white" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-sans font-semibold text-emerald-950 text-xs">
+                        {lastSharedCrew.whatsappGroupUrl 
+                          ? `¡Abriendo el chat del grupo ${lastSharedCrew.name} en WhatsApp!` 
+                          : `¡Abriendo WhatsApp para compartir con ${lastSharedCrew.name}!`}
+                      </p>
+                      <p className="text-[11px] text-emerald-900/90 font-sans mt-0.5 leading-relaxed">
+                        📋 <strong>La telemetría y el enlace GPS ya están en tu portapapeles.</strong> Solo presiona <strong>Pegar</strong> en la conversación del grupo para compartir la rodada con los pilotos.
+                      </p>
+                    </div>
                   </div>
-                  <span className="font-sans leading-snug font-medium text-emerald-950">
-                    ¡Telemetría enviada a WhatsApp! Además se notificó a los pilotos de la tribu en la plataforma.
-                  </span>
+                  {lastSharedCrew.whatsappGroupUrl && (
+                    <div className="pt-2 border-t border-emerald-200/80 flex items-center justify-between gap-2">
+                      <span className="text-[10px] font-mono text-emerald-800">¿El navegador bloqueó la ventana?</span>
+                      <a
+                        href={lastSharedCrew.whatsappGroupUrl.startsWith('http') ? lastSharedCrew.whatsappGroupUrl : `https://${lastSharedCrew.whatsappGroupUrl}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[10px] font-mono font-bold text-emerald-950 underline flex items-center gap-1 hover:text-emerald-700"
+                      >
+                        <span>Abrir grupo en WhatsApp ↗</span>
+                      </a>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
