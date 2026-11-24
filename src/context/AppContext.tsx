@@ -27,7 +27,6 @@ import {
   INITIAL_USERS, 
   INITIAL_MOTORCYCLES, 
   INITIAL_CREWS, 
-  INITIAL_RODADA, 
   INITIAL_RODADAS,
   INITIAL_ROUTE_PROPOSALS,
   INITIAL_ROUTE_LISTS,
@@ -328,6 +327,30 @@ const isMockActivity = (a: any): boolean => {
   return false;
 };
 
+const isMockRodada = (r: any): boolean => {
+  if (!r) return true;
+  if (r.id === 'rodada-dia-muertos-2026') return true;
+  if (typeof r.id === 'string' && r.id.startsWith('rodada-dia-muertos')) return true;
+  if (typeof r.title === 'string' && (r.title.toLowerCase().includes('muertos') || r.title.toLowerCase().includes('corral de piedra'))) return true;
+  return false;
+};
+
+const isMockRouteProposal = (p: any): boolean => {
+  if (!p) return true;
+  if (p.id === 'route-corral-piedra') return true;
+  if (p.rodadaId === 'rodada-dia-muertos-2026') return true;
+  if (typeof p.id === 'string' && p.id.startsWith('route-corral')) return true;
+  if (typeof p.title === 'string' && (p.title.toLowerCase().includes('corral de piedra') || p.title.toLowerCase().includes('muertos'))) return true;
+  return false;
+};
+
+const isMockCrewMessage = (m: any): boolean => {
+  if (!m) return true;
+  if (m.userId === 'user-sofia' || m.userId === 'user-mateo' || m.userId === 'user-manu-vidal') return true;
+  if (m.id === 'msg-1' || m.id === 'msg-2' || m.id === 'msg-3' || m.id === 'msg-4') return true;
+  return false;
+};
+
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User>(() => {
     if (typeof window !== 'undefined') {
@@ -386,11 +409,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const saved = localStorage.getItem(STORAGE_KEYS.RODADAS);
         if (saved) {
           const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+          if (Array.isArray(parsed)) {
+            const cleaned = parsed.filter(r => !isMockRodada(r));
+            localStorage.setItem(STORAGE_KEYS.RODADAS, JSON.stringify(cleaned));
+            return cleaned;
+          }
         }
       } catch {}
     }
-    return INITIAL_RODADAS;
+    return [];
   });
   const [currentRodada, setCurrentRodada] = useState<Rodada | null>(() => {
     if (typeof window !== 'undefined') {
@@ -398,11 +425,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const saved = localStorage.getItem(STORAGE_KEYS.RODADAS);
         if (saved) {
           const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed[0];
+          if (Array.isArray(parsed)) {
+            const cleaned = parsed.filter(r => !isMockRodada(r));
+            return cleaned.length > 0 ? cleaned[0] : null;
+          }
         }
       } catch {}
     }
-    return INITIAL_RODADAS[0];
+    return null;
   });
   const [routeProposals, setRouteProposals] = useState<RouteProposal[]>(() => {
     if (typeof window !== 'undefined') {
@@ -410,11 +440,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const saved = localStorage.getItem(STORAGE_KEYS.ROUTES);
         if (saved) {
           const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+          if (Array.isArray(parsed)) {
+            const cleaned = parsed.filter(p => !isMockRouteProposal(p));
+            localStorage.setItem(STORAGE_KEYS.ROUTES, JSON.stringify(cleaned));
+            return cleaned;
+          }
         }
       } catch {}
     }
-    return INITIAL_ROUTE_PROPOSALS;
+    return [];
   });
   const [selectedRoute, setSelectedRoute] = useState<RouteProposal | null>(() => {
     if (typeof window !== 'undefined') {
@@ -422,14 +456,32 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const saved = localStorage.getItem(STORAGE_KEYS.ROUTES);
         if (saved) {
           const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed[0];
+          if (Array.isArray(parsed)) {
+            const cleaned = parsed.filter(p => !isMockRouteProposal(p));
+            return cleaned.length > 0 ? cleaned[0] : null;
+          }
         }
       } catch {}
     }
-    return INITIAL_ROUTE_PROPOSALS[0];
+    return null;
   });
   const [activeNavTab, setActiveNavTab] = useState<NavTab>('inicio');
-  const [crewMessages, setCrewMessages] = useState<CrewChatMessage[]>(INITIAL_CREW_MESSAGES);
+  const [crewMessages, setCrewMessages] = useState<CrewChatMessage[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEYS.CREW_MESSAGES);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) {
+            const cleaned = parsed.filter(m => !isMockCrewMessage(m));
+            localStorage.setItem(STORAGE_KEYS.CREW_MESSAGES, JSON.stringify(cleaned));
+            return cleaned;
+          }
+        }
+      } catch {}
+    }
+    return [];
+  });
 
   // Auth & Cloud State
   const [isAuthModalOpen, setAuthModalOpen] = useState(false);
@@ -1204,9 +1256,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         try {
           const parsed: Rodada[] = JSON.parse(savedRodadas);
           if (Array.isArray(parsed)) {
-            // 1. Deduplicar por id
+            // 1. Deduplicar y eliminar rodadas simuladas
             const seenIds = new Set<string>();
             const uniqueRodadas = parsed.filter(rd => {
+              if (isMockRodada(rd)) return false;
               if (seenIds.has(rd.id)) return false;
               seenIds.add(rd.id);
               return true;
@@ -1220,7 +1273,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                   foundConfirmed = true;
                   return rd;
                 } else {
-                  // Si ya había otra confirmada, esta vuelve a votación
                   return { ...rd, winningRouteId: undefined, status: 'votacion' as RodadaStatus };
                 }
               }
@@ -1228,16 +1280,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             });
 
             setRodadas(sanitizedRodadas);
+            localStorage.setItem(STORAGE_KEYS.RODADAS, JSON.stringify(sanitizedRodadas));
             if (sanitizedRodadas.length > 0) setCurrentRodada(sanitizedRodadas[0]);
+            else setCurrentRodada(null);
           }
         } catch {}
       }
 
       const savedRoutes = localStorage.getItem(STORAGE_KEYS.ROUTES);
       if (savedRoutes) {
-        const parsed = JSON.parse(savedRoutes);
-        setRouteProposals(parsed);
-        if (parsed.length > 0) setSelectedRoute(parsed[0]);
+        try {
+          const parsed = JSON.parse(savedRoutes);
+          if (Array.isArray(parsed)) {
+            const cleanedRoutes = parsed.filter(p => !isMockRouteProposal(p));
+            setRouteProposals(cleanedRoutes);
+            localStorage.setItem(STORAGE_KEYS.ROUTES, JSON.stringify(cleanedRoutes));
+            if (cleanedRoutes.length > 0) setSelectedRoute(cleanedRoutes[0]);
+            else setSelectedRoute(null);
+          }
+        } catch {}
       }
 
       const savedMessages = localStorage.getItem(STORAGE_KEYS.CREW_MESSAGES);
@@ -1245,7 +1306,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         try {
           const parsedMsgs = JSON.parse(savedMessages);
           if (Array.isArray(parsedMsgs) && parsedMsgs.length > 0) {
-            setCrewMessages(parsedMsgs);
+            const cleanedMsgs = parsedMsgs.filter(m => !isMockCrewMessage(m));
+            setCrewMessages(cleanedMsgs);
+            localStorage.setItem(STORAGE_KEYS.CREW_MESSAGES, JSON.stringify(cleanedMsgs));
           }
         } catch {}
       }
@@ -1510,27 +1573,30 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     // Hydrate rodadas from cloud - non-destructive merge preserving attendees/packing
     supabase.from('rodadas').select('*').order('created_at', { ascending: false }).limit(30).then(({ data: cloudRodadas, error }) => {
-      if (!error && cloudRodadas && cloudRodadas.length > 0) {
-        const mappedR: Rodada[] = cloudRodadas.map((r: any) => ({
-          id: r.id,
-          crewId: r.crew_id,
-          title: r.title,
-          subtitle: r.subtitle || '',
-          description: r.description || '',
-          category: r.category || 'Fin de Semana',
-          startDate: r.start_date,
-          endDate: r.end_date,
-          originPoint: r.origin_point || 'CDMX',
-          status: (r.status as RodadaStatus) || 'votacion',
-          winningRouteId: r.winning_route_id || undefined,
-          attendees: [],
-          packingList: [],
-          gallery: [],
-          createdAt: r.created_at ? new Date(r.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
-        }));
+      if (!error && cloudRodadas) {
+        const mappedR: Rodada[] = cloudRodadas
+          .filter((r: any) => !isMockRodada(r))
+          .map((r: any) => ({
+            id: r.id,
+            crewId: r.crew_id,
+            title: r.title,
+            subtitle: r.subtitle || '',
+            description: r.description || '',
+            category: r.category || 'Fin de Semana',
+            startDate: r.start_date,
+            endDate: r.end_date,
+            originPoint: r.origin_point || 'CDMX',
+            status: (r.status as RodadaStatus) || 'votacion',
+            winningRouteId: r.winning_route_id || undefined,
+            attendees: [],
+            packingList: [],
+            gallery: [],
+            createdAt: r.created_at ? new Date(r.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
+          }));
         setRodadas(prev => {
           const cloudMap = new Map(mappedR.map(r => [r.id, r]));
-          const merged = prev.map(l => {
+          const localClean = prev.filter(l => !isMockRodada(l));
+          const merged = localClean.map(l => {
             const fromCloud = cloudMap.get(l.id);
             if (fromCloud) {
               cloudMap.delete(l.id);
@@ -1544,9 +1610,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             }
             return l;
           });
-          const result = [...Array.from(cloudMap.values()), ...merged];
+          const result = [...Array.from(cloudMap.values()), ...merged].filter(r => !isMockRodada(r));
           if (result.length > 0) {
             setCurrentRodada(curr => curr ? (result.find(r => r.id === curr.id) || result[0]) : result[0]);
+          } else {
+            setCurrentRodada(null);
+          }
+          if (typeof window !== 'undefined') {
+            try {
+              localStorage.setItem(STORAGE_KEYS.RODADAS, JSON.stringify(result));
+            } catch {}
           }
           return result;
         });
@@ -1555,11 +1628,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     // Hydrate route_proposals from cloud - non-destructive merge
     supabase.from('route_proposals').select('*').order('created_at', { ascending: false }).then(({ data: cloudProposals, error }) => {
-      if (!error && cloudProposals && cloudProposals.length > 0) {
-        const mappedP: RouteProposal[] = cloudProposals.map(mapRouteRow);
+      if (!error && cloudProposals) {
+        const mappedP: RouteProposal[] = cloudProposals
+          .map(mapRouteRow)
+          .filter(p => !isMockRouteProposal(p));
         setRouteProposals(prev => {
           const cloudMap = new Map(mappedP.map(p => [p.id, p]));
-          const merged = prev.map(l => {
+          const localClean = prev.filter(l => !isMockRouteProposal(l));
+          const merged = localClean.map(l => {
             const fromCloud = cloudMap.get(l.id);
             if (fromCloud) {
               cloudMap.delete(l.id);
@@ -1567,9 +1643,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             }
             return l;
           });
-          const result = [...Array.from(cloudMap.values()), ...merged];
+          const result = [...Array.from(cloudMap.values()), ...merged].filter(p => !isMockRouteProposal(p));
           if (result.length > 0) {
             setSelectedRoute(curr => curr ? (result.find(r => r.id === curr.id) || result[0]) : result[0]);
+          } else {
+            setSelectedRoute(null);
+          }
+          if (typeof window !== 'undefined') {
+            try {
+              localStorage.setItem(STORAGE_KEYS.ROUTES, JSON.stringify(result));
+            } catch {}
           }
           return result;
         });
