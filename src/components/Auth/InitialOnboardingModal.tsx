@@ -210,8 +210,6 @@ export const InitialOnboardingModal: React.FC = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    const defaultBikePhoto = 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=800';
-
     if (bikeModel.trim()) {
       addMotorcycle({
         userId: currentUser.id,
@@ -221,7 +219,7 @@ export const InitialOnboardingModal: React.FC = () => {
         displacementCc: Number(bikeCc) || 500,
         type: bikeType,
         nickname: bikeNickname.trim() || undefined,
-        photoUrl: bikePhotoPreview || defaultBikePhoto,
+        photoUrl: bikePhotoPreview || '',
         modifications: []
       });
     }

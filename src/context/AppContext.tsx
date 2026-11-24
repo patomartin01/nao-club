@@ -247,6 +247,11 @@ export const isDeprecatedCrew = (c: any): boolean => {
 };
 
 // Mapeadores para motocicletas de Hangar (conversión robusta entre camelCase y snake_case)
+const isStockBikeImage = (url?: string | null): boolean => {
+  if (!url || !url.trim()) return true;
+  return url.includes('photo-1558981403') || url.includes('photo-1568772585407');
+};
+
 const mapMotorcycleRow = (m: any): Motorcycle => ({
   id: String(m.id),
   userId: String(m.user_id),
@@ -256,7 +261,7 @@ const mapMotorcycleRow = (m: any): Motorcycle => ({
   displacementCc: Number(m.displacement_cc) || 500,
   type: (m.type as any) || 'Doble Propósito',
   nickname: m.nickname || '',
-  photoUrl: m.image_url || 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=800',
+  photoUrl: (m.image_url && !isStockBikeImage(m.image_url)) ? m.image_url : '',
   modifications: Array.isArray(m.modifications)
     ? m.modifications
     : (typeof m.modifications === 'string' ? m.modifications.split(',').map((x: string) => x.trim()).filter(Boolean) : []),
@@ -679,7 +684,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           handle: profile.handle || `@${(fallbackEmail ? fallbackEmail.split('@')[0] : 'piloto')}`,
           email: profile.email || fallbackEmail || '',
           avatar: profile.avatar_url || 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
-          bio: profile.bio || 'Piloto en NAO.',
+          bio: profile.bio || '',
           location: profile.location || 'México',
           ridingLevel: (profile.riding_level as any) || 'Intermedio',
           phone: profile.phone,
@@ -711,7 +716,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           handle: newHandle,
           email: fallbackEmail,
           avatar_url: newAvatar,
-          bio: 'Piloto en NAO.',
+          bio: '',
           location: 'México',
           riding_level: 'Intermedio'
         });
@@ -722,7 +727,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           handle: newHandle,
           email: fallbackEmail,
           avatar: newAvatar,
-          bio: 'Piloto en NAO.',
+          bio: '',
           location: 'México',
           ridingLevel: 'Intermedio'
         };
@@ -835,7 +840,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             handle: formattedHandle,
             email,
             avatar_url: defaultAvatar,
-            bio: 'Piloto en NAO.',
+            bio: '',
             location: 'México',
             riding_level: 'Intermedio'
           });
@@ -847,7 +852,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           handle: formattedHandle,
           email,
           avatar: defaultAvatar,
-          bio: 'Piloto en NAO.',
+          bio: '',
           location: 'México',
           ridingLevel: 'Intermedio'
         };
@@ -868,7 +873,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       handle,
       email,
       avatar: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
-      bio: 'Piloto registrado en NAO.',
+      bio: '',
       location: 'México',
       ridingLevel: 'Intermedio'
     };
@@ -912,7 +917,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         handle: `@${email.split('@')[0]}`,
         email,
         avatar: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
-        bio: 'Piloto en NAO.',
+        bio: '',
         location: 'México',
         ridingLevel: 'Intermedio'
       };
@@ -1033,7 +1038,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           handle: p.handle,
           email: p.email,
           avatar: p.avatar_url || 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
-          bio: p.bio || 'Piloto en NAO.',
+          bio: p.bio || '',
           location: p.location || 'México',
           ridingLevel: (p.riding_level as any) || 'Intermedio',
           phone: p.phone,
@@ -1370,7 +1375,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           handle: p.handle || `@${(p.name || 'piloto').toLowerCase().replace(/\s+/g, '')}`,
           email: p.email || '',
           avatar: p.avatar_url || 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
-          bio: p.bio || 'Piloto en NAO.',
+          bio: p.bio || '',
           location: p.location || 'México',
           ridingLevel: (p.riding_level as any) || 'Intermedio',
           phone: p.phone,
@@ -1503,7 +1508,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                   handle: p.handle || `@${(p.name || 'piloto').toLowerCase().replace(/\s+/g, '')}`,
                   email: p.email || '',
                   avatar: p.avatar_url || 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
-                  bio: p.bio || 'Piloto en NAO.',
+                  bio: p.bio || '',
                   location: p.location || 'México',
                   ridingLevel: (p.riding_level as any) || 'Intermedio',
                   phone: p.phone,
@@ -2060,7 +2065,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               handle: p.handle,
               email: p.email,
               avatar: p.avatar_url || 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
-              bio: p.bio || 'Piloto en NAO.',
+              bio: p.bio || '',
               location: p.location || 'México',
               ridingLevel: (p.riding_level as any) || 'Intermedio',
               phone: p.phone,
@@ -4212,7 +4217,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             handle: p.handle || `@${(p.name || 'piloto').toLowerCase().replace(/\s+/g, '')}`,
             email: p.email || '',
             avatar: p.avatar_url || 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
-            bio: p.bio || 'Piloto en NAO.',
+            bio: p.bio || '',
             location: p.location || 'México',
             ridingLevel: (p.riding_level as any) || 'Intermedio',
             phone: p.phone,

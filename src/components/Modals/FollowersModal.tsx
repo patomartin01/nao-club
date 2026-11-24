@@ -150,7 +150,7 @@ export const FollowersModal: React.FC<FollowersModalProps> = ({
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#1A1918]/70 backdrop-blur-sm animate-fadeIn">
+    <div className="fixed inset-0 z-[300] flex items-center justify-center p-3 sm:p-4 bg-[#1A1918]/70 backdrop-blur-sm animate-fadeIn">
       <div 
         className="bg-[#FAF6ED] border border-[#1A1918]/10 w-full max-w-lg rounded-[28px] overflow-hidden text-[#1A1918] shadow-sm flex flex-col max-h-[85vh] animate-scaleUp"
         onClick={(e) => e.stopPropagation()}
@@ -176,7 +176,7 @@ export const FollowersModal: React.FC<FollowersModalProps> = ({
         </div>
 
         {/* Tabs switcher */}
-        <div className="grid grid-cols-3 border-b border-[#1A1918]/10 bg-[#EDE6D3] text-xs font-sans font-semibold ">
+        <div className={`grid ${isCurrentUsersOwnProfile ? 'grid-cols-3' : 'grid-cols-2'} border-b border-[#1A1918]/10 bg-[#EDE6D3] text-xs font-sans font-semibold`}>
           <button
             type="button"
             onClick={() => setActiveTab('followers')}
@@ -320,8 +320,12 @@ export const FollowersModal: React.FC<FollowersModalProps> = ({
                   {searchQuery 
                     ? 'No se encontraron pilotos con ese criterio.' 
                     : activeTab === 'followers'
-                    ? 'Aún no tienes seguidores. Comparte tu enlace de perfil con otros pilotos para conectar.'
-                    : 'Aún no sigues a ningún piloto. Explora la comunidad y tribus para seguir a otros moteros.'}
+                    ? (isCurrentUsersOwnProfile
+                        ? 'Aún no tienes seguidores. Comparte tu enlace de perfil con otros pilotos para conectar.'
+                        : `${inspectedUser.name} aún no tiene seguidores.`)
+                    : (isCurrentUsersOwnProfile
+                        ? 'Aún no sigues a ningún piloto. Explora la comunidad y tribus para seguir a otros moteros.'
+                        : `${inspectedUser.name} aún no sigue a ningún piloto.`)}
                 </div>
               ) : (
                 filteredUsers.map((pilot) => {

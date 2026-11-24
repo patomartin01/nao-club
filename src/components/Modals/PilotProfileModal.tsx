@@ -69,15 +69,31 @@ export const PilotProfileModal: React.FC = () => {
   const followersCount = getFollowersCountForUser(selectedPilotProfile.id);
   const followingCount = getFollowingCountForUser(selectedPilotProfile.id);
 
+  const isStockBikePhoto = (url?: string | null): boolean => {
+    if (!url || !url.trim()) return true;
+    return (
+      url.includes('photo-1558981403') ||
+      url.includes('photo-1568772585407')
+    );
+  };
+
+  const hasCustomBio = Boolean(
+    selectedPilotProfile.bio &&
+    selectedPilotProfile.bio.trim() !== '' &&
+    !selectedPilotProfile.bio.toLowerCase().includes('registrado en nao') &&
+    !selectedPilotProfile.bio.toLowerCase().includes('piloto en nao')
+  );
+
   return (
-    <div 
-      className="fixed inset-0 z-[200] flex items-center justify-center p-3 sm:p-4 bg-[#1A1918]/70 backdrop-blur-sm animate-fadeIn overflow-y-auto cursor-pointer"
-      onClick={closePilotProfile}
-    >
+    <>
       <div 
-        className="bg-[#FAF6ED] border border-[#1A1918]/10 w-full max-w-2xl my-auto max-h-[94vh] overflow-y-auto text-[#1A1918] shadow-sm relative font-sans rounded-[28px] animate-scaleUp cursor-default"
-        onClick={(e) => e.stopPropagation()}
+        className="fixed inset-0 z-[200] flex items-center justify-center p-3 sm:p-4 bg-[#1A1918]/70 backdrop-blur-sm animate-fadeIn overflow-y-auto cursor-pointer"
+        onClick={closePilotProfile}
       >
+        <div 
+          className="bg-[#FAF6ED] border border-[#1A1918]/10 w-full max-w-2xl my-auto max-h-[94vh] overflow-y-auto text-[#1A1918] shadow-sm relative font-sans rounded-[28px] animate-scaleUp cursor-default"
+          onClick={(e) => e.stopPropagation()}
+        >
         {/* Header Banner */}
         <div className="bg-[#F4EEDB] border-b border-[#1A1918]/10 p-4 flex items-center justify-between rounded-t-[26px]">
           <div className="flex items-center gap-2">
@@ -128,7 +144,6 @@ export const PilotProfileModal: React.FC = () => {
                   alt={selectedPilotProfile.name}
                   className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl border border-[#1A1918]/10 object-cover shadow-sm bg-[#F4EEDB]"
                 />
-                <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border border-[#1A1918]/10 shadow-xs" title="Piloto en línea" />
               </div>
               <div className="min-w-0 flex-1">
                 <h3 className="font-display font-semibold text-xl sm:text-2xl text-[#1A1918] leading-tight break-words">
@@ -227,9 +242,11 @@ export const PilotProfileModal: React.FC = () => {
           </div>
 
           {/* Bio statement */}
-          <div className="p-4 bg-[#F4EEDB] border border-[#1A1918]/10 rounded-2xl text-xs text-[#1A1918] leading-relaxed font-sans break-words shadow-sm font-medium">
-            &ldquo;{selectedPilotProfile.bio}&rdquo;
-          </div>
+          {hasCustomBio && (
+            <div className="p-4 bg-[#F4EEDB] border border-[#1A1918]/10 rounded-2xl text-xs text-[#1A1918] leading-relaxed font-sans break-words shadow-sm font-medium">
+              &ldquo;{selectedPilotProfile.bio}&rdquo;
+            </div>
+          )}
 
           {/* GPS METRICS HUD */}
           <div className="space-y-3">
@@ -278,19 +295,29 @@ export const PilotProfileModal: React.FC = () => {
                 Hangar &amp; Flotilla del Piloto ({pilotBikes.length})
               </span>
               <div className={`grid gap-3 ${pilotBikes.length > 1 ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'}`}>
-                {pilotBikes.map(bike => (
-                  <div key={bike.id} className="p-3.5 bg-[#F4EEDB] border border-[#1A1918]/10 rounded-2xl flex items-center gap-3.5 shadow-sm">
-                    <img 
-                      src={bike.photoUrl} 
-                      alt={bike.model} 
-                      className="w-16 h-16 sm:w-20 sm:h-20 object-cover border border-[#1A1918]/10 rounded-xl shrink-0 bg-[#FAF6ED]"
-                    />
-                    <div className="text-xs min-w-0 flex-1">
-                      <p className="font-sans font-semibold text-[#1A1918] text-sm truncate">{bike.brand} {bike.model}</p>
-                      <p className="text-[10px] text-[#E6332A] font-mono font-semibold mt-0.5 uppercase">{bike.type} • {bike.displacementCc}cc • {bike.year || 2024}</p>
+                {pilotBikes.map(bike => {
+                  const hasPhoto = Boolean(bike.photoUrl && !isStockBikePhoto(bike.photoUrl));
+                  return (
+                    <div key={bike.id} className="p-3.5 bg-[#F4EEDB] border border-[#1A1918]/10 rounded-2xl flex items-center gap-3.5 shadow-sm">
+                      {hasPhoto ? (
+                        <img 
+                          src={bike.photoUrl} 
+                          alt={bike.model} 
+                          className="w-16 h-16 sm:w-20 sm:h-20 object-cover border border-[#1A1918]/10 rounded-xl shrink-0 bg-[#FAF6ED]"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl border border-[#1A1918]/10 bg-[#FAF6ED] flex flex-col items-center justify-center text-[#1A1918]/40 shrink-0">
+                          <Bike className="w-6 h-6 stroke-[1.5]" />
+                          <span className="text-[8px] font-mono font-bold tracking-wider mt-1 uppercase text-[#1A1918]/50">Sin foto</span>
+                        </div>
+                      )}
+                      <div className="text-xs min-w-0 flex-1">
+                        <p className="font-sans font-semibold text-[#1A1918] text-sm truncate">{bike.brand} {bike.model}</p>
+                        <p className="text-[10px] text-[#E6332A] font-mono font-semibold mt-0.5 uppercase">{bike.type} • {bike.displacementCc}cc • {bike.year || 2024}</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
@@ -346,14 +373,15 @@ export const PilotProfileModal: React.FC = () => {
 
         </div>
       </div>
+    </div>
 
-      {/* Followers & Following Modal for inspected pilot */}
+      {/* Followers & Following Modal for inspected pilot (rendered as sibling on top) */}
       <FollowersModal
         isOpen={followersModalOpen}
         onClose={() => setFollowersModalOpen(false)}
         initialTab={followersModalTab}
         targetUser={selectedPilotProfile}
       />
-    </div>
+    </>
   );
 };
