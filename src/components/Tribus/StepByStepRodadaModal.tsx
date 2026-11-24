@@ -12,6 +12,7 @@ import {
   Trash2, 
   Sparkles,
   Compass,
+  Mountain,
   ArrowUp,
   ArrowDown,
   GripVertical,
@@ -354,7 +355,7 @@ export const StepByStepRodadaModal: React.FC<StepByStepRodadaModalProps> = ({
           description: summary || 'Rodada en grupo con paradas programadas.',
           distanceKm: 130 + stops.length * 20,
           offroadKm: Math.round(((130 + stops.length * 20) * offroadPercentage) / 100),
-          terrainType: `${offroadPercentage}% terracería / ${100 - offroadPercentage}% asfalto`
+          terrainType: `${100 - offroadPercentage}% asfalto / ${offroadPercentage}% terracería`
         }
       ],
       waypoints: allWaypoints,
@@ -390,7 +391,7 @@ export const StepByStepRodadaModal: React.FC<StepByStepRodadaModalProps> = ({
             description: summary || 'Rodada en grupo con paradas programadas.',
             distanceKm: 130 + stops.length * 20,
             offroadKm: Math.round(((130 + stops.length * 20) * offroadPercentage) / 100),
-            terrainType: `${offroadPercentage}% terracería / ${100 - offroadPercentage}% asfalto`
+            terrainType: `${100 - offroadPercentage}% asfalto / ${offroadPercentage}% terracería`
           }
         ]
       });
@@ -968,23 +969,42 @@ export const StepByStepRodadaModal: React.FC<StepByStepRodadaModalProps> = ({
                 </div>
               </div>
 
-              {/* Slider de Terracería */}
+              {/* Slider de Superficie: Asfalto a la izquierda, Terracería a la derecha */}
               <div className="border border-[#1A1918]/10 bg-[#FAF6ED] p-4 rounded-2xl space-y-2 shadow-sm">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] uppercase font-sans font-semibold text-[#1A1918]/70 tracking-wider">Superficie</span>
-                  <span className="text-xs font-mono font-semibold text-[#1A1918]">
-                    {offroadPercentage}% Terracería • {100 - offroadPercentage}% Asfalto
+                  <span className="text-xs font-mono font-semibold text-[#1A1918] bg-[#F4EEDB] px-2.5 py-0.5 rounded-lg border border-[#1A1918]/10">
+                    <span className="text-[#1A1918] font-bold">{100 - offroadPercentage}% Asfalto</span>
+                    <span className="text-[#1A1918]/40 mx-1.5">•</span>
+                    <span className="text-[#E06423] font-bold">{offroadPercentage}% Terracería</span>
                   </span>
                 </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  step="10"
-                  value={offroadPercentage}
-                  onChange={(e) => setOffroadPercentage(Number(e.target.value))}
-                  className="w-full accent-[#E6332A] cursor-pointer"
-                />
+                <div className="flex items-center gap-3 pt-1">
+                  <div className="flex items-center gap-1 text-[#1A1918]" title="Carretera / Asfalto">
+                    <Compass className="w-4 h-4 text-[#1A1918]" />
+                    <span className="text-[10px] font-sans uppercase font-bold hidden sm:inline">Asfalto</span>
+                  </div>
+
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    step="5"
+                    value={offroadPercentage}
+                    onChange={(e) => setOffroadPercentage(Number(e.target.value))}
+                    className="flex-1 accent-[#E06423] cursor-pointer h-2 bg-[#FAF6ED] rounded-lg border border-[#1A1918]/10"
+                  />
+
+                  <div className="flex items-center gap-1 text-[#E06423]" title="Terracería / Montaña">
+                    <Mountain className="w-4 h-4 text-[#E06423]" />
+                    <span className="text-[10px] font-sans uppercase font-bold text-[#E06423] hidden sm:inline">Terracería</span>
+                  </div>
+                </div>
+                <div className="flex justify-between text-[9px] font-mono text-[#1A1918]/50 px-6">
+                  <span>100% Asfalto</span>
+                  <span>50 / 50 Mixto</span>
+                  <span>100% Terracería</span>
+                </div>
               </div>
             </div>
           )}

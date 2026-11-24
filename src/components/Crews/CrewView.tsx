@@ -473,13 +473,13 @@ ${gpxPoints}
                             <div>
                               <span className="text-ash block">Terreno</span>
                               <div className="flex items-center gap-1.5 mt-0.5">
-                                <span className="flex items-center gap-0.5 text-earth font-bold" title="Montaña / Terracería">
-                                  <Mountain className="w-2.5 h-2.5 text-earth shrink-0" />
-                                  <span>{route.offroadPercentage}%</span>
-                                </span>
                                 <span className="flex items-center gap-0.5 text-white font-bold" title="Carretera / Asfalto">
                                   <RoadIcon className="w-2.5 h-2.5 text-white shrink-0" />
                                   <span>{route.asphaltPercentage || (100 - route.offroadPercentage)}%</span>
+                                </span>
+                                <span className="flex items-center gap-0.5 text-earth font-bold" title="Montaña / Terracería">
+                                  <Mountain className="w-2.5 h-2.5 text-earth shrink-0" />
+                                  <span>{route.offroadPercentage}%</span>
                                 </span>
                               </div>
                             </div>
@@ -623,13 +623,13 @@ ${gpxPoints}
                     <div>
                       <span className="text-[10px] text-ash uppercase block">Terreno</span>
                       <div className="flex items-center gap-2.5 mt-1">
-                        <span className="flex items-center gap-1 text-base font-bold text-earth" title="Montaña / Terracería">
-                          <Mountain className="w-4 h-4 text-earth shrink-0" />
-                          <span>{activeRoute.offroadPercentage}%</span>
-                        </span>
                         <span className="flex items-center gap-1 text-base font-bold text-white" title="Carretera / Asfalto">
                           <RoadIcon className="w-4 h-4 text-white shrink-0" />
                           <span>{activeRoute.asphaltPercentage || (100 - activeRoute.offroadPercentage)}%</span>
+                        </span>
+                        <span className="flex items-center gap-1 text-base font-bold text-earth" title="Montaña / Terracería">
+                          <Mountain className="w-4 h-4 text-earth shrink-0" />
+                          <span>{activeRoute.offroadPercentage}%</span>
                         </span>
                       </div>
                     </div>
@@ -960,19 +960,19 @@ ${gpxPoints}
                       <div className="space-y-1">
                         <div className="h-1.5 w-full bg-white/10 rounded-none overflow-hidden flex">
                           <div 
+                            className="bg-white/60 h-full" 
+                            style={{ width: `${routeItem.asphaltPercentage || (100 - routeItem.offroadPercentage)}%` }}
+                            title={`Asfalto: ${routeItem.asphaltPercentage || (100 - routeItem.offroadPercentage)}%`}
+                          />
+                          <div 
                             className="bg-earth h-full" 
                             style={{ width: `${routeItem.offroadPercentage}%` }}
                             title={`Off-road: ${routeItem.offroadPercentage}%`}
                           />
-                          <div 
-                            className="bg-white/40 h-full" 
-                            style={{ width: `${routeItem.asphaltPercentage || (100 - routeItem.offroadPercentage)}%` }}
-                            title={`Asfalto: ${routeItem.asphaltPercentage || (100 - routeItem.offroadPercentage)}%`}
-                          />
                         </div>
                         <div className="flex justify-between font-mono text-[9px] text-ash">
-                          <span>{routeItem.offroadPercentage}% Terracería</span>
                           <span>{routeItem.asphaltPercentage || (100 - routeItem.offroadPercentage)}% Asfalto</span>
+                          <span>{routeItem.offroadPercentage}% Terracería</span>
                         </div>
                       </div>
 

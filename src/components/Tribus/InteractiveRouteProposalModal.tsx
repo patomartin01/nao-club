@@ -24,7 +24,8 @@ import {
   ArrowDown,
   Sparkles,
   HelpCircle,
-  Flag
+  Flag,
+  Mountain
 } from 'lucide-react';
 import { Rodada, RouteProposal, User, Waypoint, WaypointType } from '../../types';
 import { buildDynamicRouteGoogleMapsUrl } from '../../utils/googleMaps';
@@ -198,7 +199,7 @@ export const InteractiveRouteProposalModal: React.FC<InteractiveRouteProposalMod
           description: planSummary,
           distanceKm: totalKm,
           offroadKm: Math.round((totalKm * offroadPercentage) / 100),
-          terrainType: `${offroadPercentage}% brecha / ${100 - offroadPercentage}% asfalto`
+          terrainType: `${100 - offroadPercentage}% asfalto / ${offroadPercentage}% brecha`
         }
       ],
       waypoints: allWaypoints,
@@ -748,28 +749,42 @@ export const InteractiveRouteProposalModal: React.FC<InteractiveRouteProposalMod
                 </div>
               </div>
 
-              {/* Porcentaje de Terracería vs Asfalto */}
+              {/* Porcentaje de Asfalto vs Terracería */}
               <div className="border border-[#E5DFD5] bg-[#FAF8F5] p-5 rounded-2xl space-y-2.5 shadow-xs">
                 <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-sans text-[#C84B31] uppercase font-semibold tracking-widest block">
+                  <label className="text-[10px] font-sans text-[#141312] uppercase font-semibold tracking-widest block">
                     Composición del terreno
                   </label>
-                  <span className="text-xs font-mono font-bold text-[#141312]">
-                    {offroadPercentage}% Terracería • {100 - offroadPercentage}% Asfalto
+                  <span className="text-xs font-mono font-bold text-[#141312] bg-white px-2.5 py-1 rounded-lg border border-[#E5DFD5]">
+                    <span className="text-[#141312]">{100 - offroadPercentage}% Asfalto</span>
+                    <span className="text-stone-300 mx-1.5">•</span>
+                    <span className="text-[#C84B31]">{offroadPercentage}% Terracería</span>
                   </span>
                 </div>
 
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  step="5"
-                  value={offroadPercentage}
-                  onChange={(e) => setOffroadPercentage(Number(e.target.value))}
-                  className="w-full accent-[#141312] cursor-pointer"
-                />
+                <div className="flex items-center gap-3 pt-1">
+                  <div className="flex items-center gap-1 text-[#141312]" title="Carretera / Asfalto">
+                    <Compass className="w-4 h-4 text-[#141312]" />
+                    <span className="text-[10px] font-sans uppercase font-bold hidden sm:inline">Asfalto</span>
+                  </div>
 
-                <div className="flex justify-between text-[10px] text-stone-500 font-sans ">
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    step="5"
+                    value={offroadPercentage}
+                    onChange={(e) => setOffroadPercentage(Number(e.target.value))}
+                    className="flex-1 accent-[#C84B31] cursor-pointer h-2 bg-stone-200 rounded-lg"
+                  />
+
+                  <div className="flex items-center gap-1 text-[#C84B31]" title="Terracería / Brecha">
+                    <Mountain className="w-4 h-4 text-[#C84B31]" />
+                    <span className="text-[10px] font-sans uppercase font-bold text-[#C84B31] hidden sm:inline">Terracería</span>
+                  </div>
+                </div>
+
+                <div className="flex justify-between text-[10px] text-stone-500 font-sans px-6">
                   <span>100% Carretera / Curvas</span>
                   <span>50 / 50 Mixto</span>
                   <span>100% Brecha Off-Road</span>

@@ -3057,15 +3057,15 @@ export const TribusView: React.FC<TribusViewProps> = ({
                           )}
                         </div>
 
-                        {/* Telemetry info: Terracería vs Asfalto */}
+                        {/* Telemetry info: Asfalto vs Terracería */}
                         <div className="grid grid-cols-2 gap-2 p-2 bg-[#F4EEDB] border border-[#1A1918]/20 rounded-xl text-xs font-mono">
                           <div className="flex items-center gap-1.5">
-                            <Mountain className="w-3.5 h-3.5 text-[#E06423]" />
-                            <span className="text-[#1A1918] font-bold">{route.offroadPercentage}% Terracería</span>
-                          </div>
-                          <div className="flex items-center gap-1.5 justify-end">
                             <Bike className="w-3.5 h-3.5 text-[#1A1918]/70" />
                             <span className="text-[#1A1918] font-bold">{route.asphaltPercentage || (100 - route.offroadPercentage)}% Asfalto</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 justify-end">
+                            <Mountain className="w-3.5 h-3.5 text-[#E06423]" />
+                            <span className="text-[#1A1918] font-bold">{route.offroadPercentage}% Terracería</span>
                           </div>
                         </div>
 

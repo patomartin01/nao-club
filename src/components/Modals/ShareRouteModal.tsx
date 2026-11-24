@@ -134,13 +134,13 @@ ${gpxPoints}
             <div className="flex items-center gap-2 text-[10px] text-[#1A1918]/70 mt-1 flex-wrap">
               <span className="font-mono font-semibold text-[#1A1918] bg-[#FAF6ED] px-1.5 py-0.2 border border-[#1A1918]/10 rounded">{route.totalKm} km</span>
               <span>•</span>
-              <span className="flex items-center gap-0.5 text-[#E06423] font-bold" title="Montaña / Terracería">
-                <Mountain className="w-2.5 h-2.5 text-[#E06423] shrink-0" />
-                <span>{route.offroadPercentage}%</span>
-              </span>
               <span className="flex items-center gap-0.5 text-[#1A1918] font-bold" title="Carretera / Asfalto">
                 <RoadIcon className="w-2.5 h-2.5 text-[#1A1918] shrink-0" />
                 <span>{route.asphaltPercentage || (100 - route.offroadPercentage)}%</span>
+              </span>
+              <span className="flex items-center gap-0.5 text-[#E06423] font-bold" title="Montaña / Terracería">
+                <Mountain className="w-2.5 h-2.5 text-[#E06423] shrink-0" />
+                <span>{route.offroadPercentage}%</span>
               </span>
               <span>•</span>
               <span className=" font-mono font-semibold">{route.difficulty}</span>

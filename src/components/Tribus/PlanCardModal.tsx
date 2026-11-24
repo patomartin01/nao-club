@@ -242,13 +242,13 @@ export const PlanCardModal: React.FC<PlanCardModalProps> = ({
               <span className="text-[9px] text-stone-500 uppercase font-sans font-bold tracking-wider block">Terreno</span>
               {winningRoute ? (
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="flex items-center gap-1 text-xs font-mono font-bold text-[#C84B31]" title="Montaña / Terracería">
-                    <Mountain className="w-3.5 h-3.5 text-[#C84B31] shrink-0" />
-                    <span>{winningRoute.offroadPercentage}%</span>
-                  </span>
                   <span className="flex items-center gap-1 text-xs font-mono font-bold text-[#141312]" title="Carretera / Asfalto">
                     <RoadIcon className="w-3.5 h-3.5 text-[#141312] shrink-0" />
                     <span>{winningRoute.asphaltPercentage || (100 - winningRoute.offroadPercentage)}%</span>
+                  </span>
+                  <span className="flex items-center gap-1 text-xs font-mono font-bold text-[#C84B31]" title="Montaña / Terracería">
+                    <Mountain className="w-3.5 h-3.5 text-[#C84B31] shrink-0" />
+                    <span>{winningRoute.offroadPercentage}%</span>
                   </span>
                 </div>
               ) : (

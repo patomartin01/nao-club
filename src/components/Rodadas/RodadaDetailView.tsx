@@ -283,13 +283,13 @@ ${gpxPoints}
           <div className="p-6">
             <span className="text-[10px] text-[#1A1918]/70 uppercase tracking-wider block font-bold font-sans ">02. Terreno</span>
             <div className="flex items-center gap-3 mt-1.5">
-              <span className="flex items-center gap-1.5 font-display font-semibold text-2xl text-[#E06423]" title="Montaña / Terracería">
-                <Mountain className="w-6 h-6 text-[#E06423] shrink-0" />
-                <span>{activeRoute.offroadPercentage}%</span>
-              </span>
               <span className="flex items-center gap-1.5 font-display font-semibold text-2xl text-[#1A1918]" title="Carretera / Asfalto">
                 <RoadIcon className="w-6 h-6 text-[#1A1918] shrink-0" />
                 <span>{activeRoute.asphaltPercentage || (100 - activeRoute.offroadPercentage)}%</span>
+              </span>
+              <span className="flex items-center gap-1.5 font-display font-semibold text-2xl text-[#E06423]" title="Montaña / Terracería">
+                <Mountain className="w-6 h-6 text-[#E06423] shrink-0" />
+                <span>{activeRoute.offroadPercentage}%</span>
               </span>
             </div>
             <p className="text-[11px] text-[#1A1918]/70 mt-1 font-medium font-sans ">Tierra compacta, pinocha y asfalto</p>
@@ -379,13 +379,13 @@ ${gpxPoints}
                   <div>
                     <span className="text-[9px] text-[#1A1918]/60 block uppercase font-bold">Terreno</span>
                     <div className="flex items-center gap-1.5 mt-0.5">
-                      <span className="flex items-center gap-0.5 text-[#E06423] font-semibold" title="Montaña / Terracería">
-                        <Mountain className="w-2.5 h-2.5 text-[#E06423] shrink-0" />
-                        <span>{route.offroadPercentage}%</span>
-                      </span>
                       <span className="flex items-center gap-0.5 text-[#1A1918] font-semibold" title="Carretera / Asfalto">
                         <RoadIcon className="w-2.5 h-2.5 text-[#1A1918] shrink-0" />
                         <span>{route.asphaltPercentage || (100 - route.offroadPercentage)}%</span>
+                      </span>
+                      <span className="flex items-center gap-0.5 text-[#E06423] font-semibold" title="Montaña / Terracería">
+                        <Mountain className="w-2.5 h-2.5 text-[#E06423] shrink-0" />
+                        <span>{route.offroadPercentage}%</span>
                       </span>
                     </div>
                   </div>

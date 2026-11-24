@@ -393,12 +393,12 @@ export const RouteTacticalMapCard: React.FC<RouteTacticalMapCardProps> = ({
           <span className="text-[9px] font-mono uppercase px-2.5 py-1 bg-[#FAF6ED] border border-[#1A1918]/10 text-[#1A1918] font-semibold shadow-sm rounded-md flex items-center gap-1.5">
             <span>{proposal.totalKm} KM</span>
             <span className="text-[#1A1918]/30">•</span>
-            <span className="text-[#E06423]" title="Terracería">
-              {proposal.offroadPercentage}% OFF
+            <span className="text-[#1A1918]/70 font-semibold" title="Asfalto">
+              {proposal.asphaltPercentage || 100 - proposal.offroadPercentage}% ASF
             </span>
             <span className="text-[#1A1918]/30">|</span>
-            <span className="text-[#1A1918]/70" title="Asfalto">
-              {proposal.asphaltPercentage || 100 - proposal.offroadPercentage}% ASF
+            <span className="text-[#E06423] font-semibold" title="Terracería">
+              {proposal.offroadPercentage}% OFF
             </span>
           </span>
         </div>
