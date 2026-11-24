@@ -11,7 +11,7 @@ export async function GET(request: Request) {
   }
 
   const query = q.trim();
-  const apiKey = process.env.GOOGLE_MAPS_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyA-BFkHrE2ixqfJihSiRhgjNEICrnNGSGM';
+  const apiKey = process.env.GOOGLE_MAPS_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
 
   // 1. If Google Maps API key is configured, query official Google Places API (New)
   if (apiKey) {
