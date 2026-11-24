@@ -29,6 +29,18 @@ const WhatsAppIcon: React.FC<{ className?: string }> = ({ className = "w-4 h-4" 
   </svg>
 );
 
+const TelegramIcon: React.FC<{ className?: string }> = ({ className = "w-4 h-4" }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.121l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.458c.538-.196 1.006.128.832.943z"/>
+  </svg>
+);
+
+const FacebookIcon: React.FC<{ className?: string }> = ({ className = "w-4 h-4" }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+  </svg>
+);
+
 export interface ShareableItem {
   id: string;
   title: string;
@@ -300,11 +312,11 @@ ${shareUrl}`;
           {activeTab === 'grupos' && (
             <div className="space-y-3">
               <div className="flex items-center justify-between text-xs text-[#1A1918]/70">
-                <span className="flex items-center gap-1.5 font-mono font-semibold text-[#1A1918]">
-                  <Radio className="w-3.5 h-3.5 text-[#25D366] animate-pulse" />
+                <span className="flex items-center gap-2 font-mono font-bold text-[#1A1918]">
+                  <span className="w-2 h-2 rounded-full bg-[#E6332A] animate-pulse"></span>
                   Enviar a grupo de WhatsApp de tu tribu
                 </span>
-                <span className="text-[10px] text-[#1A1918] font-mono font-semibold bg-[#F4EEDB] px-2 py-0.5 border border-[#1A1918]/10 rounded">
+                <span className="text-[10px] text-[#1A1918] font-mono font-semibold bg-[#F4EEDB] px-2 py-0.5 border border-[#1A1918]/15 rounded">
                   {availableCrews.length} disponibles
                 </span>
               </div>
@@ -315,10 +327,10 @@ ${shareUrl}`;
                   return (
                     <div
                       key={crew.id}
-                      className={`p-3.5 rounded-xl border border-[#1A1918]/10 transition-all duration-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm ${
+                      className={`p-3.5 rounded-2xl border transition-all duration-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm ${
                         isShared 
-                          ? 'bg-[#F4EEDB]' 
-                          : 'bg-[#FAF6ED] hover:bg-[#F4EEDB]'
+                          ? 'bg-[#F4EEDB] border-[#1A1918]/25' 
+                          : 'bg-[#FAF6ED] hover:bg-[#F4EEDB] border-[#1A1918]/15'
                       }`}
                     >
                       <div className="flex items-center gap-3.5 min-w-0">
@@ -327,19 +339,19 @@ ${shareUrl}`;
                           <img 
                             src={crew.coverImage} 
                             alt={crew.name}
-                            className="w-12 h-12 rounded-xl object-cover border border-[#1A1918]/10 shadow-sm bg-[#F4EEDB]" 
+                            className="w-12 h-12 rounded-xl object-cover border border-[#1A1918]/15 shadow-sm bg-[#F4EEDB]" 
                           />
-                          <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-[#FAF6ED] border border-[#1A1918]/10 flex items-center justify-center shadow-xs">
-                            <ShieldCheck className="w-2.5 h-2.5 text-[#E6332A]" />
+                          <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-[#1A1918] text-[#FAF6ED] border border-[#FAF6ED] flex items-center justify-center shadow-xs">
+                            <ShieldCheck className="w-2.5 h-2.5 text-[#FAF6ED]" />
                           </div>
                         </div>
 
                         <div className="min-w-0">
-                          <h5 className="text-sm font-sans font-semibold text-[#1A1918] truncate">
+                          <h5 className="text-sm font-sans font-bold text-[#1A1918] truncate">
                             {crew.name}
                           </h5>
                           <p className="text-[11px] text-[#1A1918]/70 truncate mt-0.5 flex items-center gap-1.5 font-mono">
-                            <span className="text-[#1A1918] not-italic font-semibold text-[10px] uppercase">{crew.members.length} pilotos</span>
+                            <span className="text-[#1A1918] font-bold text-[10px] uppercase">{crew.members.length} pilotos</span>
                             <span>•</span>
                             <span className="truncate">
                               {crew.baseCity}
@@ -347,8 +359,8 @@ ${shareUrl}`;
                           </p>
                           {crew.whatsappGroupUrl ? (
                             <div className="flex items-center gap-2 mt-1">
-                              <span className="inline-flex items-center gap-1 text-[9px] font-mono font-bold text-emerald-800 bg-emerald-100/90 px-2 py-0.5 rounded-full border border-emerald-300">
-                                <span className="w-1.5 h-1.5 rounded-full bg-[#25D366] animate-pulse"></span>
+                              <span className="inline-flex items-center gap-1.5 text-[9px] font-mono font-bold text-[#1A1918] bg-[#F4EEDB] px-2 py-0.5 rounded-md border border-[#1A1918]/15">
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#E6332A]"></span>
                                 WhatsApp Vinculado
                               </span>
                               <a
@@ -356,7 +368,7 @@ ${shareUrl}`;
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 onClick={(e) => e.stopPropagation()}
-                                className="text-[10px] font-mono text-emerald-700 hover:text-emerald-900 underline flex items-center gap-0.5"
+                                className="text-[10px] font-mono font-bold text-[#1A1918] hover:text-[#E6332A] underline flex items-center gap-0.5"
                                 title="Abrir grupo en WhatsApp"
                               >
                                 <span>Ver grupo</span>
@@ -364,8 +376,8 @@ ${shareUrl}`;
                               </a>
                             </div>
                           ) : (
-                            <span className="inline-flex items-center gap-1 text-[9px] font-mono text-[#1A1918]/60 bg-[#F4EEDB] px-1.5 py-0.2 rounded border border-[#1A1918]/10 mt-1">
-                              <MessageCircle className="w-2.5 h-2.5 text-[#25D366]" />
+                            <span className="inline-flex items-center gap-1 text-[9px] font-mono text-[#1A1918]/60 bg-[#F4EEDB] px-1.5 py-0.5 rounded border border-[#1A1918]/10 mt-1">
+                              <MessageCircle className="w-2.5 h-2.5 text-[#1A1918]/60" />
                               WhatsApp disponible
                             </span>
                           )}
@@ -374,22 +386,22 @@ ${shareUrl}`;
 
                       <button
                         onClick={() => handleShareToGroup(crew)}
-                        className={`px-3.5 py-2 rounded-xl text-xs font-sans font-semibold transition-all duration-200 shrink-0 flex items-center justify-center gap-1.5 border border-[#1A1918]/10 shadow-sm active:shadow-none self-end sm:self-auto ${
+                        className={`px-4 py-2.5 rounded-xl text-xs font-sans font-bold transition-all duration-200 shrink-0 flex items-center justify-center gap-2 border shadow-sm active:shadow-none self-end sm:self-auto cursor-pointer ${
                           isShared
-                            ? 'bg-[#1D4477] text-white cursor-default'
-                            : 'bg-[#25D366] hover:bg-[#20bd5a] text-white'
+                            ? 'bg-[#1A1918]/80 text-[#FAF6ED] border-[#1A1918] cursor-default'
+                            : 'bg-[#1A1918] hover:bg-[#E6332A] text-[#FAF6ED] border-[#1A1918]'
                         }`}
                         title={crew.whatsappGroupUrl ? `Abrir chat del grupo ${crew.name} con telemetría copiada` : 'Compartir con la tribu en WhatsApp'}
                       >
                         {isShared ? (
                           <>
-                            <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                            <CheckCircle2 className="w-3.5 h-3.5 text-[#FAF6ED]" />
                             <span>Enviado</span>
                           </>
                         ) : (
                           <>
-                            <WhatsAppIcon className="w-3.5 h-3.5 fill-current" />
-                            <span>{crew.whatsappGroupUrl ? 'Enviar al Grupo' : 'Enviar a WhatsApp'}</span>
+                            <Send className="w-3.5 h-3.5 text-[#FAF6ED]" />
+                            <span>{crew.whatsappGroupUrl ? 'Enviar al Grupo' : 'Enviar a Tribu'}</span>
                           </>
                         )}
                       </button>
@@ -399,30 +411,30 @@ ${shareUrl}`;
               </div>
 
               {lastSharedCrew && (
-                <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-300 text-[#1A1918] text-xs space-y-2 animate-fadeIn shadow-sm">
-                  <div className="flex items-start gap-2.5">
-                    <div className="w-6 h-6 rounded-full bg-[#25D366] text-white flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
-                      <Check className="w-3.5 h-3.5 text-white" />
+                <div className="p-4 rounded-2xl bg-[#F4EEDB] border border-[#1A1918]/20 text-[#1A1918] text-xs space-y-2 animate-fadeIn shadow-sm">
+                  <div className="flex items-start gap-3">
+                    <div className="w-7 h-7 rounded-xl bg-[#1A1918] text-[#FAF6ED] flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                      <Check className="w-4 h-4 text-[#FAF6ED]" />
                     </div>
                     <div className="min-w-0">
-                      <p className="font-sans font-semibold text-emerald-950 text-xs">
+                      <p className="font-sans font-bold text-[#1A1918] text-xs">
                         {lastSharedCrew.whatsappGroupUrl 
                           ? `¡Abriendo el chat del grupo ${lastSharedCrew.name} en WhatsApp!` 
                           : `¡Abriendo WhatsApp para compartir con ${lastSharedCrew.name}!`}
                       </p>
-                      <p className="text-[11px] text-emerald-900/90 font-sans mt-0.5 leading-relaxed">
+                      <p className="text-[11px] text-[#1A1918]/80 font-sans mt-0.5 leading-relaxed">
                         📋 <strong>La telemetría y el enlace GPS ya están en tu portapapeles.</strong> Solo presiona <strong>Pegar</strong> en la conversación del grupo para compartir la rodada con los pilotos.
                       </p>
                     </div>
                   </div>
                   {lastSharedCrew.whatsappGroupUrl && (
-                    <div className="pt-2 border-t border-emerald-200/80 flex items-center justify-between gap-2">
-                      <span className="text-[10px] font-mono text-emerald-800">¿El navegador bloqueó la ventana?</span>
+                    <div className="pt-2 border-t border-[#1A1918]/10 flex items-center justify-between gap-2">
+                      <span className="text-[10px] font-mono text-[#1A1918]/60">¿El navegador bloqueó la ventana emergente?</span>
                       <a
                         href={lastSharedCrew.whatsappGroupUrl.startsWith('http') ? lastSharedCrew.whatsappGroupUrl : `https://${lastSharedCrew.whatsappGroupUrl}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[10px] font-mono font-bold text-emerald-950 underline flex items-center gap-1 hover:text-emerald-700"
+                        className="text-[10px] font-mono font-bold text-[#E6332A] hover:underline flex items-center gap-1"
                       >
                         <span>Abrir grupo en WhatsApp ↗</span>
                       </a>
@@ -483,13 +495,13 @@ ${shareUrl}`;
                 {/* WHATSAPP */}
                 <button
                   onClick={handleShareWhatsApp}
-                  className="p-3 bg-[#FAF6ED] hover:bg-[#F4EEDB] border border-[#1A1918]/10 font-sans font-bold text-xs transition-all duration-200 flex items-center gap-3 rounded-xl active:shadow-none shadow-sm"
+                  className="p-3.5 bg-[#FAF6ED] hover:bg-[#F4EEDB] border border-[#1A1918]/15 font-sans font-bold text-xs transition-all duration-200 flex items-center gap-3.5 rounded-2xl active:shadow-none shadow-sm cursor-pointer group"
                 >
-                  <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-sm shrink-0 border border-[#1A1918]/10 shadow-sm">
-                    WA
+                  <div className="w-10 h-10 rounded-xl bg-[#1A1918] group-hover:bg-[#E6332A] text-[#FAF6ED] flex items-center justify-center font-bold text-sm shrink-0 border border-[#1A1918]/15 shadow-sm transition-colors">
+                    <WhatsAppIcon className="w-4 h-4 fill-current" />
                   </div>
                   <div className="text-left min-w-0">
-                    <span className="block text-[#1A1918] font-semibold">WhatsApp</span>
+                    <span className="block text-[#1A1918] font-bold text-xs">WhatsApp</span>
                     <span className="text-[10px] text-[#1A1918]/60 font-sans truncate block">Chat directo o estado</span>
                   </div>
                 </button>
@@ -497,13 +509,13 @@ ${shareUrl}`;
                 {/* TELEGRAM */}
                 <button
                   onClick={handleShareTelegram}
-                  className="p-3 bg-[#FAF6ED] hover:bg-[#F4EEDB] border border-[#1A1918]/10 font-sans font-bold text-xs transition-all duration-200 flex items-center gap-3 rounded-xl active:shadow-none shadow-sm"
+                  className="p-3.5 bg-[#FAF6ED] hover:bg-[#F4EEDB] border border-[#1A1918]/15 font-sans font-bold text-xs transition-all duration-200 flex items-center gap-3.5 rounded-2xl active:shadow-none shadow-sm cursor-pointer group"
                 >
-                  <div className="w-9 h-9 rounded-xl bg-sky-600 text-white flex items-center justify-center font-bold text-sm shrink-0 border border-[#1A1918]/10 shadow-sm">
-                    TG
+                  <div className="w-10 h-10 rounded-xl bg-[#1A1918] group-hover:bg-[#E6332A] text-[#FAF6ED] flex items-center justify-center font-bold text-sm shrink-0 border border-[#1A1918]/15 shadow-sm transition-colors">
+                    <TelegramIcon className="w-4 h-4 fill-current" />
                   </div>
                   <div className="text-left min-w-0">
-                    <span className="block text-[#1A1918] font-semibold">Telegram</span>
+                    <span className="block text-[#1A1918] font-bold text-xs">Telegram</span>
                     <span className="text-[10px] text-[#1A1918]/60 font-sans truncate block">Canales y chats de ruta</span>
                   </div>
                 </button>
@@ -511,13 +523,13 @@ ${shareUrl}`;
                 {/* X (TWITTER) */}
                 <button
                   onClick={handleShareTwitter}
-                  className="p-3 bg-[#FAF6ED] hover:bg-[#F4EEDB] border border-[#1A1918]/10 font-sans font-bold text-xs transition-all duration-200 flex items-center gap-3 rounded-xl active:shadow-none shadow-sm"
+                  className="p-3.5 bg-[#FAF6ED] hover:bg-[#F4EEDB] border border-[#1A1918]/15 font-sans font-bold text-xs transition-all duration-200 flex items-center gap-3.5 rounded-2xl active:shadow-none shadow-sm cursor-pointer group"
                 >
-                  <div className="w-9 h-9 rounded-xl bg-[#1A1918] text-white flex items-center justify-center font-bold text-sm shrink-0 border border-[#1A1918]/10 shadow-sm">
-                    𝕏
+                  <div className="w-10 h-10 rounded-xl bg-[#1A1918] group-hover:bg-[#E6332A] text-[#FAF6ED] flex items-center justify-center font-bold text-sm shrink-0 border border-[#1A1918]/15 shadow-sm transition-colors">
+                    <span className="font-mono text-sm font-bold">𝕏</span>
                   </div>
                   <div className="text-left min-w-0">
-                    <span className="block text-[#1A1918] font-semibold">X (Twitter)</span>
+                    <span className="block text-[#1A1918] font-bold text-xs">X (Twitter)</span>
                     <span className="text-[10px] text-[#1A1918]/60 font-sans truncate block">Publicar con telemetría</span>
                   </div>
                 </button>
@@ -525,13 +537,13 @@ ${shareUrl}`;
                 {/* FACEBOOK */}
                 <button
                   onClick={handleShareFacebook}
-                  className="p-3 bg-[#FAF6ED] hover:bg-[#F4EEDB] border border-[#1A1918]/10 font-sans font-bold text-xs transition-all duration-200 flex items-center gap-3 rounded-xl active:shadow-none shadow-sm"
+                  className="p-3.5 bg-[#FAF6ED] hover:bg-[#F4EEDB] border border-[#1A1918]/15 font-sans font-bold text-xs transition-all duration-200 flex items-center gap-3.5 rounded-2xl active:shadow-none shadow-sm cursor-pointer group"
                 >
-                  <div className="w-9 h-9 rounded-xl bg-[#1D4477] text-white flex items-center justify-center font-bold text-sm shrink-0 border border-[#1A1918]/10 shadow-sm">
-                    FB
+                  <div className="w-10 h-10 rounded-xl bg-[#1A1918] group-hover:bg-[#E6332A] text-[#FAF6ED] flex items-center justify-center font-bold text-sm shrink-0 border border-[#1A1918]/15 shadow-sm transition-colors">
+                    <FacebookIcon className="w-4 h-4 fill-current" />
                   </div>
                   <div className="text-left min-w-0">
-                    <span className="block text-[#1A1918] font-semibold">Facebook</span>
+                    <span className="block text-[#1A1918] font-bold text-xs">Facebook</span>
                     <span className="text-[10px] text-[#1A1918]/60 font-sans truncate block">Muro o comunidad motera</span>
                   </div>
                 </button>

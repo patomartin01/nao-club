@@ -57,6 +57,22 @@ const WhatsAppIcon: React.FC<{ className?: string }> = ({ className = "w-4 h-4" 
   </svg>
 );
 
+const RoadIcon: React.FC<{ className?: string }> = ({ className = "w-3.5 h-3.5" }) => (
+  <svg 
+    className={className} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+  >
+    <path d="M4 19L8 5h8l4 14" />
+    <line x1="12" y1="8" x2="12" y2="10" />
+    <line x1="12" y1="14" x2="12" y2="16" />
+  </svg>
+);
+
 interface LiveRouteRecorderModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -1664,43 +1680,69 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
                 </div>
 
                 {/* 5. Barra Deslizadora de Asfalto vs Terracería */}
-                <div className="p-3 bg-[#F4EEDB] border border-[#1A1918]/10 rounded-2xl shadow-sm space-y-2">
+                <div className="p-3.5 bg-[#F4EEDB] border border-[#1A1918]/10 rounded-2xl shadow-sm space-y-2.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-[#1A1918]/70 text-[10px] uppercase font-sans font-semibold">
+                    <span className="text-[#1A1918]/70 text-[10px] uppercase font-sans font-semibold tracking-wider">
                       Superficie de la ruta
                     </span>
-                    <span className="text-[11px] font-mono font-semibold text-[#1A1918] bg-[#FAF6ED] px-2 py-0.5 rounded border border-[#1A1918]/10">
+                    <span className="text-[11px] font-mono font-semibold text-[#1A1918] bg-[#FAF6ED] px-2.5 py-0.5 rounded-lg border border-[#1A1918]/10 shadow-xs">
                       <span className="text-[#1A1918] font-bold">{100 - dirtPercentage}% Asfalto</span>
                       <span className="text-[#1A1918]/40 mx-1.5">•</span>
-                      <span className="text-[#E06423] font-bold">{dirtPercentage}% Off-road</span>
+                      <span className="text-[#E06423] font-bold">{dirtPercentage}% Terracería</span>
                     </span>
                   </div>
 
                   {/* Slider: Asfalto a la izquierda, Terracería a la derecha */}
                   <div className="flex items-center gap-3 pt-1">
-                    <div className="flex items-center gap-1 text-[#1A1918]" title="Carretera / Asfalto">
-                      <Compass className="w-4 h-4 text-[#1A1918]" />
-                      <span className="text-[9px] font-sans uppercase font-bold hidden sm:inline">Asfalto</span>
+                    <div className="flex items-center gap-1.5 text-[#1A1918]" title="Carretera / Asfalto">
+                      <RoadIcon className="w-4 h-4 text-[#1A1918] shrink-0" />
+                      <span className="text-[10px] font-sans uppercase font-bold text-[#1A1918]">Asfalto</span>
                     </div>
 
-                    <input
-                      type="range"
-                      min={0}
-                      max={100}
-                      step={5}
-                      value={dirtPercentage}
-                      onChange={(e) => setDirtPercentage(Number(e.target.value))}
-                      className="flex-1 accent-[#E06423] cursor-pointer h-2 bg-[#FAF6ED] rounded-lg border border-[#1A1918]/10"
-                    />
+                    <div className="flex-1 relative flex items-center">
+                      <input
+                        type="range"
+                        min={0}
+                        max={100}
+                        step={5}
+                        value={dirtPercentage}
+                        onChange={(e) => setDirtPercentage(Number(e.target.value))}
+                        className="w-full accent-[#E06423] cursor-pointer h-2 bg-[#FAF6ED] rounded-lg border border-[#1A1918]/10"
+                      />
+                    </div>
 
-                    <div className="flex items-center gap-1 text-[#E06423]" title="Terracería / Montaña">
-                      <Mountain className="w-4 h-4 text-[#E06423]" />
-                      <span className="text-[9px] font-sans uppercase font-bold text-[#E06423] hidden sm:inline">Terracería</span>
+                    <div className="flex items-center gap-1.5 text-[#E06423]" title="Terracería / Montaña">
+                      <Mountain className="w-4 h-4 text-[#E06423] shrink-0" />
+                      <span className="text-[10px] font-sans uppercase font-bold text-[#E06423]">Terracería</span>
                     </div>
                   </div>
-                  <div className="flex justify-between text-[9px] font-mono text-[#1A1918]/50 px-6">
-                    <span>100% Asfalto</span>
-                    <span>100% Brecha / Dirt</span>
+
+                  {/* Botones de selección rápida de superficie */}
+                  <div className="grid grid-cols-4 gap-1.5 pt-0.5">
+                    {[
+                      { label: '100% Asfalto', dirt: 0 },
+                      { label: '70% / 30%', dirt: 30 },
+                      { label: '50% / 50%', dirt: 50 },
+                      { label: '100% Brecha', dirt: 100 },
+                    ].map((preset) => (
+                      <button
+                        key={preset.label}
+                        type="button"
+                        onClick={() => setDirtPercentage(preset.dirt)}
+                        className={`py-1 px-1 text-[9px] font-mono rounded-lg border transition text-center shadow-xs cursor-pointer ${
+                          dirtPercentage === preset.dirt
+                            ? 'bg-[#1A1918] text-[#FAF6ED] border-[#1A1918] font-bold'
+                            : 'bg-[#FAF6ED] text-[#1A1918]/70 hover:text-[#1A1918] hover:bg-[#F4EEDB] border-[#1A1918]/10 font-semibold'
+                        }`}
+                      >
+                        {preset.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="flex justify-between text-[9px] font-mono text-[#1A1918]/50 px-1 pt-0.5">
+                    <span>← 100% Asfalto</span>
+                    <span>100% Brecha / Off-road →</span>
                   </div>
                 </div>
 
