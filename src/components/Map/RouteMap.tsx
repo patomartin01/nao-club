@@ -79,17 +79,19 @@ export const RouteMap: React.FC<RouteMapProps> = ({
     tileLayerGroupRef.current.clearLayers();
 
     if (layerType === 'satellite') {
-      // High-resolution Esri World Imagery (limpio sin textos comerciales gigantes)
-      const satLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        maxZoom: 19,
-        attribution: 'Esri, Maxar'
+      // High-resolution Google Maps Hybrid (fotografía aérea satelital con nombres oficiales de carreteras y poblados)
+      const satLayer = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+        maxZoom: 20,
+        subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+        attribution: 'Google Maps'
       });
       tileLayerGroupRef.current.addLayer(satLayer);
     } else {
-      // Standard Road / Street & Trail network
-      const roadLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: 'OpenStreetMap'
+      // Google Maps Standard Road & Highway Network
+      const roadLayer = L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+        maxZoom: 20,
+        subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+        attribution: 'Google Maps'
       });
       tileLayerGroupRef.current.addLayer(roadLayer);
     }

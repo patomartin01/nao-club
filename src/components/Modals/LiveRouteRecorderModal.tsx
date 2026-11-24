@@ -40,7 +40,8 @@ import {
   Crosshair,
   Loader2,
   User,
-  Users
+  Users,
+  Layers
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -143,6 +144,57 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
   const polylineRef = useRef<any>(null);
   const riderMarkerRef = useRef<any>(null);
   const waypointsLayerRef = useRef<any>(null);
+  const tileLayerRef = useRef<any>(null);
+
+  // Map layer mode & switcher
+  const [mapLayer, setMapLayer] = useState<'google-hybrid' | 'google-streets' | 'satellite-clean'>('google-hybrid');
+  const [layerToast, setLayerToast] = useState<string | null>(null);
+
+  const switchMapLayer = async (targetLayer?: 'google-hybrid' | 'google-streets' | 'satellite-clean') => {
+    const nextLayer = targetLayer || (
+      mapLayer === 'google-hybrid' ? 'google-streets' :
+      mapLayer === 'google-streets' ? 'satellite-clean' :
+      'google-hybrid'
+    );
+    setMapLayer(nextLayer);
+
+    const labels: Record<string, string> = {
+      'google-hybrid': '🛰️ Google Híbrido (Satélite + Calles)',
+      'google-streets': '🗺️ Google Calles',
+      'satellite-clean': '📸 Satélite Limpio (Maxar)'
+    };
+
+    setLayerToast(labels[nextLayer]);
+    setTimeout(() => setLayerToast(null), 2200);
+
+    if (!mapInstanceRef.current) return;
+    try {
+      const L = (await import('leaflet')).default;
+      if (tileLayerRef.current) {
+        mapInstanceRef.current.removeLayer(tileLayerRef.current);
+      }
+
+      let url = 'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}';
+      let maxZoom = 20;
+
+      if (nextLayer === 'google-streets') {
+        url = 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}';
+        maxZoom = 20;
+      } else if (nextLayer === 'satellite-clean') {
+        url = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+        maxZoom = 19;
+      }
+
+      const nextTile = L.tileLayer(url, {
+        maxZoom,
+        subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
+      });
+      nextTile.addTo(mapInstanceRef.current);
+      tileLayerRef.current = nextTile;
+    } catch (e) {
+      console.warn('Error switching map layer:', e);
+    }
+  };
 
   // Key for persistent active recording in localStorage (solo respaldo si IndexedDB falla).
   // Va por usuario: si en el mismo teléfono entra otro piloto, no hereda la ruta del anterior.
@@ -501,11 +553,13 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
 
       // Leaflet zoom controls managed through custom HUD buttons for sleek styling
 
-      // Tile Layer (Satellite HD default - fotografía aérea limpia sin textos estorbosos)
-      const satLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        maxZoom: 19
+      // Tile Layer (Google Maps Híbrido default - satélite HD con nombres de calles, poblados y carreteras)
+      const initialTile = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+        maxZoom: 20,
+        subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
       });
-      satLayer.addTo(map);
+      initialTile.addTo(map);
+      tileLayerRef.current = initialTile;
 
       // Polyline for recorded track
       const poly = L.polyline(existingTrack, {
@@ -1170,11 +1224,16 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Indicador de mapa Satélite HD de alta resolución */}
-          <div className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#242322] border border-white/10 text-[9px] font-mono uppercase tracking-wider text-white/70">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#25D366]"></span>
-            Satélite HD
-          </div>
+          {/* Indicador y selector de mapa */}
+          <button
+            type="button"
+            onClick={() => switchMapLayer()}
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#242322] hover:bg-[#2e2c2b] border border-white/10 text-[9px] font-mono uppercase tracking-wider text-white/90 transition active:scale-95 cursor-pointer"
+            title="Alternar capa de mapa"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-[#25D366] animate-pulse"></span>
+            {mapLayer === 'google-hybrid' ? '🛰️ Google Híbrido' : mapLayer === 'google-streets' ? '🗺️ Google Calles' : '📸 Satélite Limpio'}
+          </button>
 
           <button
             type="button"
@@ -1210,13 +1269,23 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
         {/* FULLSCREEN MAP CANVAS */}
         <div ref={mapContainerRef} className="absolute inset-0 w-full h-full z-0" />
 
-        {/* Top-Right Tactical Controls (Locate Me + Sleek Zoom) */}
-        <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
+        {/* Layer change toast notification */}
+        {layerToast && (
+          <div className="absolute top-16 left-1/2 -translate-x-1/2 z-30 pointer-events-none animate-fadeIn">
+            <div className="bg-[#121110]/95 backdrop-blur-xl border border-white/20 text-[#FAF6ED] text-[11px] font-mono font-bold px-4 py-2 rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.8)] flex items-center gap-2">
+              <span>{layerToast}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Top-Right Tactical Controls Stack (Locate Me + Layer Switcher + Sleek Zoom) */}
+        <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20 flex flex-col gap-2">
+          {/* Centrar en mi ubicación */}
           <button
             type="button"
             onClick={handleCenterOnMyLocation}
             disabled={isLocating}
-            className="w-11 h-11 bg-[#1A1918]/90 hover:bg-[#252422] text-[#FAF6ED] border border-white/20 rounded-2xl shadow-xl backdrop-blur-md flex items-center justify-center transition active:scale-95 disabled:opacity-50 cursor-pointer"
+            className="w-10 h-10 sm:w-11 sm:h-11 bg-[#1A1918]/90 hover:bg-[#252422] text-[#FAF6ED] border border-white/20 rounded-2xl shadow-xl backdrop-blur-md flex items-center justify-center transition active:scale-95 disabled:opacity-50 cursor-pointer"
             title="Centrar en mi ubicación actual"
           >
             {isLocating ? (
@@ -1226,11 +1295,22 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
             )}
           </button>
 
+          {/* Cambiar Capa de Mapa */}
+          <button
+            type="button"
+            onClick={() => switchMapLayer()}
+            className="w-10 h-10 sm:w-11 sm:h-11 bg-[#1A1918]/90 hover:bg-[#252422] text-[#FAF6ED] border border-white/20 rounded-2xl shadow-xl backdrop-blur-md flex items-center justify-center transition active:scale-95 cursor-pointer"
+            title="Cambiar capa de mapa (Google Híbrido / Calles / Satélite)"
+          >
+            <Layers className="w-4 h-4 sm:w-5 sm:h-5 text-white/90" />
+          </button>
+
+          {/* Zoom In / Out */}
           <div className="flex flex-col bg-[#1A1918]/90 border border-white/20 rounded-2xl shadow-xl backdrop-blur-md overflow-hidden">
             <button
               type="button"
               onClick={() => mapInstanceRef.current?.zoomIn()}
-              className="w-11 h-10 flex items-center justify-center text-white/80 hover:text-white hover:bg-white/10 transition border-b border-white/10 active:scale-90 font-mono font-bold text-lg select-none cursor-pointer"
+              className="w-10 h-9 sm:w-11 sm:h-10 flex items-center justify-center text-white/80 hover:text-white hover:bg-white/10 transition border-b border-white/10 active:scale-90 font-mono font-bold text-base sm:text-lg select-none cursor-pointer"
               title="Acercar mapa"
             >
               +
@@ -1238,7 +1318,7 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
             <button
               type="button"
               onClick={() => mapInstanceRef.current?.zoomOut()}
-              className="w-11 h-10 flex items-center justify-center text-white/80 hover:text-white hover:bg-white/10 transition active:scale-90 font-mono font-bold text-lg select-none cursor-pointer"
+              className="w-10 h-9 sm:w-11 sm:h-10 flex items-center justify-center text-white/80 hover:text-white hover:bg-white/10 transition active:scale-90 font-mono font-bold text-base sm:text-lg select-none cursor-pointer"
               title="Alejar mapa"
             >
               −
@@ -1246,45 +1326,47 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
           </div>
         </div>
 
-        {/* Real-time Waypoint / POI Floating Quick-Buttons (Top Left, visible when actively recording) */}
+        {/* Real-time Waypoint / POI Floating Quick-Buttons (Top dock, perfectly sized, NO scrollbar glitch, NO collision) */}
         {isRecording && !isPaused && (
-          <div className="absolute top-4 left-4 z-10 flex items-center gap-2 bg-[#121110]/85 backdrop-blur-xl border border-white/15 p-1.5 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.6)] max-w-[calc(100vw-120px)] overflow-x-auto scrollbar-none">
-            <button
-              type="button"
-              onClick={() => handleAddManualWaypoint('fuel', 'Gasolinera', 'GAS')}
-              className="px-3 py-1.5 bg-[#E6332A]/20 hover:bg-[#E6332A]/35 text-white border border-[#E6332A]/40 hover:border-[#E6332A]/80 shadow-[0_2px_8px_rgba(230,51,42,0.2)] text-[11px] font-sans font-bold flex items-center gap-1.5 transition-all duration-150 rounded-full cursor-pointer active:scale-95 shrink-0"
-              title="Añadir punto de recarga de gasolina"
-            >
-              <Fuel className="w-3.5 h-3.5 text-[#FF5C54]" />
-              <span>Gas</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleAddManualWaypoint('scenic', 'Mirador', 'VISTA')}
-              className="px-3 py-1.5 bg-[#F7B32B]/20 hover:bg-[#F7B32B]/35 text-white border border-[#F7B32B]/40 hover:border-[#F7B32B]/80 shadow-[0_2px_8px_rgba(247,179,43,0.2)] text-[11px] font-sans font-bold flex items-center gap-1.5 transition-all duration-150 rounded-full cursor-pointer active:scale-95 shrink-0"
-              title="Añadir punto panorámico o mirador"
-            >
-              <Camera className="w-3.5 h-3.5 text-[#F7B32B]" />
-              <span>Mirador</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleAddManualWaypoint('dirt', 'Técnico', 'TECNICO')}
-              className="px-3 py-1.5 bg-[#FF7A00]/20 hover:bg-[#FF7A00]/35 text-white border border-[#FF7A00]/40 hover:border-[#FF7A00]/80 shadow-[0_2px_8px_rgba(255,122,0,0.2)] text-[11px] font-sans font-bold flex items-center gap-1.5 transition-all duration-150 rounded-full cursor-pointer active:scale-95 shrink-0"
-              title="Añadir tramo técnico o curva difícil"
-            >
-              <AlertTriangle className="w-3.5 h-3.5 text-[#FFA64D]" />
-              <span>Técnico</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleAddManualWaypoint('camp', 'Descanso', 'DESCANSO')}
-              className="px-3 py-1.5 bg-[#25D366]/20 hover:bg-[#25D366]/35 text-white border border-[#25D366]/40 hover:border-[#25D366]/80 shadow-[0_2px_8px_rgba(37,211,102,0.2)] text-[11px] font-sans font-bold flex items-center gap-1.5 transition-all duration-150 rounded-full cursor-pointer active:scale-95 shrink-0"
-              title="Añadir pausa o parada de hidratación"
-            >
-              <Coffee className="w-3.5 h-3.5 text-[#52FFA2]" />
-              <span>Pausa</span>
-            </button>
+          <div className="absolute top-3 left-3 right-16 sm:right-20 max-w-sm z-20">
+            <div className="bg-[#121110]/92 backdrop-blur-2xl border border-white/15 p-1 sm:p-1.5 rounded-2xl shadow-[0_12px_36px_rgba(0,0,0,0.75)] grid grid-cols-4 gap-1 sm:gap-1.5">
+              <button
+                type="button"
+                onClick={() => handleAddManualWaypoint('fuel', 'Gasolinera', 'GAS')}
+                className="py-2 px-1 bg-[#E6332A]/20 hover:bg-[#E6332A]/35 text-white border border-[#E6332A]/50 shadow-[0_2px_8px_rgba(230,51,42,0.25)] text-[10px] sm:text-[11px] font-sans font-bold flex items-center justify-center gap-1 transition-all rounded-xl cursor-pointer active:scale-90"
+                title="Añadir punto de recarga de gasolina"
+              >
+                <Fuel className="w-3.5 h-3.5 text-[#FF5C54] shrink-0" />
+                <span className="truncate">Gas</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAddManualWaypoint('scenic', 'Mirador', 'VISTA')}
+                className="py-2 px-1 bg-[#F7B32B]/20 hover:bg-[#F7B32B]/35 text-white border border-[#F7B32B]/50 shadow-[0_2px_8px_rgba(247,179,43,0.25)] text-[10px] sm:text-[11px] font-sans font-bold flex items-center justify-center gap-1 transition-all rounded-xl cursor-pointer active:scale-90"
+                title="Añadir punto panorámico o mirador"
+              >
+                <Camera className="w-3.5 h-3.5 text-[#F7B32B] shrink-0" />
+                <span className="truncate">Mirador</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAddManualWaypoint('dirt', 'Técnico', 'TECNICO')}
+                className="py-2 px-1 bg-[#FF7A00]/20 hover:bg-[#FF7A00]/35 text-white border border-[#FF7A00]/50 shadow-[0_2px_8px_rgba(255,122,0,0.25)] text-[10px] sm:text-[11px] font-sans font-bold flex items-center justify-center gap-1 transition-all rounded-xl cursor-pointer active:scale-90"
+                title="Añadir tramo técnico o curva difícil"
+              >
+                <AlertTriangle className="w-3.5 h-3.5 text-[#FFA64D] shrink-0" />
+                <span className="truncate">Técnico</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAddManualWaypoint('camp', 'Descanso', 'DESCANSO')}
+                className="py-2 px-1 bg-[#25D366]/20 hover:bg-[#25D366]/35 text-white border border-[#25D366]/50 shadow-[0_2px_8px_rgba(37,211,102,0.25)] text-[10px] sm:text-[11px] font-sans font-bold flex items-center justify-center gap-1 transition-all rounded-xl cursor-pointer active:scale-90"
+                title="Añadir pausa o parada de hidratación"
+              >
+                <Coffee className="w-3.5 h-3.5 text-[#52FFA2] shrink-0" />
+                <span className="truncate">Pausa</span>
+              </button>
+            </div>
           </div>
         )}
 

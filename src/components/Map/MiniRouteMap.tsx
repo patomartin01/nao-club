@@ -41,9 +41,10 @@ const MiniRouteMap: React.FC<MiniRouteMapProps> = ({
 
       mapRef.current = map;
 
-      // High-resolution satellite tiles (ArcGIS World Imagery - no watermark)
-      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        maxZoom: 19
+      // High-resolution Google Maps Hybrid (satélite con nombres oficiales)
+      L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+        maxZoom: 20,
+        subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
       }).addTo(map);
 
       if (coordinates.length > 1) {
