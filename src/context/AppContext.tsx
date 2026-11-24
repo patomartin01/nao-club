@@ -1174,14 +1174,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     });
 
-    // Hydrate profiles from cloud (limitado a 50 para escala de 300k usuarios)
-    supabase.from('profiles').select('*').limit(50).then(({ data }) => {
+    // Hydrate profiles from cloud
+    supabase.from('profiles').select('*').limit(200).then(({ data }) => {
       if (data && data.length > 0) {
         const mappedUsers: User[] = data.map((p: any) => ({
           id: p.id,
-          name: p.name,
-          handle: p.handle,
-          email: p.email,
+          name: p.name || 'Piloto NAO',
+          handle: p.handle || `@${(p.name || 'piloto').toLowerCase().replace(/\s+/g, '')}`,
+          email: p.email || '',
           avatar: p.avatar_url || 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
           bio: p.bio || 'Piloto en NAO.',
           location: p.location || 'México',
@@ -1274,12 +1274,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     });
 
-    // Hydrate follows from cloud and sync requests (optimizado con índice B-Tree para 300k usuarios)
-    if (currentUser.id && currentUser.id !== 'guest') {
+    // Hydrate follows from cloud and sync community connections
+    const effectiveCurrentId = currentUser.id === 'user-patricio' 
+      ? 'a1bac354-0a88-486c-9289-049e75c61c12' 
+      : currentUser.id;
+
+    if (effectiveCurrentId && effectiveCurrentId !== 'guest') {
       supabase
         .from('follows')
         .select('*')
-        .or(`follower_id.eq.${currentUser.id},following_id.eq.${currentUser.id}`)
+        .limit(200)
         .then(async ({ data: followsData }) => {
           if (followsData) {
             setAllFollows(prev => {
@@ -1289,44 +1293,39 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             });
 
             const cloudFollowing = followsData
-              .filter((f: any) => f.follower_id === currentUser.id)
+              .filter((f: any) => f.follower_id === effectiveCurrentId || f.follower_id === currentUser.id)
               .map((f: any) => f.following_id);
             setFollowingUserIds(prev => Array.from(new Set([...prev, ...cloudFollowing])));
 
             const cloudFollowers = followsData
-              .filter((f: any) => f.following_id === currentUser.id)
+              .filter((f: any) => f.following_id === effectiveCurrentId || f.following_id === currentUser.id)
               .map((f: any) => f.follower_id);
             setFollowersUserIds(cloudFollowers);
 
-            // Cargar perfiles únicamente de quienes te siguen para las notificaciones (evita descargar 300k perfiles)
-            if (cloudFollowers.length > 0) {
+            // Asegurar que los perfiles de seguidores y seguidos estén en users para avatares y nombres
+            const relatedUserIds = Array.from(new Set([...cloudFollowing, ...cloudFollowers]));
+            if (relatedUserIds.length > 0) {
               const { data: profilesData } = await supabase
                 .from('profiles')
                 .select('*')
-                .in('id', cloudFollowers.slice(0, 50));
+                .in('id', relatedUserIds.slice(0, 50));
               if (profilesData && profilesData.length > 0) {
-                const profilesMap = new Map(profilesData.map((p: any) => [p.id, p]));
-                setFollowRequests(prev => {
-                  const existingFromIds = new Set(prev.map(r => r.fromUserId));
-                  const newReqs: FollowRequest[] = [];
-                  cloudFollowers.forEach((followerId: string) => {
-                    if (!existingFromIds.has(followerId)) {
-                      const prof = profilesMap.get(followerId);
-                      if (prof) {
-                        newReqs.push({
-                          id: `cloud-follow-${followerId}`,
-                          fromUserId: prof.id,
-                          fromUserName: prof.name || 'Piloto',
-                          fromUserHandle: prof.handle || '@piloto',
-                          fromUserAvatar: prof.avatar_url || 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
-                          toUserId: currentUser.id,
-                          createdAt: new Date().toISOString(),
-                          status: 'pending'
-                        });
-                      }
-                    }
-                  });
-                  return newReqs.length > 0 ? [...newReqs, ...prev] : prev;
+                const mappedRelated: User[] = profilesData.map((p: any) => ({
+                  id: p.id,
+                  name: p.name || 'Piloto NAO',
+                  handle: p.handle || `@${(p.name || 'piloto').toLowerCase().replace(/\s+/g, '')}`,
+                  email: p.email || '',
+                  avatar: p.avatar_url || 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
+                  bio: p.bio || 'Piloto en NAO.',
+                  location: p.location || 'México',
+                  ridingLevel: (p.riding_level as any) || 'Intermedio',
+                  phone: p.phone,
+                  emergencyContact: p.emergency_contact
+                }));
+                setUsers(prev => {
+                  const map = new Map(prev.map(u => [u.id, u]));
+                  mappedRelated.forEach(u => map.set(u.id, u));
+                  return Array.from(map.values());
                 });
               }
             }
@@ -3559,11 +3558,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const toggleFollowUser = (userId: string) => {
-    if (!userId || userId === currentUser.id) return;
+    if (!userId || userId === currentUser.id || userId === 'guest') return;
+
+    const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+    const effectiveFollowerId = currentUser.id === 'user-patricio' ? 'a1bac354-0a88-486c-9289-049e75c61c12' : currentUser.id;
+    const targetUserObj = users.find(u => u.id === userId || u.handle === userId || u.name === userId);
+    const effectiveTargetId = (targetUserObj && isUUID(targetUserObj.id)) ? targetUserObj.id : userId;
 
     setFollowingUserIds(prev => {
-      const exists = prev.includes(userId);
-      const next = exists ? prev.filter(id => id !== userId) : [...prev, userId];
+      const exists = prev.includes(userId) || prev.includes(effectiveTargetId);
+      const next = exists 
+        ? prev.filter(id => id !== userId && id !== effectiveTargetId) 
+        : [...prev, effectiveTargetId];
 
       try {
         localStorage.setItem('nao_following_users', JSON.stringify(next));
@@ -3572,21 +3578,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       // Keep allFollows in sync locally immediately
       setAllFollows(prevAll => {
         if (exists) {
-          return prevAll.filter(f => !(f.follower_id === currentUser.id && f.following_id === userId));
+          return prevAll.filter(f => !(
+            (f.follower_id === currentUser.id || f.follower_id === effectiveFollowerId) && 
+            (f.following_id === userId || f.following_id === effectiveTargetId)
+          ));
         } else {
-          return [...prevAll, { follower_id: currentUser.id, following_id: userId }];
+          return [...prevAll, { follower_id: effectiveFollowerId, following_id: effectiveTargetId }];
         }
       });
 
-      if (isSupabaseConfigured() && currentUser.id && userId) {
+      if (isSupabaseConfigured() && isUUID(effectiveFollowerId) && isUUID(effectiveTargetId)) {
         if (exists) {
-          supabase.from('follows').delete().match({ follower_id: currentUser.id, following_id: userId }).then(({ error }) => {
-            if (error) enqueueOfflineAction('unfollow_user', { follower_id: currentUser.id, following_id: userId });
+          supabase.from('follows').delete().match({ follower_id: effectiveFollowerId, following_id: effectiveTargetId }).then(({ error }) => {
+            if (error) enqueueOfflineAction('unfollow_user', { follower_id: effectiveFollowerId, following_id: effectiveTargetId });
           });
         } else {
-          supabase.from('follows').insert({ follower_id: currentUser.id, following_id: userId }).then(({ error }) => {
+          supabase.from('follows').insert({ follower_id: effectiveFollowerId, following_id: effectiveTargetId }).then(({ error }) => {
             if (error && error.code !== '23505') {
-              enqueueOfflineAction('follow_user', { follower_id: currentUser.id, following_id: userId });
+              enqueueOfflineAction('follow_user', { follower_id: effectiveFollowerId, following_id: effectiveTargetId });
             }
           });
         }
@@ -3600,25 +3609,33 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const followUser = (userId: string) => {
     if (!userId || userId === currentUser.id || currentUser.id === 'guest') return;
 
+    const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+    const effectiveFollowerId = currentUser.id === 'user-patricio' ? 'a1bac354-0a88-486c-9289-049e75c61c12' : currentUser.id;
+    const targetUserObj = users.find(u => u.id === userId || u.handle === userId || u.name === userId);
+    const effectiveTargetId = (targetUserObj && isUUID(targetUserObj.id)) ? targetUserObj.id : userId;
+
     setFollowingUserIds(prev => {
-      if (prev.includes(userId)) return prev;
-      const next = [...prev, userId];
+      if (prev.includes(userId) || prev.includes(effectiveTargetId)) return prev;
+      const next = [...prev, effectiveTargetId];
 
       try {
         localStorage.setItem('nao_following_users', JSON.stringify(next));
       } catch {}
 
       setAllFollows(prevAll => {
-        if (prevAll.some(f => f.follower_id === currentUser.id && f.following_id === userId)) {
+        if (prevAll.some(f => 
+          (f.follower_id === currentUser.id || f.follower_id === effectiveFollowerId) && 
+          (f.following_id === userId || f.following_id === effectiveTargetId)
+        )) {
           return prevAll;
         }
-        return [...prevAll, { follower_id: currentUser.id, following_id: userId }];
+        return [...prevAll, { follower_id: effectiveFollowerId, following_id: effectiveTargetId }];
       });
 
-      if (isSupabaseConfigured() && currentUser.id && userId) {
-        supabase.from('follows').insert({ follower_id: currentUser.id, following_id: userId }).then(({ error }) => {
+      if (isSupabaseConfigured() && isUUID(effectiveFollowerId) && isUUID(effectiveTargetId)) {
+        supabase.from('follows').insert({ follower_id: effectiveFollowerId, following_id: effectiveTargetId }).then(({ error }) => {
           if (error && error.code !== '23505') {
-            enqueueOfflineAction('follow_user', { follower_id: currentUser.id, following_id: userId });
+            enqueueOfflineAction('follow_user', { follower_id: effectiveFollowerId, following_id: effectiveTargetId });
           }
         });
       }
@@ -3629,15 +3646,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const getFollowersCountForUser = (userId: string): number => {
     if (!userId) return 0;
-    // If checking current logged-in user, use followersUserIds length
-    if (userId === currentUser.id) {
+    const effectiveTargetId = users.find(u => u.id === userId || u.handle === userId || u.name === userId)?.id || userId;
+    const effectiveCurrentId = currentUser.id === 'user-patricio' ? 'a1bac354-0a88-486c-9289-049e75c61c12' : currentUser.id;
+
+    if (effectiveTargetId === effectiveCurrentId || userId === currentUser.id) {
       return followersUserIds.length;
     }
-    // Count how many records have following_id === userId in allFollows
-    const fromAll = allFollows.filter(f => f.following_id === userId).length;
-    // Also check if current user is following this user locally
-    const currentFollowsTarget = followingUserIds.includes(userId);
-    const countedInAll = allFollows.some(f => f.follower_id === currentUser.id && f.following_id === userId);
+    const fromAll = allFollows.filter(f => f.following_id === effectiveTargetId || f.following_id === userId).length;
+    const currentFollowsTarget = followingUserIds.includes(userId) || followingUserIds.includes(effectiveTargetId);
+    const countedInAll = allFollows.some(f => 
+      (f.follower_id === currentUser.id || f.follower_id === effectiveCurrentId) && 
+      (f.following_id === userId || f.following_id === effectiveTargetId)
+    );
     if (currentFollowsTarget && !countedInAll) {
       return fromAll + 1;
     }
@@ -3646,15 +3666,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const getFollowingCountForUser = (userId: string): number => {
     if (!userId) return 0;
-    // If checking current logged-in user, use followingUserIds length
-    if (userId === currentUser.id) {
+    const effectiveTargetId = users.find(u => u.id === userId || u.handle === userId || u.name === userId)?.id || userId;
+    const effectiveCurrentId = currentUser.id === 'user-patricio' ? 'a1bac354-0a88-486c-9289-049e75c61c12' : currentUser.id;
+
+    if (effectiveTargetId === effectiveCurrentId || userId === currentUser.id) {
       return followingUserIds.length;
     }
-    return allFollows.filter(f => f.follower_id === userId).length;
+    return allFollows.filter(f => f.follower_id === effectiveTargetId || f.follower_id === userId).length;
   };
 
   const isFollowingUser = (userId: string) => {
-    return followingUserIds.includes(userId);
+    if (!userId) return false;
+    const effectiveTargetId = users.find(u => u.id === userId || u.handle === userId || u.name === userId)?.id || userId;
+    return followingUserIds.includes(userId) || followingUserIds.includes(effectiveTargetId);
   };
 
   const isFollowRequested = (targetUserId: string) => {

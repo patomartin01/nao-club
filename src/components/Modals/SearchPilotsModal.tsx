@@ -13,7 +13,8 @@ import {
   Bike, 
   Clock,
   Compass,
-  Loader2
+  Loader2,
+  Users
 } from 'lucide-react';
 
 interface SearchPilotsModalProps {
@@ -43,7 +44,7 @@ export const SearchPilotsModal: React.FC<SearchPilotsModalProps> = ({
   const [remotePilots, setRemotePilots] = useState<User[]>([]);
   const [allCommunityPilots, setAllCommunityPilots] = useState<User[]>([]);
 
-  // Limpiar estado al cerrar o abrir
+  // Limpiar estado al cerrar
   useEffect(() => {
     if (!isOpen) {
       setQuery('');
@@ -52,9 +53,9 @@ export const SearchPilotsModal: React.FC<SearchPilotsModalProps> = ({
     }
   }, [isOpen]);
 
-  // Pre-cargar pilotos comunitarios cuando se abre el modal para que la búsqueda sea instantánea desde la primera letra
+  // Cargar pilotos de la comunidad de Supabase inmediatamente al abrir
   useEffect(() => {
-    if (!isOpen || !isSupabaseConfigured()) return;
+    if (!isOpen) return;
 
     let isSubscribed = true;
     const fetchCommunityProfiles = async () => {
@@ -95,7 +96,6 @@ export const SearchPilotsModal: React.FC<SearchPilotsModalProps> = ({
   useEffect(() => {
     const cleanQuery = query.trim().replace(/^@/, '');
     
-    // Si no ha escrito nada, NUNCA mostrar sugerencias
     if (!cleanQuery) {
       setRemotePilots([]);
       setIsSearching(false);
@@ -107,36 +107,32 @@ export const SearchPilotsModal: React.FC<SearchPilotsModalProps> = ({
 
     const timer = setTimeout(async () => {
       try {
-        if (isSupabaseConfigured()) {
-          // Búsqueda en Supabase con or ilike para nombre y handle
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('id, name, handle, email, avatar_url, bio, location, riding_level, phone, emergency_contact')
-            .or(`name.ilike.%${cleanQuery}%,handle.ilike.%${cleanQuery}%`)
-            .limit(50);
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('id, name, handle, email, avatar_url, bio, location, riding_level, phone, emergency_contact')
+          .or(`name.ilike.%${cleanQuery}%,handle.ilike.%${cleanQuery}%`)
+          .limit(50);
 
-          if (!error && data && !isCancelled) {
-            const mapped: User[] = data.map((p: any) => ({
-              id: p.id,
-              name: p.name || 'Piloto NAO',
-              handle: p.handle || `@${(p.name || 'piloto').toLowerCase().replace(/\s+/g, '')}`,
-              email: p.email || '',
-              avatar: p.avatar_url || 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
-              bio: p.bio || 'Piloto en NAO.',
-              location: p.location || 'México',
-              ridingLevel: (p.riding_level as any) || 'Intermedio',
-              phone: p.phone,
-              emergencyContact: p.emergency_contact
-            }));
+        if (!error && data && !isCancelled) {
+          const mapped: User[] = data.map((p: any) => ({
+            id: p.id,
+            name: p.name || 'Piloto NAO',
+            handle: p.handle || `@${(p.name || 'piloto').toLowerCase().replace(/\s+/g, '')}`,
+            email: p.email || '',
+            avatar: p.avatar_url || 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
+            bio: p.bio || 'Piloto en NAO.',
+            location: p.location || 'México',
+            ridingLevel: (p.riding_level as any) || 'Intermedio',
+            phone: p.phone,
+            emergencyContact: p.emergency_contact
+          }));
 
-            // Excluir al usuario actual
-            const filteredRemote = mapped.filter(
-              u => u.id !== currentUser.id && u.handle !== currentUser.handle
-            );
+          const filteredRemote = mapped.filter(
+            u => u.id !== currentUser.id && u.handle !== currentUser.handle
+          );
 
-            if (!isCancelled) {
-              setRemotePilots(filteredRemote);
-            }
+          if (!isCancelled) {
+            setRemotePilots(filteredRemote);
           }
         }
       } catch (err) {
@@ -173,34 +169,26 @@ export const SearchPilotsModal: React.FC<SearchPilotsModalProps> = ({
     const location = normalizeText(user.location || '');
     const bio = normalizeText(user.bio || '');
 
-    // Palabras dentro del nombre
     const nameWords = name.split(/\s+/).filter(Boolean);
 
-    // 1. Coincidencia exacta
     if (handle === q) return 1000;
     if (name === q) return 950;
 
-    // 2. Comienza con la consulta (Starts with)
     if (handle.startsWith(q)) return 800 - (handle.length - q.length);
     if (name.startsWith(q)) return 750 - (name.length - q.length);
 
-    // 3. Alguna palabra del nombre comienza con la consulta (ej. "Martín" en "Patricio Martín")
     const wordStartsIdx = nameWords.findIndex(w => w.startsWith(q));
     if (wordStartsIdx !== -1) {
       return 600 - (wordStartsIdx * 10);
     }
 
-    // 4. Contiene la subcadena
     if (handle.includes(q)) return 400;
     if (name.includes(q)) return 350;
 
-    // 5. Coincidencias en ubicación o biografía
     if (location.startsWith(q)) return 200;
     if (location.includes(q)) return 150;
     if (bio.includes(q)) return 100;
 
-    // 6. Coincidencia secuencial difusa (Fuzzy subsequence match)
-    // Permite encontrar coincidencias aunque falte alguna letra si la consulta tiene >= 2 caracteres
     if (q.length >= 2) {
       let qIdx = 0;
       let matchedInName = 0;
@@ -210,9 +198,7 @@ export const SearchPilotsModal: React.FC<SearchPilotsModalProps> = ({
           qIdx++;
         }
       }
-      if (matchedInName === q.length) {
-        return 80;
-      }
+      if (matchedInName === q.length) return 80;
 
       qIdx = 0;
       let matchedInHandle = 0;
@@ -222,15 +208,50 @@ export const SearchPilotsModal: React.FC<SearchPilotsModalProps> = ({
           qIdx++;
         }
       }
-      if (matchedInHandle === q.length) {
-        return 75;
-      }
+      if (matchedInHandle === q.length) return 75;
     }
 
     return 0;
   };
 
-  // Combinar fuentes (remotos de Supabase, pre-cargados, usuarios y actividades locales) con ranking difuso
+  // Lista de pilotos de la comunidad disponible para sugerir cuando la búsqueda está vacía
+  const communitySuggestedPilots = React.useMemo(() => {
+    const map = new Map<string, User>();
+    const isSelf = (u: User) => 
+      !u || !u.id || u.id === 'guest' || u.id === currentUser.id ||
+      (currentUser.handle && u.handle === currentUser.handle) ||
+      (currentUser.name && u.name?.toLowerCase().trim() === currentUser.name?.toLowerCase().trim());
+
+    // 1. Pilotos de Supabase
+    allCommunityPilots.forEach(u => {
+      if (!isSelf(u)) map.set(u.id, u);
+    });
+
+    // 2. Pilotos locales en AppContext
+    users.forEach(u => {
+      if (!isSelf(u) && !map.has(u.id)) map.set(u.id, u);
+    });
+
+    // 3. Pilotos con actividades registradas
+    activities.forEach(act => {
+      if (act.pilotId && act.pilotId !== 'guest' && act.pilotId !== currentUser.id && !map.has(act.pilotId)) {
+        map.set(act.pilotId, {
+          id: act.pilotId,
+          name: act.pilotName || 'Piloto NAO',
+          handle: act.pilotHandle || `@${(act.pilotName || 'piloto').toLowerCase().replace(/\s+/g, '')}`,
+          email: '',
+          avatar: act.pilotAvatar || 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
+          bio: `Piloto activo en NAO. Moto: ${act.motoModel}.`,
+          location: act.location || 'México',
+          ridingLevel: 'Intermedio'
+        });
+      }
+    });
+
+    return Array.from(map.values());
+  }, [allCommunityPilots, users, activities, currentUser.id, currentUser.handle, currentUser.name]);
+
+  // Combinar fuentes con ranking difuso cuando hay texto en query
   const filteredPilots = React.useMemo(() => {
     const cleanQuery = query.trim().replace(/^@/, '');
     if (!cleanQuery) return [];
@@ -240,6 +261,7 @@ export const SearchPilotsModal: React.FC<SearchPilotsModalProps> = ({
     const considerUser = (u: User) => {
       if (!u || !u.id || u.id === 'guest' || u.id === currentUser.id) return;
       if (currentUser.handle && u.handle === currentUser.handle) return;
+      if (currentUser.name && u.name?.toLowerCase().trim() === currentUser.name?.toLowerCase().trim()) return;
 
       const score = calculateMatchScore(u, cleanQuery);
       if (score > 0) {
@@ -250,16 +272,10 @@ export const SearchPilotsModal: React.FC<SearchPilotsModalProps> = ({
       }
     };
 
-    // 1. Pilotos de la búsqueda remota directa
     remotePilots.forEach(considerUser);
-
-    // 2. Pilotos de la comunidad pre-cargados (búsqueda instantánea desde la primera letra)
     allCommunityPilots.forEach(considerUser);
-
-    // 3. Usuarios locales en memoria de AppContext
     users.forEach(considerUser);
 
-    // 4. Actividades registradas en el feed y participantes de rodadas
     activities.forEach(act => {
       if (act.pilotId && act.pilotId !== 'guest' && act.pilotId !== currentUser.id) {
         considerUser({
@@ -273,33 +289,17 @@ export const SearchPilotsModal: React.FC<SearchPilotsModalProps> = ({
           ridingLevel: 'Intermedio'
         });
       }
-
-      // Participantes de rodadas en grupo
-      if (act.groupInfo?.participants) {
-        act.groupInfo.participants.forEach(p => {
-          if (p.userId && p.userId !== 'guest' && p.userId !== currentUser.id) {
-            considerUser({
-              id: p.userId,
-              name: p.name || 'Piloto',
-              handle: p.handle || `@${(p.name || 'piloto').toLowerCase().replace(/\s+/g, '')}`,
-              email: '',
-              avatar: p.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250',
-              bio: `Miembro de la tribu ${act.groupInfo?.crewName || 'NAO'}.`,
-              location: 'México',
-              ridingLevel: 'Intermedio'
-            });
-          }
-        });
-      }
     });
 
-    // Ordenar de mayor a menor coincidencia
     return Array.from(pilotMap.values())
       .sort((a, b) => b.score - a.score)
       .map(entry => entry.user);
-  }, [query, remotePilots, allCommunityPilots, users, activities, currentUser.id, currentUser.handle]);
+  }, [query, remotePilots, allCommunityPilots, users, activities, currentUser.id, currentUser.handle, currentUser.name]);
 
   if (!isOpen) return null;
+
+  const isQueryEmpty = !query.trim();
+  const pilotsToRender = isQueryEmpty ? communitySuggestedPilots : filteredPilots;
 
   return (
     <div 
@@ -310,7 +310,7 @@ export const SearchPilotsModal: React.FC<SearchPilotsModalProps> = ({
         className="bg-[#FAF6ED] sm:border sm:border-[#1A1918] w-full sm:max-w-md h-full sm:h-auto sm:max-h-[85vh] sm:rounded-3xl overflow-hidden text-[#1A1918] sm:shadow-sm flex flex-col cursor-default"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Top App Header / Search Input (Instagram-style Clean & Simple) */}
+        {/* Top App Header / Search Input */}
         <div className="pt-[max(env(safe-area-inset-top),14px)] pb-3 px-4 bg-[#FAF6ED] border-b border-[#1A1918]/15 flex items-center gap-3">
           <div className="relative flex-1">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#1A1918]/50" />
@@ -326,7 +326,7 @@ export const SearchPilotsModal: React.FC<SearchPilotsModalProps> = ({
               <button
                 type="button"
                 onClick={() => setQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-[#1A1918]/40 hover:text-[#1A1918] transition"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-[#1A1918]/40 hover:text-[#1A1918] transition cursor-pointer"
                 title="Borrar texto"
               >
                 <X className="w-3.5 h-3.5" />
@@ -337,43 +337,49 @@ export const SearchPilotsModal: React.FC<SearchPilotsModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="text-xs font-mono font-bold text-[#1A1918]/70 hover:text-[#E6332A] transition px-1 py-1"
+            className="text-xs font-mono font-bold text-[#1A1918]/70 hover:text-[#E6332A] transition px-1 py-1 cursor-pointer"
           >
             Listo
           </button>
         </div>
 
+        {/* Section Title Banner */}
+        <div className="px-4 py-2 bg-[#F4EEDB] border-b border-[#1A1918]/10 flex items-center justify-between text-[10px] font-mono font-bold uppercase tracking-wider text-[#1A1918]/70">
+          <span className="flex items-center gap-1.5">
+            <Users className="w-3.5 h-3.5 text-[#E6332A]" />
+            {isQueryEmpty 
+              ? `Pilotos de la comunidad (${communitySuggestedPilots.length})` 
+              : `Resultados (${pilotsToRender.length})`}
+          </span>
+          <span className="text-[#E6332A] font-bold">
+            {isQueryEmpty ? 'Sugerencias para seguir' : 'Búsqueda en vivo'}
+          </span>
+        </div>
+
         {/* Results Body */}
         <div className="flex-1 overflow-y-auto divide-y divide-[#1A1918]/10">
-          {/* Estado vacío inicial */}
-          {!query.trim() ? (
-            <div className="py-20 text-center px-6">
-              <Search className="w-8 h-8 text-[#1A1918]/30 mx-auto mb-3" />
-              <p className="text-xs font-mono text-[#1A1918]/50">
-                Escribe un nombre o apodo
-              </p>
-            </div>
-          ) : isSearching && filteredPilots.length === 0 ? (
+          {isSearching && filteredPilots.length === 0 ? (
             /* Buscando */
             <div className="py-16 text-center text-[#1A1918]/60 space-y-2">
               <Loader2 className="w-6 h-6 text-[#E6332A] animate-spin mx-auto" />
               <p className="text-xs font-mono">Buscando pilotos...</p>
             </div>
-          ) : filteredPilots.length === 0 ? (
+          ) : pilotsToRender.length === 0 ? (
             /* Sin resultados */
             <div className="py-16 text-center px-6 space-y-1">
               <p className="font-sans font-semibold text-sm text-[#1A1918]">
                 Sin resultados
               </p>
               <p className="text-xs text-[#1A1918]/60">
-                No encontramos a nadie como "{query.trim()}"
+                {isQueryEmpty 
+                  ? 'Aún no hay otros pilotos registrados en la plataforma.'
+                  : `No encontramos a nadie como "${query.trim()}"`}
               </p>
             </div>
           ) : (
-            /* Lista de resultados limpia estilo Instagram */
-            filteredPilots.map((pilot) => {
+            /* Lista de pilotos con botón Seguir / Siguiendo */
+            pilotsToRender.map((pilot) => {
               const isFollowing = isFollowingUser(pilot.id);
-              const isRequested = isFollowRequested(pilot.id);
               const pilotBikes = motorcycles.filter(m => m.userId === pilot.id);
               const motoName = pilotBikes[0] 
                 ? `${pilotBikes[0].brand} ${pilotBikes[0].model}` 
@@ -412,7 +418,7 @@ export const SearchPilotsModal: React.FC<SearchPilotsModalProps> = ({
                     </div>
                   </div>
 
-                  {/* Botón Seguir / Siguiendo / Solicitado */}
+                  {/* Botón Seguir / Siguiendo */}
                   <div className="shrink-0">
                     {currentUser.id === 'guest' ? (
                       <button
@@ -421,7 +427,7 @@ export const SearchPilotsModal: React.FC<SearchPilotsModalProps> = ({
                           onClose();
                           openPilotProfileById(pilot.id);
                         }}
-                        className="px-3 py-1.5 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] text-xs font-sans font-bold rounded-lg border border-[#1A1918]/30 transition"
+                        className="px-3 py-1.5 bg-[#FAF6ED] hover:bg-[#F4EEDB] text-[#1A1918] text-xs font-sans font-bold rounded-lg border border-[#1A1918]/30 transition cursor-pointer"
                       >
                         Ver
                       </button>
@@ -432,9 +438,10 @@ export const SearchPilotsModal: React.FC<SearchPilotsModalProps> = ({
                           e.stopPropagation();
                           toggleFollowUser(pilot.id);
                         }}
-                        className="px-3.5 py-1.5 bg-[#F4EEDB] hover:bg-[#E6332A] hover:text-white text-[#1A1918] text-xs font-sans font-bold rounded-lg border border-[#1A1918]/20 transition group cursor-pointer"
+                        className="px-3.5 py-1.5 bg-[#F4EEDB] hover:bg-[#E6332A] hover:text-white text-[#1A1918] text-xs font-sans font-bold rounded-lg border border-[#1A1918]/20 transition group cursor-pointer flex items-center gap-1.5"
                         title="Dejar de seguir"
                       >
+                        <UserCheck className="w-3.5 h-3.5 text-emerald-600 group-hover:text-white" />
                         <span className="group-hover:hidden">Siguiendo</span>
                         <span className="hidden group-hover:inline">Dejar</span>
                       </button>
@@ -445,10 +452,11 @@ export const SearchPilotsModal: React.FC<SearchPilotsModalProps> = ({
                           e.stopPropagation();
                           toggleFollowUser(pilot.id);
                         }}
-                        className="px-4 py-1.5 bg-[#E6332A] hover:bg-[#d02c24] text-white text-xs font-sans font-semibold rounded-lg shadow-sm transition active:scale-95 cursor-pointer"
+                        className="px-4 py-1.5 bg-[#E6332A] hover:bg-[#d02c24] text-white text-xs font-sans font-semibold rounded-lg shadow-sm transition active:scale-95 cursor-pointer flex items-center gap-1"
                         title="Seguir a este piloto"
                       >
-                        + Seguir
+                        <UserPlus className="w-3.5 h-3.5" />
+                        <span>+ Seguir</span>
                       </button>
                     )}
                   </div>
@@ -461,4 +469,3 @@ export const SearchPilotsModal: React.FC<SearchPilotsModalProps> = ({
     </div>
   );
 };
-

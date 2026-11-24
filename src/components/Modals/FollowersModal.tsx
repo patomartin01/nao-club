@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { User, FollowRequest } from '../../types';
+import { supabase, isSupabaseConfigured } from '../../lib/supabase';
 import { 
   X, 
   Users, 
@@ -49,6 +50,7 @@ export const FollowersModal: React.FC<FollowersModalProps> = ({
 
   const [activeTab, setActiveTab] = useState<'followers' | 'following' | 'requests'>(initialTab);
   const [searchQuery, setSearchQuery] = useState('');
+  const [extraProfiles, setExtraProfiles] = useState<User[]>([]);
 
   // Sincronizar tab si cambia initialTab al abrir
   React.useEffect(() => {
@@ -57,8 +59,6 @@ export const FollowersModal: React.FC<FollowersModalProps> = ({
       setSearchQuery('');
     }
   }, [isOpen, initialTab]);
-
-  if (!isOpen) return null;
 
   const isCurrentUsersOwnProfile = !targetUser || targetUser.id === currentUser.id;
   const inspectedUser = targetUser || currentUser;
@@ -77,13 +77,48 @@ export const FollowersModal: React.FC<FollowersModalProps> = ({
     ? followingUserIds
     : allFollows.filter(f => f.follower_id === inspectedUser.id).map(f => f.following_id);
 
+  // Cargar perfiles faltantes de Supabase si algún seguidor o seguido no está aún en users
+  useEffect(() => {
+    if (!isOpen) return;
+    const allIds = Array.from(new Set([...inspectedFollowersIds, ...inspectedFollowingIds]));
+    const missingIds = allIds.filter(id => id && id !== currentUser.id && !users.some(u => u.id === id) && !extraProfiles.some(u => u.id === id));
+    
+    if (missingIds.length > 0) {
+      supabase.from('profiles').select('*').in('id', missingIds.slice(0, 50)).then(({ data }) => {
+        if (data && data.length > 0) {
+          const mapped: User[] = data.map((p: any) => ({
+            id: p.id,
+            name: p.name || 'Piloto NAO',
+            handle: p.handle || `@${(p.name || 'piloto').toLowerCase().replace(/\s+/g, '')}`,
+            email: p.email || '',
+            avatar: p.avatar_url || 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
+            bio: p.bio || 'Piloto en NAO.',
+            location: p.location || 'México',
+            ridingLevel: (p.riding_level as any) || 'Intermedio',
+            phone: p.phone,
+            emergencyContact: p.emergency_contact
+          }));
+          setExtraProfiles(prev => {
+            const map = new Map(prev.map(u => [u.id, u]));
+            mapped.forEach(u => map.set(u.id, u));
+            return Array.from(map.values());
+          });
+        }
+      });
+    }
+  }, [isOpen, inspectedFollowersIds, inspectedFollowingIds, users, currentUser.id, extraProfiles]);
+
+  if (!isOpen) return null;
+
+  const combinedUsers = [...users, ...extraProfiles];
+
   // Resolver usuarios reales y existentes en la base de datos
   const validFollowersUsers = Array.from(new Set(inspectedFollowersIds))
-    .map(id => users.find(u => u.id === id) || (id === currentUser.id ? currentUser : null))
+    .map(id => combinedUsers.find(u => u.id === id) || (id === currentUser.id ? currentUser : null))
     .filter((u): u is User => u !== null && u !== undefined);
 
   const validFollowingUsers = Array.from(new Set(inspectedFollowingIds))
-    .map(id => users.find(u => u.id === id) || (id === currentUser.id ? currentUser : null))
+    .map(id => combinedUsers.find(u => u.id === id) || (id === currentUser.id ? currentUser : null))
     .filter((u): u is User => u !== null && u !== undefined);
 
   // Resolver lista de pilotos en función de la pestaña activa

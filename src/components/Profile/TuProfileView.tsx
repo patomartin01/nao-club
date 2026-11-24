@@ -78,11 +78,17 @@ export const TuProfileView: React.FC<TuProfileViewProps> = ({
     toggleKudo,
     addActivityComment,
     openPilotProfileById,
-    currentUserFounderNumber
+    currentUserFounderNumber,
+    getFollowersCountForUser,
+    getFollowingCountForUser
   } = useApp();
 
-  const validFollowersCount = users.filter(u => followersUserIds.includes(u.id)).length;
-  const validFollowingCount = users.filter(u => followingUserIds.includes(u.id)).length;
+  const validFollowersCount = getFollowersCountForUser
+    ? getFollowersCountForUser(currentUser.id)
+    : followersUserIds.length;
+  const validFollowingCount = getFollowingCountForUser
+    ? getFollowingCountForUser(currentUser.id)
+    : followingUserIds.length;
 
   const [activeSubTab, setActiveSubTab] = useState<ProfileSubTab>('hangar');
   const [selectedDiscipline, setSelectedDiscipline] = useState<string>('Todos los deportes');

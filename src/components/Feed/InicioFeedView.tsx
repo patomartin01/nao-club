@@ -57,6 +57,7 @@ import { ActivityDetailModal } from '../Modals/ActivityDetailModal';
 import { GroupParticipantsModal } from '../Modals/GroupParticipantsModal';
 import { SaveToListModal } from '../Modals/SaveToListModal';
 import { ShareModal } from '../Modals/ShareModal';
+import { SearchPilotsModal } from '../Modals/SearchPilotsModal';
 import { triggerExhaustSmoke } from '../../utils/exhaustSmoke';
 import confetti from 'canvas-confetti';
 
@@ -97,7 +98,8 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
     savedRouteIds,
     routeLists,
     getFollowersCountForUser,
-    currentUserFounderNumber
+    currentUserFounderNumber,
+    followingUserIds
   } = useApp();
 
   // Helper to dynamically resolve groupInfo against live crews and users state
@@ -150,8 +152,19 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
   const [shareModalItem, setShareModalItem] = useState<ActivityPost | null>(null);
 
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [isSearchPilotsOpen, setIsSearchPilotsOpen] = useState<boolean>(false);
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
   const [sortOrder, setSortOrder] = useState<'recent' | 'distance' | 'kudos'>('recent');
+
+  const matchingPilots = React.useMemo(() => {
+    const q = searchQuery.trim().toLowerCase().replace(/^@/, '');
+    if (!q) return [];
+    return users.filter(u => 
+      u.id !== currentUser.id &&
+      u.id !== 'guest' &&
+      ((u.name && u.name.toLowerCase().includes(q)) || (u.handle && u.handle.toLowerCase().includes(q)))
+    ).slice(0, 6);
+  }, [searchQuery, users, currentUser.id]);
   const [isGpsBannerDismissed, setIsGpsBannerDismissed] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
     try {
@@ -195,7 +208,10 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
         }
       }
 
-      // 3. Social relevance filter (Strava Model):
+      // 3. Social relevance filter:
+      // Si el usuario está buscando expresamente texto, permitir resultados de toda la comunidad
+      if (searchQuery.trim()) return true;
+
       const isOwnActivity = act.pilotId === currentUser.id;
       const isFollowedPilot = isFollowingUser(act.pilotId);
       const hasFollowedFriend = Boolean(
@@ -203,6 +219,10 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
           p => p.userId === currentUser.id || isFollowingUser(p.userId)
         )
       );
+
+      // Si el usuario aún no sigue a nadie, mostrar expediciones de la comunidad para que el feed no esté vacío
+      const hasAnyFollows = followingUserIds && followingUserIds.length > 0;
+      if (!hasAnyFollows) return true;
 
       return isOwnActivity || isFollowedPilot || hasFollowedFriend;
     })
@@ -409,6 +429,94 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
             </div>
           )}
           
+          {/* BARRA DE BÚSQUEDA Y DESCUBRIMIENTO DE PILOTOS */}
+          <div className="bg-[#FAF6ED] border border-[#1A1918]/10 rounded-2xl p-2 sm:p-2.5 shadow-sm space-y-2">
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 text-[#1A1918]/50 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Buscar pilotos, rutas o paradas..."
+                  className="w-full pl-9 pr-8 py-2 text-xs font-sans bg-[#F4EEDB] border border-[#1A1918]/10 rounded-xl text-[#1A1918] placeholder:text-[#1A1918]/50 focus:outline-none focus:ring-1 focus:ring-[#E6332A]"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 text-[#1A1918]/40 hover:text-[#1A1918] rounded"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsSearchPilotsOpen(true)}
+                className="px-3 py-2 bg-[#FAF6ED] hover:bg-[#F4EEDB] border border-[#1A1918]/10 rounded-xl text-[11px] font-sans font-semibold text-[#1A1918] flex items-center gap-1.5 shadow-sm transition active:scale-95 shrink-0"
+                title="Directorio de pilotos comunitarios"
+              >
+                <Users className="w-3.5 h-3.5 text-[#E6332A]" />
+                <span className="hidden sm:inline">Pilotos</span>
+                <span className="font-mono text-[10px] bg-[#F4EEDB] px-1 rounded border border-[#1A1918]/10 font-bold">
+                  {users.filter(u => u.id !== currentUser.id).length}
+                </span>
+              </button>
+            </div>
+
+            {/* Pilotos sugeridos cuando hay búsqueda */}
+            {matchingPilots.length > 0 && (
+              <div className="pt-1.5 border-t border-[#1A1918]/10 space-y-1.5">
+                <p className="text-[10px] font-mono uppercase tracking-wider text-[#1A1918]/60 font-semibold px-1">
+                  Pilotos encontrados ({matchingPilots.length})
+                </p>
+                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+                  {matchingPilots.map(pilot => {
+                    const following = isFollowingUser(pilot.id);
+                    return (
+                      <div
+                        key={pilot.id}
+                        className="flex items-center gap-2 bg-[#F4EEDB] border border-[#1A1918]/10 rounded-xl p-1.5 pr-2 shrink-0 shadow-xs"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={pilot.avatar}
+                          alt={pilot.name}
+                          onClick={() => openPilotProfileById(pilot.id)}
+                          className="w-7 h-7 rounded-lg object-cover border border-[#1A1918]/10 cursor-pointer"
+                        />
+                        <div
+                          onClick={() => openPilotProfileById(pilot.id)}
+                          className="min-w-0 cursor-pointer"
+                        >
+                          <p className="text-[11px] font-sans font-semibold text-[#1A1918] truncate max-w-[100px] leading-tight">
+                            {pilot.name}
+                          </p>
+                          <p className="text-[9px] font-mono text-[#1A1918]/60 truncate max-w-[100px]">
+                            {pilot.handle}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => toggleFollowUser(pilot.id)}
+                          className={`ml-1 px-2 py-1 text-[10px] font-sans font-semibold rounded-lg border transition ${
+                            following
+                              ? 'bg-[#FAF6ED] text-[#1A1918] border-[#1A1918]/15 hover:bg-[#E6332A] hover:text-white'
+                              : 'bg-[#E6332A] text-white border-transparent hover:bg-[#d02c24]'
+                          }`}
+                        >
+                          {following ? 'Siguiendo' : '+ Seguir'}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Horizontal compact scroll for categories on mobile */}
           <div className="flex items-center gap-2 py-1 overflow-x-auto no-scrollbar -mx-2 px-2 sm:mx-0 sm:px-0">
             {disciplineFilters.map(f => (
@@ -1239,6 +1347,12 @@ export const InicioFeedView: React.FC<InicioFeedViewProps> = ({
           type: 'activity'
         } : null}
         onClose={() => setShareModalItem(null)}
+      />
+
+      {/* MODAL: BÚSQUEDA DE PILOTOS COMUNITARIOS */}
+      <SearchPilotsModal
+        isOpen={isSearchPilotsOpen}
+        onClose={() => setIsSearchPilotsOpen(false)}
       />
 
     </div>
