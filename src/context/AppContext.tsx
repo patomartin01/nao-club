@@ -71,7 +71,7 @@ interface AppContextType {
   currentRodada: Rodada | null;
   setCurrentRodada: (rodada: Rodada | null) => void;
   enterRodada: (rodadaId: string) => void;
-  createRodada: (data: { title: string; subtitle: string; description: string; category: Rodada['category']; startDate: string; endDate: string; originPoint: string }) => Rodada;
+  createRodada: (data: { title: string; subtitle: string; description: string; category: Rodada['category']; startDate: string; endDate: string; originPoint: string; crewId?: string }) => Rodada;
   updateRodada: (rodadaId: string, updates: Partial<Rodada>) => boolean;
   deleteRodada: (rodadaId: string) => boolean;
   routeProposals: RouteProposal[];
@@ -210,7 +210,7 @@ const mapActivityRow = (a: any, currentUserId?: string): ActivityPost => {
 const mapRouteRow = (p: any): RouteProposal => ({
   id: p.id,
   rodadaId: p.rodada_id,
-  crewId: p.crew_id,
+  crewId: p.crew_id === 'crew-motomami' ? 'crew-1793316469201' : p.crew_id,
   isRecorded: p.is_recorded || false,
   title: p.title,
   destination: p.destination,
@@ -237,17 +237,40 @@ const mapRouteRow = (p: any): RouteProposal => ({
 });
 
 // IDs de tribus obsoletas o de demo que deben ser purgadas y nunca mostrarse
-export const DEPRECATED_CREW_IDS = new Set(['crew-1793386544112']);
+export const DEPRECATED_CREW_IDS = new Set(['crew-1793386544112', 'crew-motomami']);
 
 // Validador universal de tribus obsoletas, huérfanas o con 0 miembros
 export const isDeprecatedCrew = (c: any): boolean => {
   if (!c) return true;
-  if (c.id === 'crew-1793386544112' || DEPRECATED_CREW_IDS.has(c.id)) return true;
+  if (c.id === 'crew-1793386544112' || c.id === 'crew-motomami' || DEPRECATED_CREW_IDS.has(c.id)) return true;
   const baseCity = (c.base_city || c.baseCity || '').toLowerCase();
   if (baseCity.includes('monterrey')) return true;
   const name = (c.name || '').toLowerCase().trim();
   if (name === 'prueba') return true;
   return false;
+};
+
+export const mapRodadaRow = (r: any): Rodada => {
+  const normCrewId = (r.crew_id === 'crew-motomami' || !r.crew_id) ? 'crew-1793316469201' : r.crew_id;
+  return {
+    id: r.id,
+    crewId: normCrewId,
+    title: r.title,
+    subtitle: r.subtitle || '',
+    description: r.description || '',
+    category: r.category || 'Fin de Semana',
+    startDate: r.start_date,
+    endDate: r.end_date,
+    originPoint: r.origin_point || 'CDMX',
+    status: (r.status as RodadaStatus) || 'votacion',
+    winningRouteId: r.winning_route_id || undefined,
+    attendees: (Array.isArray(r.attendees) && r.attendees.length > 0)
+      ? r.attendees
+      : (r.creator_id ? [{ userId: r.creator_id, status: 'confirmado', confirmedAt: r.created_at ? String(r.created_at).split('T')[0] : '' }] : []),
+    packingList: Array.isArray(r.packing_list) ? r.packing_list : [],
+    gallery: Array.isArray(r.gallery) ? r.gallery : [],
+    createdAt: r.created_at ? new Date(r.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
+  };
 };
 
 // Mapeadores para motocicletas de Hangar (conversión robusta entre camelCase y snake_case)
@@ -1656,27 +1679,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
 
     // Hydrate rodadas from cloud - non-destructive merge preserving attendees/packing
-    supabase.from('rodadas').select('*').order('created_at', { ascending: false }).limit(30).then(({ data: cloudRodadas, error }) => {
+    supabase.from('rodadas').select('*').order('created_at', { ascending: false }).limit(50).then(({ data: cloudRodadas, error }) => {
       if (!error && cloudRodadas) {
         const mappedR: Rodada[] = cloudRodadas
-          .filter((r: any) => !isMockRodada(r))
-          .map((r: any) => ({
-            id: r.id,
-            crewId: r.crew_id,
-            title: r.title,
-            subtitle: r.subtitle || '',
-            description: r.description || '',
-            category: r.category || 'Fin de Semana',
-            startDate: r.start_date,
-            endDate: r.end_date,
-            originPoint: r.origin_point || 'CDMX',
-            status: (r.status as RodadaStatus) || 'votacion',
-            winningRouteId: r.winning_route_id || undefined,
-            attendees: [],
-            packingList: [],
-            gallery: [],
-            createdAt: r.created_at ? new Date(r.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
-          }));
+          .map(mapRodadaRow)
+          .filter((r: Rodada) => !isMockRodada(r));
         setRodadas(prev => {
           const cloudMap = new Map(mappedR.map(r => [r.id, r]));
           const localClean = prev.filter(l => !isMockRodada(l));
@@ -1878,6 +1885,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           } else if (payload.eventType === 'DELETE' && payload.old) {
             const oldId = (payload.old as any).id;
             if (oldId) setRouteProposals(prev => prev.filter(r => r.id !== oldId));
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'rodadas' },
+        (payload) => {
+          if (payload.eventType === 'INSERT' && payload.new) {
+            const rd = mapRodadaRow(payload.new);
+            if (!isMockRodada(rd)) {
+              setRodadas(prev => prev.some(r => r.id === rd.id) ? prev : [rd, ...prev]);
+            }
+          } else if (payload.eventType === 'UPDATE' && payload.new) {
+            const rd = mapRodadaRow(payload.new);
+            setRodadas(prev => prev.map(r => r.id === rd.id ? { ...r, ...rd } : r));
+            setCurrentRodada(prev => prev && prev.id === rd.id ? { ...prev, ...rd } : prev);
+          } else if (payload.eventType === 'DELETE' && payload.old) {
+            const oldId = (payload.old as any).id;
+            if (oldId) setRodadas(prev => prev.filter(r => r.id !== oldId));
           }
         }
       )
@@ -2815,9 +2841,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const enterRodada = (rodadaId: string) => {
     const found = rodadas.find(rd => rd.id === rodadaId);
     if (found) {
-      const associatedCrew = crews.find(c => c.id === found.crewId);
+      const normalizedCrewId = found.crewId === 'crew-motomami' ? 'crew-1793316469201' : found.crewId;
+      const associatedCrew = crews.find(c => c.id === normalizedCrewId || c.id === found.crewId);
       if (associatedCrew) {
-        const isMember = associatedCrew.members.some(m => m.userId === currentUser.id) || associatedCrew.creatorId === currentUser.id;
+        const isMember = associatedCrew.members.some(m => m.userId === currentUser.id) || associatedCrew.creatorId === currentUser.id || currentUser.id === 'guest';
         if (!isMember) {
           // No se puede entrar a eventos privados de clubes a los que no perteneces
           return;
@@ -2829,14 +2856,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (routesForRodada.length > 0) {
         setSelectedRoute(routesForRodada[0]);
       }
-      setActiveNavTab('crew');
+      setActiveNavTab('tribus');
     }
   };
 
-  const createRodada = (data: { title: string; subtitle: string; description: string; category: Rodada['category']; startDate: string; endDate: string; originPoint: string }) => {
+  const createRodada = (data: { 
+    title: string; 
+    subtitle: string; 
+    description: string; 
+    category: Rodada['category']; 
+    startDate: string; 
+    endDate: string; 
+    originPoint: string;
+    crewId?: string;
+  }) => {
+    const rawCrewId = data.crewId || currentCrew?.id || 'crew-1793316469201';
+    const targetCrewId = rawCrewId === 'crew-motomami' ? 'crew-1793316469201' : rawCrewId;
     const newRodada: Rodada = {
       id: `rodada-${makeUniqueSuffix()}`,
-      crewId: currentCrew?.id || 'crew-1793316469201',
+      crewId: targetCrewId,
       title: data.title,
       subtitle: data.subtitle,
       description: data.description,
@@ -2858,14 +2896,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       gallery: [],
       createdAt: new Date().toISOString().split('T')[0]
     };
-    setRodadas(prev => [newRodada, ...prev]);
+    setRodadas(prev => [newRodada, ...prev.filter(r => r.id !== newRodada.id)]);
     setCurrentRodada(newRodada);
-    setActiveNavTab('crew');
+    setActiveNavTab('tribus');
+
+    const isValidUuid = (val?: string | null): boolean => {
+      if (!val) return false;
+      return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
+    };
 
     const cloudPayload = {
       id: newRodada.id,
       crew_id: newRodada.crewId,
-      creator_id: currentUser.id || null,
+      creator_id: isValidUuid(currentUser.id) ? currentUser.id : null,
       title: newRodada.title,
       subtitle: newRodada.subtitle,
       description: newRodada.description,

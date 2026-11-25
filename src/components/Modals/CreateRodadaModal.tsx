@@ -11,7 +11,7 @@ interface CreateRodadaModalProps {
 }
 
 export const CreateRodadaModal: React.FC<CreateRodadaModalProps> = ({ isOpen, onClose }) => {
-  const { createRodada, proposeRoute, setActiveNavTab, currentUser, rodadas } = useApp();
+  const { createRodada, proposeRoute, setActiveNavTab, currentUser, currentCrew, rodadas } = useApp();
   const activeRodada = rodadas[0] || null;
 
   const formatHumanDate = (start: string, end?: string, includeYear?: boolean) => {
@@ -34,6 +34,7 @@ export const CreateRodadaModal: React.FC<CreateRodadaModalProps> = ({ isOpen, on
   };
 
   const handleConvokeSubmit = (data: any) => {
+    const targetCrewId = currentCrew?.id || 'crew-1793316469201';
     const newRodada = createRodada({
       title: data.title,
       subtitle: data.subtitle,
@@ -41,11 +42,12 @@ export const CreateRodadaModal: React.FC<CreateRodadaModalProps> = ({ isOpen, on
       category: data.category,
       startDate: data.startDate,
       endDate: data.endDate,
-      originPoint: data.originPoint
+      originPoint: data.originPoint,
+      crewId: targetCrewId
     });
 
     if (data.proposal && newRodada) {
-      proposeRoute({ ...data.proposal, rodadaId: newRodada.id });
+      proposeRoute({ ...data.proposal, rodadaId: newRodada.id, crewId: targetCrewId });
     }
 
     confetti({ particleCount: 70 });

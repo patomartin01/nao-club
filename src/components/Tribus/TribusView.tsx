@@ -490,9 +490,18 @@ export const TribusView: React.FC<TribusViewProps> = ({
     return false;
   };
 
+  // Función robusta para emparejar la tribu actual con rodadas y rutas (incluyendo alias históricos de Motomami)
+  const matchesActiveTribu = (crewId?: string | null): boolean => {
+    if (!crewId || !activeTribu) return false;
+    if (crewId === activeTribu.id) return true;
+    const isMotomamiActive = activeTribu.id === 'crew-1793316469201' || activeTribu.id === 'crew-motomami';
+    const isMotomamiTarget = crewId === 'crew-1793316469201' || crewId === 'crew-motomami';
+    return isMotomamiActive && isMotomamiTarget;
+  };
+
   // Todas las rodadas convocadas para esta Tribu
   const allTribuRodadas = activeTribu 
-    ? rodadas.filter(r => r.crewId === activeTribu.id)
+    ? rodadas.filter(r => matchesActiveTribu(r.crewId))
     : [];
 
   // Convocatorias activas y vigentes (Solo hoy o a futuro)
@@ -782,6 +791,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
     originPoint: string;
     proposal?: Omit<RouteProposal, 'id' | 'votes' | 'comments'>;
   }) => {
+    const targetCrewId = activeTribu?.id || 'crew-1793316469201';
     const newRodada = createRodada({
       title: data.title,
       subtitle: data.subtitle,
@@ -789,11 +799,12 @@ export const TribusView: React.FC<TribusViewProps> = ({
       category: data.category,
       startDate: data.startDate,
       endDate: data.endDate,
-      originPoint: data.originPoint
+      originPoint: data.originPoint,
+      crewId: targetCrewId
     });
 
     if (data.proposal && newRodada) {
-      proposeRoute({ ...data.proposal, rodadaId: newRodada.id });
+      proposeRoute({ ...data.proposal, rodadaId: newRodada.id, crewId: targetCrewId });
     }
 
     if (newRodada) {

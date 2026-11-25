@@ -104,15 +104,23 @@ export const CrewView: React.FC<CrewViewProps> = ({
     );
   }
 
-  const crewRodadas = rodadas.filter(r => r.crewId === currentCrew.id);
-  const activeRodada = currentRodada?.crewId === currentCrew.id 
+  const matchesCurrentCrew = (crewId?: string | null): boolean => {
+    if (!crewId || !currentCrew) return false;
+    if (crewId === currentCrew.id) return true;
+    const isMotomamiCurrent = currentCrew.id === 'crew-1793316469201' || currentCrew.id === 'crew-motomami';
+    const isMotomamiTarget = crewId === 'crew-1793316469201' || crewId === 'crew-motomami';
+    return isMotomamiCurrent && isMotomamiTarget;
+  };
+
+  const crewRodadas = rodadas.filter(r => matchesCurrentCrew(r.crewId));
+  const activeRodada = (currentRodada && matchesCurrentCrew(currentRodada.crewId))
     ? currentRodada 
     : crewRodadas[0] || null;
 
   // All routes published to this crew (either directly via crewId, or linked to this crew's rodadas)
   const crewRodadaIds = new Set(crewRodadas.map(r => r.id));
   const allCrewRoutes = routeProposals.filter(r => 
-    r.crewId === currentCrew.id || (r.rodadaId && crewRodadaIds.has(r.rodadaId))
+    matchesCurrentCrew(r.crewId) || (r.rodadaId && crewRodadaIds.has(r.rodadaId))
   );
 
   const crewRoutes = activeRodada 
