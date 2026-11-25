@@ -1207,12 +1207,20 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[200] bg-[#121110] flex flex-col font-sans text-white overflow-hidden h-[100dvh] w-screen animate-fadeIn select-none">
+    <div className="fixed inset-0 z-[200] bg-[#121110] flex flex-col font-sans text-white overflow-hidden h-[100dvh] max-h-[100dvh] w-screen animate-fadeIn select-none">
       
-      {/* 1. TOP COCKPIT BAR (Ultra-sleek, minimalist, premium tactile) */}
-      <header className="shrink-0 bg-[#1A1918]/95 backdrop-blur-md px-4 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between border-b border-[#2A2928] z-30">
-        <div className="flex items-center gap-2.5">
-          <div className="relative flex items-center justify-center">
+      {/* 1. TOP COCKPIT BAR (Optimized for iPhone notch, Dynamic Island, and safe areas) */}
+      <header 
+        style={{
+          paddingTop: 'max(env(safe-area-inset-top, 0px), 14px)',
+          paddingLeft: 'max(env(safe-area-inset-left, 0px), 14px)',
+          paddingRight: 'max(env(safe-area-inset-right, 0px), 14px)',
+          paddingBottom: '10px'
+        }}
+        className="shrink-0 bg-[#1A1918]/95 backdrop-blur-md flex items-center justify-between border-b border-[#2A2928] z-30 gap-2"
+      >
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="relative flex items-center justify-center shrink-0">
             <span className={`w-2.5 h-2.5 rounded-full ${
               isRecording && !isPaused ? 'bg-[#E6332A] animate-ping opacity-75' : hasGpsFix ? 'bg-[#25D366]' : isLocating ? 'bg-[#F7B32B] animate-pulse' : 'bg-white/30'
             }`} />
@@ -1220,47 +1228,58 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
               isRecording && !isPaused ? 'bg-[#E6332A]' : hasGpsFix ? 'bg-[#25D366]' : isLocating ? 'bg-[#F7B32B]' : 'bg-white/40'
             }`} />
           </div>
-          <div>
-            <span className="font-sans font-semibold text-xs sm:text-sm text-[#FAF6ED] block leading-tight">
+          <div className="min-w-0">
+            <span className="font-sans font-semibold text-xs sm:text-sm text-[#FAF6ED] block leading-tight truncate">
               {isRecording && !isPaused ? 'Telemetría en Vivo' : isPaused ? 'Ruta Pausada' : 'Grabador de Expedición'}
             </span>
-            <span className="text-[9px] font-mono font-medium text-white/50 uppercase tracking-widest flex items-center gap-1">
+            <span className="text-[9px] font-mono font-medium text-white/50 uppercase tracking-widest flex items-center gap-1 truncate">
               {hasGpsFix ? (
                 <>
-                  <span className="w-1 h-1 rounded-full bg-[#25D366]"></span>
-                  {unifiedLocationService.isNativeDevice() ? 'GPS Nativo (2º Plano Activo)' : 'GPS Web (Mantén Pantalla Activa)'}
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#25D366] shrink-0"></span>
+                  <span className="truncate">{unifiedLocationService.isNativeDevice() ? 'GPS Nativo' : 'GPS Web'}</span>
                 </>
               ) : isLocating ? (
                 <>
-                  <span className="w-1 h-1 rounded-full bg-[#F7B32B] animate-ping"></span>
-                  Conectando satélites...
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#F7B32B] animate-ping shrink-0"></span>
+                  <span className="truncate">Buscando satélites...</span>
                 </>
               ) : (
-                unifiedLocationService.isNativeDevice() ? '🛰️ Modo Nativo Listo' : '🌐 Modo Web Listo'
+                <span className="truncate">{unifiedLocationService.isNativeDevice() ? '🛰️ Modo Nativo' : '🌐 Listo'}</span>
               )}
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* Indicador y selector de mapa */}
+        <div className="flex items-center gap-2 shrink-0">
+          {/* Indicador y selector de mapa (compacto en móvil para no desplazar el tache) */}
           <button
             type="button"
             onClick={() => switchMapLayer()}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#242322] hover:bg-[#2e2c2b] border border-white/10 text-[9px] font-mono uppercase tracking-wider text-white/90 transition active:scale-95 cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#242322] hover:bg-[#2e2c2b] border border-white/10 text-[9px] font-mono uppercase tracking-wider text-white/90 transition active:scale-95 cursor-pointer touch-manipulation"
             title="Alternar capa de mapa"
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-[#25D366] animate-pulse"></span>
-            {mapLayer === 'google-hybrid' ? 'Google Híbrido' : mapLayer === 'google-streets' ? 'Google Calles' : 'Satélite HD'}
+            <span className="w-1.5 h-1.5 rounded-full bg-[#25D366] animate-pulse shrink-0"></span>
+            <span className="hidden sm:inline">
+              {mapLayer === 'google-hybrid' ? 'Google Híbrido' : mapLayer === 'google-streets' ? 'Google Calles' : 'Satélite HD'}
+            </span>
+            <span className="sm:hidden font-bold">
+              {mapLayer === 'google-hybrid' ? 'Híbrido' : mapLayer === 'google-streets' ? 'Calles' : 'Satélite'}
+            </span>
           </button>
 
+          {/* Botón Tache (X) táctil optimizado para iOS (mínimo 44x44px, fuera de Dynamic Island) */}
           <button
             type="button"
-            onClick={handleRequestClose}
-            className="w-8 h-8 rounded-xl bg-[#242322] hover:bg-[#E6332A] border border-white/10 text-white flex items-center justify-center transition shrink-0 active:scale-95 cursor-pointer"
-            title="Cerrar telemetría y volver"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleRequestClose();
+            }}
+            className="min-w-[44px] min-h-[44px] w-11 h-11 rounded-2xl bg-[#2E2C2B] hover:bg-[#E6332A] active:bg-[#E6332A] border border-white/20 text-white flex items-center justify-center transition shrink-0 active:scale-90 cursor-pointer shadow-md touch-manipulation z-40"
+            aria-label="Cerrar grabador y salir"
+            title="Cerrar telemetría y salir"
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5 stroke-[2.5]" />
           </button>
         </div>
       </header>
@@ -1389,8 +1408,15 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
           </div>
         )}
 
-        {/* FLOATING COCKPIT HUD (Docked at bottom on mobile, centered tactical HUD on desktop) */}
-        <div className="absolute bottom-3 left-3 right-3 md:bottom-6 md:left-1/2 md:-translate-x-1/2 md:w-full md:max-w-2xl z-20 pointer-events-auto">
+        {/* FLOATING COCKPIT HUD (Docked at bottom on mobile with safe-area spacing, centered tactical HUD on desktop) */}
+        <div 
+          style={{
+            bottom: 'max(env(safe-area-inset-bottom, 0px), 12px)',
+            left: 'max(env(safe-area-inset-left, 0px), 12px)',
+            right: 'max(env(safe-area-inset-right, 0px), 12px)'
+          }}
+          className="absolute md:bottom-6 md:left-1/2 md:-translate-x-1/2 md:w-full md:max-w-2xl z-20 pointer-events-auto"
+        >
           <div className="bg-[#181716]/92 backdrop-blur-2xl border border-white/15 rounded-3xl p-3.5 sm:p-5 shadow-[0_20px_50px_rgba(0,0,0,0.85)] space-y-3">
             
             {/* Live 4-Matrix Telemetry Gauges */}
@@ -1542,11 +1568,13 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
                 </h3>
               </div>
               <button 
+                type="button"
                 onClick={() => setShowSaveDialog(false)}
-                className="w-8 h-8 border border-[#1A1918]/10 bg-[#F4EEDB] hover:bg-[#E6332A] hover:text-white text-[#1A1918] rounded-xl transition shadow-sm flex items-center justify-center"
+                className="min-w-[44px] min-h-[44px] w-11 h-11 border border-[#1A1918]/10 bg-[#F4EEDB] hover:bg-[#E6332A] hover:text-white text-[#1A1918] rounded-2xl transition shadow-sm flex items-center justify-center shrink-0 cursor-pointer touch-manipulation active:scale-95"
                 title="Cerrar ventana"
+                aria-label="Cerrar ventana"
               >
-                <X className="w-5 h-5" />
+                <X className="w-5 h-5 stroke-[2.5]" />
               </button>
             </div>
 
@@ -1933,18 +1961,31 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
         <div className="fixed inset-0 z-[10000] bg-[#1A1918]/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
           <div className="border border-[#1A1918]/10 bg-[#FAF6ED] max-w-md w-full p-6 space-y-5 shadow-sm relative text-[#1A1918] rounded-[24px] animate-scaleUp">
             
-            <div className="flex items-start gap-3">
-              <div className="p-3 bg-[#E6332A]/10 border border-[#E6332A] rounded-2xl shrink-0">
-                <AlertTriangle className="w-6 h-6 text-[#E6332A]" />
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start gap-3">
+                <div className="p-3 bg-[#E6332A]/10 border border-[#E6332A] rounded-2xl shrink-0">
+                  <AlertTriangle className="w-6 h-6 text-[#E6332A]" />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="font-display font-semibold text-lg text-[#1A1918]">
+                    ¿Qué deseas hacer con tu ruta?
+                  </h3>
+                  <p className="text-xs text-[#1A1918]/70 font-sans leading-relaxed">
+                    Llevas <span className="font-bold text-[#1A1918]">{distanceKm} km</span> y <span className="font-bold text-[#1A1918]">{formatTime(elapsedSeconds)}</span> registrados. Tu avance está seguro en la memoria de tu dispositivo.
+                  </p>
+                </div>
               </div>
-              <div className="space-y-1">
-                <h3 className="font-display font-semibold text-lg text-[#1A1918]  ">
-                  ¿Qué deseas hacer con tu ruta?
-                </h3>
-                <p className="text-xs text-[#1A1918]/70 font-sans leading-relaxed">
-                  Llevas <span className="font-bold text-[#1A1918]">{distanceKm} km</span> y <span className="font-bold text-[#1A1918]">{formatTime(elapsedSeconds)}</span> registrados. Tu avance está seguro en la memoria de tu dispositivo.
-                </p>
-              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowExitConfirm(false);
+                  handleKeepRecordingAndExit();
+                }}
+                className="min-w-[36px] min-h-[36px] w-9 h-9 border border-[#1A1918]/10 bg-[#F4EEDB] hover:bg-[#E6332A] hover:text-white text-[#1A1918] rounded-xl transition shadow-sm flex items-center justify-center shrink-0 cursor-pointer touch-manipulation"
+                title="Cerrar y minimizar"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
             <div className="space-y-2.5 pt-2">
