@@ -44,7 +44,8 @@ export const INITIAL_CREWS: Crew[] = [
       { userId: '2aaa8305-2851-442f-a7cb-ad99d28e6bed', role: 'Rider', joinedAt: '2026-11-20' },
       { userId: 'be5c1d63-53f1-4a65-93ec-e021f104809a', role: 'Rider', joinedAt: '2026-11-20' },
       { userId: '416b1eda-5865-481d-bac2-3bebf20ffd51', role: 'Rider', joinedAt: '2026-11-20' },
-      { userId: 'patomartin', role: 'Rider', joinedAt: '2026-11-20' }
+      { userId: '7def8842-9e6a-4905-8783-99773e12cc8e', role: 'Rider', joinedAt: '2026-11-24' },
+      { userId: '4d7adb56-f0db-44d7-b39d-64a24f884630', role: 'Rider', joinedAt: '2026-11-25' }
     ],
     whatsappGroupUrl: 'https://chat.whatsapp.com/Jg1AKUEqoXF7nXZuAPJ588'
   }

@@ -1939,6 +1939,100 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           }
         }
       )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'crew_members' },
+        async (payload: any) => {
+          if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+            const raw = payload.new;
+            if (!raw || !raw.crew_id || !raw.user_id) return;
+            const targetCrewId = (raw.crew_id === 'crew-motomami') ? 'crew-1793316469201' : raw.crew_id;
+            const newMember: CrewMember = {
+              userId: raw.user_id,
+              role: raw.role || 'Rider',
+              joinedAt: raw.joined_at?.split('T')[0] || new Date().toISOString().split('T')[0]
+            };
+
+            // Asegurarse de que el perfil del nuevo piloto esté cargado en users
+            setUsers(prev => {
+              if (prev.some(u => u.id === raw.user_id)) return prev;
+              supabase.from('profiles').select('*').eq('id', raw.user_id).maybeSingle().then(({ data: p }) => {
+                if (p) {
+                  const fetchedUser: User = {
+                    id: p.id,
+                    name: p.name || 'Piloto NAO',
+                    handle: p.handle || `@${(p.name || 'piloto').toLowerCase().replace(/\s+/g, '')}`,
+                    email: p.email || '',
+                    avatar: p.avatar_url || 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
+                    bio: p.bio || '',
+                    location: p.location || 'México',
+                    ridingLevel: (p.riding_level as any) || 'Intermedio',
+                    phone: p.phone,
+                    emergencyContact: p.emergency_contact
+                  };
+                  setUsers(uPrev => uPrev.some(u => u.id === fetchedUser.id) ? uPrev : [...uPrev, fetchedUser]);
+                }
+              });
+              return prev;
+            });
+
+            // Actualizar el listado de miembros de la tribu
+            setCrews(prev => prev.map(c => {
+              const cId = c.id === 'crew-motomami' ? 'crew-1793316469201' : c.id;
+              if (cId === targetCrewId) {
+                const filtered = c.members.filter(m => m.userId !== newMember.userId && m.userId !== 'patomartin');
+                return {
+                  ...c,
+                  members: [...filtered, newMember]
+                };
+              }
+              return c;
+            }));
+
+            // Actualizar tribu actual seleccionada si corresponde
+            setCurrentCrew(prev => {
+              if (!prev) return prev;
+              const prevId = prev.id === 'crew-motomami' ? 'crew-1793316469201' : prev.id;
+              if (prevId === targetCrewId) {
+                const filtered = prev.members.filter(m => m.userId !== newMember.userId && m.userId !== 'patomartin');
+                return {
+                  ...prev,
+                  members: [...filtered, newMember]
+                };
+              }
+              return prev;
+            });
+          } else if (payload.eventType === 'DELETE') {
+            const raw = payload.old;
+            if (!raw) return;
+            const targetCrewId = (raw.crew_id === 'crew-motomami') ? 'crew-1793316469201' : raw.crew_id;
+            const delUserId = raw.user_id;
+
+            setCrews(prev => prev.map(c => {
+              const cId = c.id === 'crew-motomami' ? 'crew-1793316469201' : c.id;
+              if (!targetCrewId || cId === targetCrewId) {
+                return {
+                  ...c,
+                  members: c.members.filter(m => m.userId !== delUserId)
+                };
+              }
+              return c;
+            }));
+
+            setCurrentCrew(prev => {
+              if (!prev) return prev;
+              const prevId = prev.id === 'crew-motomami' ? 'crew-1793316469201' : prev.id;
+              if (!targetCrewId || prevId === targetCrewId) {
+                return {
+                  ...prev,
+                  members: prev.members.filter(m => m.userId !== delUserId)
+                };
+              }
+              return prev;
+            });
+          }
+        }
+      )
       .subscribe();
 
     // Realtime channel for social follow notifications across all devices
@@ -2248,12 +2342,108 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     };
 
-    window.addEventListener('focus', refreshFollowsAndSocial);
-    const syncInterval = setInterval(refreshFollowsAndSocial, 25000);
+    // Sincronización de miembros de tribus para garantizar que todos los nuevos miembros aparezcan en todos los dispositivos
+    const refreshCrewsAndMembers = async () => {
+      if (!isSupabaseConfigured()) return;
+      try {
+        const { data: allMembers } = await supabase.from('crew_members').select('*');
+        if (allMembers && allMembers.length > 0) {
+          setCrews(prev => {
+            return prev.map(c => {
+              const cId = c.id === 'crew-motomami' ? 'crew-1793316469201' : c.id;
+              const membersForThisCrew = allMembers.filter((m: any) => {
+                const mCrewId = m.crew_id === 'crew-motomami' ? 'crew-1793316469201' : m.crew_id;
+                return mCrewId === cId && m.user_id !== 'user-patricio' && m.user_id !== 'patomartin';
+              }).map((m: any) => ({
+                userId: m.user_id,
+                role: m.role || 'Rider',
+                joinedAt: m.joined_at?.split('T')[0] || ''
+              }));
+
+              if (membersForThisCrew.length === 0) return c;
+
+              const existingMap = new Map(c.members.filter(m => m.userId !== 'patomartin').map(m => [m.userId, m]));
+              membersForThisCrew.forEach(m => {
+                existingMap.set(m.userId, m);
+              });
+              return {
+                ...c,
+                members: Array.from(existingMap.values())
+              };
+            });
+          });
+
+          setCurrentCrew(curr => {
+            if (!curr) return curr;
+            const currId = curr.id === 'crew-motomami' ? 'crew-1793316469201' : curr.id;
+            const membersForThisCrew = allMembers.filter((m: any) => {
+              const mCrewId = m.crew_id === 'crew-motomami' ? 'crew-1793316469201' : m.crew_id;
+              return mCrewId === currId && m.user_id !== 'user-patricio' && m.user_id !== 'patomartin';
+            }).map((m: any) => ({
+              userId: m.user_id,
+              role: m.role || 'Rider',
+              joinedAt: m.joined_at?.split('T')[0] || ''
+            }));
+
+            if (membersForThisCrew.length === 0) return curr;
+            const existingMap = new Map(curr.members.filter(m => m.userId !== 'patomartin').map(m => [m.userId, m]));
+            membersForThisCrew.forEach(m => {
+              existingMap.set(m.userId, m);
+            });
+            return {
+              ...curr,
+              members: Array.from(existingMap.values())
+            };
+          });
+
+          // Buscar perfiles de cualquier miembro nuevo no registrado localmente
+          const allMemberUserIds = Array.from(new Set(allMembers.map((m: any) => m.user_id)));
+          const missingUserIds = allMemberUserIds.filter(id => id && id.includes('-') && !users.some(u => u.id === id));
+          if (missingUserIds.length > 0) {
+            const { data: missingProfiles } = await supabase.from('profiles').select('*').in('id', missingUserIds);
+            if (missingProfiles && missingProfiles.length > 0) {
+              const mappedNewUsers: User[] = missingProfiles.map((p: any) => ({
+                id: p.id,
+                name: p.name || 'Piloto NAO',
+                handle: p.handle || `@${(p.name || 'piloto').toLowerCase().replace(/\s+/g, '')}`,
+                email: p.email || '',
+                avatar: p.avatar_url || 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&q=80&w=250',
+                bio: p.bio || '',
+                location: p.location || 'México',
+                ridingLevel: (p.riding_level as any) || 'Intermedio',
+                phone: p.phone,
+                emergencyContact: p.emergency_contact
+              }));
+              setUsers(prev => {
+                const existingSet = new Set(prev.map(u => u.id));
+                return [...prev, ...mappedNewUsers.filter(u => !existingSet.has(u.id))];
+              });
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('Silent crew members sync error:', e);
+      }
+    };
+
+    const onSyncTrigger = () => {
+      refreshFollowsAndSocial();
+      refreshCrewsAndMembers();
+    };
+
+    window.addEventListener('focus', onSyncTrigger);
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        onSyncTrigger();
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    const syncInterval = setInterval(onSyncTrigger, 20000);
 
     return () => {
       subscription.unsubscribe();
-      window.removeEventListener('focus', refreshFollowsAndSocial);
+      window.removeEventListener('focus', onSyncTrigger);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
       window.removeEventListener('online', flushSyncQueue);
       clearInterval(syncInterval);
       supabase.removeChannel(ridesChannel);
@@ -2731,16 +2921,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const addCrewMember = (crewId: string, userId: string, role: CrewMember['role'] = 'Rider') => {
+    const targetCrewId = crewId === 'crew-motomami' ? 'crew-1793316469201' : crewId;
     let updatedMembers: CrewMember[] = [];
     setCrews(prev => {
       const updatedList = prev.map(c => {
-        if (c.id === crewId) {
+        const cId = c.id === 'crew-motomami' ? 'crew-1793316469201' : c.id;
+        if (cId === targetCrewId) {
           if (c.members.some(m => m.userId === userId)) {
-            updatedMembers = c.members;
-            return c;
+            updatedMembers = c.members.filter(m => m.userId !== 'patomartin');
+            return { ...c, members: updatedMembers };
           }
           updatedMembers = [
-            ...c.members,
+            ...c.members.filter(m => m.userId !== 'patomartin'),
             { userId, role, joinedAt: new Date().toISOString().split('T')[0] }
           ];
           return {
@@ -2757,20 +2949,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
 
     if (isSupabaseConfigured() && userId) {
-      supabase.from('crew_members').insert({
-        crew_id: crewId,
+      supabase.from('crew_members').upsert({
+        crew_id: targetCrewId,
         user_id: userId,
         role: role
-      }).then(() => {});
+      }, { onConflict: 'crew_id,user_id' }).then(({ error }) => {
+        if (error) {
+          console.warn('Error upserting crew_members in Supabase:', error);
+        }
+      });
     }
 
     setCurrentCrew(prev => {
-      if (prev && prev.id === crewId) {
+      if (prev && (prev.id === targetCrewId || prev.id === 'crew-motomami')) {
         if (prev.members.some(m => m.userId === userId)) return prev;
         return {
           ...prev,
+          id: targetCrewId,
           members: [
-            ...prev.members,
+            ...prev.members.filter(m => m.userId !== 'patomartin'),
             { userId, role, joinedAt: new Date().toISOString().split('T')[0] }
           ]
         };
@@ -2779,16 +2976,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
 
     if (updatedMembers.length > 0) {
-      syncActivitiesWithCrew(crewId, undefined, updatedMembers);
+      syncActivitiesWithCrew(targetCrewId, undefined, updatedMembers);
     }
   };
 
   const joinCrewByCode = (code: string) => {
     const trimmed = code.trim().toUpperCase();
-    const found = crews.find(c => c.inviteCode.toUpperCase() === trimmed);
+    let found = crews.find(c => c.inviteCode && c.inviteCode.toUpperCase() === trimmed);
+    if (!found && (trimmed === 'NAO-2026' || trimmed === 'MOTOMAMI' || trimmed === 'MAMI-9408')) {
+      found = crews.find(c => c.id === 'crew-1793316469201' || c.slug === 'motomami' || c.name?.toLowerCase().includes('motomami'));
+    }
     if (!found) {
       return { success: false, message: 'Código de crew no encontrado. Verifica la clave e intenta de nuevo.' };
     }
+    const targetCrewId = found.id === 'crew-motomami' ? 'crew-1793316469201' : found.id;
     const alreadyMember = found.members.some(m => m.userId === currentUser.id);
     if (alreadyMember) {
       setCurrentCrew(found);
@@ -2796,28 +2997,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return { success: true, message: `Ya eres miembro de ${found.name}`, crew: found };
     }
     const updatedMembers: CrewMember[] = [
-      ...found.members,
+      ...found.members.filter(m => m.userId !== 'patomartin'),
       { userId: currentUser.id, role: 'Rider', joinedAt: new Date().toISOString().split('T')[0] }
     ];
     const updated: Crew = {
       ...found,
+      id: targetCrewId,
       members: updatedMembers
     };
-    setCrews(prev => prev.map(c => c.id === found.id ? updated : c));
+    setCrews(prev => prev.map(c => (c.id === found.id || c.id === targetCrewId) ? updated : c));
     setCurrentCrew(updated);
     setActiveNavTab('crew');
-    syncActivitiesWithCrew(found.id, undefined, updatedMembers);
+    syncActivitiesWithCrew(targetCrewId, undefined, updatedMembers);
 
     // Persistir membresía en Supabase Cloud
     if (isSupabaseConfigured() && currentUser.id) {
       supabase.from('crew_members').upsert({
-        crew_id: found.id,
+        crew_id: targetCrewId,
         user_id: currentUser.id,
         role: 'Rider'
       }, { onConflict: 'crew_id,user_id' }).then(({ error }) => {
         if (error) {
           console.error('Error joining crew in Supabase:', error);
-          enqueueOfflineAction('join_crew', { crew_id: found.id, user_id: currentUser.id, role: 'Rider' });
+          enqueueOfflineAction('join_crew', { crew_id: targetCrewId, user_id: currentUser.id, role: 'Rider' });
         }
       });
     }
