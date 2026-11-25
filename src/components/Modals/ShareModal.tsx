@@ -70,13 +70,12 @@ export const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, item })
 
   if (!isOpen || !item) return null;
 
-  // Filter user's active tribus/crews
+  // Filter user's active tribus/crews (estrictamente solo las que pertenece)
   const validCrews = crews.filter(c => !isDeprecatedCrew(c));
   const userCrews = validCrews.filter(c => 
-    c.creatorId === currentUser.id || c.members.some(m => m.userId === currentUser.id)
+    c.creatorId === currentUser.id || (c.members && c.members.some(m => m.userId === currentUser.id))
   );
-  // Fallback to all crews if user hasn't joined any yet
-  const availableCrews = userCrews.length > 0 ? userCrews : validCrews;
+  const availableCrews = userCrews;
 
   const currentOrigin = typeof window !== 'undefined' ? window.location.origin : 'https://nao-club-three.vercel.app';
   const shareUrl = item.url || `${currentOrigin}/?act=${item.id}`;

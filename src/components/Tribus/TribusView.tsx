@@ -47,7 +47,7 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { buildOrderedGoogleMapsUrl } from '../../utils/googleMaps';
-import { RouteProposal, Rodada } from '../../types';
+import { RouteProposal, Rodada, Crew } from '../../types';
 import { PlanCardModal } from './PlanCardModal';
 import { StepByStepRodadaModal } from './StepByStepRodadaModal';
 import { RouteTacticalMapCard } from '../Routes/RouteTacticalMapCard';
@@ -305,20 +305,26 @@ export const TribusView: React.FC<TribusViewProps> = ({
   const [showCrewDropdown, setShowCrewDropdown] = useState(false);
   const [showPilotSearchDropdown, setShowPilotSearchDropdown] = useState(false);
 
-  // Active crew object - Excluyendo estrictamente tribus obsoletas o con 0 miembros
-  const validCrewsList = crews.filter(c => !isDeprecatedCrew(c));
-  const activeTribu = validCrewsList.find(c => c.id === selectedTribuId) 
-    || validCrewsList.find(c => c.id === 'crew-1793316469201')
-    || validCrewsList[0] 
+  // Active crew object - Las tribus son estrictamente por invitación
+  // Sólo se consideran los motoclubs donde el usuario actual es creador o miembro
+  const isMemberOfCrew = (c: Crew) => {
+    if (isDeprecatedCrew(c)) return false;
+    return c.creatorId === currentUser.id || Boolean(c.members && c.members.some(m => m.userId === currentUser.id));
+  };
+
+  const myCrews = crews.filter(isMemberOfCrew);
+
+  const activeTribu = (selectedTribuId ? myCrews.find(c => c.id === selectedTribuId) : null)
+    || (currentCrew && myCrews.some(c => c.id === currentCrew.id) ? myCrews.find(c => c.id === currentCrew.id) : null)
+    || myCrews[0]
     || null;
 
-  // Auto-corregir si se seleccionó accidentalmente una tribu obsoleta o con 0 pilotos
+  // Auto-corregir si se seleccionó accidentalmente una tribu a la que ya no se pertenece
   useEffect(() => {
-    if (selectedTribuId && isDeprecatedCrew({ id: selectedTribuId })) {
-      const realCrew = crews.find(c => !isDeprecatedCrew(c));
-      setSelectedTribuId(realCrew ? realCrew.id : null);
+    if (selectedTribuId && !myCrews.some(c => c.id === selectedTribuId)) {
+      setSelectedTribuId(myCrews[0]?.id || null);
     }
-  }, [selectedTribuId, crews]);
+  }, [selectedTribuId, myCrews]);
 
   // Permiso para confirmar la ruta ganadora / oficial: creador, capitán, modo invitado o cualquier miembro de la tribu
   const isCreatorOrAdmin = activeTribu 
@@ -844,12 +850,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
   };
 
   // Filtered tribus for the directory: LOS GRUPOS SON ESTRICTAMENTE PRIVADOS
-  // Solo se visualizan aquellos donde el usuario actual es creador o miembro confirmado
-  const myCrews = crews.filter(c => {
-    if (isDeprecatedCrew(c)) return false;
-    return c.creatorId === currentUser.id || c.members.some(m => m.userId === currentUser.id);
-  });
-
+  // Solo se visualizan aquellos donde el usuario actual es creador o miembro confirmado (ya calculados en myCrews)
   const filteredCrews = myCrews.filter(c => {
     // Search filter
     if (searchTribuQuery.trim()) {
@@ -908,26 +909,61 @@ export const TribusView: React.FC<TribusViewProps> = ({
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 py-4 border-b border-[#1A1918]/10">
           <div className="flex items-center gap-2">
             <span className="font-mono text-[10px] text-[#1A1918]/55 uppercase tracking-[0.15em] font-semibold">
-              {crews.length} {crews.length === 1 ? 'motoclub' : 'motoclubs'}
+              {myCrews.length} {myCrews.length === 1 ? 'motoclub' : 'motoclubs'}
             </span>
           </div>
 
-          {/* Search Bar */}
-          <div className="relative w-full sm:w-80">
-            <Search className="w-3.5 h-3.5 text-[#1A1918]/60 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            <input 
-              type="text"
-              value={searchTribuQuery}
-              onChange={(e) => setSearchTribuQuery(e.target.value)}
-              placeholder="Buscar por nombre, clave o ciudad..."
-              className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 pl-9 pr-3 py-2 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none focus:ring-1 focus:ring-[#1A1918] font-sans font-semibold rounded-xl shadow-sm"
-            />
-          </div>
+          {/* Search Bar - sólo visible si el usuario pertenece a algún motoclub */}
+          {myCrews.length > 0 && (
+            <div className="relative w-full sm:w-80">
+              <Search className="w-3.5 h-3.5 text-[#1A1918]/60 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <input 
+                type="text"
+                value={searchTribuQuery}
+                onChange={(e) => setSearchTribuQuery(e.target.value)}
+                placeholder="Buscar por nombre, clave o ciudad..."
+                className="w-full bg-[#FAF6ED] border border-[#1A1918]/10 pl-9 pr-3 py-2 text-xs text-[#1A1918] placeholder-[#1A1918]/40 focus:outline-none focus:ring-1 focus:ring-[#1A1918] font-sans font-semibold rounded-xl shadow-sm"
+              />
+            </div>
+          )}
         </div>
 
-        {/* Tactical 2-Column Tribus Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 mt-5">
-          {filteredCrews.map((crew) => {
+        {/* Tactical 2-Column Tribus Grid / Empty State */}
+        {myCrews.length === 0 ? (
+          <div className="p-8 sm:p-14 text-center text-[#1A1918] space-y-4 bg-[#F4EEDB] border border-[#1A1918]/10 rounded-2xl mt-6 shadow-sm max-w-2xl mx-auto">
+            <div className="w-12 h-12 rounded-2xl bg-[#FAF6ED] border border-[#1A1918]/10 mx-auto flex items-center justify-center text-[#E6332A] shadow-sm">
+              <Key className="w-6 h-6 stroke-[1.8]" />
+            </div>
+            <div className="space-y-1.5">
+              <h2 className="font-display font-semibold text-[#1A1918] text-lg sm:text-xl uppercase tracking-wide">
+                Tribus Privadas &amp; Por Invitación
+              </h2>
+              <p className="font-sans text-[#1A1918]/70 text-xs sm:text-sm max-w-md mx-auto leading-relaxed">
+                Aún no perteneces a ninguna tribu. En NAO, los motoclubs son privados y de acceso restringido mediante clave de invitación directa o fundando tu propio club.
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-3">
+              <button
+                type="button"
+                onClick={onOpenJoinCrew}
+                className="w-full sm:w-auto px-5 py-2.5 bg-[#FAF6ED] hover:bg-[#EDE6D3] text-[#1A1918] border border-[#1A1918]/20 font-sans font-semibold text-xs rounded-xl transition shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Key className="w-4 h-4 text-[#E6332A]" />
+                <span>Unirme con clave de acceso</span>
+              </button>
+              <button
+                type="button"
+                onClick={onOpenCreateCrew}
+                className="w-full sm:w-auto btn-vermillion px-6 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 shadow-sm cursor-pointer"
+              >
+                <Plus className="w-4 h-4 text-white" />
+                <span>Fundar mi motoclub</span>
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 mt-5">
+            {filteredCrews.map((crew) => {
             const isUserAdmin = crew.creatorId === currentUser.id ||
               currentUser.handle === '@patricio' ||
               crew.members[0]?.userId === currentUser.id ||
@@ -1191,8 +1227,9 @@ export const TribusView: React.FC<TribusViewProps> = ({
             );
           })}
         </div>
+        )}
 
-        {filteredCrews.length === 0 && (
+        {myCrews.length > 0 && filteredCrews.length === 0 && (
           <div className="p-12 text-center text-[#1A1918] text-xs space-y-3 bg-[#FAF6ED] border border-[#1A1918]/10 rounded-2xl mt-5 shadow-sm">
             <p className="font-display font-semibold text-[#1A1918] text-base ">No se encontraron motoclubs con ese criterio.</p>
             <p className="font-sans text-[#1A1918]/70 text-xs max-w-sm mx-auto">Prueba con otro término de búsqueda por nombre, clave o ciudad base.</p>
@@ -1277,7 +1314,7 @@ export const TribusView: React.FC<TribusViewProps> = ({
                   
                   {/* Header */}
                   {(() => {
-                    const validCrews = crews.filter(c => !isDeprecatedCrew(c) && (c.id === 'crew-1793316469201' || (c.members && c.members.length > 0)));
+                    const validCrews = myCrews;
                     return (
                       <>
                         <div className="px-1 flex items-center justify-between border-b border-[#E5DFD5] pb-2.5">

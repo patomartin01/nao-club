@@ -1554,13 +1554,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             }
           }
 
-          // Sincronizar currentCrew si ya estaba seleccionado y pertenece a él
+          // Sincronizar currentCrew únicamente si el usuario actual es creador o miembro de la tribu
           setCurrentCrew(curr => {
-            if (!curr || isDeprecatedCrew(curr)) {
-              return finalCrews[0] || null;
+            const isMember = (c: Crew) => (
+              c.creatorId === currentUser.id || 
+              (c.members && c.members.some(m => m.userId === currentUser.id))
+            );
+            if (!curr || isDeprecatedCrew(curr) || !isMember(curr)) {
+              const myCrew = finalCrews.find(c => !isDeprecatedCrew(c) && isMember(c));
+              return myCrew || null;
             }
             const updatedCurr = finalCrews.find(c => c.id === curr.id);
-            return updatedCurr || finalCrews[0] || null;
+            if (updatedCurr && isMember(updatedCurr)) {
+              return updatedCurr;
+            }
+            const myCrew = finalCrews.find(c => !isDeprecatedCrew(c) && isMember(c));
+            return myCrew || null;
           });
 
           return finalCrews;

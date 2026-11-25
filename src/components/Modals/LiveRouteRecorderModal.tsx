@@ -1642,8 +1642,8 @@ export const LiveRouteRecorderModal: React.FC<LiveRouteRecorderModalProps> = ({
                         onChange={(e) => setTargetCrewId(e.target.value)}
                         className="w-full bg-[#F4EEDB] border border-[#1A1918]/10 px-3.5 py-2.5 text-[#1A1918] text-xs focus:outline-none focus:border-[#E6332A] rounded-xl shadow-sm font-bold"
                       >
-                        {/* Deduplicate crews by normalized key so duplicates never show */}
-                        {Array.from(new Map(crews.filter(c => !isDeprecatedCrew(c)).map(c => [c.slug || c.name.toLowerCase().trim(), c])).values()).map(c => (
+                        {/* Deduplicate crews by normalized key so duplicates never show - solo motoclubs a los que pertenece el usuario */}
+                        {Array.from(new Map(crews.filter(c => !isDeprecatedCrew(c) && (c.creatorId === currentUser.id || Boolean(c.members && c.members.some(m => m.userId === currentUser.id)))).map(c => [c.slug || c.name.toLowerCase().trim(), c])).values()).map(c => (
                           <option key={c.id} value={c.id} className="bg-[#FAF6ED] text-[#1A1918]">
                             {c.name} {c.baseCity ? `(${c.baseCity})` : ''}
                           </option>

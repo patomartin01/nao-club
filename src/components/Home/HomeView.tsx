@@ -40,7 +40,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
   } = useApp();
 
   const primaryBike = userBikes[0];
-  const validCrews = crews.filter(c => !isDeprecatedCrew(c));
+  const myCrews = crews.filter(c => 
+    !isDeprecatedCrew(c) && 
+    (c.creatorId === currentUser.id || Boolean(c.members && c.members.some(m => m.userId === currentUser.id)))
+  );
 
   return (
     <div className="space-y-12 pb-32 text-chalk">
@@ -106,7 +109,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-white/10 border-t border-white/10 font-mono text-xs bg-[#0E0C0A]">
           <div className="p-4 sm:p-5">
             <span className="text-[10px] text-ash uppercase tracking-wider block">Grupos inscritos</span>
-            <p className="font-bold text-white text-base mt-0.5">{validCrews.length} Tribus</p>
+            <p className="font-bold text-white text-base mt-0.5">{myCrews.length} Tribus</p>
           </div>
           <div className="p-4 sm:p-5">
             <span className="text-[10px] text-ash uppercase tracking-wider block">Máquina asignada</span>
@@ -133,7 +136,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               [ 01 · SELECCIONA UN GRUPO PARA ENTRAR ]
             </span>
             <h2 className="font-display font-extrabold text-2xl sm:text-3xl text-white tracking-tight mt-1">
-              Tus Grupos & Tribus ({validCrews.length})
+              Tus Grupos & Tribus ({myCrews.length})
             </h2>
             <p className="font-mono text-xs text-ash mt-1">
               Haz clic en cualquiera de tus grupos para entrar a su sala, ver sus miembros y gestionar sus rodadas.
@@ -150,50 +153,45 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </div>
         </div>
 
-        {/* Group Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {validCrews.map((crew) => {
-            const isMember = crew.members.some(m => m.userId === currentUser.id);
-            const crewRodadas = rodadas.filter(r => r.crewId === crew.id);
-            const activeRodada = crewRodadas.find(r => r.status === 'votacion') || crewRodadas[0];
+        {/* Group Cards Grid / Empty State */}
+        {myCrews.length === 0 ? (
+          <div className="border border-white/10 bg-[#0B0A09] p-8 sm:p-12 text-center space-y-3">
+            <span className="font-mono text-[9px] text-ash/60 uppercase tracking-widest block font-bold">
+              [ TRIBUS PRIVADAS · SOLO POR INVITACIÓN ]
+            </span>
+            <h3 className="font-display font-extrabold text-xl sm:text-2xl text-white">
+              Aún no perteneces a ningún motoclub
+            </h3>
+            <p className="font-mono text-xs text-ash max-w-md mx-auto leading-relaxed">
+              En NAO, los motoclubs son privados. Puedes unirte a tu tribu ingresando la clave que te compartió tu capitán o fundar un nuevo club.
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-3">
+              <button
+                onClick={onOpenJoinCrew}
+                className="px-4 py-2 bg-earth hover:bg-earth/80 text-white font-mono text-xs uppercase font-bold transition"
+              >
+                + Ingresar Clave
+              </button>
+              <button
+                onClick={onOpenCreateCrew}
+                className="px-4 py-2 border border-white/20 hover:border-white text-white font-mono text-xs uppercase font-bold transition"
+              >
+                Fundar Tribu
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {myCrews.map((crew) => {
+              const crewRodadas = rodadas.filter(r => r.crewId === crew.id);
+              const activeRodada = crewRodadas.find(r => r.status === 'votacion') || crewRodadas[0];
 
-            if (!isMember) {
               return (
                 <div 
                   key={crew.id}
-                  className="border border-white/5 bg-[#080706] p-6 sm:p-8 flex flex-col justify-between opacity-80 cursor-default select-none"
-                  title="Tribu Privada • Acceso exclusivo para miembros"
+                  onClick={() => enterCrew(crew.id)}
+                  className="group border border-white/10 hover:border-earth bg-[#0B0A09] transition-all cursor-pointer flex flex-col justify-between overflow-hidden"
                 >
-                  <div className="space-y-3">
-                    <span className="font-mono text-[9px] text-ash/60 uppercase tracking-widest block font-bold">
-                      [ TRIBU PRIVADA ]
-                    </span>
-                    <h3 className="font-display font-extrabold text-2xl text-chalk ">
-                      {crew.name}
-                    </h3>
-                    <p className="font-mono text-xs text-ash/60 font-light">
-                      Tribu cerrada. Los detalles de rodadas y miembros son visibles únicamente para pilotos autorizados.
-                    </p>
-                  </div>
-                  <div className="pt-6 border-t border-white/[0.05] flex items-center justify-between text-ash/50 font-mono text-xs">
-                    <span className="flex items-center gap-1.5 text-ash/60">
-                      <ShieldCheck className="w-3.5 h-3.5 text-ash/40" />
-                      Solo miembros
-                    </span>
-                    <span className="text-[10px] uppercase bg-white/[0.02] border border-white/10 px-2 py-0.5 font-mono">
-                      Sin acceso
-                    </span>
-                  </div>
-                </div>
-              );
-            }
-
-            return (
-              <div 
-                key={crew.id}
-                onClick={() => enterCrew(crew.id)}
-                className="group border border-white/10 hover:border-earth bg-[#0B0A09] transition-all cursor-pointer flex flex-col justify-between overflow-hidden"
-              >
                 {/* Crew Cover Banner */}
                 <div className="h-44 sm:h-52 w-full relative overflow-hidden border-b border-white/10 bg-black">
                   <img 
@@ -278,6 +276,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </div>
 
         </div>
+        )}
       </section>
 
       {/* 03. SECTION: FEED DE TODAS LAS EXPEDICIONES ACTIVAS */}
